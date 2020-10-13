@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -24,28 +26,37 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 type options struct {
 	jobName       string
 	configPath    string
 	jobConfigPath string
-
-	baseRef    string
-	baseSha    string
-	pullNumber int
-	pullSha    string
-	pullAuthor string
-	org        string
-	repo       string
+	dryRun        bool
+	outputPath    string
+	kubeOptions   prowflagutil.KubernetesOptions
+	baseRef       string
+	baseSha       string
+	pullNumber    int
+	pullSha       string
+	pullAuthor    string
+	org           string
+	repo          string
 
 	local bool
 
@@ -189,6 +200,10 @@ func (o *options) Validate() error {
 		return err
 	}
 
+	if err := o.kubeOptions.Validate(false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -204,6 +219,8 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	fs.BoolVar(&o.dryRun, "dry-run", false, "Executes a dry-run, displaying the job YAML without submitting the job to Prow")
+	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
 	o.github.AllowDirectAccess = true
@@ -211,8 +228,133 @@ func gatherOptions() options {
 	return o
 }
 
+// getJobArtifactsURL returns the artifacts URL for the given job
+func getJobArtifactsURL(prowJob *pjapi.ProwJob, config *prowconfig.Config) string {
+	var identifier string
+	if prowJob.Spec.Refs != nil {
+		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.Refs.Org, prowJob.Spec.Refs.Repo)
+	} else {
+		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.ExtraRefs[0].Org, prowJob.Spec.ExtraRefs[0].Repo)
+	}
+	spec := downwardapi.NewJobSpec(prowJob.Spec, prowJob.Status.BuildID, prowJob.Name)
+	jobBasePath, _, _ := gcsupload.PathsForJob(config.Plank.GetDefaultDecorationConfigs(identifier).GCSConfiguration, &spec, "")
+	return fmt.Sprintf("%s%s/%s",
+		config.Deck.Spyglass.GCSBrowserPrefix,
+		config.Plank.GetDefaultDecorationConfigs(identifier).GCSConfiguration.Bucket,
+		jobBasePath,
+	)
+}
+
+// Calls toJSON method on a jobResult type and writes it to the output path
+func writeResultOutput(prowjobResult JobResult, outputPath string, fileSystem afero.Fs) error {
+	j, err := prowjobResult.toJSON()
+	if err != nil {
+		return fmt.Errorf("unable to marshal prowjob result to JSON: %w", err)
+	}
+
+	afs := afero.Afero{Fs: fileSystem}
+	if outputPath != "" {
+		err = afs.WriteFile(outputPath, j, 0755)
+		if err != nil {
+			logrus.WithField("output path", outputPath).Error("error writing to output file")
+			return err
+		}
+	} else {
+		logrus.Info(string(j))
+	}
+
+	return nil
+}
+
+type JobResult interface {
+	toJSON() ([]byte, error)
+}
+
+type prowjobResult struct {
+	Status       pjapi.ProwJobState `json:"status"`
+	ArtifactsURL string             `json:"prowjob_artifacts_url"`
+	URL          string             `json:"prowjob_url"`
+}
+
+func (p *prowjobResult) toJSON() ([]byte, error) {
+	return json.MarshalIndent(p, "", "    ")
+}
+
+func triggerProwJob(o options, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, fileSystem afero.Fs) error {
+	logrus.Info("getting cluster config")
+	pjclient, err := o.kubeOptions.ProwJobClient(config.ProwJobNamespace, o.dryRun)
+	if err != nil {
+		return fmt.Errorf("failed getting prowjob client: %w", err)
+	}
+	// kubeconfig needs to be set in the KUBECONFIG env variable
+	// clusterConfig, err := util.LoadClusterConfig()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to load cluster configuration: %w", err)
+	// }
+
+	// pjcset, err := pjclientset.NewForConfig(clusterConfig)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to create prowjob clientset: %w", err)
+	// }
+	// pjclient := pjcset.ProwV1().ProwJobs(config.ProwJobNamespace)
+
+	logrus.WithFields(pjutil.ProwJobFields(prowjob)).Info("submitting a new prowjob")
+	created, err := pjclient.Create(context.TODO(), prowjob, metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to submit the prowjob: %w", err)
+	}
+
+	logger := logrus.WithFields(pjutil.ProwJobFields(created))
+	logger.Info("submitted the prowjob, waiting for its result")
+
+	selector := fields.SelectorFromSet(map[string]string{"metadata.name": created.Name})
+
+	for {
+		w, err := pjclient.Watch(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
+		if err != nil {
+			return fmt.Errorf("failed to create watch for ProwJobs: %w", err)
+		}
+
+		for event := range w.ResultChan() {
+			prowJob, ok := event.Object.(*pjapi.ProwJob)
+			if !ok {
+				return fmt.Errorf("received an unexpected object from Watch: object-type %s", fmt.Sprintf("%T", event.Object))
+			}
+
+			prowJobArtifactsURL := getJobArtifactsURL(prowJob, config)
+
+			switch prowJob.Status.State {
+			case pjapi.FailureState, pjapi.AbortedState, pjapi.ErrorState:
+				pjr := &prowjobResult{
+					Status:       prowJob.Status.State,
+					ArtifactsURL: prowJobArtifactsURL,
+					URL:          prowJob.Status.URL,
+				}
+				err = writeResultOutput(pjr, o.outputPath, fileSystem)
+				if err != nil {
+					logrus.Error("Unable to write prowjob result to file")
+				}
+				logrus.Warn("job failed")
+				return nil
+			case pjapi.SuccessState:
+				pjr := &prowjobResult{
+					Status:       prowJob.Status.State,
+					ArtifactsURL: prowJobArtifactsURL,
+					URL:          prowJob.Status.URL,
+				}
+				err = writeResultOutput(pjr, o.outputPath, fileSystem)
+				if err != nil {
+					logrus.Error("Unable to write prowjob result to file")
+				}
+				logrus.Info("job succeeded")
+				return nil
+			}
+		}
+	}
+}
 func main() {
 	o := gatherOptions()
+	fileSystem := afero.NewOsFs()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatalf("Bad flags")
 	}
@@ -257,6 +399,12 @@ func main() {
 	fmt.Print(string(b))
 	if o.local {
 		logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
+	}
+	if o.dryRun {
+		os.Exit(0)
+	}
+	if err := triggerProwJob(o, &pj, conf, nil, fileSystem); err != nil {
+		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
 
