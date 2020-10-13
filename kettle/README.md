@@ -106,5 +106,5 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
 
 [Big Query Tables]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
-[Big Query All]: https://pantheon.corp.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true
-[Big Query Staging]: https://pantheon.corp.google.com/bigquery?project=k8s-gubernator&page=table&t=staging&d=build&p=k8s-gubernator&redirect_from_classic=true
+[Big Query All]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator
+[Big Query Staging]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=staging&d=build&p=k8s-gubernator
