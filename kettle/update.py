@@ -43,7 +43,7 @@ def call(cmd):
 def main():
     call(f'time python3 make_db.py --buckets buckets.yaml --junit --threads {THREADS}')
 
-    bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS}'
+    bq_cmd = f'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS}'
     mj_cmd = 'pypy3 make_json.py'
 
     mj_ext = ''
