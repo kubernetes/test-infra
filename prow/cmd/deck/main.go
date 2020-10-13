@@ -1462,12 +1462,12 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				if goa == nil {
 					msg := "GitHub oauth must be configured to rerun jobs unless 'allow_anyone: true' is specified."
 					http.Error(w, msg, http.StatusInternalServerError)
-					l.Error(msg)
+					l.Debug(msg)
 					return
 				}
 				login, err := goa.GetLogin(r, ghc)
 				if err != nil {
-					l.WithError(err).Errorf("Error retrieving GitHub login")
+					l.WithError(err).Debugf("Error retrieving GitHub login")
 					http.Error(w, "Error retrieving GitHub login", http.StatusUnauthorized)
 					return
 				}
@@ -1475,7 +1475,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent.Config, l)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
-					l.WithError(err).Errorf("Error checking if user can trigger job")
+					l.WithError(err).Debugf("Error checking if user can trigger job")
 					return
 				}
 			}
