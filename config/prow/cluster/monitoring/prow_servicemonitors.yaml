@@ -1,3 +1,5 @@
+# PROW_INSTANCE_SPECIFIC
+# Contains prow components list, could be solved by breaking these down to individual files
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

@@ -1,3 +1,5 @@
+# PROW_INSTANCE_SPECIFIC
+# Domains are different among prow instances
 ---
 apiVersion: v1
 kind: Service
