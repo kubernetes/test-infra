@@ -20,7 +20,7 @@ SHELL=/bin/bash -o pipefail
 all: grafana-dashboards prow_prometheusrule.yaml
 
 grafana-dashboards:
-	for name in deck ghproxy hook plank prow sinker tide; do echo "Generating $${name}.json ..."; jsonnet -J vendor/ -J lib/ "grafana_dashboards/$${name}.jsonnet" > "./dashboards_out/$${name}.json"; done
+	for name in boskos-http boskos deck ghproxy hook plank prow sinker slo tide; do echo "Generating $${name}.json ..."; jsonnet -J vendor/ -J lib/ "grafana_dashboards/$${name}.jsonnet" > "./dashboards_out/$${name}.json"; done
 
 prow_prometheusrule.yaml:
 	@echo "Generating prow_prometheusrule.yaml ..."

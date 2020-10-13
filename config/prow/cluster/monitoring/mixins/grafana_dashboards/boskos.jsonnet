@@ -1,4 +1,5 @@
 local grafana = import 'grafonnet/grafana.libsonnet';
+local config =  import 'config.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
 local prometheus = grafana.prometheus;
@@ -33,18 +34,6 @@ dashboard.new(
         x: 0,
         y: 0,
     }}
-      for resource in [
-        {instance: "104.197.27.114:9090", type: "aws-account", friendly: "AWS account"},
-        {instance: "104.197.27.114:9090", type: "gce-project", friendly: "GCE project"},
-        {instance: "35.225.208.117:9090", type: "gce-project", friendly: "GCE project (k8s-infra)"},
-        {instance: "104.197.27.114:9090", type: "gke-project", friendly: "GKE project"},
-        {instance: "104.197.27.114:9090", type: "gpu-project", friendly: "GPU project"},
-        {instance: "35.225.208.117:9090", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
-        {instance: "104.197.27.114:9090", type: "ingress-project", friendly: "Ingress project"},
-        {instance: "104.197.27.114:9090", type: "node-e2e-project", friendly: "Node e2e project"},
-        {instance: "104.197.27.114:9090", type: "scalability-project", friendly: "Scalability project"},
-        {instance: "35.225.208.117:9090", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
-        {instance: "104.197.27.114:9090", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
-      ]
+      for resource in config._config.boskosResourcetypes
   ])
 + dashboardConfig
