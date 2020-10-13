@@ -17,6 +17,7 @@ periodics:
       env:
       - name: PGDATA
         value: /var/lib/postgresql/data/pgdata
+# The intent here is to run the container as the postgres, we want to avoid root execution
       securityContext:
         readOnlyRootFilesystem: true
         runAsUser: 70
