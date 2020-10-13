@@ -235,7 +235,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=80m
+      - --timeout=100m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.19
       name: ""

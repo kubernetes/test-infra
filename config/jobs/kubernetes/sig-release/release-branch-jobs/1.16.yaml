@@ -288,7 +288,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/enable_oom_tracking.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=80m
+      - --timeout=100m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.16
       name: ""
