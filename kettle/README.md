@@ -4,7 +4,7 @@ This collects test results scattered across a variety of GCS buckets,
 stores them in a local SQLite database, and outputs newline-delimited
 JSON files for import into BigQuery.
 
-Results are stored in the [k8s-gubernator:build BigQuery dataset](https://bigquery.cloud.google.com/dataset/k8s-gubernator:build),
+Results are stored in the [k8s-gubernator:build BigQuery dataset][Big Query Tables],
 which is publicly accessible.
 
 # Deploying
@@ -18,7 +18,7 @@ If you change:
 - any code: **Run from root** deploy with `make -C kettle push update`, revert with `make -C kettle rollback` if it fails
     - `push` builds the continer image and pushes it to the image registry
     - `update` sets the image of the existing kettle *Pod* which triggers a restart cycle
-    - this will build the image to [Pantheon Container Registry](https://pantheon.corp.google.com/gcr/images/k8s-gubernator/GLOBAL/kettle?project=k8s-gubernator&organizationId=433637338589&gcrImageListsize=30)
+    - this will build the image to [Pantheon Container Registry](https://console.cloud.google.com/gcr/images/k8s-gubernator/GLOBAL/kettle?project=k8s-gubernator&organizationId=433637338589&gcrImageListsize=30)
     - See [Makefile](Makefile) for details
 
 #### Note:
@@ -46,7 +46,7 @@ ACK "finished.json" 2
 Downloading JUnit artifacts.
 ```
 
-Alternatively, navigate to [Gubernator BigQuery page](https://bigquery.cloud.google.com/table/k8s-gubernator:build.all?pli=1&tab=details) (click on “all” on the left and “Details”) and you can see a table showing last date/time the metrics were collected.
+Alternatively, navigate to [Gubernator BigQuery page][Big Query All] (click on “Details”) and you can see a table showing last date/time the metrics were collected.
 
 #### Replace pods
 
@@ -65,7 +65,7 @@ kubectl logs -f $(kubectl get pod -l app=kettle -oname)
 ```
 or access [log history](https://console.cloud.google.com/logs/query?project=k8s-gubernator) with the Query: `resource.labels.container_name="kettle"`.
 
-It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page](https://bigquery.cloud.google.com/table/k8s-gubernator:build.all?pli=1&tab=details) and check to see if data collection has resumed.  Backfill should happen automatically.
+It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page][Big Query All] and check to see if data collection has resumed.  Backfill should happen automatically.
 
 #### Kettle Staging
 | :exclamation:  Not Fully Functional Yet |
@@ -74,13 +74,13 @@ It might take a couple of hours to be fully functional and start updating BigQue
 This is a work in progress. `Kettle Staging` uses a similar deployment to `Kettle` with the following differences
 - much less disk in its PVC
 - reduced list of buckets to pull from
-- writes to [build.staging](https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only.
+- writes to [build.staging][Big Query Staging] table only.
 
 It can be deployed with `make -C kettle deploy-staging`. If already deployed, you may just run `make -C kettle update-staging`.
 
 #### Adding Fields
 
-To add fields to the BQ table, Visit the [k8s-gubernator:build BigQuery dataset](https://bigquery.cloud.google.com/dataset/k8s-gubernator:build) and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
+To add fields to the BQ table, Visit the [k8s-gubernator:build BigQuery dataset][Big Query Tables] and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
 
 ## Adding Buckets
 
@@ -104,3 +104,7 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
+
+[Big Query Tables]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
+[Big Query All]: https://pantheon.corp.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true
+[Big Query Staging]: https://pantheon.corp.google.com/bigquery?project=k8s-gubernator&page=table&t=staging&d=build&p=k8s-gubernator&redirect_from_classic=true
