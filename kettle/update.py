@@ -49,7 +49,7 @@ def main():
     mj_ext = ''
     bq_ext = ''
     try:
-        call(mj_cmd + ' --days 1 --assert-oldest {DAYS_OLD}')
+        call(f'{mj_cmd} --days 1 --assert-oldest {DAYS_OLD}')
     except OSError:
         # cycle daily/weekly tables
         bq_ext = ' --replace'
