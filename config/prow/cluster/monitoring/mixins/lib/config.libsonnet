@@ -70,5 +70,8 @@
       {instance: "35.225.208.117:9090", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
       {instance: "104.197.27.114:9090", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
     ],
+
+    // How long we go during work hours without seeing a webhook before alerting.
+    webhookMissingAlertInterval: '10m',
   },
 }
