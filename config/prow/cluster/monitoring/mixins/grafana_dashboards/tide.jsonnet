@@ -1,3 +1,4 @@
+local config =  import 'config.libsonnet';
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
@@ -85,11 +86,11 @@ dashboard.new(
     x: 0,
     y: 18,
   })
-.addPanel(
+.addPanels([
     //TODO: Merge Event + Recent merges: might be related the protmetheus setting
     (graphPanel.new(
-        'Tide Pool: kubernetes/kubernetes:master',
-        description="Tide stats for the master branch of the kubernetes/kubernetes repo.\nSpecifically, the number of pooled PRs and the daily merge rate.\n(See the more general graphs for details on how these are calculated.)",
+        'Tide Pool: %s/%s:%s' % [pool.org, pool.repo, pool.branch],
+        description="Tide stats for the %s branch of the %s/%s repo.\nSpecifically, the number of pooled PRs and the daily merge rate.\n(See the more general graphs for details on how these are calculated.)" % [pool.branch, pool.org, pool.repo],
         datasource='prometheus',
         legend_values=true,
         legend_current=true,
@@ -99,17 +100,15 @@ dashboard.new(
         nullPointMode='null as zero',
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'avg(pooledprs{org=\"kubernetes\",repo=\"kubernetes\",branch=\"master\"} and ((time() - updatetime) < 240)) or vector(0)',
+        'avg(pooledprs{org="%s",repo="%s",branch="%s"} and ((time() - updatetime) < 240)) or vector(0)' % [pool.org, pool.repo, pool.branch],
         legendFormat='Pool size',
     )).addTarget(prometheus.target(
-        'sum(rate(merges_sum{org=\"kubernetes\",repo=\"kubernetes\",branch=\"master\"}[1d])) * 86400',
+        'sum(rate(merges_sum{org="%s",repo="%s",branch="%s"}[1d])) * 86400' % [pool.org, pool.repo, pool.branch],
         legendFormat='Daily merge rate',
-    )), gridPos={
-    h: 9,
-    w: 24,
-    x: 0,
-    y: 27,
-  })
+    )){gridPos:{h: 9, w: 24, x: 0, y: 27}}
+    
+    for pool in config._config.tideDashboardExplicitPools
+])
 .addPanel(
     (graphPanel.new(
         'Tide Pool Sync Errors',
