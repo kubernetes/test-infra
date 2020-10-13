@@ -426,17 +426,6 @@ presubmits:
         - --test_result_folder
         - upgrade_test
 
-  - name: kubeflow-pipelines-sdk-python35
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    run_if_changed: "sdk/.*"
-    spec:
-      containers:
-      - image: python:3.5
-        command:
-        - ./test/presubmit-tests-sdk.sh
-
   - name: kubeflow-pipelines-sdk-python36
     decorate: true
     labels:
