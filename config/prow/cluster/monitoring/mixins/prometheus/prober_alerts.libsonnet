@@ -17,7 +17,7 @@
               message: 'The blackbox_exporter HTTP probe has detected that the following site has been unhealthy (not 2xx HTTP response) for at least 2 minutes: <%s|%s>.' % [target.url, target.url],
             },
           }
-          for target in $._config.additionalScraping
+          for target in $._config.probeTargets
         ],
       },
     ],

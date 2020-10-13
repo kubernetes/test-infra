@@ -34,6 +34,6 @@ dashboard.new(
         x: 0,
         y: 0,
     }}
-      for resource in config._config.boskosEndpoints
+      for resource in config._config.boskosResourcetypes
   ])
 + dashboardConfig

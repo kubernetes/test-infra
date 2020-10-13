@@ -45,7 +45,7 @@
     ],
 
     // Additional scraping endpoints
-    additionalScraping: [
+    probeTargets: [
     # ATTENTION: Keep this in sync with the list in ../../additional-scrape-configs_secret.yaml
       {url: 'https://prow.k8s.io', labels: {slo: comps.deck}},
       {url: 'https://monitoring.prow.k8s.io', labels: {slo: comps.monitoring}},
@@ -57,7 +57,7 @@
     ],
 
     // Boskos endpoints to be monitored
-    boskosEndpoints: [
+    boskosResourcetypes: [
       {instance: "104.197.27.114:9090", type: "aws-account", friendly: "AWS account"},
       {instance: "104.197.27.114:9090", type: "gce-project", friendly: "GCE project"},
       {instance: "35.225.208.117:9090", type: "gce-project", friendly: "GCE project (k8s-infra)"},
