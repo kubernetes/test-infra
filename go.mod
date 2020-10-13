@@ -91,6 +91,7 @@ require (
 	google.golang.org/genproto v0.0.0-20200709005830-7a2ca40e9dc3 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
+	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	k8s.io/api v0.19.3
 	k8s.io/apimachinery v0.19.3
