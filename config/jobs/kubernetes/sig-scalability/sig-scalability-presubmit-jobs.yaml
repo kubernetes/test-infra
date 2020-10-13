@@ -451,7 +451,8 @@ presubmits:
         - --provider=gce
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-        - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
+        - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -459,7 +460,6 @@ presubmits:
         - --test-cmd-args=--prometheus-scrape-node-exporter
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
