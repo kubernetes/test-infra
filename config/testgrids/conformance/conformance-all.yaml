@@ -256,7 +256,7 @@ dashboards:
   dashboard_tab:
     - name: Periodic s390x conformance test on local cluster
       test_group_name: s390x-conformance
-      description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster"
+      description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster
 
 test_groups:
 # cloud-provider-openstack e2e conformance tests
