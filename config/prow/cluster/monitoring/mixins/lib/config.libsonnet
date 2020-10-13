@@ -15,7 +15,7 @@
       hook: 'hook',
       horologium: 'horologium',
       monitoring: 'monitoring', // Aggregate of prometheus, alertmanager, and grafana.
-      plank: 'plank',
+      plank: 'plank', // Mutually exclusive with prowControllerManager
       prowControllerManager: 'prow-controller-manager',
       sinker: 'sinker',
       tide: 'tide',
@@ -27,7 +27,7 @@
       components: [
         comps.deck,
         comps.hook,
-        comps.plank,
+        comps.prowControllerManager,
         comps.sinker,
         comps.tide,
         comps.monitoring,
