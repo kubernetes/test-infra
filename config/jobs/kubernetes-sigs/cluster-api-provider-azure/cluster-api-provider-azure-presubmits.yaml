@@ -171,45 +171,37 @@ presubmits:
       testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-v1alpha3
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
     decorate: true
     decoration_config:
       timeout: 4h
+    max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: v1.18.6
-      path_alias: k8s.io/kubernetes
+      preset-azure-cred-only: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-1.18
-          command:
-            - "runner.sh"
-            - "./scripts/ci-entrypoint.sh"
-          env:
-            - name: FOCUS
-              value: "\\[Conformance\\]|\\[NodeConformance\\]"
-            - name: SKIP
-              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
-            - name: PARALLEL
-              value: "true"
-            - name: KUBERNETES_VERSION
-              value: "v1.18.6"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-1.18
+        command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "Conformance Tests"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pull-conformance-v1alpha3
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-machine-pool-v1alpha3
     always_run: false
     optional: true
