@@ -63,7 +63,7 @@ def main():
         call(bq_cmd + bq_ext + ' k8s-gubernator:build.day build_day.json.gz schema.json')
 
         call(f'{mj_cmd} {mj_ext} --days 7 | pv | gzip > build_week.json.gz')
-        call(bq_cmd + bq_ext + ' k8s-gubernator:build.week build_week.json.gz schema.json')
+        call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.week build_week.json.gz schema.json')
 
         call(f'{mj_cmd} | pv | gzip > build_all.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
