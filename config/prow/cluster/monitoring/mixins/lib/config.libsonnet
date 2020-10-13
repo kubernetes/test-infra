@@ -38,5 +38,10 @@
     heartbeatJobs: [
       {name: 'ci-test-infra-prow-checkconfig', interval: '9m', alertInterval: '20m'},
     ],
+
+    // Tide pools that are important enough to have their own graphs on the dashboard.
+    tideDashboardExplicitPools: [
+      {org: 'kubernetes', repo: 'kubernetes', branch: 'master'},
+    ],
   },
 }
