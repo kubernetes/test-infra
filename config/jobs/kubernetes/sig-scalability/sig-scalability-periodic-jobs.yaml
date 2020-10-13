@@ -250,7 +250,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=140
+      - --timeout=120
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-500
@@ -279,7 +279,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=80m
+      - --timeout=100m
       - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
@@ -287,10 +287,10 @@ periodics:
       resources:
         requests:
           cpu: 2
-          memory: "16Gi"
+          memory: "8Gi"
         limits:
           cpu: 2
-          memory: "16Gi"
+          memory: "8Gi"
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
