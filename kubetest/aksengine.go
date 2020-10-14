@@ -516,8 +516,11 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 	}}
 
 	if !toBool(v.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity) {
-		v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
-		v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+		// prevent the nil pointer panic
+		v.Properties.ServicePrincipalProfile = &ServicePrincipalProfile{
+			ClientID: c.credentials.ClientID,
+			Secret:   c.credentials.ClientSecret,
+		}
 	} else {
 		c.useManagedIdentity = true
 		if v.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
