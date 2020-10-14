@@ -199,9 +199,9 @@ func maskAuthorizationHeader(key string, value string) string {
 func JiraError(response *jira.Response, err error) error {
 	if err != nil && strings.Contains(err.Error(), "Please analyze the request body for more details.") {
 		if response != nil && response.Response != nil {
-			body, err := ioutil.ReadAll(response.Body)
-			if err != nil {
-				logrus.WithError(err).Warn("Failed to read Jira response body.")
+			body, readError := ioutil.ReadAll(response.Body)
+			if readError != nil && readError.Error() != "http: read on closed response body" {
+				logrus.WithError(readError).Warn("Failed to read Jira response body.")
 			}
 			return fmt.Errorf("%w: %v", err, string(body))
 		}
