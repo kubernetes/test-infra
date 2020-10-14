@@ -211,7 +211,7 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Executes a dry-run, displaying the job YAML without submitting the job to Prow")
+	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
 	fs.StringVar(&o.outputPath, "output-path", "", "File to which output of the triggered job would be printed")
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
