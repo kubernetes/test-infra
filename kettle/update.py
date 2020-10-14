@@ -55,10 +55,7 @@ def main():
         bq_ext = ' --replace'
         mj_ext = ' --reset-emitted'
 
-    if os.getenv('DEPLOYMENT', 'prod') == "staging":
-        call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
-        call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
-    else:
+    if os.getenv('DEPLOYMENT', 'staging') == "prod":
         call(f'{mj_cmd} {mj_ext} --days 1 | pv | gzip > build_day.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.day build_day.json.gz schema.json')
 
@@ -70,6 +67,9 @@ def main():
 
         call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle '
             ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
+    else:
+        call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
+        call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
 
 
 if __name__ == '__main__':
