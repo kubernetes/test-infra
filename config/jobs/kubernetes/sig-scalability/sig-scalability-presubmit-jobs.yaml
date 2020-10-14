@@ -41,14 +41,14 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
-        - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
+        - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=100
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -101,13 +101,13 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
+        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -208,6 +208,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
+        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -215,7 +216,6 @@ presubmits:
         - --test-cmd-args=--nodes=2000
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
