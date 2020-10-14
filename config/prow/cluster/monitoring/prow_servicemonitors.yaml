@@ -170,44 +170,6 @@ spec:
       - default
   selector:
     matchLabels:
-      app: crier
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    app: tide
-  name: tide
-  namespace: prow-monitoring
-spec:
-  endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
-  namespaceSelector:
-    matchNames:
-      - default
-  selector:
-    matchLabels:
-      app: horologium
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    app: tide
-  name: tide
-  namespace: prow-monitoring
-spec:
-  endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
-  namespaceSelector:
-    matchNames:
-      - default
-  selector:
-    matchLabels:
       app: tide
 ---
 apiVersion: monitoring.coreos.com/v1
