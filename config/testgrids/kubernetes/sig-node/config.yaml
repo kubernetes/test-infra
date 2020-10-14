@@ -13,7 +13,7 @@ dashboard_groups:
     - sig-node-arm64
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
-    - sig-node-seccomp-operator
+    - sig-node-security-profiles-operator
 
 dashboards:
 - name: sig-node-containerd-io
@@ -103,25 +103,25 @@ dashboards:
 
 - name: sig-node-node-problem-detector
 
-- name: sig-node-seccomp-operator
+- name: sig-node-security-profiles-operator
   dashboard_tab:
   - name: build
-    test_group_name: pull-seccomp-operator-build
+    test_group_name: pull-security-profiles-operator-build
     base_options: width=10
   - name: build-image
-    test_group_name: pull-seccomp-operator-build-image
+    test_group_name: pull-security-profiles-operator-build-image
     base_options: width=10
   - name: verify
-    test_group_name: pull-seccomp-operator-verify
+    test_group_name: pull-security-profiles-operator-verify
     base_options: width=10
   - name: test-unit
-    test_group_name: pull-seccomp-operator-test-unit
+    test_group_name: pull-security-profiles-operator-test-unit
     base_options: width=10
   - name: test-e2e
-    test_group_name: pull-seccomp-operator-test-e2e
+    test_group_name: pull-security-profiles-operator-test-e2e
     base_options: width=10
   - name: push-image
-    test_group_name: post-seccomp-operator-push-image
+    test_group_name: post-security-profiles-operator-push-image
     base_options: width=10
 
 test_groups:
