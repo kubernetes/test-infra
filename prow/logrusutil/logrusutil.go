@@ -146,7 +146,7 @@ var throttleLock sync.RWMutex // Rare updates and concurrent readers, so reuse t
 func throttleCheck(last *time.Time, period time.Duration) bool {
 	// has it been at least `period` since we won the race?
 	throttleLock.RLock()
-	fresh := time.Now().Sub(*last) <= period
+	fresh := time.Since(*last) <= period
 	throttleLock.RUnlock()
 	if fresh { // event occurred too recently
 		return false

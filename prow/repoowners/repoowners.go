@@ -792,9 +792,7 @@ func (o *RepoOwners) IsNoParentOwners(path string) bool {
 func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) sets.String {
 	d := path
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
-		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
-		d = filepath.Dir(d)
-		d = canonicalize(path)
+		d = canonicalize(d)
 	}
 
 	out := sets.NewString()

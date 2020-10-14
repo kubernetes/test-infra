@@ -116,10 +116,10 @@ func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 		gotEOF = true
 	}
 	reader, err := a.handle.NewRangeReader(a.ctx, off, toRead)
-	defer reader.Close()
 	if err != nil {
 		return 0, fmt.Errorf("error getting artifact reader: %v", err)
 	}
+	defer reader.Close()
 	// We need to keep reading until we fill the buffer or hit EOF.
 	offset := 0
 	for offset < len(p) {
@@ -238,10 +238,10 @@ func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 		offset = size - n
 	}
 	reader, err := a.handle.NewRangeReader(a.ctx, offset, -1)
-	defer reader.Close()
 	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("error getting artifact reader: %v", err)
 	}
+	defer reader.Close()
 	read, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading all from artiact: %v", err)

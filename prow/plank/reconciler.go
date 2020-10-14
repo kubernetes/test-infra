@@ -33,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime"
+	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -806,15 +806,15 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 }
 
 func optAllProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyAll)
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: prowJobIndexKeyAll}
 }
 
 func optPendingProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyPending)
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: prowJobIndexKeyPending}
 }
 
 func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, pendingTriggeredIndexKeyByName(name))
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: pendingTriggeredIndexKeyByName(name)}
 }
 
 func didPodSucceed(p *corev1.Pod) bool {

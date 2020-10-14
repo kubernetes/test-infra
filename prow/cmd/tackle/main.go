@@ -66,11 +66,7 @@ func printArray(collection []string, limit int) bool {
 
 // validateNotEmpty handles validation that a collection is non-empty.
 func validateNotEmpty(collection []string) bool {
-	if len(collection) > 0 {
-		return true
-	}
-
-	return false
+	return len(collection) > 0
 }
 
 // validateContainment handles validation for containment of target in collection.

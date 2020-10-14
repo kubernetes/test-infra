@@ -137,7 +137,7 @@ func retireAction(origContext, newContext, targetURL string) func(statuses []git
 	stateSuccess := "success"
 	var desc string
 	if newContext == "" {
-		desc = fmt.Sprint("Context retired without replacement.")
+		desc = "Context retired without replacement."
 	} else {
 		desc = fmt.Sprintf("Context retired. Status moved to \"%s\".", newContext)
 	}

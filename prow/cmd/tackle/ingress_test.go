@@ -18,6 +18,9 @@ package main
 
 import (
 	"bytes"
+	"testing"
+	"time"
+
 	extensions "k8s.io/api/extensions/v1beta1"
 	networking "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,8 +28,6 @@ import (
 	discoveryFake "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/kubernetes"
 	k8sFake "k8s.io/client-go/kubernetes/fake"
-	"testing"
-	"time"
 )
 
 func createExtensionsIngressList() *extensions.IngressList {
@@ -154,7 +155,7 @@ func TestToNewIngress(t *testing.T) {
 		t.Errorf("Unexpected error marshalling networking ingress: %v", err)
 	}
 
-	if bytes.Compare(oldBytes, newBytes) != 0 {
+	if !bytes.Equal(oldBytes, newBytes) {
 		t.Errorf("Expected marshalling of types should be equal")
 	}
 }

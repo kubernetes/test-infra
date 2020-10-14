@@ -87,7 +87,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfoStrings = append(configInfoStrings, "<li>"+configInfoStickyLgtmTeam(opts.StickyLgtmTeam)+"</li>")
 			isConfigured = true
 		}
-		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
+		configInfoStrings = append(configInfoStrings, "</ul>")
 		if isConfigured {
 			configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 		}

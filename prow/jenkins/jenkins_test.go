@@ -111,7 +111,7 @@ func testWrapper(t *testing.T, jobs []string, builds map[string][]Build, status 
 			t.Errorf("unexpected error while marshaling builds: %v", err)
 			return
 		}
-		fmt.Fprint(w, fmt.Sprintf(`{"builds": %s}`, string(data)))
+		fmt.Fprintf(w, `{"builds": %s}`, string(data))
 	}
 }
 
