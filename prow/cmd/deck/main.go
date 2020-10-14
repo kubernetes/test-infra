@@ -1660,5 +1660,5 @@ func httpStatusForError(e error) int {
 }
 
 func shouldLogHTTPErrors(e error) bool {
-	return httpStatusForError(e) >= http.StatusInternalServerError // 5XX
+	return e != context.Canceled || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }
