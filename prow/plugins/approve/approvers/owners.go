@@ -161,7 +161,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
 		ap.AddApprover(newApprover, "", false)
