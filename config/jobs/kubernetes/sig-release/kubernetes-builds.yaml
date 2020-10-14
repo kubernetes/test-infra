@@ -67,6 +67,44 @@ periodics:
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
 
+- interval: 1h
+  name: ci-kubernetes-build-canary
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20200924-7fcf543
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=240
+      - --scenario=kubernetes_build
+      - --
+      - --allow-dup
+      - --extra-version-markers=k8s-master
+      - --registry=gcr.io/k8s-staging-ci-images
+      - --release=k8s-release-dev
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7300m
+          memory: "34Gi"
+        requests:
+          cpu: 7300m
+          memory: "34Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
+    testgrid-tab-name: build-master-canary
+    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
+
 - interval: 5m
   name: ci-kubernetes-build-fast
   labels:
