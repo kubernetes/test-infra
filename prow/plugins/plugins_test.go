@@ -33,15 +33,6 @@ func TestHasSelfApproval(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "has approval when implicit_self_approve true",
-			cfg:      `{"implicit_self_approve": true}`,
-			expected: true,
-		},
-		{
-			name: "reject approval when implicit_self_approve false",
-			cfg:  `{"implicit_self_approve": false}`,
-		},
-		{
 			name:     "reject approval when require_self_approval set",
 			cfg:      `{"require_self_approval": true}`,
 			expected: false,
@@ -74,15 +65,6 @@ func TestConsiderReviewState(t *testing.T) {
 		{
 			name:     "consider by default",
 			expected: true,
-		},
-		{
-			name:     "consider when draaa = true",
-			cfg:      `{"review_acts_as_approve": true}`,
-			expected: true,
-		},
-		{
-			name: "do not consider when draaa = false",
-			cfg:  `{"review_acts_as_approve": false}`,
 		},
 		{
 			name: "do not consider when irs = true",
