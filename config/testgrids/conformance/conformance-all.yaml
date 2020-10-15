@@ -13,6 +13,7 @@ dashboard_groups:
     - conformance-arm
     - conformance-ppc64le
     - conformance-gardener
+    - conformance-s390x
 
 dashboards:
 - name: conformance-all
@@ -250,6 +251,13 @@ dashboards:
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
 
+# s390x dashboard
+- name: conformance-s390x
+  dashboard_tab:
+    - name: Periodic s390x conformance test on local cluster
+      test_group_name: s390x-conformance
+      description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster
+
 test_groups:
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -340,6 +348,9 @@ test_groups:
 - name: pull-perf-tests-clusterloader2-kubemark
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
   days_of_results: 30
+#IBM s390x test results
+- name: s390x-conformance
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
 
 # google-gce-compute-image-tools
 - name: ci-daisy-e2e
