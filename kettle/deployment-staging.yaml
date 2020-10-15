@@ -19,6 +19,8 @@ spec:
         env:
         - name: BUILD_LIMIT
           value: 1000
+        - name: DEPLOYMENT
+          value: staging
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
