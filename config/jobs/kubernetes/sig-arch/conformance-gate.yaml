@@ -9,33 +9,8 @@ periodics:
     description: 'Uses APISnoop to check that new GA endpoints are conformance tested in latest e2e test run'
   decorate: true
   spec:
-    securityContext:
-      fsGroup: 70
     containers:
     - name: apisnoop-gate
       image: gcr.io/k8s-staging-apisnoop/snoopdb:v20200923-v2020.09.23-1-gb3afc41
-      env:
-      - name: PGDATA
-        value: /var/lib/postgresql/data/pgdata
-# The intent here is to run the container as the postgres, we want to avoid root execution
-      securityContext:
-        readOnlyRootFilesystem: true
-        runAsUser: 70
-        runAsGroup: 70
-        allowPrivilegeEscalation: false
       args:
       - postgres
-      volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: var-lib-postgresql
-          mountPath: /var/lib/postgresql
-        - name: var-run-postgresql
-          mountPath: /var/run/postgresql
-    volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: var-lib-postgresql
-        emptyDir: {}
-      - name: var-run-postgresql
-        emptyDir: {}
