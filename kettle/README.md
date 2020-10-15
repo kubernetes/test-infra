@@ -71,7 +71,7 @@ It might take a couple of hours to be fully functional and start updating BigQue
 
 `Kettle Staging` uses a similar deployment to `Kettle` with the following differences
 - [100G SSD](https://console.cloud.google.com/compute/disksDetail/zones/us-west1-b/disks/kettle-data-staging?folder=&organizationId=&project=k8s-gubernator) vs 1001G in production
-- Limit option for number of builds to pull from each job bucket (Deafult 1000 each). Set via BUILD_LIMIT env in [deployment-staging.yaml](./deployment-staging.yaml).
+- Limit option for number of builds to pull from each job bucket (Default 1000 each). Set via BUILD_LIMIT env in [deployment-staging.yaml](./deployment-staging.yaml).
 - writes to [build.staging](https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only. This differs from production that writes to three tables `build.all`, `build.day`, and `build.week`.
 
 It can be deployed with `make -C kettle deploy-staging`. If already deployed, you may just run `make -C kettle update-staging`.
