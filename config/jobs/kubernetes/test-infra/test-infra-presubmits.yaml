@@ -97,3 +97,17 @@ presubmits:
         - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
+
+  - name: pull-test-infra-verify-golangci-lint
+    decorate: true
+    run_if_changed: '\.go'
+    spec:
+      containers:
+        - image: golangci/golangci-lint:v1.31.0
+          command:
+            - golangci-lint
+          args:
+            - run
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-golangci-lint
