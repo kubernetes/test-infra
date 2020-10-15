@@ -150,9 +150,147 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 		configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 	}
+	str := func(s string) *string { return &s }
+	yes := true
+	no := false
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Bugzilla: plugins.Bugzilla{
+			Default: map[string]plugins.BugzillaBranchOptions{
+				"*": {
+					ValidateByDefault: &yes,
+					IsOpen:            &yes,
+					TargetRelease:     str("release1"),
+					Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+					ValidStates: &[]plugins.BugzillaBugState{
+						{
+							Status: "MODIFIED",
+						},
+						{
+							Status:     "CLOSED",
+							Resolution: "ERRATA",
+						},
+					},
+					DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+					DependentBugStates: &[]plugins.BugzillaBugState{
+						{
+							Status: "MODIFIED",
+						},
+					},
+					DependentBugTargetReleases: &[]string{"release1", "release2"},
+					StatusAfterValidation:      str("VERIFIED"),
+					StateAfterValidation: &plugins.BugzillaBugState{
+						Status: "VERIFIED",
+					},
+					AddExternalLink:  &no,
+					StatusAfterMerge: str("RELEASE_PENDING"),
+					StateAfterMerge: &plugins.BugzillaBugState{
+						Status:     "RELEASE_PENDING",
+						Resolution: "RESOLVED",
+					},
+					StateAfterClose: &plugins.BugzillaBugState{
+						Status:     "RESET",
+						Resolution: "FIXED",
+					},
+					AllowedGroups: []string{"group1", "groups2"},
+				},
+			},
+			Orgs: map[string]plugins.BugzillaOrgOptions{
+				"org": {
+					Default: map[string]plugins.BugzillaBranchOptions{
+						"*": {
+							ExcludeDefaults:   &yes,
+							ValidateByDefault: &yes,
+							IsOpen:            &yes,
+							TargetRelease:     str("release1"),
+							Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+							ValidStates: &[]plugins.BugzillaBugState{
+								{
+									Status: "MODIFIED",
+								},
+								{
+									Status:     "CLOSED",
+									Resolution: "ERRATA",
+								},
+							},
+							DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+							DependentBugStates: &[]plugins.BugzillaBugState{
+								{
+									Status: "MODIFIED",
+								},
+							},
+							DependentBugTargetReleases: &[]string{"release1", "release2"},
+							StatusAfterValidation:      str("VERIFIED"),
+							StateAfterValidation: &plugins.BugzillaBugState{
+								Status: "VERIFIED",
+							},
+							AddExternalLink:  &no,
+							StatusAfterMerge: str("RELEASE_PENDING"),
+							StateAfterMerge: &plugins.BugzillaBugState{
+								Status:     "RELEASE_PENDING",
+								Resolution: "RESOLVED",
+							},
+							StateAfterClose: &plugins.BugzillaBugState{
+								Status:     "RESET",
+								Resolution: "FIXED",
+							},
+							AllowedGroups: []string{"group1", "groups2"},
+						},
+					},
+					Repos: map[string]plugins.BugzillaRepoOptions{
+						"repo": {
+							Branches: map[string]plugins.BugzillaBranchOptions{
+								"branch": {
+									ExcludeDefaults:   &no,
+									ValidateByDefault: &yes,
+									IsOpen:            &yes,
+									TargetRelease:     str("release1"),
+									Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+									ValidStates: &[]plugins.BugzillaBugState{
+										{
+											Status: "MODIFIED",
+										},
+										{
+											Status:     "CLOSED",
+											Resolution: "ERRATA",
+										},
+									},
+									DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+									DependentBugStates: &[]plugins.BugzillaBugState{
+										{
+											Status: "MODIFIED",
+										},
+									},
+									DependentBugTargetReleases: &[]string{"release1", "release2"},
+									StatusAfterValidation:      str("VERIFIED"),
+									StateAfterValidation: &plugins.BugzillaBugState{
+										Status: "VERIFIED",
+									},
+									AddExternalLink:  &no,
+									StatusAfterMerge: str("RELEASE_PENDING"),
+									StateAfterMerge: &plugins.BugzillaBugState{
+										Status:     "RELEASE_PENDING",
+										Resolution: "RESOLVED",
+									},
+									StateAfterClose: &plugins.BugzillaBugState{
+										Status:     "RESET",
+										Resolution: "FIXED",
+									},
+									AllowedGroups: []string{"group1", "groups2"},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/bugzilla refresh",

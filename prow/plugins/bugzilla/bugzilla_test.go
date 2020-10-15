@@ -103,6 +103,8 @@ orgs:
 	if err != nil {
 		t.Fatalf("unexpected error creating help provider: %v", err)
 	}
+	// don't check snippet
+	help.Snippet = ""
 
 	expected := &pluginhelp.PluginHelp{
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
