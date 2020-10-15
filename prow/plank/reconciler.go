@@ -608,21 +608,27 @@ func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 		return "", "", err
 	}
 	pod.Namespace = r.config().PodNamespace
+	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
 		// TODO: Terminal error to prevent requeuing
 		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
-	err = client.Create(r.ctx, pod)
-	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
-	if err != nil {
-		return "", "", err
+
+	// only create the pod when it is really missing
+	if err := client.Get(r.ctx, podName, pod); err != nil {
+		if kerrors.IsNotFound(err) {
+			r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
+			err := client.Create(r.ctx, pod)
+			if err != nil {
+				return "", "", err
+			}
+		}
 	}
 
 	// We must block until we see the pod, otherwise a new reconciliation may be triggered that tries to create
 	// the pod because its not in the cache yet, errors with IsAlreadyExists and sets the prowjob to failed
-	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
 		if err := client.Get(r.ctx, podName, pod); err != nil {
 			if kerrors.IsNotFound(err) {
