@@ -21,11 +21,11 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=CONCURRENT_SERVICE_SYNCS=5
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/latest-fast
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-node-size=g1-small
+      - --gcp-node-size=e2-small
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
