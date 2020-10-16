@@ -275,6 +275,7 @@ periodics:
       - --cluster=e2e-big
       - --extract=ci/latest-1.19
       - --gcp-node-image=gci
+      - --gcp-node-size=e2-medium
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -1153,6 +1154,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
+        - --gcp-node-size=e2-medium
         - --gcp-nodes=100
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b

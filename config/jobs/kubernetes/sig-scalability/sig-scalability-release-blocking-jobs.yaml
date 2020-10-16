@@ -145,9 +145,10 @@ periodics:
       - --cluster=e2e-big
       - --extract=ci/latest-fast
       - --gcp-node-image=gci
+      - --gcp-node-size=e2-medium
       - --gcp-nodes=100
       # TODO(k/k#94098): Remove the line below once we get enough data.
-      - --gcp-master-size=n1-standard-8
+      - --gcp-master-size=e2-standard-8
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
