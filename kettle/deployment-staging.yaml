@@ -16,7 +16,6 @@ spec:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        env:
         - name: BUILD_LIMIT
           value: "1000"
         - name: DEPLOYMENT
