@@ -18,14 +18,14 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
-  - name: test-ibm-ingress-nginx-operator-amd64
+  - name: test-ibm-ingress-nginx-operator
     cluster: default
     always_run: true
     branches:
     - ^master$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
-    rerun_command: /test test-ibm-ingress-nginx-operator-amd64
+    rerun_command: /test test-ibm-ingress-nginx-operator
     spec:
       containers:
       - command:
