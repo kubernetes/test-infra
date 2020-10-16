@@ -1,8 +1,8 @@
 presubmits:
   containerd/containerd:
   - name: pull-containerd-build
-    always_run: false
-    optional: true
+    always_run: true
+    optional: false
     branches:
     - master
     decorate: true
@@ -21,7 +21,7 @@ presubmits:
         - ./test/build.sh
 
   - name: pull-containerd-node-e2e
-    always_run: false
+    always_run: true
     optional: true
     max_concurrency: 8
     decorate: true
