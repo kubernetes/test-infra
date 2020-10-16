@@ -10,6 +10,7 @@
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/k8s-container-image-promoter, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsk8s-container-image-promoter-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/kind, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskind-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/service-apis, only for issues](#labels-that-apply-to-kubernetes-sigsservice-apis-only-for-issues)
@@ -197,6 +198,12 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="kind/proposal" href="#kind/proposal">`kind/proposal`</a> | Issues or PRs related to proposals.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/k8s-container-image-promoter, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 
 ## Labels that apply to kubernetes-sigs/kind, for both issues and PRs
 
