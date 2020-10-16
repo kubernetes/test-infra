@@ -76,6 +76,14 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	}
 	// Only the 'Description' and 'Config' fields are necessary because this plugin does not react
 	// to any commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		RequireSIG: plugins.RequireSIG{
+			GroupListURL: "https://github.com/kubernetes/community/blob/master/sig-list.md",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: fmt.Sprintf(
 				`When a new issue is opened the require-sig plugin adds the %q label and leaves a comment requesting that a SIG (Special Interest Group) label be added to the issue. SIG labels are labels that have one of the following prefixes: %q.
@@ -87,6 +95,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 			Config: map[string]string{
 				"": fmt.Sprintf("The comment the plugin creates includes this link to a list of the existing groups: %s", url),
 			},
+			Snippet: yamlSnippet,
 		},
 		nil
 }

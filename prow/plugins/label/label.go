@@ -64,7 +64,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for label plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",

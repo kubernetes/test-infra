@@ -91,10 +91,37 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		}
 		configString[orgRepoName] = repoDescr
 	}
-
+	id := 123
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		ProjectManager: plugins.ProjectManager{
+			OrgRepos: map[string]plugins.ManagedOrgRepo{
+				"org/repo": {
+					Projects: map[string]plugins.ManagedProject{
+						"project": {
+							Columns: []plugins.ManagedColumn{
+								{
+									ID:    &id,
+									Name:  "To do",
+									State: "open",
+									Labels: []string{
+										"area/conformance",
+									},
+									Org: "org",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The project-manager plugin automatically adds Pull Requests to specified GitHub Project Columns, if the label on the PR matches with configured project and the column.",
 		Config:      configString,
+		Snippet:     yamlSnippet,
 	}
 	return pluginHelp, nil
 }

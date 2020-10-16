@@ -125,7 +125,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for approve plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
