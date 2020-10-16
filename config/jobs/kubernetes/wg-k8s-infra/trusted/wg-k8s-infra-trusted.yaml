@@ -22,6 +22,43 @@ periodics:
       args:
       - -c
       - "cd groups && make run -- --confirm"
+- name: ci-org-peribolos-canary
+  interval: 24h
+  annotations:
+    testgrid-dashboards: sig-contribex-org
+    testgrid-tab-name: ci-peribolos-canary
+    # testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '1'
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: master
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel:0.29.1
+      env:
+      - name: USE_BAZEL_VERSION
+        value: real  # Ignore .bazelversion
+      command:
+      - bazel
+      args:
+      - run
+      - //admin:update
+      - --
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
+      - --github-token-path=/etc/github-token/oauth
+      - --tokens=1200
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
 
 postsubmits:
   kubernetes/k8s.io:
