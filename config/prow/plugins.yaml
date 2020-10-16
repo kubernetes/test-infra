@@ -34,10 +34,6 @@ owners:
   - kubernetes-sigs/contributor-playground
   - helm/charts
 
-# TODO(fejta): delete these in before April
-use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019: true
-use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019: true
-
 approve:
 - repos:
   - kubernetes/cloud-provider-aws
