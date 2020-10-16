@@ -10,6 +10,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: ssd
   gcePersistentDisk:
     pdName: kettle-data-staging
     fsType: ext4
