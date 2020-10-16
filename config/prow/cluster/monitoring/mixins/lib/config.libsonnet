@@ -36,7 +36,7 @@
 
     // Heartbeat jobs
     heartbeatJobs: [
-      {name: 'ci-test-infra-prow-checkconfig', interval: '9m', alertInterval: '20m'},
+      {name: 'ci-test-infra-prow-checkconfig', interval: '5m', alertInterval: '20m'},
     ],
 
     // Tide pools that are important enough to have their own graphs on the dashboard.
