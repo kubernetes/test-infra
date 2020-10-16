@@ -1128,10 +1128,10 @@ periodics:
     testgrid-num-failures-to-alert: '1'
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
-# Alerts expect it to run every 9 mins and will fire after 20 mins without a successful run.
+# Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
 # Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
 - name: ci-test-infra-prow-checkconfig
-  interval: 9m
+  interval: 5m
   cluster: test-infra-trusted
   decorate: true
   extra_refs:
