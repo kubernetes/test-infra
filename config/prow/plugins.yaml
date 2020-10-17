@@ -249,16 +249,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.16:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
         release-1.17:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
