@@ -29,6 +29,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/labels:go_default_library",
+        "//prow/pkg/layeredsets:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/approve/approvers:go_default_library",
         "//prow/repoowners:go_default_library",

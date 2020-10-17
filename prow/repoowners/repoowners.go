@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 
 	prowConf "k8s.io/test-infra/prow/config"
 )
@@ -216,9 +217,9 @@ type RepoOwner interface {
 	FindLabelsForFile(path string) sets.String
 	IsNoParentOwners(path string) bool
 	LeafApprovers(path string) sets.String
-	Approvers(path string) sets.String
+	Approvers(path string) layeredsets.String
 	LeafReviewers(path string) sets.String
-	Reviewers(path string) sets.String
+	Reviewers(path string) layeredsets.String
 	RequiredReviewers(path string) sets.String
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
@@ -776,7 +777,7 @@ func (o *RepoOwners) FindReviewersOwnersForFile(path string) string {
 // FindLabelsForFile returns a set of labels which should be applied to PRs
 // modifying files under the given path.
 func (o *RepoOwners) FindLabelsForFile(path string) sets.String {
-	return o.entriesForFile(path, o.labels, false)
+	return o.entriesForFile(path, o.labels, false).Set()
 }
 
 // IsNoParentOwners checks if an OWNERS file path refers to an OWNERS file with NoParentOwners enabled.
@@ -789,13 +790,14 @@ func (o *RepoOwners) IsNoParentOwners(path string) bool {
 // and not directory as the final directory will be discounted if enableMDYAML is true
 // leafOnly indicates whether only the OWNERS deepest in the tree (closest to the file)
 // should be returned or if all OWNERS in filepath should be returned
-func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) sets.String {
+func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) layeredsets.String {
 	d := path
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		d = canonicalize(d)
 	}
 
-	out := sets.NewString()
+	out := layeredsets.NewString()
+	var layerID int
 	for {
 		relative, err := filepath.Rel(d, path)
 		if err != nil {
@@ -804,7 +806,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 		}
 		for re, s := range people[d] {
 			if re == nil || re.MatchString(relative) {
-				out.Insert(s.List()...)
+				out.Insert(layerID, s.List()...)
 			}
 		}
 		if leafOnly && out.Len() > 0 {
@@ -818,6 +820,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 		}
 		d = filepath.Dir(d)
 		d = canonicalize(d)
+		layerID++
 	}
 	return out
 }
@@ -826,14 +829,14 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafApprovers(path string) sets.String {
-	return o.entriesForFile(path, o.approvers, true)
+	return o.entriesForFile(path, o.approvers, true).Set()
 }
 
 // Approvers returns ALL of the users who are approvers for the
 // requested file (including approvers in parent dirs' OWNERS).
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
-func (o *RepoOwners) Approvers(path string) sets.String {
+func (o *RepoOwners) Approvers(path string) layeredsets.String {
 	return o.entriesForFile(path, o.approvers, false)
 }
 
@@ -841,14 +844,14 @@ func (o *RepoOwners) Approvers(path string) sets.String {
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafReviewers(path string) sets.String {
-	return o.entriesForFile(path, o.reviewers, true)
+	return o.entriesForFile(path, o.reviewers, true).Set()
 }
 
 // Reviewers returns ALL of the users who are reviewers for the
 // requested file (including reviewers in parent dirs' OWNERS).
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
-func (o *RepoOwners) Reviewers(path string) sets.String {
+func (o *RepoOwners) Reviewers(path string) layeredsets.String {
 	return o.entriesForFile(path, o.reviewers, false)
 }
 
@@ -857,9 +860,9 @@ func (o *RepoOwners) Reviewers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
-	return o.entriesForFile(path, o.requiredReviewers, false)
+	return o.entriesForFile(path, o.requiredReviewers, false).Set()
 }
 
 func (o *RepoOwners) TopLevelApprovers() sets.String {
-	return o.entriesForFile(".", o.approvers, false)
+	return o.entriesForFile(".", o.approvers, true).Set()
 }
