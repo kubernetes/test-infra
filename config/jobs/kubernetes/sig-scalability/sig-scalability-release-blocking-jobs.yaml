@@ -76,6 +76,7 @@ periodics:
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest-fast
+      - --gcp-node-size=e2-medium
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
