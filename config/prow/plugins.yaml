@@ -81,6 +81,7 @@ approve:
   - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/cluster-api-provider-vsphere
   require_self_approval: true
+  ignore_review_state: true
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
