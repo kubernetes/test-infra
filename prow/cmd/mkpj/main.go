@@ -212,7 +212,6 @@ func gatherOptions() options {
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
-	fs.StringVar(&o.outputPath, "output-path", "", "File to which output of the triggered job would be printed")
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
@@ -274,7 +273,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, fileSystem, false, o.outputPath); err != nil {
+	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
