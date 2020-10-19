@@ -11,7 +11,7 @@ spec:
         name: prometheus
       spec:
         accessModes:
-          - "ReadWriteOnce"
+        - "ReadWriteOnce"
         storageClassName: "standard"
         resources:
           requests:
@@ -20,9 +20,9 @@ spec:
   serviceAccountName: prometheus-prow
   alerting:
     alertmanagers:
-      - namespace: prow-monitoring
-        name: alertmanager
-        port: http
+    - namespace: prow-monitoring
+      name: alertmanager
+      port: http
   enableAdminAPI: false
   ruleSelector:
     matchLabels:
@@ -30,8 +30,8 @@ spec:
       prometheus: prow
   serviceMonitorSelector:
     matchExpressions:
-      - key: app
-        operator: Exists
+    - key: app
+      operator: Exists
   version: v2.7.1
   baseImage: docker.io/prom/prometheus
   externalLabels: {}

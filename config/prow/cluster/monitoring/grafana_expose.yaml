@@ -35,13 +35,13 @@ metadata:
   namespace: prow-monitoring
 spec:
   tls:
-    - secretName: grafana-tls
-      hosts:
-        - monitoring.prow.k8s.io
+  - secretName: grafana-tls
+    hosts:
+    - monitoring.prow.k8s.io
   rules:
-    - host: monitoring.prow.k8s.io
-      http:
-        paths:
-          - backend:
-              serviceName: grafana
-              servicePort: 80
+  - host: monitoring.prow.k8s.io
+    http:
+      paths:
+      - backend:
+          serviceName: grafana
+          servicePort: 80
