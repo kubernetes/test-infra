@@ -313,6 +313,12 @@ slack:
     - wg-k8s-infra
     exempt_users:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/kops
+    channels:
+    - kops-dev
+    exempt_users:
+    - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
