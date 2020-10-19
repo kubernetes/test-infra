@@ -37,10 +37,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
           requests:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
   - name: pull-kubernetes-e2e-containerd-gce
     always_run: false
     optional: true
