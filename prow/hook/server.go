@@ -234,7 +234,6 @@ func (s *Server) dispatch(endpoint string, payload []byte, h http.Header) error 
 // receiving the shutdown signal.
 func (s *Server) GracefulShutdown() {
 	s.wg.Wait() // Handle remaining requests
-	return
 }
 
 func (s *Server) do(req *http.Request) (*http.Response, error) {

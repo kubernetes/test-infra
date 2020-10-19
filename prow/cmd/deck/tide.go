@@ -183,13 +183,10 @@ func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[s
 	filtered := make(map[string][]history.Record, len(hist))
 	for pool, records := range hist {
 		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos())
-		var ignored []string
 		if needsHide && ta.showHidden {
 			filtered[pool] = records
 		} else if needsHide == ta.hiddenOnly {
 			filtered[pool] = records
-		} else {
-			ignored = append(ignored, pool)
 		}
 	}
 	return filtered
@@ -211,13 +208,10 @@ func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.Ti
 				break
 			}
 		}
-		var ignored []string
 		if includesHidden && ta.showHidden {
 			filtered = append(filtered, qc)
 		} else if includesHidden == ta.hiddenOnly {
 			filtered = append(filtered, qc)
-		} else {
-			ignored = append(ignored, qc.Query())
 		}
 	}
 	return filtered

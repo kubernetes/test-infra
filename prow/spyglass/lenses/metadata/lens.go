@@ -136,7 +136,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 
 	if !metadataViewData.StartTime.IsZero() {
 		if metadataViewData.FinishedTime.IsZero() {
-			metadataViewData.Elapsed = time.Now().Sub(metadataViewData.StartTime)
+			metadataViewData.Elapsed = time.Since(metadataViewData.StartTime)
 		} else {
 			metadataViewData.Elapsed =
 				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
@@ -210,13 +210,13 @@ func hintFromPodInfo(buf []byte) string {
 			}
 		}
 		if failedMount {
-			return fmt.Sprintf("The job could not started because one or more of the volumes could not be mounted.")
+			return "The job could not started because one or more of the volumes could not be mounted."
 		}
 	}
 	// Check if we cannot be scheduled
 	// This is unlikely - we only outright fail if a pod is actually scheduled to a node that can't support it.
 	if report.Pod.Status.Phase == v1.PodFailed && report.Pod.Status.Reason == "MatchNodeSelector" {
-		return fmt.Sprintf("The job could not start because it was scheduled to a node that does not satisfy its NodeSelector")
+		return "The job could not start because it was scheduled to a node that does not satisfy its NodeSelector"
 	}
 	// Usually we would fail to schedule it at all, so it will be pending forever.
 	if report.Pod.Status.Phase == v1.PodPending {

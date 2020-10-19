@@ -18,7 +18,6 @@ package flagutil
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -54,12 +53,13 @@ func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
 }
 
-// Validate validates GitHub options.
-func (o *GitHubOptions) Validate(dryRun bool) error {
+// Validate validates GitHub options. Note that validate updates the GitHubOptions
+// to add default valiues for TokenPath and graphqlEndpoint.
+func (o *GitHubOptions) Validate(bool) error {
 	endpoints := o.endpoint.Strings()
-	for _, uri := range endpoints {
+	for i, uri := range endpoints {
 		if uri == "" {
-			uri = github.DefaultAPIEndpoint
+			endpoints[i] = github.DefaultAPIEndpoint
 		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
@@ -69,9 +69,6 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		// TODO(fejta): just return error after May 2020
 		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
 		o.TokenPath = DefaultGitHubTokenPath
-		if o.TokenPath == "" {
-			return errors.New("missing required flag: --github-token-path")
-		}
 	}
 
 	if o.TokenPath != "" && len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint && !o.AllowDirectAccess {

@@ -289,7 +289,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
 	passingUpToDatePJs := &prowapi.ProwJobList{}
-	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
+	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingFields{indexNamePassingJobs: indexKey}); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
 		log.WithError(err).Error("Failed to list ProwJobs.")
 		return github.StatusSuccess, statusInPool, nil

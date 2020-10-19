@@ -1240,7 +1240,7 @@ func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *pro
 	pjs := &prowapi.ProwJobList{}
 	if err := c.prowJobClient.List(c.ctx,
 		pjs,
-		ctrlruntimeclient.MatchingField(nonFailedBatchByNameBaseAndPullsIndexName, nonFailedBatchByNameBaseAndPullsIndexKey(jobName, refs)),
+		ctrlruntimeclient.MatchingFields{nonFailedBatchByNameBaseAndPullsIndexName: nonFailedBatchByNameBaseAndPullsIndexKey(jobName, refs)},
 		ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace),
 	); err != nil {
 		c.logger.WithError(err).Error("Failed to list non-failed batches")
@@ -1613,7 +1613,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 		err := c.prowJobClient.List(
 			c.ctx,
 			pjs,
-			ctrlruntimeclient.MatchingField(cacheIndexName, cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)),
+			ctrlruntimeclient.MatchingFields{cacheIndexName: cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)},
 			ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace))
 		if err != nil {
 			return nil, fmt.Errorf("failed to list jobs for subpool %s: %v", subpoolkey, err)

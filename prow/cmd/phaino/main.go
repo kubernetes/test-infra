@@ -182,7 +182,7 @@ func processJobs(ctx context.Context, opt options, pjs <-chan prowapi.ProwJob, e
 			start := time.Now()
 			log := logrus.WithField("job", jobName(pj))
 			err := convertJob(ctx, log, pj, opt.priv, opt.printCmd, opt.timeout, opt.grace)
-			log = log.WithField("duration", time.Now().Sub(start))
+			log = log.WithField("duration", time.Since(start))
 			if err != nil {
 				log.WithError(err).Error("FAIL")
 				if !opt.keepGoing {

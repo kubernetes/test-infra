@@ -33,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime"
+	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -264,7 +264,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			r.log.WithFields(pjutil.ProwJobFields(pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
 			pj.Status.BuildID = id
@@ -479,7 +479,7 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
 	}
@@ -806,15 +806,15 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 }
 
 func optAllProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyAll)
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: prowJobIndexKeyAll}
 }
 
 func optPendingProwJobs() ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, prowJobIndexKeyPending)
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: prowJobIndexKeyPending}
 }
 
 func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
-	return ctrlruntimeclient.MatchingField(prowJobIndexName, pendingTriggeredIndexKeyByName(name))
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: pendingTriggeredIndexKeyByName(name)}
 }
 
 func didPodSucceed(p *corev1.Pod) bool {

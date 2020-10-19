@@ -346,7 +346,6 @@ func newSSHKeypair(bits int) (private, public []byte, err error) {
 }
 
 func (a *aksDeployer) dockerLogin() error {
-	cmd := &exec.Cmd{}
 	username := ""
 	pwd := ""
 	server := ""
@@ -368,7 +367,7 @@ func (a *aksDeployer) dockerLogin() error {
 		pwd = a.azureCreds.ClientSecret
 		server = imageRegistry
 	}
-	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed Docker login with output %s\n error: %v", out, err)
 	}

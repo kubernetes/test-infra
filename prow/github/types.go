@@ -745,7 +745,7 @@ func (i Issue) IsPullRequest() bool {
 // HasLabel checks if an issue has a given label.
 func (i Issue) HasLabel(labelToFind string) bool {
 	for _, label := range i.Labels {
-		if strings.ToLower(label.Name) == strings.ToLower(labelToFind) {
+		if strings.EqualFold(label.Name, labelToFind) {
 			return true
 		}
 	}

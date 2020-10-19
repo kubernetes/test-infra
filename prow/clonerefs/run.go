@@ -227,7 +227,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 
 	ssh, err := exec.LookPath("ssh")
 	cmd = clone.Command{
-		Command: fmt.Sprintf("golang: lookup ssh path"),
+		Command: "golang: lookup ssh path",
 	}
 
 	if err != nil {

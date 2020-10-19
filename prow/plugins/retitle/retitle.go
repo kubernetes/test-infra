@@ -51,12 +51,20 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	} else {
 		configMsg = "The retitle plugin does not allow retitling closed/merged issues and PRs."
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Retitle: plugins.Retitle{
+			AllowClosedIssues: true,
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The retitle plugin allows users to re-title pull requests and issues where GitHub permissions don't allow them to.",
 		Config: map[string]string{
 			"": configMsg,
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/retitle <title>",

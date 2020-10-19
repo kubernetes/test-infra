@@ -588,7 +588,7 @@ func TestTide(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Marshaling: %v", err)
 		}
-		fmt.Fprintf(w, string(b))
+		fmt.Fprint(w, string(b))
 	}))
 	ca := &config.Agent{}
 	ca.Set(&config.Config{
@@ -661,7 +661,7 @@ func TestTideHistory(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Marshaling: %v", err)
 		}
-		fmt.Fprintf(w, string(b))
+		fmt.Fprint(w, string(b))
 	}))
 
 	ta := tideAgent{
@@ -718,7 +718,7 @@ func TestHelp(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Marshaling: %v", err)
 		}
-		fmt.Fprintf(w, string(b))
+		fmt.Fprint(w, string(b))
 	}))
 	ha := &helpAgent{
 		path: s.URL,

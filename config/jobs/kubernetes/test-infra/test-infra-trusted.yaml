@@ -118,7 +118,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20201012-f0efae8e46
+      - image: gcr.io/k8s-prow/hmac:v20201015-deb1bd1036
         command:
         - /hmac
         args:
@@ -622,7 +622,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
         command:
         - make
         args:
@@ -885,7 +885,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
       command:
       - runner.sh
       args:
@@ -970,7 +970,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20201012-f0efae8e46
+      image: gcr.io/k8s-prow/branchprotector:v20201015-deb1bd1036
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1004,7 +1004,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20201012-f0efae8e46
+      image: gcr.io/k8s-prow/label_sync:v20201015-deb1bd1036
       command:
       - /app/label_sync/app.binary
       args:
@@ -1090,7 +1090,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
@@ -1126,3 +1126,35 @@ periodics:
     testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
     testgrid-num-failures-to-alert: '1'
+
+# This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
+# Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
+# Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
+- name: ci-test-infra-prow-checkconfig
+  interval: 5m
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/checkconfig:v20201015-deb1bd1036
+      command:
+      - /checkconfig
+      args:
+      - --config-path=config/prow/config.yaml
+      - --job-config-path=config/jobs
+      - --plugin-config=config/prow/plugins.yaml
+      - --strict
+      - --warnings=mismatched-tide-lenient
+      - --warnings=tide-strict-branch
+      - --warnings=needs-ok-to-test
+      - --warnings=validate-owners
+      - --warnings=missing-trigger
+      - --warnings=validate-urls
+      - --warnings=unknown-fields
+      - --warnings=duplicate-job-refs
+  annotations:
+    testgrid-dashboards: sig-testing-misc

@@ -162,7 +162,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 	}
 
 	oldSleep := sleep
-	sleep = func(time.Duration) { return }
+	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {
@@ -236,7 +236,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 
 func TestHandlePullRequestEvent(t *testing.T) {
 	oldSleep := sleep
-	sleep = func(time.Duration) { return }
+	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {

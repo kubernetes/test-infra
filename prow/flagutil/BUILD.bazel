@@ -55,7 +55,13 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["kubernetes_cluster_clients_test.go"],
+    srcs = [
+        "github_test.go",
+        "kubernetes_cluster_clients_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["//pkg/flagutil:go_default_library"],
+    deps = [
+        "//pkg/flagutil:go_default_library",
+        "//prow/github:go_default_library",
+    ],
 )

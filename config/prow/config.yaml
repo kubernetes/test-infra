@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201012-f0efae8e46"
-        initupload: "gcr.io/k8s-prow/initupload:v20201012-f0efae8e46"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201012-f0efae8e46"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20201012-f0efae8e46"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201015-deb1bd1036"
+        initupload: "gcr.io/k8s-prow/initupload:v20201015-deb1bd1036"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201015-deb1bd1036"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20201015-deb1bd1036"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -536,7 +536,7 @@ tide:
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
-    kubernetes-sigs/seccomp-operator: rebase
+    kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/go-open-service-broker-client: squash
     kubernetes-sigs/minibroker: squash

@@ -1,6 +1,6 @@
 postsubmits:
-  kubernetes-sigs/seccomp-operator:
-    - name: post-seccomp-operator-push-image
+  kubernetes-sigs/security-profiles-operator:
+    - name: post-security-profiles-operator-push-image
       cluster: k8s-infra-prow-build-trusted
       decorate: true
       always_run: true
@@ -13,8 +13,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-seccomp-operator
-              - --scratch-bucket=gs://k8s-staging-seccomp-operator-gcb
+              - --project=k8s-staging-security-profiles-operator
+              - --scratch-bucket=gs://k8s-staging-security-profiles-operator-gcb
               - .
             env:
               - name: LOG_TO_STDOUT

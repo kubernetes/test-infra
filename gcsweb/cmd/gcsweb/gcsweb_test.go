@@ -100,7 +100,7 @@ func (s *gcsMockServer) getObjectRaw(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Length", strconv.Itoa(len(obj.Content)))
 			w.Header().Set("Last-Modified", obj.Updated.Format(http.TimeFormat))
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, string(obj.Content))
+			fmt.Fprint(w, string(obj.Content))
 			return
 		}
 	}
@@ -264,7 +264,7 @@ func TestHandleObject(t *testing.T) {
 			if err == nil && tc.errorExpected {
 				t.Fatalf("Error was expected")
 			}
-			actualHeaders := w.HeaderMap
+			actualHeaders := w.Result().Header
 			actualBody := w.Body.String()
 
 			if !reflect.DeepEqual(actualHeaders, tc.expectedHeaders) {
@@ -426,7 +426,7 @@ func TestHandleDirectory(t *testing.T) {
 				t.Fatalf("error not expected: %v", err)
 			}
 
-			actualBody := fmt.Sprintf("%s", w.Body.String())
+			actualBody := w.Body.String()
 			if !reflect.DeepEqual(actualBody, tc.expected) {
 				t.Fatal(cmp.Diff(actualBody, tc.expected))
 			}

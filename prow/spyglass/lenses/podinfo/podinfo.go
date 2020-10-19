@@ -174,7 +174,7 @@ func loadTemplate(path string) (*template.Template, error) {
 			return string(result), nil
 		},
 		"toAge": func(t time.Time) string {
-			d := time.Now().Sub(t)
+			d := time.Since(t)
 			if d < time.Minute {
 				return d.Truncate(time.Second).String()
 			}

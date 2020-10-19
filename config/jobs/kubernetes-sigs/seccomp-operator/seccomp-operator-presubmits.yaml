@@ -1,6 +1,6 @@
 presubmits:
-  kubernetes-sigs/seccomp-operator:
-  - name: pull-seccomp-operator-build
+  kubernetes-sigs/security-profiles-operator:
+  - name: pull-security-profiles-operator-build
     always_run: true
     decorate: true
     annotations:
@@ -10,9 +10,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - hack/pull-seccomp-operator-build
+        - hack/pull-security-profiles-operator-build
 
-  - name: pull-seccomp-operator-verify
+  - name: pull-security-profiles-operator-verify
     always_run: true
     decorate: true
     annotations:
@@ -22,9 +22,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - hack/pull-seccomp-operator-verify
+        - hack/pull-security-profiles-operator-verify
 
-  - name: pull-seccomp-operator-test-unit
+  - name: pull-security-profiles-operator-test-unit
     always_run: true
     decorate: true
     annotations:
@@ -34,9 +34,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - hack/pull-seccomp-operator-test-unit
+        - hack/pull-security-profiles-operator-test-unit
 
-  - name: pull-seccomp-operator-build-image
+  - name: pull-security-profiles-operator-build-image
     always_run: true
     decorate: true
     annotations:
@@ -48,7 +48,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -58,9 +58,9 @@ presubmits:
         command:
         - runner.sh
         args:
-        - hack/pull-seccomp-operator-build-image
+        - hack/pull-security-profiles-operator-build-image
 
-  - name: pull-seccomp-operator-test-e2e
+  - name: pull-security-profiles-operator-test-e2e
     always_run: true
     decorate: true
     annotations:
@@ -73,7 +73,7 @@ presubmits:
     spec:
       hostNetwork: true
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -83,4 +83,4 @@ presubmits:
         command:
         - runner.sh
         args:
-        - hack/pull-seccomp-operator-test-e2e
+        - hack/pull-security-profiles-operator-test-e2e

@@ -168,7 +168,7 @@ func TestRetryBase(t *testing.T) {
 	}
 	// One bad endpoint:
 	c.bases = []string{"not-a-valid-base"}
-	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	_, err = c.requestRetry(http.MethodGet, "/", "", nil)
 	if err == nil {
 		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
 	}

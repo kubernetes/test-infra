@@ -331,7 +331,7 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		}
 	}
 
-	elapsed := time.Now().Sub(start)
+	elapsed := time.Since(start)
 	logrus.WithField("duration", elapsed.String()).Infof("loaded %s", prHistoryURL.Path)
 
 	return template, nil

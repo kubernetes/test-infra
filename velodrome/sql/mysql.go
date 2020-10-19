@@ -57,6 +57,9 @@ func (config *MySQLConfig) CreateDatabase() (*gorm.DB, error) {
 	db.Close()
 
 	db, err = gorm.Open("mysql", config.getDSN(config.Db))
+	if err != nil {
+		return nil, err
+	}
 	err = db.AutoMigrate(&Assignee{}, &Issue{}, &IssueEvent{}, &Label{}, &Comment{}).Error
 	if err != nil {
 		return nil, err

@@ -727,7 +727,7 @@ func TestHandlePR(t *testing.T) {
 }
 
 func checkCards(expectedColumnCards, projectColumnCards map[int][]github.ProjectCard, isPR bool) error {
-	if expectedColumnCards == nil || len(expectedColumnCards) == 0 {
+	if len(expectedColumnCards) == 0 {
 		return nil
 	}
 

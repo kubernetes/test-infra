@@ -35,7 +35,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
       resources:
         requests:
           cpu: 6
@@ -76,6 +76,7 @@ periodics:
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest-fast
+      - --gcp-node-size=e2-medium
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
@@ -90,7 +91,6 @@ periodics:
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -100,7 +100,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
       resources:
         requests:
           cpu: 6
@@ -132,7 +132,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201005-0b243c0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -154,8 +154,8 @@ periodics:
       - --provider=gce
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --env=CL2_ENABLE_DENSITY_TEST=true
-      - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -165,7 +165,6 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051

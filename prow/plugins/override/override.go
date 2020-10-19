@@ -146,7 +146,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for override plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The override plugin allows repo admins to force a github status context to pass",
@@ -364,7 +364,7 @@ Only the following contexts were expected:
 	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
 	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
 	if err != nil {
-		msg := fmt.Sprintf("Failed to get presubmits")
+		msg := "Failed to get presubmits"
 		log.WithError(err).Error(msg)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}
@@ -377,7 +377,7 @@ Only the following contexts were expected:
 		if pre != nil {
 			baseSHA, err := baseSHAGetter()
 			if err != nil {
-				resp := fmt.Sprintf("Cannot get base ref of PR")
+				resp := "Cannot get base ref of PR"
 				log.WithError(err).Warn(resp)
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}

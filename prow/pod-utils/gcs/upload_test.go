@@ -110,7 +110,7 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 
 	fakeBucket := "test-bucket"
 	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{})
-	fakeGCSServer.CreateBucket(fakeBucket)
+	fakeGCSServer.CreateBucketWithOpts(fakestorage.CreateBucketOpts{Name: fakeBucket})
 	defer fakeGCSServer.Stop()
 	fakeGCSClient := fakeGCSServer.Client()
 
@@ -169,7 +169,7 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}
 
-			if bytes.Compare(tt.ObjectContent, gotObjectContent) != 0 {
+			if !bytes.Equal(tt.ObjectContent, gotObjectContent) {
 				t.Errorf("Write() gotObjectContent = %v, want %v", gotObjectContent, tt.ObjectContent)
 			}
 		})

@@ -60,6 +60,7 @@ func getJSON(url string, v interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch %q: %v", url, err)
 	}
+	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(v)
 	if err != nil {

@@ -92,7 +92,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for blockade plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	return &pluginhelp.PluginHelp{
 			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",

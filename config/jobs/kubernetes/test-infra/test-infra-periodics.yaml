@@ -24,37 +24,6 @@ periodics:
     testgrid-tab-name: ci-bazel
     description: Runs bazel test //... on the test-infra repo every hour
 
-# This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
-# Alerts expect it to run every 9 mins and will fire after 20 mins without a successful run.
-# Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
-- name: ci-test-infra-prow-checkconfig
-  interval: 9m
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20201012-f0efae8e46
-      command:
-      - /checkconfig
-      args:
-      - --config-path=config/prow/config.yaml
-      - --job-config-path=config/jobs
-      - --plugin-config=config/prow/plugins.yaml
-      - --strict
-      - --warnings=mismatched-tide-lenient
-      - --warnings=tide-strict-branch
-      - --warnings=needs-ok-to-test
-      - --warnings=validate-owners
-      - --warnings=missing-trigger
-      - --warnings=validate-urls
-      - --warnings=unknown-fields
-      - --warnings=duplicate-job-refs
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-
 - name: ci-test-infra-triage
   decorate: true
   decoration_config:

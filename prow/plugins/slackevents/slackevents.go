@@ -21,6 +21,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -70,11 +72,45 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = "There are no manual merge warnings configured for this repo."
 		}
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Slack: plugins.Slack{
+			MentionChannels: []string{
+				"channel1",
+				"channel2",
+			},
+			MergeWarnings: []plugins.MergeWarning{
+				{
+					Repos: []string{
+						"org/repo1",
+						"org/repo2",
+					},
+					Channels: []string{
+						"channel3",
+						"channel4",
+					},
+					ExemptUsers: []string{
+						"alice",
+						"bob",
+					},
+					ExemptBranches: map[string][]string{
+						"dev": {
+							"james",
+							"joe",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: `The slackevents plugin reacts to various GitHub events by commenting in Slack channels.
 <ol><li>The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.</li>
 <li>The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from GitHub.</li></ol>`,
-			Config: configInfo,
+			Config:  configInfo,
+			Snippet: yamlSnippet,
 		},
 		nil
 }

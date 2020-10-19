@@ -48,7 +48,7 @@ To see common Prow usage and interactions flow, see the pull request interaction
 
 ## Useful Talks
 
-### Kuecon 2020 EU virtual
+### KubeCon 2020 EU virtual
 
  - [Going Beyond CI/CD with Prow](https://youtu.be/qQvoImxHydk)
 

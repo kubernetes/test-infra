@@ -317,7 +317,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Request error starting pod.")
 		} else {
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
@@ -539,7 +539,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Request error starting pod.")
 		}
 	} else {

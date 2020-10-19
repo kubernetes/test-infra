@@ -1,3 +1,5 @@
+# PROW_INSTANCE_SPECIFIC
+# Contains prow dashboards list, will be different among prow instances
 apiVersion: apps/v1
 kind: Deployment
 metadata:

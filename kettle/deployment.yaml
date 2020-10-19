@@ -16,6 +16,8 @@ spec:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        - name: DEPLOYMENT
+          value: prod
         volumeMounts:
         - name: service
           mountPath: /etc/service-account

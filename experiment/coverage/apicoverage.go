@@ -71,7 +71,7 @@ func parseOpenAPI(rawdata []byte) apiArray {
 				log.Fatal(err)
 			}
 			t, ok := methodSpec.(*spec.Operation)
-			if ok == false {
+			if !ok {
 				log.Fatal("Failed to convert methodSpec.")
 			}
 			if t == nil {
@@ -205,14 +205,14 @@ func getTestedAPIsByLevel(negative bool, reg *regexp.Regexp, apisOpenapi, apisTe
 	var apisAllByLevel apiArray
 
 	for _, openapi := range apisTested {
-		if (negative == false && reg.MatchString(openapi.URL)) ||
-			(negative == true && !reg.MatchString(openapi.URL)) {
+		if (!negative && reg.MatchString(openapi.URL)) ||
+			(negative && !reg.MatchString(openapi.URL)) {
 			apisTestedByLevel = append(apisTestedByLevel, openapi)
 		}
 	}
 	for _, openapi := range apisOpenapi {
-		if (negative == false && reg.MatchString(openapi.URL)) ||
-			(negative == true && !reg.MatchString(openapi.URL)) {
+		if (!negative && reg.MatchString(openapi.URL)) ||
+			(negative && !reg.MatchString(openapi.URL)) {
 			apisAllByLevel = append(apisAllByLevel, openapi)
 		}
 	}

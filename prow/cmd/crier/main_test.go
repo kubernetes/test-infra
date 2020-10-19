@@ -30,7 +30,7 @@ func TestOptions(t *testing.T) {
 	var defaultGitHubOptions flagutil.GitHubOptions
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
-	defaultGerritProjects := make(map[string][]string, 0)
+	defaultGerritProjects := make(map[string][]string)
 
 	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
 		MetricsPort: prowflagutil.DefaultMetricsPort,

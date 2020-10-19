@@ -753,11 +753,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	if scenario == "" {
-		entry := jobName
-		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
-			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
-		}
-
 		if !scenarioArgs {
 			if strings.Contains(imageName, "kubekins-e2e") ||
 				strings.Contains(imageName, "bootstrap") ||
@@ -1115,8 +1110,8 @@ func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
 		}
 	}
 	for _, r := range resourceNames {
-		total, _ := totalLimit[r]
-		max, _ := maxLimit[r]
+		total := totalLimit[r]
+		max := maxLimit[r]
 		if total.Cmp(max) > -1 {
 			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
 		}

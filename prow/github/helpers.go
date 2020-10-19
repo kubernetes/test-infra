@@ -34,7 +34,7 @@ const ImageSizeLimit = 5242880
 // HasLabel checks if label is in the label set "issueLabels".
 func HasLabel(label string, issueLabels []Label) bool {
 	for _, l := range issueLabels {
-		if strings.ToLower(l.Name) == strings.ToLower(label) {
+		if strings.EqualFold(l.Name, label) {
 			return true
 		}
 	}
@@ -58,6 +58,7 @@ func ImageTooBig(url string) (bool, error) {
 	if err != nil {
 		return true, fmt.Errorf("HEAD error: %v", err)
 	}
+	defer resp.Body.Close()
 	if sc := resp.StatusCode; sc != http.StatusOK {
 		return true, fmt.Errorf("failing %d response", sc)
 	}

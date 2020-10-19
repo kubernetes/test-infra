@@ -64,7 +64,7 @@ const (
 	RequestActionInitial RequestAction = "initial"
 	// RequestActionRerender means that this is a request to re-render the lenses body
 	RequestActionRerender RequestAction = "rerender"
-	// ResponseCallback means that this is an arbitrary callback
+	// RequestActionCallBack means that this is an arbitrary callback
 	RequestActionCallBack RequestAction = "callback"
 )
 
@@ -72,9 +72,9 @@ type LensRequest struct {
 	// Action is the specific type of request being made
 	Action RequestAction `json:"action"`
 	// Data is a string of data passed back from the lens frontend
-	Data string `json:"data,omitepty"`
+	Data string `json:"data,omitempty"`
 	// Config is the config for the lens, if any, in a lens-defined format
-	Config json.RawMessage `json:"config,omitepty"`
+	Config json.RawMessage `json:"config,omitempty"`
 	// ResourceRoot is a URL at which the lens's own resources can be accessed
 	// by the client browser.
 	ResourceRoot string `json:"resourceRoot"`

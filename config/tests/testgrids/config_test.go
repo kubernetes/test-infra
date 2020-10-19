@@ -486,18 +486,14 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 	}
 
 	// Conclusion
-	badjobs := []string{}
 	for job, valid := range jobs {
 		if !valid {
-			badjobs = append(badjobs, job)
 			t.Errorf("Job %v does not have a matching testgrid testgroup", job)
 		}
 	}
 
-	badconfigs := []string{}
 	for testgroup, valid := range testgroups {
 		if !valid {
-			badconfigs = append(badconfigs, testgroup)
 			t.Errorf("Testgrid group %v is supposed to be moved to have their presubmits in testgrid. See this issue: https://github.com/kubernetes/test-infra/issues/18159", testgroup)
 		}
 	}
