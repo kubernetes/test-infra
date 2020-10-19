@@ -57,32 +57,34 @@ var (
 )
 
 type options struct {
-	build              buildStrategy
-	charts             bool
-	checkLeaks         bool
-	checkSkew          bool
-	cluster            string
-	clusterIPRange     string
-	deployment         string
-	down               bool
-	dump               string
-	dumpPreTestLogs    string
-	extract            extractStrategies
-	extractSource      bool
-	flushMemAfterBuild bool
-	focusRegex         string
-	gcpCloudSdk        string
-	gcpMasterImage     string
-	gcpMasterSize      string
-	gcpNetwork         string
-	gcpNodeImage       string
-	gcpImageFamily     string
-	gcpImageProject    string
-	gcpNodes           string
-	gcpNodeSize        string
-	gcpProject         string
-	gcpProjectType     string
-	gcpServiceAccount  string
+	build                buildStrategy
+	charts               bool
+	checkLeaks           bool
+	checkSkew            bool
+	cluster              string
+	clusterIPRange       string
+	deployment           string
+	down                 bool
+	dump                 string
+	dumpPreTestLogs      string
+	extract              extractStrategies
+	extractCIBucket      string
+	extractReleaseBucket string
+	extractSource        bool
+	flushMemAfterBuild   bool
+	focusRegex           string
+	gcpCloudSdk          string
+	gcpMasterImage       string
+	gcpMasterSize        string
+	gcpNetwork           string
+	gcpNodeImage         string
+	gcpImageFamily       string
+	gcpImageProject      string
+	gcpNodes             string
+	gcpNodeSize          string
+	gcpProject           string
+	gcpProjectType       string
+	gcpServiceAccount    string
 	// gcpSSHProxyInstanceName is the name of the vm instance which ip address will be used to set the
 	// KUBE_SSH_BASTION env. If set, it will result in proxying ssh connections in tests through the
 	// "bastion". It's useful for clusters with nodes without public ssh access, e.g. nodes without
@@ -135,6 +137,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.StringVar(&o.extractCIBucket, "extract-ci-bucket", "kubernetes-release-dev", "Extract k8s CI binaries from the specified GCS bucket")
+	flag.StringVar(&o.extractReleaseBucket, "extract-release-bucket", "kubernetes-release", "Extract k8s CI binaries from the specified GCS bucket")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
@@ -454,7 +458,7 @@ func acquireKubernetes(o *options, d deployer) error {
 			}
 
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractSource)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractCIBucket, o.extractReleaseBucket, o.extractSource)
 		})
 		if err != nil {
 			return err
