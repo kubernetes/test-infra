@@ -267,8 +267,7 @@ func main() {
 		if o.local {
 			logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
 		}
-
-		os.Exit(0)
+		return
 	}
 
 	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
