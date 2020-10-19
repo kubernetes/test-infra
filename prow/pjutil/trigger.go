@@ -38,10 +38,10 @@ func getJobArtifactsURL(prowJob *pjapi.ProwJob, config *prowconfig.Config) strin
 	var identifier string
 	if prowJob.Spec.Refs != nil {
 		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.Refs.Org, prowJob.Spec.Refs.Repo)
+	} else if len(prowJob.Spec.ExtraRefs) > 0 {
+		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.ExtraRefs[0].Org, prowJob.Spec.ExtraRefs[0].Repo)
 	} else {
-		if len(prowJob.Spec.ExtraRefs) > 0 {
-			identifier = fmt.Sprintf("%s/%s", prowJob.Spec.ExtraRefs[0].Org, prowJob.Spec.ExtraRefs[0].Repo)
-		}
+		return "failed to extract decoration config identifier"
 	}
 	spec := downwardapi.NewJobSpec(prowJob.Spec, prowJob.Status.BuildID, prowJob.Name)
 	jobBasePath, _, _ := gcsupload.PathsForJob(config.Plank.GetDefaultDecorationConfigs(identifier).GCSConfiguration, &spec, "")
