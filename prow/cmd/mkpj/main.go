@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -222,7 +221,6 @@ func gatherOptions() options {
 
 func main() {
 	o := gatherOptions()
-	fileSystem := afero.NewOsFs()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatalf("Bad flags")
 	}
