@@ -18,14 +18,15 @@ package pjutil
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	prowconfig "k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gcsupload"
@@ -38,7 +39,9 @@ func getJobArtifactsURL(prowJob *pjapi.ProwJob, config *prowconfig.Config) strin
 	if prowJob.Spec.Refs != nil {
 		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.Refs.Org, prowJob.Spec.Refs.Repo)
 	} else {
-		identifier = fmt.Sprintf("%s/%s", prowJob.Spec.ExtraRefs[0].Org, prowJob.Spec.ExtraRefs[0].Repo)
+		if len(prowJob.Spec.ExtraRefs) > 0 {
+			identifier = fmt.Sprintf("%s/%s", prowJob.Spec.ExtraRefs[0].Org, prowJob.Spec.ExtraRefs[0].Repo)
+		}
 	}
 	spec := downwardapi.NewJobSpec(prowJob.Spec, prowJob.Status.BuildID, prowJob.Name)
 	jobBasePath, _, _ := gcsupload.PathsForJob(config.Plank.GetDefaultDecorationConfigs(identifier).GCSConfiguration, &spec, "")
@@ -49,42 +52,37 @@ func getJobArtifactsURL(prowJob *pjapi.ProwJob, config *prowconfig.Config) strin
 	)
 }
 
-// Calls toJSON method on a jobResult type and writes it to the output path
-func writeResultOutput(prowjobResult JobResult, outputPath string, fileSystem afero.Fs) error {
-	j, err := prowjobResult.toJSON()
-	if err != nil {
-		return fmt.Errorf("unable to marshal prowjob result to JSON: %w", err)
-	}
-
-	afs := afero.Afero{Fs: fileSystem}
-	if outputPath != "" {
-		err = afs.WriteFile(outputPath, j, 0755)
-		if err != nil {
-			logrus.WithField("output path", outputPath).Error("error writing to output file")
-			return err
-		}
-	} else {
-		fmt.Println(string(j))
-	}
-
-	return nil
-}
-
-type JobResult interface {
-	toJSON() ([]byte, error)
-}
-
 type prowjobResult struct {
 	Status       pjapi.ProwJobState `json:"status"`
 	ArtifactsURL string             `json:"prowjob_artifacts_url"`
 	URL          string             `json:"prowjob_url"`
 }
 
-func (p *prowjobResult) toJSON() ([]byte, error) {
-	return json.MarshalIndent(p, "", "    ")
+func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*prowjobResult, *pjapi.ProwJob, bool, error) {
+	w, err := pjclient.Watch(context.TODO(), metav1.ListOptions{FieldSelector: selector})
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("failed to create watch for ProwJobs: %w", err)
+	}
+
+	for event := range w.ResultChan() {
+		prowJob, ok := event.Object.(*pjapi.ProwJob)
+		if !ok {
+			return nil, nil, false, fmt.Errorf("received an unexpected object from Watch: object-type %s", fmt.Sprintf("%T", event.Object))
+		}
+
+		switch prowJob.Status.State {
+		case pjapi.FailureState, pjapi.AbortedState, pjapi.ErrorState, pjapi.SuccessState:
+			return &prowjobResult{
+				Status: prowJob.Status.State,
+				URL:    prowJob.Status.URL,
+			}, prowJob, false, nil
+		}
+	}
+	return nil, nil, true, nil
 }
 
-func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, fileSystem afero.Fs, dryRun bool, outputPath string) error {
+// TriggerProwJob would trigger the job provided by the prowjob parameter
+func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, dryRun bool) error {
 	logrus.Info("getting cluster config")
 	pjclient, err := o.ProwJobClient(config.ProwJobNamespace, dryRun)
 	if err != nil {
@@ -102,46 +100,26 @@ func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, co
 
 	selector := fields.SelectorFromSet(map[string]string{"metadata.name": created.Name})
 
+	var result *prowjobResult
+	var shouldContinue bool
+	var prowJob *pjapi.ProwJob
 	for {
-		w, err := pjclient.Watch(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
+		result, prowJob, shouldContinue, err = resultForJob(pjclient, selector.String())
 		if err != nil {
-			return fmt.Errorf("failed to create watch for ProwJobs: %w", err)
+			return fmt.Errorf("failed to watch job: %w", err)
 		}
-
-		for event := range w.ResultChan() {
-			prowJob, ok := event.Object.(*pjapi.ProwJob)
-			if !ok {
-				return fmt.Errorf("received an unexpected object from Watch: object-type %s", fmt.Sprintf("%T", event.Object))
-			}
-
-			prowJobArtifactsURL := getJobArtifactsURL(prowJob, config)
-
-			switch prowJob.Status.State {
-			case pjapi.FailureState, pjapi.AbortedState, pjapi.ErrorState:
-				pjr := &prowjobResult{
-					Status:       prowJob.Status.State,
-					ArtifactsURL: prowJobArtifactsURL,
-					URL:          prowJob.Status.URL,
-				}
-				err = writeResultOutput(pjr, outputPath, fileSystem)
-				if err != nil {
-					logrus.Error("Unable to write prowjob result to file")
-				}
-				logrus.Warn("job failed")
-				return nil
-			case pjapi.SuccessState:
-				pjr := &prowjobResult{
-					Status:       prowJob.Status.State,
-					ArtifactsURL: prowJobArtifactsURL,
-					URL:          prowJob.Status.URL,
-				}
-				err = writeResultOutput(pjr, outputPath, fileSystem)
-				if err != nil {
-					logrus.Error("Unable to write prowjob result to file")
-				}
-				logrus.Info("job succeeded")
-				return nil
-			}
+		if !shouldContinue {
+			break
 		}
 	}
+	if result.Status != pjapi.SuccessState {
+		logrus.Warn("job failed")
+	}
+	result.ArtifactsURL = getJobArtifactsURL(prowJob, config)
+	b, err := yaml.Marshal(result)
+	if err != nil {
+		logrus.WithError(err).Error("failed to marshal prow job result")
+	}
+	fmt.Println(string(b))
+	return nil
 }
