@@ -161,12 +161,12 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"v1.8.0-alpha.1",
-			"https://storage.googleapis.com/kubernetes-release/release",
+			"https://storage.googleapis.com/k8s-release/release",
 			"v1.8.0-alpha.1",
 		},
 		{
 			"v1.8.0-alpha.2.899+2c624e590f5670",
-			"https://storage.googleapis.com/kubernetes-release-dev/ci",
+			"https://storage.googleapis.com/k8s-release-dev/ci",
 			"v1.8.0-alpha.2.899+2c624e590f5670",
 		},
 		{
@@ -176,12 +176,12 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"ci/latest",
-			"https://storage.googleapis.com/kubernetes-release-dev/ci",
+			"https://storage.googleapis.com/k8s-release-dev/ci",
 			"v1.2.3+abcde",
 		},
 		{
 			"ci/latest-fast",
-			"https://storage.googleapis.com/kubernetes-release-dev/ci/fast",
+			"https://storage.googleapis.com/k8s-release-dev/ci/fast",
 			"v1.2.3+abcde",
 		},
 		{
@@ -263,6 +263,9 @@ func TestExtractStrategies(t *testing.T) {
 		return []byte("v1.2.3+abcde"), nil
 	}
 
+	ciBucket := "k8s-release-dev"
+	releaseBucket := "k8s-release"
+
 	for _, tc := range cases {
 		if d, err := ioutil.TempDir("", "extract"); err != nil {
 			t.Fatal(err)
@@ -274,7 +277,7 @@ func TestExtractStrategies(t *testing.T) {
 		if err := es.Set(tc.option); err != nil {
 			t.Errorf("extractStrategy.Set(%q) returned err: %q", tc.option, err)
 		}
-		if err := es.Extract("", "", "", false); err != nil {
+		if err := es.Extract("", "", "", ciBucket, releaseBucket, false); err != nil {
 			t.Errorf("extractStrategy(%q).Extract() returned err: %q", tc.option, err)
 		}
 
@@ -295,7 +298,7 @@ func TestGciExtractStrategy(t *testing.T) {
 	}{
 		{
 			"gci/gci-canary",
-			"https://storage.googleapis.com/kubernetes-release/release",
+			"https://storage.googleapis.com/k8s-release/release",
 			"v1.2.3+abcde",
 			"gci-canary",
 			"container-vm-image-staging",
@@ -303,7 +306,7 @@ func TestGciExtractStrategy(t *testing.T) {
 		},
 		{
 			"gci/gci-canary?project=test-project:k8s-map-bucket=test-bucket",
-			"https://storage.googleapis.com/kubernetes-release/release",
+			"https://storage.googleapis.com/k8s-release/release",
 			"v1.2.3+abcde",
 			"gci-canary",
 			"test-project",
@@ -311,11 +314,11 @@ func TestGciExtractStrategy(t *testing.T) {
 		},
 		{
 			"gci/gci-canary?project=test-project/latest",
-			"https://storage.googleapis.com/kubernetes-release-dev/ci",
+			"https://storage.googleapis.com/k8s-release-dev/ci",
 			"1.2.3+abcde",
 			"gci-canary",
 			"test-project",
-			"gs://kubernetes-release-dev/ci/latest.txt",
+			"gs://k8s-release-dev/ci/latest.txt",
 		},
 	}
 
@@ -356,6 +359,9 @@ func TestGciExtractStrategy(t *testing.T) {
 		return []byte("test-image"), nil
 	}
 
+	ciBucket := "k8s-release-dev"
+	releaseBucket := "k8s-release"
+
 	for _, tc := range cases {
 		if d, err := ioutil.TempDir("", "extract"); err != nil {
 			t.Fatal(err)
@@ -367,7 +373,7 @@ func TestGciExtractStrategy(t *testing.T) {
 		if err := es.Set(tc.option); err != nil {
 			t.Errorf("extractStrategy.Set(%q) returned err: %q", tc.option, err)
 		}
-		if err := es.Extract("", "", "", false); err != nil {
+		if err := es.Extract("", "", "", ciBucket, releaseBucket, false); err != nil {
 			t.Errorf("extractStrategy(%q).Extract() returned err: %q", tc.option, err)
 		}
 
