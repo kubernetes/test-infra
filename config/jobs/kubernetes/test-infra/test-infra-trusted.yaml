@@ -1103,29 +1103,6 @@ periodics:
     testgrid-dashboards: sig-release-releng-blocking
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
     testgrid-num-failures-to-alert: '1'
-- interval: 24h
-  cluster: test-infra-trusted
-  max_concurrency: 1
-  name: ci-k8sio-vuln-dashboard-update
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: master
-  spec:
-    serviceAccountName: k8s-infra-gcr-vuln-dashboard
-    containers:
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
-      command:
-      - dashboard
-      args:
-        - -dashboard-file-path=/home/prow/go/src/github.com/kubernetes-sigs/k8s-container-image-promoter/dashboard/
-        - -vuln-target-project=k8s-artifacts-prod
-        - -dashboard-bucket=gs://k8s-artifacts-prod-vuln-dashboard
-  annotations:
-    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
