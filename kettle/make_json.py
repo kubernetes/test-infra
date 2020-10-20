@@ -191,7 +191,7 @@ def parse_junit(xml):
             yield make_result(name, time, failure_text)
     elif tree.tag == 'testsuites':
         for testsuite in tree:
-            suite_name = testsuite.attrib['name']
+            suite_name = testsuite.attrib.get('name', 'unknown')
             for child in testsuite.findall('testcase'):
                 name = '%s %s' % (suite_name, child.attrib['name'])
                 time, failure_text, skipped = parse_result(child)
