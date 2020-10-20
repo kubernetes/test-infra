@@ -65,6 +65,7 @@ local config = {
   boskosResourcetypes: [
     # TODO(chaodaiG after 05/18/2021): drop instance. https://github.com/kubernetes/test-infra/pull/20888
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "aws-account", friendly: "AWS account"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "image-builder-aws-account", friendly: "Image Builder - AWS"},
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gce-project", friendly: "GCE project"},
     {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gke-project", friendly: "GKE project"},

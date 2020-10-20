@@ -575,3 +575,16 @@ resources:
   - k8s-jkns-gke-ubuntu-updown
   state: dirty
   type: node-e2e-project
+- names:
+    - image-builder-aws-1
+    - image-builder-aws-2
+    - image-builder-aws-3
+    - image-builder-aws-4
+    - image-builder-aws-5
+    - image-builder-aws-6
+    - image-builder-aws-7
+    - image-builder-aws-8
+    - image-builder-aws-9
+    - image-builder-aws-10
+  state: dirty
+  type: image-builder-aws-account

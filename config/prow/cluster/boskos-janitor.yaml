@@ -79,6 +79,7 @@ spec:
         image: gcr.io/k8s-staging-boskos/aws-janitor-boskos:v20210305-32671f8
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        - --resource-type=aws-account,image-builder-aws-account
 ---
 apiVersion: v1
 kind: ServiceAccount
