@@ -328,14 +328,3 @@ if __name__ == '__main__':
     DB = model.Database()
     OPTIONS = parse_args(sys.argv[1:])
     sys.exit(main(DB, OPTIONS, sys.stdout))
-#     x = """
-# <testsuites>
-# <testsuite>
-#     <testcase name="TestSimpleFile">
-#         <failure message="simple_test.go:186: Running tests in file plumbing"/>
-#     </testcase>
-# </testsuite>
-# </testsuites>
-# """
-#     for i in parse_junit(x):
-#         print(i)
