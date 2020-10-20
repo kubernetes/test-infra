@@ -37,11 +37,10 @@ type prowjobResult struct {
 }
 
 func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*prowjobResult, bool, error) {
-	w, err := pjclient.Watch(context.TODO(), metav1.ListOptions{FieldSelector: selector})
+	w, err := pjclient.Watch(context.Background(), metav1.ListOptions{FieldSelector: selector})
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to create watch for ProwJobs: %w", err)
 	}
-
 	for event := range w.ResultChan() {
 		prowJob, ok := event.Object.(*pjapi.ProwJob)
 		if !ok {
@@ -59,8 +58,8 @@ func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*prowjobRe
 	return nil, true, nil
 }
 
-// TriggerProwJob would trigger the job provided by the prowjob parameter
-func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, dryRun bool) error {
+// TriggerAndWatchProwJob would trigger the job provided by the prowjob parameter
+func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, dryRun bool) error {
 	logrus.Info("getting cluster config")
 	pjclient, err := o.ProwJobClient(config.ProwJobNamespace, dryRun)
 	if err != nil {
@@ -68,7 +67,7 @@ func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, co
 	}
 
 	logrus.WithFields(ProwJobFields(prowjob)).Info("submitting a new prowjob")
-	created, err := pjclient.Create(context.TODO(), prowjob, metav1.CreateOptions{})
+	created, err := pjclient.Create(context.Background(), prowjob, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to submit the prowjob: %w", err)
 	}
@@ -89,13 +88,16 @@ func TriggerProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, co
 			break
 		}
 	}
+
 	if result.Status != pjapi.SuccessState {
 		logrus.Warn("job failed")
 	}
+
 	b, err := yaml.Marshal(result)
 	if err != nil {
 		logrus.WithError(err).Error("failed to marshal prow job result")
 	}
+
 	fmt.Println(string(b))
 	return nil
 }

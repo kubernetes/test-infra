@@ -191,8 +191,10 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if err := o.kubeOptions.Validate(false); err != nil {
-		return err
+	if o.triggerJob {
+		if err := o.kubeOptions.Validate(false); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -270,7 +272,7 @@ func main() {
 		return
 	}
 
-	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
