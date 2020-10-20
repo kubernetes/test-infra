@@ -178,7 +178,7 @@ def parse_junit(xml):
         time = float(child_node.attrib.get('time') or 0) #time val can be ''
         failure_text = None
         for param in child_node.findall('failure'):
-            failure_text = param.text
+            failure_text = param.text or param.attrib.get('message', 'No Failure Message Found')
         skipped = child_node.findall('skipped')
         return time, failure_text, skipped
 
@@ -199,6 +199,7 @@ def parse_junit(xml):
                     continue
                 yield make_result(name, time, failure_text)
     else:
+        yield make_result("fine", 0, "fineee")
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 def row_for_build(path, started, finished, results):
@@ -327,3 +328,14 @@ if __name__ == '__main__':
     DB = model.Database()
     OPTIONS = parse_args(sys.argv[1:])
     sys.exit(main(DB, OPTIONS, sys.stdout))
+#     x = """
+# <testsuites>
+# <testsuite>
+#     <testcase name="TestSimpleFile">
+#         <failure message="simple_test.go:186: Running tests in file plumbing"/>
+#     </testcase>
+# </testsuite>
+# </testsuites>
+# """
+#     for i in parse_junit(x):
+#         print(i)
