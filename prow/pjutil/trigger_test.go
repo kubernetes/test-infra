@@ -56,7 +56,7 @@ func Test_resultForJob(t *testing.T) {
 						State: prowapi.PendingState,
 					},
 				},
-				selector: "test-job",
+				selector: "metadata.name=winwin",
 			},
 			expected: prowjobResult{
 				Status: "pending",
