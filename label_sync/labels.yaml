@@ -1568,3 +1568,12 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
+  kubernetes-sigs/k8s-container-image-promoter:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        previously:
+          - name: area/release-infra
+        target: both
+        addedBy: label
