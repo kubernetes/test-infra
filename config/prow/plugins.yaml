@@ -67,6 +67,10 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/website
+  require_self_approval: true
+  lgtm_acts_as_approve: false
+- repos:
   - kubernetes/enhancements
   - kubernetes/kops
   - kubernetes/kubernetes
