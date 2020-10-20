@@ -138,7 +138,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.StringVar(&o.extractCIBucket, "extract-ci-bucket", "kubernetes-release-dev", "Extract k8s CI binaries from the specified GCS bucket")
-	flag.StringVar(&o.extractReleaseBucket, "extract-release-bucket", "kubernetes-release", "Extract k8s CI binaries from the specified GCS bucket")
+	flag.StringVar(&o.extractReleaseBucket, "extract-release-bucket", "kubernetes-release", "Extract k8s release binaries from the specified GCS bucket")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
