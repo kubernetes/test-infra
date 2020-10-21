@@ -27,8 +27,8 @@ periodics:
         - -c
         -
             curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
-            curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
-            bash e2e-k8s.sh
+            && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
+            && bash e2e-k8s.sh
       env:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
