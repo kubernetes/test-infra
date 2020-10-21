@@ -69,42 +69,6 @@ periodics:
 
 - interval: 5m
   name: ci-kubernetes-build-fast
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200924-7fcf543
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=40
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --fast
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 6
-          memory: "12Gi"
-        requests:
-          cpu: 6
-          memory: "12Gi"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-unit
-    testgrid-tab-name: build-master-fast
-    testgrid-alert-email: release-team@kubernetes.io
-    description: 'Ends up running: make quick-release'
-
-- interval: 5m
-  name: ci-kubernetes-build-fast-canary
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -136,10 +100,10 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
-    testgrid-tab-name: build-master-fast-canary
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: build-master-fast
     testgrid-alert-email: release-team@kubernetes.io
-    description: 'Ends up running: make quick-release. Canary: runs in k8s-infra-prow-build, pushes to gs://k8s-release-dev'
+    description: 'Ends up running: make quick-release'
 
 - interval: 4h
   name: ci-release-build-packages-debs
