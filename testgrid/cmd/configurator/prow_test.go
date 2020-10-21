@@ -291,7 +291,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-num-failures-to-alert":     "4",
 				"testgrid-alert-stale-results-hours": "24",
 				"testgrid-days-of-results":           "30",
-				"testgrid-short-text-metric":         "haunted-house",
+				"testgrid-in-cell-metric":            "haunted-house",
 			},
 			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
