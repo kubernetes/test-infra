@@ -21,6 +21,9 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	coretesting "k8s.io/client-go/testing"
+	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 )
@@ -31,18 +34,19 @@ type fakeJobResult struct {
 
 func Test_resultForJob(t *testing.T) {
 	type args struct {
-		pj       prowapi.ProwJob
-		selector string
+		pj           prowapi.ProwJob
+		watchResults []prowapi.ProwJob
+		selector     string
 	}
 	testcases := []struct {
 		name             string
 		args             args
-		expected         prowjobResult
+		expected         pjapi.ProwJobStatus
 		expectToContinue bool
 		expectedErr      error
 	}{
 		{
-			name: "Prowjob still executing",
+			name: "Prowjob completed successfully",
 			args: args{
 				pj: prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
@@ -53,30 +57,134 @@ func Test_resultForJob(t *testing.T) {
 						Job: "test-job",
 					},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.PendingState,
+						State: prowapi.TriggeredState,
+					},
+				},
+				watchResults: []prowapi.ProwJob{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "winwin",
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Job: "test-job",
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.SuccessState,
+						},
 					},
 				},
 				selector: "metadata.name=winwin",
 			},
-			expected: prowjobResult{
-				Status: "pending",
-				URL:    "result.com",
+			expected: pjapi.ProwJobStatus{
+				State: prowapi.SuccessState,
 			},
-			expectToContinue: true,
+			expectToContinue: false,
+		},
+		{
+			name: "Longer running prowjob",
+			args: args{
+				pj: prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "winwin",
+						Namespace: "prowjobs",
+					},
+					Spec: prowapi.ProwJobSpec{
+						Job: "test-job",
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					},
+				},
+				watchResults: []prowapi.ProwJob{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "winwin",
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Job: "test-job",
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.PendingState,
+						},
+					},
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "winwin",
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Job: "test-job",
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.SuccessState,
+						},
+					},
+				},
+				selector: "metadata.name=winwin",
+			},
+			expected: pjapi.ProwJobStatus{
+				State: prowapi.SuccessState,
+			},
+			expectToContinue: false,
+		},
+		{
+			name: "Prowjob failed",
+			args: args{
+				pj: prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "winwin",
+						Namespace: "prowjobs",
+					},
+					Spec: prowapi.ProwJobSpec{
+						Job: "test-job",
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					},
+				},
+				watchResults: []prowapi.ProwJob{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "winwin",
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Job: "test-job",
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.FailureState,
+						},
+					},
+				},
+				selector: "metadata.name=winwin",
+			},
+			expected: pjapi.ProwJobStatus{
+				State: prowapi.FailureState,
+			},
+			expectToContinue: false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fakeProwJobClient := fake.NewSimpleClientset(&tc.args.pj).ProwV1().ProwJobs("prowjobs")
-			pjr, shouldContinue, err := resultForJob(fakeProwJobClient, tc.args.selector)
-			if !reflect.DeepEqual(pjr, tc.expected) {
-				t.Errorf("resultForJob() got = %v, want %v", pjr, tc.expected)
+			cs := fake.NewSimpleClientset(&tc.args.pj)
+			cs.Fake.PrependWatchReactor("prowjobs", func(action coretesting.Action) (bool, watch.Interface, error) {
+				ret := watch.NewFakeWithChanSize(len(tc.args.watchResults), true)
+				for _, res := range tc.args.watchResults {
+					ret.Modify(&res)
+				}
+				return true, ret, nil
+			})
+			pjr, shouldContinue, err := resultForJob(cs.ProwV1().ProwJobs("prowjobs"), tc.args.selector)
+			if !reflect.DeepEqual(pjr.State, tc.expected.State) {
+				t.Errorf("resultForJob() ProwJobStatus got = %v, want %v", pjr, tc.expected)
 			}
 			if tc.expectToContinue != shouldContinue {
-				t.Errorf("resultForJob() got = %v, want %v", shouldContinue, tc.expectToContinue)
+				t.Errorf("resultForJob() ShouldContinue got = %v, want %v", shouldContinue, tc.expectToContinue)
 			}
 			if !reflect.DeepEqual(tc.expectedErr, err) {
-				t.Errorf("resultForJob() got = %v, want %v", err, tc.expectedErr)
+				t.Errorf("resultForJob() error got = %v, want %v", err, tc.expectedErr)
 			}
 		})
 	}

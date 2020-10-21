@@ -31,12 +31,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
-type prowjobResult struct {
-	Status pjapi.ProwJobState `json:"status"`
-	URL    string             `json:"prowjob_url"`
-}
-
-func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*prowjobResult, bool, error) {
+func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*pjapi.ProwJobStatus, bool, error) {
 	w, err := pjclient.Watch(context.Background(), metav1.ListOptions{FieldSelector: selector})
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to create watch for ProwJobs: %w", err)
@@ -49,10 +44,7 @@ func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*prowjobRe
 
 		switch prowJob.Status.State {
 		case pjapi.FailureState, pjapi.AbortedState, pjapi.ErrorState, pjapi.SuccessState:
-			return &prowjobResult{
-				Status: prowJob.Status.State,
-				URL:    prowJob.Status.URL,
-			}, false, nil
+			return &prowJob.Status, false, nil
 		}
 	}
 	return nil, true, nil
@@ -77,7 +69,7 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 
 	selector := fields.SelectorFromSet(map[string]string{"metadata.name": created.Name})
 
-	var result *prowjobResult
+	var result *pjapi.ProwJobStatus
 	var shouldContinue bool
 	for {
 		result, shouldContinue, err = resultForJob(pjclient, selector.String())
@@ -89,7 +81,7 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 		}
 	}
 
-	if result.Status != pjapi.SuccessState {
+	if result.State != pjapi.SuccessState {
 		logrus.Warn("job failed")
 	}
 
