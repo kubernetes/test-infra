@@ -515,12 +515,22 @@ func isUp(d deployer) error {
 	return nil
 }
 
-func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
-	logDumpPath := "./cluster/log-dump/log-dump.sh"
-	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
-	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+func logDumpPath(provider string) string {
+	// Use the log dumping script outside of kubernetes/kubernetes repo.
+	// Guarding against K8s provider as the script is tested only for gce
+	// and gke cases at the moment.
+	if os.Getenv("USE_KUBEKINS_LOG_DUMPING") != "" && (provider == "gce" || provider == "gke") {
+		if logDumpPath := os.Getenv("LOG_DUMP_SCRIPT_PATH"); logDumpPath != "" {
+			return logDumpPath
+		}
+	}
+	return "./cluster/log-dump/log-dump.sh"
+}
+
+func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath, provider string) error {
+	logDumpPath := logDumpPath(provider)
 	if _, err := os.Stat(logDumpPath); err != nil {
-		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		log.Printf("Could not find %s.", logDumpPath)
 		if cwd, err := os.Getwd(); err == nil {
 			log.Printf("CWD: %v", cwd)
 		}

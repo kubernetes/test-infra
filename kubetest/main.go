@@ -249,7 +249,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "node":
-		return nodeDeploy{}, nil
+		return nodeDeploy{provider: o.provider}, nil
 	case "none":
 		return noneDeploy{}, nil
 	case "local":
