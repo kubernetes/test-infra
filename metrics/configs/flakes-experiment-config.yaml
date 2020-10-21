@@ -65,7 +65,7 @@ query: |
             ) commit,  /* repo commit for PR or version for CI */
             result,  /* SUCCESS if the build passed */
             test  /* repeated tuple of tests */
-          FROM `k8s-gubernator.build.week` as t
+          FROM `k8s-gubernator.build.staging` as t
           where
             datetime(started) > datetime_sub(current_datetime(), interval 7 DAY)
             and version != 'unknown'
