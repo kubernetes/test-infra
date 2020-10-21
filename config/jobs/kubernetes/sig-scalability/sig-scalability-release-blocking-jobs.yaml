@@ -35,7 +35,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
       resources:
         requests:
           cpu: 6
@@ -100,7 +100,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
       resources:
         requests:
           cpu: 6
@@ -132,7 +132,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
