@@ -39,7 +39,7 @@ deploy-staging: get-cluster-credentials
 	sed "s/:latest/:$(TAG)/g" deployment-staging.yaml | kubectl apply -f - --record
 
 update-staging: get-cluster-credentials
-	kubectl set image deployment/kettle-staging kettle=$(IMG):$(TAG) --record
+	kubectl set image deployment/kettle-staging kettle-staging=$(IMG):$(TAG) --record
 
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
