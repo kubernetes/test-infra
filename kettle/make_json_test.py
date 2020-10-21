@@ -616,5 +616,56 @@ class MakeJsonTest(unittest.TestCase):
         expect(['--days=30', '--assert-oldest=25'], [], [], 1)
 
 
+class ParseJsonTest(unittest.TestCase):
+    @parameterized.expand([
+        ('Green Path',
+         'kettle/testdata/standard.xml',
+         [{'name': 'TearDown Previous', 'time': 2.065e-05},
+          {'name': 'Up', 'time': 6.342e-06},
+          {'name': 'test setup', 'time': 5.298e-06},
+          {'failed': True,
+           'failure_text': 'error during go run',
+           'name': 'Node Tests',
+           'time': 654.279097299},
+          {'name': 'DumpClusterLogs', 'time': 5.399023835},
+          {'name': 'TearDown', 'time': 1.21e-05},
+          {'name': 'Deferred TearDown', 'time': 2.17e-07},
+          {'name': 'Timeout', 'time': 3900.0}],
+        ),
+        ('No Suite Name',
+         'kettle/testdata/junit_no_suite_name.xml',
+         [{'failed': True,
+           'failure_text': 'simple_test.go:186: Running tests in file plumbing',
+           'name': 'unknown TestSimpleFile',
+           'time': 0.0},
+          {'name': 'unknown TestSimpleFile/plumbing/min/min_program', 'time': 0.0},
+          {'name': 'unknown TestSimpleFile/plumbing/eval_results/error_result',
+           'time': 0.0}],
+        ),
+        ('Failure as Message',
+         'kettle/testdata/failure_message.xml',
+         [{'failed': True,
+           'failure_text': 'simple_test.go:186: Running tests in file plumbing',
+           'name': 'unknown TestSimpleFile',
+           'time': 0.0}],
+        ),
+        ('Failure as Text',
+         'kettle/testdata/failure_text.xml',
+         [{'failed': True,
+           'failure_text': 'simple_test.go:186: Running tests in file plumbing',
+           'name': 'unknown TestSimpleFile',
+           'time': 0.0}],
+        ),
+        ('Malformed XML',
+         'kettle/testdata/malformed.xml',
+         [],
+        )
+    ])
+    def test_parse_junit(self, _, path, expected):
+        self.maxDiff = None
+        datasource = open(path)
+        failures = make_json.parse_junit(datasource.read())
+        self.assertEqual(list(failures), expected)
+
 if __name__ == '__main__':
     unittest.main()
