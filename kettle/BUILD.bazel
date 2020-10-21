@@ -82,9 +82,9 @@ py_test(
         ":package-srcs",
     ],
     data = [
-        ":xml_data",
         ":buckets.yaml",
-        ],
+        ":xml_data",
+    ],
     python_version = "PY3",
     deps = [
         requirement("ruamel.yaml"),
