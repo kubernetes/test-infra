@@ -12,5 +12,6 @@ periodics:
     containers:
     - name: apisnoop-gate
       image: gcr.io/k8s-staging-apisnoop/snoopdb:v20200923-v2020.09.23-1-gb3afc41
-      args:
+      command:
+      - /usr/local/bin/docker-entrypoint.sh
       - postgres
