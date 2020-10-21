@@ -16,7 +16,6 @@
 
 import io as StringIO
 import json
-import os
 import time
 import unittest
 

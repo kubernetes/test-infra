@@ -199,7 +199,6 @@ def parse_junit(xml):
                     continue
                 yield make_result(name, time, failure_text)
     else:
-        yield make_result("fine", 0, "fineee")
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 def row_for_build(path, started, finished, results):
