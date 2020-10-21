@@ -2,7 +2,7 @@ periodics:
 # conformance test against kubernetes master branch with `kind` and auditlogs
 # Other than annotations and modified ci-audit-logging e2e-k8s.sh
 # This should be the same as ci-kubernetes-kind-conformance
-- interval: 1h
+- interval: 10m
   name: ci-audit-kind-conformance
   labels:
     preset-service-account: "true"
