@@ -41,7 +41,7 @@ const testgridNumColumnsRecentAnnotation = "testgrid-num-columns-recent"
 const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-hours"
 const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
-const testgridShortTextMetric = "testgrid-short-text-metric"
+const testgridInCellMetric = "testgrid-in-cell-metric"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -132,7 +132,7 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 		testGroup.DaysOfResults = int32(doraInt)
 	}
 
-	if stm, ok := j.Annotations[testgridShortTextMetric]; ok {
+	if stm, ok := j.Annotations[testgridInCellMetric]; ok {
 		testGroup.ShortTextMetric = stm
 	}
 
