@@ -11,7 +11,6 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed
 replace (
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.3.1
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
@@ -37,7 +36,6 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/djherbis/atime v1.0.0
-	github.com/docker/docker v1.13.1
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/felixge/fgprof v0.9.1
 	github.com/fsnotify/fsnotify v1.4.9

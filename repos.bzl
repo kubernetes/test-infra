@@ -1010,9 +1010,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/docker/docker",
-        replace = "github.com/docker/docker",
-        sum = "h1:KXS1Jg+ddGcWA8e1N7cupxaHHZhit5rB9tfDU+mfjyY=",
-        version = "v1.4.2-0.20200203170920-46ec8731fbce",
+        sum = "h1:IkZjBSIc8hBjLpqeAbeE5mca5mNgeatLHBy3GO78BWo=",
+        version = "v1.13.1",
     )
 
     go_repository(
