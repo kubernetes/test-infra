@@ -39,6 +39,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
