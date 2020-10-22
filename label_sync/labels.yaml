@@ -1515,6 +1515,11 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to docker provider
+        name: area/provider/docker
+        target: both
+        addedBy: label
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
