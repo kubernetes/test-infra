@@ -25,7 +25,8 @@ $ bazel run //prow/cmd/prow-controller-manager -- --help
 
 ### Configuration
 
-TODO: Point to configuration after merge
+* [Deployment manifest](/config/prow/cluster/prow_controller_manager_deployment.yaml)
+* [RBAC manifest](/config/prow/cluster/prow_controller_manager_rbac.yaml)
 
 [Plank]: /prow/cmd/plank
 [Sinker]: /prow/cmd/sinker
