@@ -142,9 +142,9 @@ var ownerAliasesFiles = map[string][]byte{
 `),
 }
 
-func IssueLabelsAddedContain(arr []string, str string) bool {
+func IssueLabelsContain(arr []string, str string) bool {
 	for _, a := range arr {
-		// IssueLabelsAdded format is owner/repo#number:label
+		// IssueLabels format is owner/repo#number:label
 		b := strings.Split(a, ":")
 		if b[len(b)-1] == str {
 			return true
@@ -515,9 +515,9 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 				t.Fatalf("Handle PR: %v", err)
 			}
-			if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			if !test.shouldLabel && IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 				t.Fatalf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
-			} else if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			} else if test.shouldLabel && !IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 				t.Fatalf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			}
 		})
@@ -1082,10 +1082,10 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+		if !test.shouldLabel && IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 		}
-		if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+		if test.shouldLabel && !IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 		}
 		if !test.shouldComment && len(fghc.IssueComments[pr]) > 0 {
@@ -1255,13 +1255,152 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 		if err := handleGenericComment(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &test.commentEvent, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+		if !test.shouldLabel && IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
-		} else if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+		} else if test.shouldLabel && !IssueLabelsContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
 			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
 		}
 	}
 
+}
+
+func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
+	var tests = []struct {
+		name              string
+		removeOwners      bool
+		removeAliases     bool
+		shouldRemoveLabel bool
+	}{
+		{
+			name:              "OWNERS and OWNERS_ALIASES files removed",
+			removeOwners:      true,
+			removeAliases:     true,
+			shouldRemoveLabel: true,
+		},
+		{
+			name:              "OWNERS file removed, OWNERS_ALIASES left",
+			removeOwners:      true,
+			removeAliases:     false,
+			shouldRemoveLabel: true,
+		},
+		{
+			name:              "OWNERS file left, OWNERS_ALIASES left",
+			removeOwners:      false,
+			removeAliases:     false,
+			shouldRemoveLabel: false,
+		},
+	}
+	lg, c, err := clients()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("org", "repo"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+
+	if err := addFilesToRepo(lg, []string{"OWNERS"}, "valid"); err != nil {
+		t.Fatalf("Adding base commit: %v", err)
+	}
+
+	if err := addFilesToRepo(lg, []string{"OWNERS_ALIASES"}, "collaborators"); err != nil {
+		t.Fatalf("Adding base commit: %v", err)
+	}
+
+	for i, test := range tests {
+		pr := i + 1
+		// make sure we're on master before branching
+		if err := lg.Checkout("org", "repo", "master"); err != nil {
+			t.Fatalf("Switching to master branch: %v", err)
+		}
+		pullFiles := map[string][]byte{}
+		pullFiles["a.go"] = []byte("foo")
+
+		if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
+
+		if test.removeOwners == true {
+			if err := lg.RmCommit("org", "repo", []string{"OWNERS"}); err != nil {
+				t.Fatalf("Removing OWNERS file: %v", err)
+			}
+		}
+
+		if test.removeAliases == true {
+			if err := lg.RmCommit("org", "repo", []string{"OWNERS_ALIASES"}); err != nil {
+				t.Fatalf("Removing OWNERS_ALIASES file: %v", err)
+			}
+		}
+
+		if err := lg.AddCommit("org", "repo", pullFiles); err != nil {
+			t.Fatalf("Adding PR commit: %v", err)
+		}
+		sha, err := lg.RevParse("org", "repo", "HEAD")
+		if err != nil {
+			t.Fatalf("Getting commit SHA: %v", err)
+		}
+		pre := &github.PullRequestEvent{
+			PullRequest: github.PullRequest{
+				User: github.User{Login: "author"},
+				Base: github.PullRequestBranch{
+					Ref: "master",
+				},
+				Head: github.PullRequestBranch{
+					SHA: sha,
+				},
+			},
+		}
+		filesToRemove := make([]string, 2)
+		if test.removeOwners {
+			filesToRemove = append(filesToRemove, "OWNERS")
+		}
+		if test.removeAliases {
+			filesToRemove = append(filesToRemove, "OWNERS_ALIASES")
+		}
+		fghc := newFakeGitHubClient(emptyPatch([]string{"a.go"}), filesToRemove, pr)
+
+		fghc.PullRequests = map[int]*github.PullRequest{}
+		fghc.PullRequests[pr] = &github.PullRequest{
+			Base: github.PullRequestBranch{
+				Ref: fakegithub.TestRef,
+			},
+		}
+		fghc.RepoLabelsExisting = []string{labels.InvalidOwners}
+
+		froc := makeFakeRepoOwnersClient()
+
+		prInfo := info{
+			org:          "org",
+			repo:         "repo",
+			repoFullName: "org/repo",
+			number:       pr,
+		}
+
+		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
+			t.Fatalf("Handle PR: %v", err)
+		}
+		if test.shouldRemoveLabel && !IssueLabelsContain(fghc.IssueLabelsRemoved, labels.InvalidOwners) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsRemoved)
+		}
+		if !test.shouldRemoveLabel && IssueLabelsContain(fghc.IssueLabelsRemoved, labels.InvalidOwners) {
+			t.Errorf("%s: didn't expect label %q in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsRemoved)
+		}
+	}
+}
+
+func TestOwnersRemoval(t *testing.T) {
+	testOwnersRemoval(localgit.New, t)
+}
+
+func TestOwnersRemovalV2(t *testing.T) {
+	testOwnersRemoval(localgit.NewV2, t)
 }
