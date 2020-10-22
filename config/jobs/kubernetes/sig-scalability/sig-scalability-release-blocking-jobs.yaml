@@ -7,6 +7,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -56,6 +57,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -121,6 +123,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
