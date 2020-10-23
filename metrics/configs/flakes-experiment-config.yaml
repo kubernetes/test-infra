@@ -58,7 +58,7 @@ query: |
             ifnull(repo_commit, version) version, /* git version, empty for ci  */
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                repos,
+                ifnull(repos, (select i.value from t.metadata i where i.key = 'repos')),
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
               ifnull(repo_commit, version)
@@ -71,7 +71,13 @@ query: |
             and (version != 'unknown' or repo_commit is not null)
             and (
               substr(job, 0, 3) = 'ci-' or
-              array_length(split(replace(repos,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+              exists(
+                select as struct
+                  i
+                from t.metadata i
+                where (i.key = 'repos' or repos is not null) and
+                array_length(split(replace(ifnull(t.repos, i.value),', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+              )
             )
         )
         group by job, commit
