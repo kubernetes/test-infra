@@ -49,6 +49,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
+          - name: LOCAL_ONLY
+            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
