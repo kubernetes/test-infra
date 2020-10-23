@@ -504,10 +504,10 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 }
 
 // WIP See policy description on GH Issue #18599
-func TestJobsMustHaveTestGridAlertsSetup(t * testing.T){
+func TestJobsMustHaveTestGridAlertsSetup(t *testing.T) {
 	for _, dashboard := range cfg.Dashboards {
 		for _, dashboardtab := range dashboard.DashboardTab {
-			if dashboardtab.GetAlertOptions()== nil {
+			if dashboardtab.GetAlertOptions() == nil {
 				t.Errorf("FAIL : %s : CI Signal Policy Violation: A DashboardTab config MUST CONTAIN an alert contact email address.", dashboardtab.GetName())
 
 			}
@@ -519,12 +519,12 @@ func TestJobsMustHaveTestGridAlertsSetup(t * testing.T){
 // to register as counted failures. AFAIK no idiomatic golang test way of
 // getting subtest stats.
 // will update or remove
-func TestJobsMustHaveTestGridAlertsSetupTRun(t * testing.T){
+func TestJobsMustHaveTestGridAlertsSetupTRun(t *testing.T) {
 	for _, dashboard := range cfg.Dashboards {
 		for _, dashboardtab := range dashboard.DashboardTab {
 			dashBoardTestName := fmt.Sprintf("Test %s has Alert configured", dashboard.GetName())
-			t.Run(dashBoardTestName, func(t *testing.T){
-				if dashboardtab.GetAlertOptions()== nil {
+			t.Run(dashBoardTestName, func(t *testing.T) {
+				if dashboardtab.GetAlertOptions() == nil {
 					t.Errorf("FAIL : %s : CI Signal Policy Violation: A DashboardTab config MUST CONTAIN an alert contact email address.", dashboardtab.GetName())
 				}
 			})
