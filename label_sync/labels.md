@@ -130,7 +130,6 @@ larger set of contributors to apply/remove them.
 | <a id="wg/naming" href="#wg/naming">`wg/naming`</a> | Categorizes an issue or PR as relevant to WG Naming.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/policy" href="#wg/policy">`wg/policy`</a> | Categorizes an issue or PR as relevant to WG Policy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/resource-management" href="#wg/resource-management">`wg/resource-management`</a> | REMOVING. This will be deleted after 2020-04-08 00:00:00 +0000 UTC <br><br> Categorizes an issue or PR as relevant to WG Resource Management.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="wg/security-audit" href="#wg/security-audit">`wg/security-audit`</a> | Categorizes an issue or PR as relevant to WG Security Audit.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="¯\_(ツ)_/¯" href="#¯\_(ツ)_/¯">`¯\_(ツ)_/¯`</a> | ¯\\\_(ツ)_/¯| humans |  [shrug](https://git.k8s.io/test-infra/prow/plugins/shrug) |
 
 ## Labels that apply to all repos, only for issues
