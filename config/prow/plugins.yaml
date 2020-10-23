@@ -948,6 +948,11 @@ plugins:
   kubernetes-sigs/security-profiles-operator:
   - release-note
 
+  kubernetes-sigs/k8s-container-image-promoter:
+  - mergecommitblocker
+  - override
+  - release-note
+
   containerd/cri:
   - assign
   - cla
