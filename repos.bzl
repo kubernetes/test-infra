@@ -2278,8 +2278,9 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/containerd/containerd",
-        sum = "h1:LoIzb5y9x5l8VKAlyrbusNPXqBY0+kviRloxFUMFwKc=",
-        version = "v1.3.3",
+        replace = "github.com/containerd/containerd",
+        sum = "h1:aWJB3lbDEaOxg1mkTBAINY2a+NsoKbAeRYefJPPRY+o=",
+        version = "v1.4.0",
     )
     go_repository(
         name = "com_github_creack_pty",

@@ -8,9 +8,12 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
 // before running update-deps.sh.
+// replace broken 1.4.0-0 import with 1.4.0 for containerd
+// TODO: remove this
 replace (
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.3.1
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
+	github.com/containerd/containerd => github.com/containerd/containerd v1.4.0
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	k8s.io/api => k8s.io/api v0.18.6
