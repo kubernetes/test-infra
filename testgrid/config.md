@@ -40,7 +40,8 @@ annotations:
   testgrid-num-failures-to-alert: "3"      # optionally, the number of continuous failures before sending an email.
                                            # Currently defaults to 3.
   testgrid-alert-stale-results-hours: "12" # optionally, send an email if this many hours pass with no results at all.
-
+  testgrid-in-cell-metric: coverage        # optionally, text property metric value to be evaluated, with the resulting
+                                           # numeric value placed visually inside the test result cells.
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
