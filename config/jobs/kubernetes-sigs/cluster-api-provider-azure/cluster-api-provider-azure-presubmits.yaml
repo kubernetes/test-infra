@@ -202,48 +202,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pull-conformance-v1alpha3
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-conformance-machine-pool-v1alpha3
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: v1.18.6
-      path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
-          command:
-            - "runner.sh"
-            - "./scripts/ci-entrypoint.sh"
-          env:
-            - name: FOCUS
-              value: "\\[Conformance\\]|\\[NodeConformance\\]"
-            - name: SKIP
-              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
-            - name: PARALLEL
-              value: "true"
-            - name: KUBERNETES_VERSION
-              value: "v1.18.6"
-            - name: EXP_MACHINE_POOL
-              value: "true"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pull-conformance-machine-pool-v1alpha3
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure

@@ -13,31 +13,22 @@ periodics:
       repo: cluster-api-provider-azure
       base_ref: master
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: v1.18.6
-      path_alias: k8s.io/kubernetes
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
         command:
-          - "runner.sh"
-          - "./scripts/ci-entrypoint.sh"
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
         env:
-          - name: FOCUS
-            value: "\\[Conformance\\]|\\[NodeConformance\\]"
-          - name: SKIP
-            value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
-          - name: PARALLEL
-            value: "true"
-          - name: KUBERNETES_VERSION
-            value: "v1.18.6"
+          - name: GINKGO_FOCUS
+            value: "Conformance Tests"
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
-            cpu: 1
-            memory: "4Gi"
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: periodic-conformance-v1alpha3
