@@ -337,11 +337,11 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.20
   kubernetes/kops:
-    master: v1.19
+    master: v1.20
+    release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
-    release-1.15: v1.15
   kubernetes-sigs/cluster-api-provider-azure:
     master: v0.4.10
     release-0.4: v0.4
