@@ -23,7 +23,7 @@ test:unit --test_tag_filters=-lint
 # Note needs an instance name
 # See --config=remote-fejta for a concrete example
 # https://github.com/bazelbuild/bazel-toolchains/blob/master/bazelrc/bazel-0.27.0.bazelrc
-build:remote --jobs=100 # Lower from 500 https://github.com/kubernetes/test-infra/issues/19662
+build:remote --jobs=500
 build:remote --host_javabase=@rbe_default//java:jdk
 build:remote --javabase=@rbe_default//java:jdk
 build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
