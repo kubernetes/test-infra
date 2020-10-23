@@ -100,3 +100,53 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-k8s-1.19
     testgrid-tab-name: kops-pipeline-updown-1.19
+
+# {"branch": "1.18", "k8s_version": "1.18"}
+# Verify the latest-ci version from the release-1.18 branch of kops
+# Runs a small subset of the e2e tests.
+# Publishes the version to latest-ci-updown-green on success.
+- interval: 60m
+  name: e2e-kops-pipeline-updown-kops118
+  decorate: true
+  decoration_config:
+    timeout: 45m
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --up
+      - --test
+      - --down
+      - --dump=$(ARTIFACTS)
+      - --timeout=45m
+      - --gcp-service-account=$(E2E_GOOGLE_APPLICATION_CREDENTIALS)
+      # kops-specific test args
+      - --deployment=kops
+      - --provider=aws
+      - --cluster=e2e-kops-pipeline-updown-kops118.test-cncf-aws.k8s.io
+      - --kops-ssh-user=ubuntu
+      - --kops-nodes=4
+      - --extract=release/stable-1.18
+      - --kops-state=s3://k8s-kops-prow/
+      - --kops-ssh-key=$(AWS_SSH_PRIVATE_KEY_FILE)
+      - --kops-ssh-public-key=$(AWS_SSH_PUBLIC_KEY_FILE)
+      # We don't have permission to write to gs://k8s-staging-kops
+      - --kops-publish=gs://kops-ci/markers/release-1.18/latest-ci-updown-green.txt
+      # Published by the kops staging build jobs
+      - --kops-version=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.18/latest-ci.txt
+      #- --kops-kubernetes-version should be inferred by kubetest from --extract
+      #- --kops-zone should be randomized by kubetest
+      # Specific test args
+      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]
+      - --ginkgo-parallel
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-k8s-1.18
+    testgrid-tab-name: kops-pipeline-updown-1.18
