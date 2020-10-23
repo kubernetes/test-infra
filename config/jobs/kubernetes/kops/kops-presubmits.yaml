@@ -150,54 +150,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-containerd
-  - name: pull-kops-e2e-kubernetes-aws-1-16
-    branches:
-    - release-1.16
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --aws
-        - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --check-leaked-resources=false
-        - --cluster=
-        - --kops-ssh-user=admin
-        - --env=KUBE_SSH_USER=admin
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
-        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-        - --extract=release/stable-1.16
-        - --ginkgo-parallel
-        - --kops-build
-        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
-        - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|In-tree.*Volumes.*\[Driver:.*aws\]
-        - --timeout=55m
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: e2e-1-16
   - name: pull-kops-e2e-kubernetes-aws-1-17
     branches:
     - release-1.17
@@ -294,6 +246,54 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-1-18
+  - name: pull-kops-e2e-kubernetes-aws-1-19
+    branches:
+    - release-1.19
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.19
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-1-19
   - name: pull-kops-verify-bazel
     branches:
     - master
