@@ -73,7 +73,7 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
 # install bazel
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-COPY ./install-bazel.sh /
+COPY images/kubekins-e2e/install-bazel.sh /
 RUN bash /install-bazel.sh
 
 ARG OLD_BAZEL_VERSION
@@ -95,11 +95,11 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["kops-e2e-runner.sh", \
-    "kubetest", \
+ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
+    "images/kubekins-e2e/kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "log-dump.sh", \
-    "logexporter-daemonset.yaml", \
+    "logexporter/cluster/log-dump.sh", \
+    "logexporter/cluster/logexporter-daemonset.yaml", \
     "/workspace/"]
 ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
 RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]
