@@ -75,24 +75,24 @@ skip_jobs = [
     'kops-grid-cilium-amzn2-k18',
     'kops-grid-cilium-centos7',
     'kops-grid-cilium-centos7-k17',
-    'kops-grid-cilium-centos7-k17-ko18',
+    'kops-grid-cilium-centos7-k17-ko19',
     'kops-grid-cilium-centos7-k18',
-    'kops-grid-cilium-centos7-k18-ko18',
-    'kops-grid-cilium-centos7-ko18',
+    'kops-grid-cilium-centos7-k18-ko19',
+    'kops-grid-cilium-centos7-ko19',
     'kops-grid-cilium-deb9',
     'kops-grid-cilium-deb9-k18',
     'kops-grid-cilium-rhel7',
     'kops-grid-cilium-rhel7-k17',
-    'kops-grid-cilium-rhel7-k17-ko18',
+    'kops-grid-cilium-rhel7-k17-ko19',
     'kops-grid-cilium-rhel7-k18',
-    'kops-grid-cilium-rhel7-k18-ko18',
-    'kops-grid-cilium-rhel7-ko18',
+    'kops-grid-cilium-rhel7-k18-ko19',
+    'kops-grid-cilium-rhel7-ko19',
     'kops-grid-cilium-u1604',
     'kops-grid-cilium-u1604-k17',
-    'kops-grid-cilium-u1604-k17-ko18',
+    'kops-grid-cilium-u1604-k17-ko19',
     'kops-grid-cilium-u1604-k18',
-    'kops-grid-cilium-u1604-k18-ko18',
-    'kops-grid-cilium-u1604-ko18',
+    'kops-grid-cilium-u1604-k18-ko19',
+    'kops-grid-cilium-u1604-ko19',
 ]
 
 def simple_hash(s):
@@ -315,7 +315,7 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.18",
+    "1.19",
 ]
 
 def generate():

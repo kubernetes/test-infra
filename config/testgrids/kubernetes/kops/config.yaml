@@ -21,6 +21,7 @@ dashboard_groups:
   - kops-k8s-1.17
   - kops-k8s-1.18
   - kops-k8s-1.19
+  - kops-k8s-1.20
   - kops-k8s-latest
 
 dashboards:
@@ -46,6 +47,8 @@ dashboards:
 - name: kops-k8s-1.18
   days_of_results: 90
 - name: kops-k8s-1.19
+  days_of_results: 90
+- name: kops-k8s-1.20
   days_of_results: 90
 - name: kops-k8s-latest
   days_of_results: 90
