@@ -345,6 +345,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	if err != nil {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
+	b.Started = time.Unix(started.Timestamp, 0)
 	finished := gcs.Finished{}
 	err = readJSON(ctx, bucket, path.Join(dir, prowv1.FinishedStatusFile), &finished)
 	if err != nil {
