@@ -350,10 +350,10 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	err = readJSON(ctx, bucket, path.Join(dir, prowv1.FinishedStatusFile), &finished)
 	if err != nil {
 		b.Result = "Pending"
-		for _, ref := range started.Repos { 
-			if strings.Contains(ref, "," + started.Pull + ":"){
+		for _, ref := range started.Repos {
+			if strings.Contains(ref, ","+started.Pull+":") {
 				started.Pull = ref
-				break;
+				break
 			}
 		}
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
