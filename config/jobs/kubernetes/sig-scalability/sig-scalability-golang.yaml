@@ -45,6 +45,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
   annotations:
     testgrid-alert-email: go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
