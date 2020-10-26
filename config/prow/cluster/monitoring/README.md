@@ -85,6 +85,18 @@ As an alternative to `bazel`, the Makefile in [mixin](mixins/Makefile) folder ca
 files from `jsonnet` for debugging locally. As prerequisites, [`jsonnet`](https://github.com/google/jsonnet)
 and [`gojsontoyaml`](https://github.com/brancz/gojsontoyaml) should be included in `${PATH}`.
 
+## Update vendored code
+
+The generation of grafana dashboards depends on [vendored code](./mixins/vendor), the vendored code can be updated by running:
+
+```
+cd ./mixins
+mv vendor/grafonnet/BUILD.bazel .
+make clean-vendor
+make install
+cp BUILD.bazel vendor/grafonnet
+```
+
 ## Access components' Web page
 
 * For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
