@@ -142,7 +142,6 @@ periodics:
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -272,6 +271,7 @@ periodics:
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
