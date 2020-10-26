@@ -634,7 +634,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.19
-      - --aksengine-template-url=https://github.com/kubernetes-sigs/windows-testing/blob/master/job-templates/kubernetes_containerd_csi_proxy.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
@@ -758,7 +758,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.19
-      - --aksengine-template-url=https://github.com/kubernetes-sigs/windows-testing/blob/master/job-templates/kubernetes_containerd_csi_proxy.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
