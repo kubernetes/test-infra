@@ -70,6 +70,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.19
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
@@ -120,6 +123,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
