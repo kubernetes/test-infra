@@ -201,7 +201,7 @@ def parse_junit(xml):
         else:
             logging.error('unable to find failures, unexpected tag %s', tree.tag)
     except KeyError as err:
-        logging.error(f'malformed xml within {tree.tag}: {err}')
+        logging.error('malformed xml within %s: %s', tree.tag, err)
         yield from []
 
 def row_for_build(path, started, finished, results):
