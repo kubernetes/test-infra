@@ -151,12 +151,12 @@ class Build:
 def parse_junit(xml):
     """Generate failed tests as a series of dicts. Ignore skipped tests."""
     # NOTE: this is modified from gubernator/view_build.py
-
     try:
         tree = ET.fromstring(xml)
     except ET.ParseError:
         print("Malformed xml, skipping")
         yield from [] #return empty itterator to skip results for this test
+        return
 
     # pylint: disable=redefined-outer-name
 
@@ -180,6 +180,7 @@ def parse_junit(xml):
             failure_text = param.text or param.attrib.get('message', 'No Failure Message Found')
         skipped = child_node.findall('skipped')
         return time, failure_text, skipped
+
     try:
         if tree.tag == 'testsuite':
             for child in tree.findall('testcase'):
