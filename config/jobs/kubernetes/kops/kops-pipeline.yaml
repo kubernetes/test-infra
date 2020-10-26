@@ -17,6 +17,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
