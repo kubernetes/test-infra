@@ -726,7 +726,6 @@ postsubmits:
         args:
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - -dry-run=false
-        - -use-service-account
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
@@ -1056,23 +1055,12 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    # TODO: Move the official cip image to a more serious location.
-    #
-    # To check the Go binary version in the image, run:
-    #
-    #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cip -version"
-    #
-    # You can also nspect the /cip folder in the image's filesystem with an
-    # interactive bash session:
-    #
-    #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
     - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
       command:
       - cip
       args:
       - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - -dry-run=false
-      - -use-service-account # @listx: deprecated; remove after verifying Workload Identity makes this obsolete
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
