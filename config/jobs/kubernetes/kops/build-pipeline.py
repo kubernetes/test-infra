@@ -37,6 +37,9 @@ template = """
   spec:
     containers:
     - image: {{e2e_image}}
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
