@@ -156,8 +156,7 @@ def parse_junit(xml):
         tree = ET.fromstring(xml)
     except ET.ParseError:
         print("Malformed xml, skipping")
-        return [] #return empty itterator to skip results for this test
-
+        yield from [] #return empty itterator to skip results for this test
 
     # pylint: disable=redefined-outer-name
 
@@ -181,25 +180,28 @@ def parse_junit(xml):
             failure_text = param.text or param.attrib.get('message', 'No Failure Message Found')
         skipped = child_node.findall('skipped')
         return time, failure_text, skipped
-
-    if tree.tag == 'testsuite':
-        for child in tree.findall('testcase'):
-            name = child.attrib['name']
-            time, failure_text, skipped = parse_result(child)
-            if skipped:
-                continue
-            yield make_result(name, time, failure_text)
-    elif tree.tag == 'testsuites':
-        for testsuite in tree:
-            suite_name = testsuite.attrib.get('name', 'unknown')
-            for child in testsuite.findall('testcase'):
-                name = '%s %s' % (suite_name, child.attrib['name'])
+    try:
+        if tree.tag == 'testsuite':
+            for child in tree.findall('testcase'):
+                name = child.attrib['name']
                 time, failure_text, skipped = parse_result(child)
                 if skipped:
                     continue
                 yield make_result(name, time, failure_text)
-    else:
-        logging.error('unable to find failures, unexpected tag %s', tree.tag)
+        elif tree.tag == 'testsuites':
+            for testsuite in tree:
+                suite_name = testsuite.attrib['name']
+                for child in testsuite.findall('testcase'):
+                    name = '%s %s' % (suite_name, child.attrib['name'])
+                    time, failure_text, skipped = parse_result(child)
+                    if skipped:
+                        continue
+                    yield make_result(name, time, failure_text)
+        else:
+            logging.error('unable to find failures, unexpected tag %s', tree.tag)
+    except KeyError as err:
+        logging.error(f'malformed xml within {tree.tag}: {err}')
+        yield from []
 
 def row_for_build(path, started, finished, results):
     """
