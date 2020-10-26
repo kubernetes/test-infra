@@ -19,6 +19,36 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
+  - name: pull-kubebuilder-e2e-k8s-1-18-0
+    decorate: true
+    always_run: true
+    optional: true
+    path_alias: sigs.k8s.io/kubebuilder
+    branches:
+    - ^master$
+    - ^feature/plugins-.+$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+        command:
+        # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
+        - runner.sh
+        # this MUST be a relative directory with "./" or the runner will fail to find the file
+        - ./test_e2e.sh
+        env:
+        - name: KIND_K8S_VERSION
+          value: "v1.18.0"
+        resources:
+          requests:
+            cpu: 4000m
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: kubebuilder-e2e-1-18-0
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-17-0
     decorate: true
     always_run: true
