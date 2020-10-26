@@ -94,6 +94,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.18
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -127,6 +128,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.17
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -160,6 +162,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.16
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -193,6 +196,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.15
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -226,6 +230,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.14
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -259,6 +264,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.13
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -292,6 +298,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.12
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -325,6 +332,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.11
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
