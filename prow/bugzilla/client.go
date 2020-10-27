@@ -94,13 +94,14 @@ type Client interface {
 }
 
 // NewClient returns a bugzilla client.
-func NewClient(getAPIKey func() []byte, endpoint string) Client {
+func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId uint) Client {
 	return &client{
 		logger: logrus.WithField("client", "bugzilla"),
 		delegate: &delegate{
-			client:    &http.Client{},
-			endpoint:  endpoint,
-			getAPIKey: getAPIKey,
+			client:                  &http.Client{},
+			endpoint:                endpoint,
+			githubExternalTrackerId: githubExternalTrackerId,
+			getAPIKey:               getAPIKey,
 		},
 	}
 }
@@ -194,9 +195,10 @@ func (c *client) WithFields(fields logrus.Fields) Client {
 
 // delegate actually does the work to talk to Bugzilla
 type delegate struct {
-	client    *http.Client
-	endpoint  string
-	getAPIKey func() []byte
+	client                  *http.Client
+	endpoint                string
+	githubExternalTrackerId uint
+	getAPIKey               func() []byte
 }
 
 // the client is a Client impl
@@ -763,6 +765,14 @@ func IsAccessDenied(err error) bool {
 func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	logger := c.logger.WithFields(logrus.Fields{methodField: "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
 	pullIdentifier := IdentifierForPull(org, repo, num)
+	bugIdentifier := ExternalBugIdentifier{
+		ID: pullIdentifier,
+	}
+	if c.githubExternalTrackerId != 0 {
+		bugIdentifier.TrackerID = int(c.githubExternalTrackerId)
+	} else {
+		bugIdentifier.Type = "https://github.com/"
+	}
 	rpcPayload := struct {
 		// Version is the version of JSONRPC to use. All Bugzilla servers
 		// support 1.0. Some support 1.1 and some support 2.0
@@ -777,12 +787,9 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Method:  "ExternalBugs.add_external_bug",
 		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
 		Parameters: []AddExternalBugParameters{{
-			APIKey: string(c.getAPIKey()),
-			BugIDs: []int{id},
-			ExternalBugs: []ExternalBugIdentifier{{
-				Type: "https://github.com/",
-				ID:   pullIdentifier,
-			}},
+			APIKey:       string(c.getAPIKey()),
+			BugIDs:       []int{id},
+			ExternalBugs: []ExternalBugIdentifier{bugIdentifier},
 		}},
 	}
 	body, err := json.Marshal(rpcPayload)

@@ -541,6 +541,7 @@ func TestUpdateBug(t *testing.T) {
 func TestAddPullRequestAsExternalBug(t *testing.T) {
 	var testCases = []struct {
 		name            string
+		trackerId       uint
 		id              int
 		expectedPayload string
 		response        string
@@ -552,6 +553,15 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			id:              1705243,
 			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "explicit tracker ID is used, update succeeds, makes a change",
+			trackerId:       123,
+			id:              17052430,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[17052430],"external_bugs":[{"ext_type_id":123,"ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":17052430}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
 		},
@@ -651,6 +661,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			client.githubExternalTrackerId = testCase.trackerId
 			changed, err := client.AddPullRequestAsExternalBug(testCase.id, "org", "repo", 1)
 			if !testCase.expectedError && err != nil {
 				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
