@@ -181,28 +181,24 @@ def parse_junit(xml):
         skipped = child_node.findall('skipped')
         return time, failure_text, skipped
 
-    try:
-        if tree.tag == 'testsuite':
-            for child in tree.findall('testcase'):
-                name = child.attrib['name']
+    if tree.tag == 'testsuite':
+        for child in tree.findall('testcase'):
+            name = child.attrib.get('name', '<unspecified>')
+            time, failure_text, skipped = parse_result(child)
+            if skipped:
+                continue
+            yield make_result(name, time, failure_text)
+    elif tree.tag == 'testsuites':
+        for testsuite in tree:
+            suite_name = testsuite.attrib.get('name', '<unspecified>')
+            for child in testsuite.findall('testcase'):
+                name = '%s %s' % (suite_name, child.attrib.get('name', '<unspecified>'))
                 time, failure_text, skipped = parse_result(child)
                 if skipped:
                     continue
                 yield make_result(name, time, failure_text)
-        elif tree.tag == 'testsuites':
-            for testsuite in tree:
-                suite_name = testsuite.attrib['name']
-                for child in testsuite.findall('testcase'):
-                    name = '%s %s' % (suite_name, child.attrib['name'])
-                    time, failure_text, skipped = parse_result(child)
-                    if skipped:
-                        continue
-                    yield make_result(name, time, failure_text)
-        else:
-            logging.error('unable to find failures, unexpected tag %s', tree.tag)
-    except KeyError as err:
-        logging.error('malformed xml within %s: %s', tree.tag, err)
-        yield from []
+    else:
+        logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 def row_for_build(path, started, finished, results):
     """
