@@ -18,7 +18,7 @@ If you change:
 - any code: **Run from root** deploy with `make -C kettle push update`, revert with `make -C kettle rollback` if it fails
     - `push` builds the continer image and pushes it to the image registry
     - `update` sets the image of the existing kettle *Pod* which triggers a restart cycle
-    - this will build the image to [Pantheon Container Registry](https://console.cloud.google.com/gcr/images/k8s-gubernator/GLOBAL/kettle?project=k8s-gubernator&organizationId=433637338589&gcrImageListsize=30)
+    - this will build the image to [Google Container Registry](https://console.cloud.google.com/gcr/images/k8s-gubernator/GLOBAL/kettle?project=k8s-gubernator&organizationId=433637338589&gcrImageListsize=30)
     - See [Makefile](Makefile) for details
 
 #### Note:
