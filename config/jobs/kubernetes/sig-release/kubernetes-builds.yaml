@@ -69,11 +69,12 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-build-canary
-  cluster: k8s-infra-prow-build
+  cluster: k8s-infra-prow-build-trusted
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
+    serviceAccountName: gcb-builder
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20200924-7fcf543
       args:
