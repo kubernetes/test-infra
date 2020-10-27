@@ -18,7 +18,6 @@ package trickortreat
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -28,15 +27,15 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
-type fakeClowder struct {
-	errStr string
+type fakeSnicker struct {
+	err error
 }
 
-func (c *fakeClowder) readImage() (string, error) {
-	if c.errStr != "" {
-		return "", errors.New(c.errStr)
+func (c *fakeSnicker) readImage(log *logrus.Entry) (string, error) {
+	if c.err != nil {
+		return "", c.err
 	}
-	return fmt.Sprintf("![fake candy image](%s)", c), nil
+	return "![fake candy image](fake)", nil
 }
 
 func TestImages(t *testing.T) {
@@ -59,33 +58,34 @@ func TestImages(t *testing.T) {
 }
 
 func TestReadImage(t *testing.T) {
-	if img, err := trickortreat.readImage(); err != nil {
-		t.Errorf("Could not read candies from %#v: %v", trickortreat, err)
-	} else {
-		t.Log(img)
+	img, err := trickOrTreat.readImage(nil)
+	if err != nil {
+		t.Errorf("Could not read candies from %#v: %v", trickOrTreat, err)
+		return
 	}
+	t.Log(img)
 }
 
 // Small, unit tests
 func TestAll(t *testing.T) {
 	var testcases = []struct {
-		name             string
-		action           github.GenericCommentEventAction
-		body             string
-		state            string
-		pr               bool
-		readImgErrString string
-		shouldComment    bool
-		shouldError      bool
+		name          string
+		action        github.GenericCommentEventAction
+		body          string
+		state         string
+		pr            bool
+		readImgErr    error
+		shouldComment bool
+		shouldError   bool
 	}{
 		{
-			name:             "failed reading image",
-			state:            "open",
-			action:           github.GenericCommentActionCreated,
-			body:             "/trick-or-treat",
-			readImgErrString: "failed",
-			shouldComment:    false,
-			shouldError:      true,
+			name:          "failed reading image",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/trick-or-treat",
+			readImgErr:    errors.New("failed"),
+			shouldComment: false,
+			shouldError:   true,
 		},
 		{
 			name:          "ignore edited comment",
@@ -140,15 +140,12 @@ func TestAll(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, &fakeClowder{tc.readImgErrString})
+		err := handle(fc, logrus.WithField("plugin", pluginName), e, &fakeSnicker{tc.readImgErr})
 		if !tc.shouldError && err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
-			continue
 		} else if tc.shouldError && err == nil {
 			t.Errorf("%s: expected an error to occur", tc.name)
-			continue
-		}
-		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
+		} else if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
 			t.Errorf("%s: should have commented.", tc.name)
 		} else if tc.shouldComment {
 			shouldImage := !tc.shouldError
