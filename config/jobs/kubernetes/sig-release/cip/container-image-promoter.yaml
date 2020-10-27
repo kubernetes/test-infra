@@ -13,7 +13,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
         command:
         - cip
         args:
@@ -36,7 +36,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
         command:
         - cip
         args:
