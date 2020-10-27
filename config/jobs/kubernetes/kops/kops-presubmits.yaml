@@ -128,14 +128,17 @@ presubmits:
           set -o nounset;
           set -o pipefail;
           set -o xtrace;
-          pwd;
           cd /home/prow/go/src/k8s.io/kops/tests/e2e;
           export GO111MODULE=on;
           go get sigs.k8s.io/kubetest2@latest;
           go install ./kubetest2-kops;
           env;
-          kubetest2 kops -v 2 --build --up --down --cloud-provider=aws --kops-binary-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64;
-        workingDir: /home/prow/go/src/k8s.io/kops/tests/e2e
+          kubetest2 kops
+            -v 2
+            --build --up --down
+            --cloud-provider=aws
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux_amd64_pure_stripped/kops
+          ;
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
