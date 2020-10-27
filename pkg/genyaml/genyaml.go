@@ -20,7 +20,7 @@ limitations under the License.
 //
 // Example:
 //	cm := NewCommentMap("example_config.go")
-
+//
 //	yamlSnippet, err := cm.GenYaml(&plugins.Configuration{
 //		Approve: []plugins.Approve{
 //			{
@@ -35,6 +35,11 @@ limitations under the License.
 //			},
 //		},
 //	})
+//
+// Alternatively, you can also use `PopulateStruct` to recursively fill all pointer fields, slices and maps of a struct via reflection:
+//
+// yamlSnippet, err := cm.GenYaml(PopulateStruct(&plugins.Configuration{}))
+//
 //
 // 	yamlSnippet will be assigned a string containing the following YAML:
 //
@@ -262,7 +267,7 @@ func getType(typ interface{}) string {
 func (cm *CommentMap) genDocMap(path string) error {
 	pkg, err := astFrom(path)
 	if err != nil {
-		return errors.New("unable to generate AST documentation map")
+		return fmt.Errorf("unable to generate AST documentation map: %w", err)
 	}
 
 	inlineFields := map[string][]string{}
@@ -437,7 +442,7 @@ func (cm *CommentMap) EncodeYaml(config interface{}, encoder *yaml3.Encoder) err
 	// Convert Config object to an abstract YAML node.
 	y1, err := marshal(&config)
 	if err != nil {
-		return errors.New("failed to marshal config to yaml")
+		return fmt.Errorf("failed to marshal config to yaml: %w", err)
 	}
 
 	node := yaml3.Node{}
