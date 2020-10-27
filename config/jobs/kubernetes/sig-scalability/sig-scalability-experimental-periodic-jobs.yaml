@@ -8,7 +8,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: storage
@@ -48,7 +48,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: calico
@@ -106,7 +106,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: experimental-load
@@ -160,7 +160,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: experimental-load-containerd
@@ -211,7 +211,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: gce-cos-master-scalability-100-containerd-correctness
@@ -251,7 +251,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
