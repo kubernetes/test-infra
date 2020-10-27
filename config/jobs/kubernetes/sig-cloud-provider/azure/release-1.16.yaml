@@ -513,7 +513,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-        make e2e-test
+        RESOURCE_GROUP=${AZURE_RESOURCE_GROUP} make e2e-test
       env:
       - name: SKIP_UPSTREAM_E2E_TESTS
         value: "true"
@@ -567,7 +567,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-        make e2e-test
+        RESOURCE_GROUP=${AZURE_RESOURCE_GROUP} make e2e-test
       env:
       - name: SKIP_UPSTREAM_E2E_TESTS
         value: "true"
