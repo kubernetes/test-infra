@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
+	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
@@ -5037,4 +5038,28 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T) (*Config, error) {
 	}
 
 	return Load(prowConfig, "")
+}
+
+func TestGenYamlDocs(t *testing.T) {
+	const fixtureName = "./prow-config-documented.yaml"
+	inputFiles, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatalf("filepath.Glob: %v", err)
+	}
+	actualYaml, err := genyaml.NewCommentMap(inputFiles...).GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
+	if err != nil {
+		t.Fatalf("genyaml errored: %v", err)
+	}
+	if os.Getenv("UPDATE") != "" {
+		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
+			t.Fatalf("failed to write fixture: %v", err)
+		}
+	}
+	expectedYaml, err := ioutil.ReadFile(fixtureName)
+	if err != nil {
+		t.Fatalf("failed to read fixture: %v", err)
+	}
+	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
+		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
+	}
 }
