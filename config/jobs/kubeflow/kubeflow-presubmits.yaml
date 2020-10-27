@@ -363,6 +363,7 @@ presubmits:
 
   - name: kubeflow-pipelines-sdk-python39
     decorate: true
+    skip_report: true
     labels:
       preset-service-account: "true"
     run_if_changed: "sdk/.*"
