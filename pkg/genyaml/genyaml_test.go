@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	yaml3 "gopkg.in/yaml.v3"
+
 	simplealiases "k8s.io/test-infra/pkg/genyaml/testdata/alias_simple_types"
 	aliases "k8s.io/test-infra/pkg/genyaml/testdata/alias_types"
 	embedded "k8s.io/test-infra/pkg/genyaml/testdata/embedded_structs"
@@ -49,9 +50,13 @@ func resolvePath(t *testing.T, filename string) string {
 	return strings.ToLower(filepath.Join(testDir, name, filename))
 }
 
-func readFile(t *testing.T, extension string) []byte {
+func fileName(t *testing.T, extension string) string {
 	name := filepath.Base(t.Name())
-	data, err := ioutil.ReadFile(strings.ToLower(filepath.Join(testDir, name, name+"."+extension)))
+	return strings.ToLower(filepath.Join(testDir, name, name+"."+extension))
+}
+
+func readFile(t *testing.T, extension string) []byte {
+	data, err := ioutil.ReadFile(fileName(t, extension))
 	if err != nil {
 		t.Errorf("Failed reading .%s file: %v.", extension, err)
 	}

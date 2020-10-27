@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["genyaml.go"],
+    srcs = [
+        "genyaml.go",
+        "populate_struct.go",
+    ],
     data = ["//prow/plugins:config-src"],
     importpath = "k8s.io/test-infra/pkg/genyaml",
     visibility = ["//visibility:public"],
@@ -15,7 +18,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["genyaml_test.go"],
+    srcs = [
+        "genyaml_test.go",
+        "populate_struct_test.go",
+    ],
     data = [":test-data"],
     embed = [":go_default_library"],
     deps = [
