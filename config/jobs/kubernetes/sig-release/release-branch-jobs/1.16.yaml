@@ -194,6 +194,7 @@ periodics:
   cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
   name: ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -252,6 +253,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
   name: ci-kubernetes-kubemark-500-gce-stable3
