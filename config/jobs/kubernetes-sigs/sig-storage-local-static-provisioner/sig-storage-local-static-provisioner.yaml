@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
         command:
         - runner.sh
         args:
@@ -22,7 +22,7 @@ presubmits:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
         command:
         - runner.sh
         args:
@@ -55,7 +55,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
         command:
         - runner.sh
         args:
@@ -74,7 +74,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
       command:
       - runner.sh
       args:
@@ -136,7 +136,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
       command:
       - runner.sh
       args:
