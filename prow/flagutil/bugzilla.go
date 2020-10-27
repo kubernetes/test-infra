@@ -37,7 +37,7 @@ type BugzillaOptions struct {
 // AddFlags injects Bugzilla options into the given FlagSet.
 func (o *BugzillaOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.endpoint, "bugzilla-endpoint", "", "Bugzilla's API endpoint.")
-	fs.UintVar(&o.githubExternalTrackerId, "--bugzilla-github-external-tracker-id", 0, "The ext_type_id for GitHub external bugs, optional.")
+	fs.UintVar(&o.githubExternalTrackerId, "bugzilla-github-external-tracker-id", 0, "The ext_type_id for GitHub external bugs, optional.")
 	fs.StringVar(&o.ApiKeyPath, "bugzilla-api-key-path", "", "Path to the file containing the Bugzilla API key.")
 }
 
