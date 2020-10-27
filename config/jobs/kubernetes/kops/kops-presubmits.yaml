@@ -103,7 +103,6 @@ presubmits:
     branches:
     - master
     always_run: false
-    skip_report: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
