@@ -128,6 +128,8 @@ presubmits:
           set -o nounset;
           set -o pipefail;
           set -o xtrace;
+          pwd;
+          cd /home/prow/go/src/k8s.io/kops/tests/e2e;
           export GO111MODULE=on;
           go get sigs.k8s.io/kubetest2@latest;
           go install ./kubetest2-kops;
