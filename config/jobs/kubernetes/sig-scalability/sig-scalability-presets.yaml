@@ -282,6 +282,10 @@ presets:
   env:
 
 - labels:
+    preset-e2e-scalability-periodics: "true"
+  env:
+
+- labels:
     preset-e2e-scalability-periodics-master: "true"
   env:
   # Switch to using log-dump.sh script included in the kubekins-e2e image

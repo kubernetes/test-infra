@@ -8,6 +8,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
@@ -57,6 +58,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
@@ -109,6 +111,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
@@ -176,6 +179,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
@@ -241,6 +245,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     fork-per-release: "true"
@@ -311,6 +316,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
@@ -383,6 +389,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
@@ -444,6 +451,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
@@ -501,6 +509,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
@@ -611,6 +620,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
@@ -654,6 +664,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
