@@ -693,7 +693,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
         command:
         - cip
         args:
@@ -720,7 +720,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
         command:
         - cip
         args:
@@ -1055,7 +1055,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200807-v2.3.1-258-gc35b3a0
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
       command:
       - cip
       args:
