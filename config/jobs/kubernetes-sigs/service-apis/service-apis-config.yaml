@@ -22,3 +22,22 @@ presubmits:
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
+  - name: pull-service-apis-install
+    annotations:
+      testgrid-dashboards: sig-network-service-apis
+      testgrid-tab-name: install
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/service-apis
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - install
