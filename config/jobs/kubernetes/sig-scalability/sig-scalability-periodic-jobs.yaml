@@ -8,7 +8,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-throughput
@@ -57,7 +57,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-containerd: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
@@ -109,7 +109,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
@@ -176,7 +176,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-scheduler
@@ -241,7 +241,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
@@ -311,7 +311,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
@@ -383,7 +383,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000-scheduler
@@ -444,7 +444,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-high-density
@@ -501,7 +501,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
     testgrid-tab-name: kubemark-100-benchmark
@@ -611,7 +611,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: kube-dns
@@ -654,7 +654,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: node-local-dns
