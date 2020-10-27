@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -105,8 +104,8 @@ func TestGetBug(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, but got one: %v", err)
 	}
-	if !reflect.DeepEqual(bug, bugStruct) {
-		t.Errorf("got incorrect bug: %v", diff.ObjectReflectDiff(bug, bugStruct))
+	if diff := cmp.Diff(bug, bugStruct); diff != "" {
+		t.Errorf("got incorrect bug: %v", diff)
 	}
 
 	// this should 404
@@ -301,8 +300,8 @@ func TestGetComments(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, but got one: %v", err)
 	}
-	if !reflect.DeepEqual(comments, commentsStruct) {
-		t.Errorf("got incorrect comments: %v", diff.ObjectReflectDiff(comments, commentsStruct))
+	if diff := cmp.Diff(comments, commentsStruct); diff != "" {
+		t.Errorf("got incorrect comments: %v", diff)
 	}
 
 	// this should 404
@@ -443,8 +442,8 @@ This is another comment.`,
 	}}
 	for _, testCase := range testCases {
 		newBug := cloneBugStruct(&testCase.bug, nil, testCase.comments)
-		if !reflect.DeepEqual(*newBug, testCase.expected) {
-			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, cmp.Diff(testCase.expected, *newBug))
+		if diff := cmp.Diff(*newBug, testCase.expected); diff != "" {
+			t.Errorf("%s: Difference in expected BugCreate and actual: %s", testCase.name, diff)
 		}
 	}
 	// test max length truncation
@@ -542,6 +541,7 @@ func TestUpdateBug(t *testing.T) {
 func TestAddPullRequestAsExternalBug(t *testing.T) {
 	var testCases = []struct {
 		name            string
+		trackerId       uint
 		id              int
 		expectedPayload string
 		response        string
@@ -553,6 +553,15 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			id:              1705243,
 			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "explicit tracker ID is used, update succeeds, makes a change",
+			trackerId:       123,
+			id:              17052430,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[17052430],"external_bugs":[{"ext_type_id":123,"ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":17052430}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
 		},
@@ -636,8 +645,8 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		}
 		for _, testCase := range testCases {
 			if payload.Parameters[0].BugIDs[0] == testCase.id {
-				if actual, expected := string(raw), testCase.expectedPayload; actual != expected {
-					t.Errorf("%s: got incorrect JSONRPC payload: %v", testCase.name, diff.ObjectReflectDiff(expected, actual))
+				if diff := cmp.Diff(string(raw), testCase.expectedPayload); diff != "" {
+					t.Errorf("%s: got incorrect JSONRPC payload: %v", testCase.name, diff)
 				}
 				if _, err := w.Write([]byte(testCase.response)); err != nil {
 					t.Fatalf("%s: failed to send JSONRPC response: %v", testCase.name, err)
@@ -652,6 +661,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			client.githubExternalTrackerId = testCase.trackerId
 			changed, err := client.AddPullRequestAsExternalBug(testCase.id, "org", "repo", 1)
 			if !testCase.expectedError && err != nil {
 				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
@@ -994,8 +1004,8 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 			if testCase.expectedError && err == nil {
 				t.Errorf("%s: expected an error, but got none", testCase.name)
 			}
-			if actual, expected := prs, testCase.expectedPRs; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: got incorrect prs: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			if diff := cmp.Diff(prs, testCase.expectedPRs); diff != "" {
+				t.Errorf("%s: got incorrect prs: %v", testCase.name, diff)
 			}
 		})
 	}
