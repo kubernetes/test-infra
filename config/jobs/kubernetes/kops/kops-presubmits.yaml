@@ -130,7 +130,8 @@ presubmits:
           set -o xtrace;
           export GO111MODULE=on;
           go get sigs.k8s.io/kubetest2@latest;
-          go install -o /workspace/kubetest2-kops ./kubetest2-kops;
+          go install ./kubetest2-kops;
+          env;
           kubetest2 kops -v 2 --build --up --down --cloud-provider=aws --kops-binary-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64;
         workingDir: /home/prow/go/src/k8s.io/kops/tests/e2e
         # docker-in-docker needs privileged mode
