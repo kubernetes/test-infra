@@ -3,6 +3,7 @@
 ## New features
 
 New features added to each component:
+  - *November 2, 2020* Tide is now able to respect checkruns.
   - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
     Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
     Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and
