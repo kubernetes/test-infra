@@ -1,4 +1,32 @@
 postsubmits:
+  kubernetes/release:
+    - name: post-release-push-image-vulndash
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+      decorate: true
+      run_if_changed: '^cmd\/vulndash\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-artifact-promoter
+              - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
+              - --build-dir=.
+              - cmd/vulndash
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
   kubernetes-sigs/k8s-container-image-promoter:
     - name: cip-postsubmit-push-to-staging
       cluster: k8s-infra-prow-build-trusted
