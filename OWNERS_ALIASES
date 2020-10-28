@@ -208,20 +208,30 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
-  # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
+  # Modified from https://git.k8s.io/sig-release/release-managers.md#release-managers
+  #
+  # While most Release Managers are included in the reviewers group, approvals
+  # (especially for image pushing and container promotion jobs) are restricted
+  # to a rough subset of:
+  #
+  # - SIG Release Chairs/Technical Leads
+  # - Release Engineering subproject owners
+  # - Active Release Managers with deep experience maintaining our
+  #   k/test-infra jobs and overall CI Signal
+  #
   release-engineering-approvers:
-    - alejandrox1 # SIG Technical Lead
-    - justaugustus # SIG Chair
-    - saschagrunert # SIG Technical Lead
-    - tpepper # SIG Chair
+    - alejandrox1 # SIG Technical Lead / emergency approval
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
     - cpanato # Release Manager
     - feiskyer # Release Manager
     - hasheddan # Release Manager
     - hoegaarden # Release Manager
-    - justaugustus # SIG Chair / Release Manager
-    - saschagrunert # SIG Technical Lead / Release Manager
-    - tpepper # SIG Chair / Release Manager
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
     - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
