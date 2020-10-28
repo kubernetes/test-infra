@@ -53,7 +53,7 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
-	CommentMap                 = genyaml.NewCommentMap("prow/plugins/config.go")
+	CommentMap, _              = genyaml.NewCommentMap("prow/plugins/config.go")
 )
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled

@@ -5046,7 +5046,11 @@ func TestGenYamlDocs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("filepath.Glob: %v", err)
 	}
-	actualYaml, err := genyaml.NewCommentMap(inputFiles...).GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
+	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	if err != nil {
+		t.Fatalf("failed to construct commentMap: %v", err)
+	}
+	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
 	if err != nil {
 		t.Fatalf("genyaml errored: %v", err)
 	}
