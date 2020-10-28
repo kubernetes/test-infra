@@ -559,6 +559,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-terraform
+  - name: pull-kops-verify-cloudformation
+    skip_report: false
+    run_if_changed: '^tests\/integration\/update_cluster\/'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: k8s.io/kops
+    skip_branches:
+    - release-1.18
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-cloudformation"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-cloudformation
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
