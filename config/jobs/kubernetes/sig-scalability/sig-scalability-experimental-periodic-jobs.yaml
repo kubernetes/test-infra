@@ -145,7 +145,6 @@ periodics:
           - --test-cmd-args=--testconfig=testing/load/config.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
           - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
