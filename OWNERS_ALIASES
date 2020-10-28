@@ -221,6 +221,8 @@ aliases:
   #
   release-engineering-approvers:
     - alejandrox1 # SIG Technical Lead / emergency approval
+    - cpanato # Release Manager / EU backup approval coverage
+    - hasheddan # Release Manager / US backup approval coverage
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
     - tpepper # SIG Chair / RelEng subproject owner / Release Manager
