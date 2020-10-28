@@ -55,23 +55,29 @@ query: |
           SELECT
             job,
             if(substr(job, 0, 3) = 'pr:', 'pull', 'ci') kind,  /* pull or ci */
-            ifnull(repo_commit, version) version, /* bootstrap git version, empty for ci  */
+            ifnull(repo_commit, version) version, /* git version, empty for ci  */
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                repos,
+                ifnull(repos, (select i.value from t.metadata i where i.key = 'repos')),
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
-              version
+              ifnull(repo_commit, version)
             ) commit,  /* repo commit for PR or version for CI */
             result,  /* SUCCESS if the build passed */
             test  /* repeated tuple of tests */
           FROM `k8s-gubernator.build.week` as t
           where
             datetime(started) > datetime_sub(current_datetime(), interval 7 DAY)
-            and version != 'unknown'
+            and (version != 'unknown' or repo_commit is not null)
             and (
-              (substr(job, 0, 3) = 'ci-' and version != 'unknown') or
-              array_length(split(replace(repos,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+              substr(job, 0, 3) = 'ci-' or
+              exists(
+                select as struct
+                  i
+                from t.metadata i
+                where (i.key = 'repos' or repos is not null) and
+                array_length(split(replace(ifnull(t.repos, i.value),', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+              )
             )
         )
         group by job, commit
