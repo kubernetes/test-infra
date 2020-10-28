@@ -88,7 +88,7 @@ presubmits:
           --gcp-zone=us-west1-b
           --node-tests=true
           "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml --extra-envs=${EXTRA_ENVS}"
-          '--node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
+          '--node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --host=http://127.0.0.1:8080'
           '--test_args=--nodes=8 --focus=NodeProblemDetector'
           --timeout=60m
         # docker-in-docker needs privileged mode
