@@ -29,7 +29,7 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes
-    repo: k8s.io
+    repo: release
     base_ref: master
   spec:
     serviceAccountName: k8s-infra-gcr-vuln-dashboard
@@ -37,11 +37,11 @@ periodics:
     # TODO(releng): Point to promoted image once this job is fixed
     - image: gcr.io/k8s-staging-artifact-promoter/vulndash:latest
       command:
-      - dashboard
+      - vulndash
       args:
-        - -dashboard-file-path=/home/prow/go/src/github.com/kubernetes-sigs/k8s-container-image-promoter/dashboard/
-        - -vuln-target-project=k8s-artifacts-prod
-        - -dashboard-bucket=gs://k8s-artifacts-prod-vuln-dashboard
+        - --project=k8s-artifacts-prod
+        - --bucket=gs://k8s-artifacts-prod-vuln-dashboard
+        - --dashboard-file-path=/home/prow/go/src/k8s.io/release/cmd/vulndash/
   annotations:
     testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
