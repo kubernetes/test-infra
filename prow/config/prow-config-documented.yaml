@@ -4,6 +4,8 @@ branch-protection:
     enforce_admins: false
     exclude:
       - ""
+
+    # Orgs holds branch protection options for orgs by name
     orgs:
         "":
             allow_deletions: false
@@ -499,13 +501,30 @@ slack_reporter_configs:
 # is: https://github.com/kubernetes/test-infra/issues
 status_error_link: ' '
 tide:
+    # BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+    # integer batch size limit as the value. The empty string key can be used as
+    # a global default.
+    # Special values:
+    # 0 => unlimited batch size
+    # -1 => batch merging disabled :(
     batch_size_limit:
         "": 0
+
+    # BlockerLabel is an optional label that is used to identify merge blocking
+    # GitHub issues.
+    # Leave this blank to disable this feature and save 1 API token per sync loop.
     blocker_label: ' '
+
+    # TideContextPolicyOptions defines merge options for context. If not set it will infer
+    # the required and optional contexts from the prow jobs configured and use the github
+    # combined status; otherwise it may apply the branch protection setting or let user
+    # define their own options in case branch protection is not used.
     context_options:
         from-branch-protection: false
         optional-contexts:
           - ""
+
+        # GitHub Orgs
         orgs:
             "":
                 from-branch-protection: false
@@ -515,6 +534,7 @@ tide:
                     "":
                         branches:
                             "":
+                                # Infer required and optional jobs from Branch Protection configuration
                                 from-branch-protection: false
                                 optional-contexts:
                                   - ""
@@ -522,6 +542,8 @@ tide:
                                   - ""
                                 required-if-present-contexts:
                                   - ""
+
+                                # whether to consider unknown contexts optional (skip) or required.
                                 skip-unknown-contexts: false
                         from-branch-protection: false
                         optional-contexts:
@@ -541,16 +563,38 @@ tide:
         required-if-present-contexts:
           - ""
         skip-unknown-contexts: false
+
+    # A key/value pair of an org/repo as the key and Go template to override
+    # the default merge commit title and/or message. Template is passed the
+    # PullRequest struct (prow/github/types.go#PullRequest)
     merge_commit_template:
         "":
             body: ' '
             title: ' '
+
+    # MergeLabel is an optional label that is used to identify PRs that should
+    # always be merged with all individual commits from the PR.
+    # Leave this blank to disable this feature.
     merge_label: ' '
+
+    # A key/value pair of an org/repo as the key and merge method to override
+    # the default method of merge. Valid options are squash, rebase, and merge.
     merge_method:
         "": ""
+
+    # PRStatusBaseURL is the base URL for the PR status page.
+    # This is used to link to a merge requirements overview
+    # in the tide status context.
+    # Will be deprecated on June 2020.
     pr_status_base_url: ' '
+
+    # PRStatusBaseURLs is the base URL for the PR status page
+    # mapped by org or org/repo level.
     pr_status_base_urls:
         "": ""
+
+    # Queries represents a list of GitHub search queries that collectively
+    # specify the set of PRs that meet merge requirements.
     queries:
       - author: ' '
         excludedBranches:
@@ -568,8 +612,25 @@ tide:
           - ""
         repos:
           - ""
+
+    # RebaseLabel is an optional label that is used to identify PRs that should
+    # always be rebased and merged.
+    # Leave this blank to disable this feature.
     rebase_label: ' '
+
+    # SquashLabel is an optional label that is used to identify PRs that should
+    # always be squash merged.
+    # Leave this blank to disable this feature.
     squash_label: ' '
+
+    # StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
+    # Defaults to the value of SyncPeriod.
     status_update_period: 0s
+
+    # SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
     sync_period: 0s
+
+    # URL for tide status contexts.
+    # We can consider allowing this to be set separately for separate repos, or
+    # allowing it to be a template.
     target_url: ' '
