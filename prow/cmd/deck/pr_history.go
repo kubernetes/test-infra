@@ -39,7 +39,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-var pullCommitRe = regexp.MustCompile(`^[-\w]+:\w{40},\d+:(\w{40})$`)
+var pullCommitRe = regexp.MustCompile(`^[-\.\w]+:\w{40},\d+:(\w{40})$`)
 
 type prHistoryTemplate struct {
 	Link    string
