@@ -34,7 +34,8 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-vuln-dashboard
     containers:
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+    # TODO(releng): Point to promoted image once this job is fixed
+    - image: gcr.io/k8s-staging-artifact-promoter/vulndash:latest
       command:
       - dashboard
       args:
