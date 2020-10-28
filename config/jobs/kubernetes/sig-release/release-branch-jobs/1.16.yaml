@@ -194,6 +194,7 @@ periodics:
   cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
   name: ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -214,6 +215,14 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
+      # Logexporter creates a daemonset per compute zone to extract logs from
+      # nodes in each zone separately. This mechanism relies on
+      # topology.kubernetes.io/zone node label that was added in K8s 1.17.
+      # In older releases, failure-domain.beta.kubernetes.io/zone label is used
+      # instead. As the former label is used by the logexporter by default, we
+      # override it by setting ZONE_NODE_SELECTOR_LABEL env var to the latter one.
+      # More context: https://github.com/kubernetes/kubernetes/pull/94056
+      - --env=ZONE_NODE_SELECTOR_LABEL=failure-domain.beta.kubernetes.io/zone
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -252,6 +261,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
   name: ci-kubernetes-kubemark-500-gce-stable3
@@ -275,6 +285,14 @@ periodics:
       - --kubemark
       - --kubemark-nodes=500
       - --provider=gce
+      # Logexporter creates a daemonset per compute zone to extract logs from
+      # nodes in each zone separately. This mechanism relies on
+      # topology.kubernetes.io/zone node label that was added in K8s 1.17.
+      # In older releases, failure-domain.beta.kubernetes.io/zone label is used
+      # instead. As the former label is used by the logexporter by default, we
+      # override it by setting ZONE_NODE_SELECTOR_LABEL env var to the latter one.
+      # More context: https://github.com/kubernetes/kubernetes/pull/94056
+      - --env=ZONE_NODE_SELECTOR_LABEL=failure-domain.beta.kubernetes.io/zone
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh

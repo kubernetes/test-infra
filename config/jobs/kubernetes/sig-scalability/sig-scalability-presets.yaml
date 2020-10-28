@@ -288,3 +288,7 @@ presets:
   # instead of relying on the deprecated one from k/k repository.
   - name: USE_KUBEKINS_LOG_DUMPING
     value: "yes"
+
+- labels:
+    preset-e2e-scalability-periodics-master: "true"
+  env:
