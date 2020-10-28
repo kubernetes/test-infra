@@ -19,7 +19,7 @@ limitations under the License.
 // from the AST of a given file.
 //
 // Example:
-//	cm := NewCommentMap("example_config.go")
+//	cm, err := NewCommentMap("example_config.go")
 //
 //	yamlSnippet, err := cm.GenYaml(&plugins.Configuration{
 //		Approve: []plugins.Approve{
@@ -72,6 +72,7 @@ import (
 	"go/doc"
 	"go/parser"
 	"go/token"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -95,16 +96,24 @@ type CommentMap struct {
 }
 
 // NewCommentMap is the constructor for CommentMap accepting a variadic number of paths.
-func NewCommentMap(paths ...string) *CommentMap {
+func NewCommentMap(paths ...string) (*CommentMap, error) {
 	cm := &CommentMap{
 		comments: make(map[string]map[string]Comment),
 	}
 
+	packageFiles := map[string][]string{}
 	for _, path := range paths {
-		cm.AddPath(path)
+		dir := filepath.Dir(path)
+		packageFiles[dir] = append(packageFiles[dir], path)
 	}
 
-	return cm
+	for pkg, files := range packageFiles {
+		if err := cm.addPackage(files); err != nil {
+			return nil, fmt.Errorf("failed to add files in %s: %w", pkg, err)
+		}
+	}
+
+	return cm, nil
 }
 
 // Comment is an abstract structure for storing parsed AST comments decorated with contextual information.
@@ -151,24 +160,38 @@ func jsonToYaml(j []byte) ([]byte, error) {
 }
 
 // astFrom takes a path to a Go file and returns the abstract syntax tree (AST) for that file.
-func astFrom(path string) (*doc.Package, error) {
+func astFrom(paths []string) (*doc.Package, error) {
 	fset := token.NewFileSet()
 	m := make(map[string]*ast.File)
 
-	f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse file to AST from path: %s", path)
+	for _, file := range paths {
+		f, err := parser.ParseFile(fset, file, nil, parser.ParseComments)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse file to AST from path %s: %w", file, err)
+		}
+		m[file] = f
 	}
 
-	m[path] = f
-	apkg, _ := ast.NewPackage(fset, m, nil, nil)
+	// Copied from the go doc command: https://github.com/golang/go/blob/fc116b69e2004c159d0f2563c6e91ac75a79f872/src/go/doc/doc.go#L203
+	apkg, _ := ast.NewPackage(fset, m, simpleImporter, nil)
 
 	astDoc := doc.New(apkg, "", 0)
 	if astDoc == nil {
-		return nil, fmt.Errorf("unable to parse AST documentation from path: %s", path)
+		return nil, fmt.Errorf("unable to parse AST documentation from paths %v: got no doc", paths)
 	}
 
 	return astDoc, nil
+}
+
+func simpleImporter(imports map[string]*ast.Object, path string) (*ast.Object, error) {
+	pkg := imports[path]
+	if pkg == nil {
+		// note that strings.LastIndex returns -1 if there is no "/"
+		pkg = ast.NewObj(ast.Pkg, path[strings.LastIndex(path, "/")+1:])
+		pkg.Data = ast.NewScope(nil) // required by ast.NewPackage for dot-import
+		imports[path] = pkg
+	}
+	return pkg, nil
 }
 
 // fmtRawDoc formats/sanitizes a Go doc string removing TODOs, newlines, whitespace, and various other characters from the resultant string.
@@ -264,8 +287,8 @@ func getType(typ interface{}) string {
 }
 
 // genDocMap extracts the name of the field as it should appear in YAML format and returns the resultant string.
-func (cm *CommentMap) genDocMap(path string) error {
-	pkg, err := astFrom(path)
+func (cm *CommentMap) genDocMap(packageFiles []string) error {
+	pkg, err := astFrom(packageFiles)
 	if err != nil {
 		return fmt.Errorf("unable to generate AST documentation map: %w", err)
 	}
@@ -388,33 +411,17 @@ func (cm *CommentMap) PrintComments() {
 	}
 }
 
-// AddPath allow for adding to the CommentMap via path specification to a `.go` file, returning a boolean indicating success.
-func (cm *CommentMap) AddPath(path string) bool {
+// addPackage allow for adding to the CommentMap via a list of paths to go files in the same package
+func (cm *CommentMap) addPackage(paths []string) error {
 	cm.Lock()
 	defer cm.Unlock()
 
-	err := cm.genDocMap(path)
+	err := cm.genDocMap(paths)
 	if err != nil {
-		return false
+		return err
 	}
 
-	return true
-}
-
-// SetPath allow for setting of the CommentMap via path specification to a `.go` file, returning a boolean indicating success.
-func (cm *CommentMap) SetPath(path string) bool {
-	cm.Lock()
-	defer cm.Unlock()
-
-	// Empty map.
-	cm.comments = make(map[string]map[string]Comment)
-
-	err := cm.genDocMap(path)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return nil
 }
 
 // GenYaml generates a fully commented YAML snippet for a given plugin configuration.
