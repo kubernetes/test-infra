@@ -35,7 +35,7 @@ periodics:
     serviceAccountName: k8s-infra-gcr-vuln-dashboard
     containers:
     # TODO(releng): Point to promoted image once this job is fixed
-    - image: gcr.io/k8s-staging-artifact-promoter/vulndash:latest
+    - image: gcr.io/k8s-staging-artifact-promoter/vulndash-amd64:latest
       command:
       - vulndash
       args:
