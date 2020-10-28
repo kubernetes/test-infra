@@ -318,7 +318,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
       - --cluster=e2e-big
       - --extract=ci/latest-1.18
       - --gcp-node-image=gci
