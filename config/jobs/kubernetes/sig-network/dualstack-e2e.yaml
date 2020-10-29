@@ -15,7 +15,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.16
       command:
       - runner.sh
       - kubetest
@@ -66,7 +66,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.17
       command:
       - runner.sh
       - kubetest
@@ -117,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
       command:
       - runner.sh
       - kubetest
@@ -168,7 +168,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
       command:
       - runner.sh
       - kubetest
@@ -220,7 +220,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
       command:
       - runner.sh
       - kubetest
@@ -275,7 +275,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
         command:
         - runner.sh
         - kubetest
@@ -327,7 +327,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
         command:
         - runner.sh
         - kubetest

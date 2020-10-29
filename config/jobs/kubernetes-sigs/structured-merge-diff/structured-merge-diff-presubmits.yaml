@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
         command:
         - go
         args:
@@ -27,7 +27,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
         command:
         - bash
         - -c

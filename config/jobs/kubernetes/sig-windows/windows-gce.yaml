@@ -88,7 +88,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -133,7 +133,7 @@ periodics:
         value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -180,7 +180,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -225,7 +225,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -270,7 +270,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
     testgrid-tab-name: gce-windows-2019-containerd-master
@@ -318,7 +318,7 @@ periodics:
         value: win2019
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
       name: ""
       resources: {}
   annotations:
@@ -352,7 +352,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "gcr.io/gke-release/pause-win:1.2.1"
@@ -406,7 +406,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
@@ -489,7 +489,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
