@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -42,7 +42,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -75,7 +75,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -108,7 +108,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -131,7 +131,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "runner.sh"
         - "make"
@@ -149,7 +149,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -166,7 +166,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -183,7 +183,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -200,7 +200,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
@@ -222,7 +222,7 @@ presubmits:
       preset-azure-cred-only: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -254,7 +254,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-apidiff
@@ -270,7 +270,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201028-8000225-1.18
         command:
         - runner.sh
         - bash
