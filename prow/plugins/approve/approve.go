@@ -452,7 +452,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	})
 	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
-	log.WithField("duration", time.Since(start).String()).Debug("Completed filering approval comments in handle")
+	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)

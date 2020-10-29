@@ -17,6 +17,7 @@ limitations under the License.
 package pjutil
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -28,15 +29,10 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 )
 
-type fakeJobResult struct {
-	err error
-}
-
 func Test_resultForJob(t *testing.T) {
 	type args struct {
 		pj           prowapi.ProwJob
 		watchResults []prowapi.ProwJob
-		selector     string
 	}
 	testcases := []struct {
 		name             string
@@ -74,7 +70,6 @@ func Test_resultForJob(t *testing.T) {
 						},
 					},
 				},
-				selector: "metadata.name=winwin",
 			},
 			expected: pjapi.ProwJobStatus{
 				State: prowapi.SuccessState,
@@ -122,7 +117,6 @@ func Test_resultForJob(t *testing.T) {
 						},
 					},
 				},
-				selector: "metadata.name=winwin",
 			},
 			expected: pjapi.ProwJobStatus{
 				State: prowapi.SuccessState,
@@ -158,7 +152,6 @@ func Test_resultForJob(t *testing.T) {
 						},
 					},
 				},
-				selector: "metadata.name=winwin",
 			},
 			expected: pjapi.ProwJobStatus{
 				State: prowapi.FailureState,
@@ -176,7 +169,7 @@ func Test_resultForJob(t *testing.T) {
 				}
 				return true, ret, nil
 			})
-			pjr, shouldContinue, err := resultForJob(cs.ProwV1().ProwJobs("prowjobs"), tc.args.selector)
+			pjr, shouldContinue, err := resultForJob(cs.ProwV1().ProwJobs("prowjobs"), fmt.Sprintf("metadata.name=%s", tc.args.pj.Name))
 			if !reflect.DeepEqual(pjr.State, tc.expected.State) {
 				t.Errorf("resultForJob() ProwJobStatus got = %v, want %v", pjr, tc.expected)
 			}

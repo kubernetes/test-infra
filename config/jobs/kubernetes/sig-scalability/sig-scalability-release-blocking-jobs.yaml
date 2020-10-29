@@ -7,6 +7,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -35,7 +37,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
       resources:
         requests:
           cpu: 6
@@ -56,6 +58,8 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -81,8 +85,11 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+      # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
+      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
       - --env=CL2_ENABLE_DENSITY_TEST=true
+      - --env=CL2_LOAD_TEST_THROUGHPUT=50
+      - --env=CL2_DELETE_TEST_THROUGHPUT=30
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -93,14 +100,13 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
       resources:
         requests:
           cpu: 6
@@ -121,6 +127,8 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
@@ -132,7 +140,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -141,8 +149,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      # TODO(oxddr): remove once debugging is finished
-      - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
       - --cluster=e2e-big
       - --extract=ci/latest-fast
       - --gcp-node-image=gci
@@ -170,7 +176,6 @@ periodics:
       # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml

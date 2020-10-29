@@ -60,34 +60,32 @@ type Configuration struct {
 
 	// Built-in plugins specific configuration.
 
-	Approve                    []Approve                    `json:"approve,omitempty"`
-	UseDeprecatedSelfApprove   bool                         `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
-	UseDeprecatedReviewApprove bool                         `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
-	Blockades                  []Blockade                   `json:"blockades,omitempty"`
-	Blunderbuss                Blunderbuss                  `json:"blunderbuss,omitempty"`
-	Bugzilla                   Bugzilla                     `json:"bugzilla,omitempty"`
-	Cat                        Cat                          `json:"cat,omitempty"`
-	CherryPickUnapproved       CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
-	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
-	Dco                        map[string]*Dco              `json:"dco,omitempty"`
-	Golint                     Golint                       `json:"golint,omitempty"`
-	Goose                      Goose                        `json:"goose,omitempty"`
-	Heart                      Heart                        `json:"heart,omitempty"`
-	Label                      Label                        `json:"label,omitempty"`
-	Lgtm                       []Lgtm                       `json:"lgtm,omitempty"`
-	MilestoneApplier           map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
-	RepoMilestone              map[string]Milestone         `json:"repo_milestone,omitempty"`
-	Project                    ProjectConfig                `json:"project_config,omitempty"`
-	ProjectManager             ProjectManager               `json:"project_manager,omitempty"`
-	RequireMatchingLabel       []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
-	RequireSIG                 RequireSIG                   `json:"requiresig,omitempty"`
-	Retitle                    Retitle                      `json:"retitle,omitempty"`
-	Slack                      Slack                        `json:"slack,omitempty"`
-	SigMention                 SigMention                   `json:"sigmention,omitempty"`
-	Size                       Size                         `json:"size,omitempty"`
-	Triggers                   []Trigger                    `json:"triggers,omitempty"`
-	Welcome                    []Welcome                    `json:"welcome,omitempty"`
-	Override                   Override                     `json:"override,omitempty"`
+	Approve              []Approve                    `json:"approve,omitempty"`
+	Blockades            []Blockade                   `json:"blockades,omitempty"`
+	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
+	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
+	Cat                  Cat                          `json:"cat,omitempty"`
+	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
+	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
+	Dco                  map[string]*Dco              `json:"dco,omitempty"`
+	Golint               Golint                       `json:"golint,omitempty"`
+	Goose                Goose                        `json:"goose,omitempty"`
+	Heart                Heart                        `json:"heart,omitempty"`
+	Label                Label                        `json:"label,omitempty"`
+	Lgtm                 []Lgtm                       `json:"lgtm,omitempty"`
+	MilestoneApplier     map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
+	RepoMilestone        map[string]Milestone         `json:"repo_milestone,omitempty"`
+	Project              ProjectConfig                `json:"project_config,omitempty"`
+	ProjectManager       ProjectManager               `json:"project_manager,omitempty"`
+	RequireMatchingLabel []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
+	RequireSIG           RequireSIG                   `json:"requiresig,omitempty"`
+	Retitle              Retitle                      `json:"retitle,omitempty"`
+	Slack                Slack                        `json:"slack,omitempty"`
+	SigMention           SigMention                   `json:"sigmention,omitempty"`
+	Size                 Size                         `json:"size,omitempty"`
+	Triggers             []Trigger                    `json:"triggers,omitempty"`
+	Welcome              []Welcome                    `json:"welcome,omitempty"`
+	Override             Override                     `json:"override,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -252,25 +250,20 @@ type Approve struct {
 	// IssueRequired indicates if an associated issue is required for approval in
 	// the specified repos.
 	IssueRequired bool `json:"issue_required,omitempty"`
-
 	// RequireSelfApproval requires PR authors to explicitly approve their PRs.
 	// Otherwise the plugin assumes the author of the PR approves the changes in the PR.
 	RequireSelfApproval *bool `json:"require_self_approval,omitempty"`
-
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
 	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
-
 	// IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
 	// * an APPROVE github review is equivalent to leaving an "/approve" message.
 	// * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
 	IgnoreReviewState *bool `json:"ignore_review_state,omitempty"`
-
 	// CommandHelpLink is the link to the help page which shows the available commands for each repo.
 	// The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
 	// and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
 	CommandHelpLink string `json:"commandHelpLink"`
-
 	// PrProcessLink is the link to the help page which explains the code review process.
 	// The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
 	PrProcessLink string `json:"pr_process_link,omitempty"`
@@ -846,9 +839,9 @@ func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repo
 }
 
 // SetDefaults sets default options for config updating
-func (c *ConfigUpdater) SetDefaults() {
-	if len(c.Maps) == 0 {
-		c.Maps = map[string]ConfigMapSpec{
+func (cu *ConfigUpdater) SetDefaults() {
+	if len(cu.Maps) == 0 {
+		cu.Maps = map[string]ConfigMapSpec{
 			"config/prow/config.yaml": {
 				Name: "config",
 			},
@@ -858,7 +851,7 @@ func (c *ConfigUpdater) SetDefaults() {
 		}
 	}
 
-	for name, spec := range c.Maps {
+	for name, spec := range cu.Maps {
 		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
 			logrus.Warn("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin and will be removed in October, 2020, use 'clusters' instead")
 		}
@@ -868,7 +861,7 @@ func (c *ConfigUpdater) SetDefaults() {
 		if len(spec.Clusters) == 0 {
 			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: spec.Namespaces}
 		}
-		c.Maps[name] = spec
+		cu.Maps[name] = spec
 	}
 }
 

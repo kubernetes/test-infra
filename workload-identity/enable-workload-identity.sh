@@ -31,7 +31,7 @@ cluster=$3
 
 
 cluster_namespace="$project.svc.id.goog"
-pool_metadata=GKE_METADATA_SERVER
+pool_metadata=GKE_METADATA
 
 
 call-gcloud() {
@@ -48,7 +48,7 @@ cluster-identity() {
 
 pool-identities() {
   call-gcloud node-pools list "--cluster=$cluster" --format='value(name)' \
-    --filter="config.workloadMetadataConfig.nodeMetadata != $pool_metadata"
+    --filter="config.workloadMetadataConfig.mode != $pool_metadata"
 }
 
 fix_service=
@@ -98,11 +98,11 @@ if [[ -n "$fix_service" ]]; then
 fi
 
 if [[ -n "$fix_cluster" ]]; then
-  call-gcloud clusters update "$cluster" "--identity-namespace=$cluster_namespace"
+  call-gcloud clusters update "$cluster" "--workload-pool=$cluster_namespace"
 fi
 
 for pool in "${fix_pools[@]}"; do
-  call-gcloud node-pools update --cluster="$cluster" "$pool" "--workload-metadata-from-node=$pool_metadata"
+  call-gcloud node-pools update --cluster="$cluster" "$pool" "--workload-metadata=$pool_metadata"
 done
 
 echo "DONE"

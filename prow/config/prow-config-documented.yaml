@@ -1,0 +1,636 @@
+branch-protection:
+    allow_deletions: false
+    allow_force_pushes: false
+    enforce_admins: false
+    exclude:
+      - ""
+
+    # Orgs holds branch protection options for orgs by name
+    orgs:
+        "":
+            allow_deletions: false
+            allow_force_pushes: false
+            enforce_admins: false
+            exclude:
+              - ""
+            protect: false
+            repos:
+                "":
+                    allow_deletions: false
+                    allow_force_pushes: false
+                    branches:
+                        "":
+                            allow_deletions: false
+                            allow_force_pushes: false
+                            enforce_admins: false
+                            exclude:
+                              - ""
+                            protect: false
+                            required_linear_history: false
+                            required_pull_request_reviews:
+                                dismiss_stale_reviews: false
+                                dismissal_restrictions:
+                                    teams:
+                                      - ""
+                                    users:
+                                      - ""
+                                require_code_owner_reviews: false
+                                required_approving_review_count: 0
+                            required_status_checks:
+                                contexts:
+                                  - ""
+                                strict: false
+                            restrictions:
+                                teams:
+                                  - ""
+                                users:
+                                  - ""
+                    enforce_admins: false
+                    exclude:
+                      - ""
+                    protect: false
+                    required_linear_history: false
+                    required_pull_request_reviews:
+                        dismiss_stale_reviews: false
+                        dismissal_restrictions:
+                            teams:
+                              - ""
+                            users:
+                              - ""
+                        require_code_owner_reviews: false
+                        required_approving_review_count: 0
+                    required_status_checks:
+                        contexts:
+                          - ""
+                        strict: false
+                    restrictions:
+                        teams:
+                          - ""
+                        users:
+                          - ""
+            required_linear_history: false
+            required_pull_request_reviews:
+                dismiss_stale_reviews: false
+                dismissal_restrictions:
+                    teams:
+                      - ""
+                    users:
+                      - ""
+                require_code_owner_reviews: false
+                required_approving_review_count: 0
+            required_status_checks:
+                contexts:
+                  - ""
+                strict: false
+            restrictions:
+                teams:
+                  - ""
+                users:
+                  - ""
+    protect: false
+    required_linear_history: false
+    required_pull_request_reviews:
+        dismiss_stale_reviews: false
+        dismissal_restrictions:
+            teams:
+              - ""
+            users:
+              - ""
+        require_code_owner_reviews: false
+        required_approving_review_count: 0
+    required_status_checks:
+        contexts:
+          - ""
+        strict: false
+    restrictions:
+        teams:
+          - ""
+        users:
+          - ""
+deck:
+    # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
+    # (in addition to those listed in the GCSConfiguration).
+    # Setting this field requires "SkipStoragePathValidation" also be set to `false`.
+    additional_allowed_buckets:
+      - ""
+
+    # Branding of the frontend
+    branding:
+        # BackgroundColor is the color of the background.
+        background_color: ' '
+
+        # Favicon is the location of the favicon that will be loaded in deck.
+        favicon: ' '
+
+        # HeaderColor is the color of the header.
+        header_color: ' '
+
+        # Logo is the location of the logo that will be loaded in deck.
+        logo: ' '
+
+    # ExternalAgentLogs ensures external agents can expose
+    # their logs in prow.
+    external_agent_logs:
+      - # Agent is an external prow agent that supports exposing
+        # logs via deck.
+        agent: ' '
+
+        # SelectorString compiles into Selector at load time.
+        selector: ' '
+
+        # URLTemplateString compiles into URLTemplate at load time.
+        url_template: ' '
+
+    # GoogleAnalytics, if specified, include a Google Analytics tracking code on each page.
+    google_analytics: ' '
+
+    # HiddenRepos is a list of orgs and/or repos that should not be displayed by Deck.
+    hidden_repos:
+      - ""
+
+    # Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
+    # The permissions here apply to all jobs.
+    # This option will be removed in favor of RerunAuthConfigs in July 2020.
+    rerun_auth_config:
+        github_orgs:
+          - ""
+        github_team_ids:
+          - 0
+        github_team_slugs:
+          - org: ' '
+            slug: ' '
+        github_users:
+          - ""
+
+    # RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
+    # accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
+    # config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
+    rerun_auth_configs:
+        "":
+            github_orgs:
+              - ""
+            github_team_ids:
+              - 0
+            github_team_slugs:
+              - org: ' '
+                slug: ' '
+            github_users:
+              - ""
+
+    # SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
+    # By default, buckets listed in the GCSConfiguration are automatically allowed.
+    # Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
+    # When unspecified (nil), it defaults to true (until ~Jan 2021).
+    skip_storage_path_validation: false
+
+    # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
+    spyglass:
+        # If set, Announcement is used as a Go HTML template string to be displayed at the top of
+        # each spyglass page. Using HTML in the template is acceptable.
+        # Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
+        announcement: ' '
+
+        # GCSBrowserPrefix is used to generate a link to a human-usable GCS browser.
+        # If left empty, the link will be not be shown. Otherwise, a GCS path (with no
+        # prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
+        gcs_browser_prefix: ' '
+
+        # GCSBrowserPrefixes are used to generate a link to a human-usable GCS browser.
+        # They are mapped by org, org/repo or '*' which is the default value.
+        gcs_browser_prefixes:
+            "": ""
+
+        # Lenses is a list of lens configurations.
+        lenses:
+          - # Lens is the lens to use, alongside any lens-specific configuration.
+            lens:
+                # Name is the name of the lens.
+                name: ' '
+
+            # OptionalFiles is a list of regexes of file paths that will be provided to the lens if they are
+            # present, but will not preclude the lens being rendered by their absence.
+            # The list entries are ORed together, so if only one of them is present it will be provided to
+            # the lens even if the others are not.
+            optional_files:
+              - ""
+
+            # RemoteConfig specifies how to access remote lenses
+            remote_config:
+                # The endpoint for the lense
+                endpoint: ' '
+
+                # HideTitle defines if we will keep showing the title after lens loads
+                hide_title: false
+
+                # Priority for lens ordering, lowest priority first
+                priority: 0
+
+                # The endpoint for static resources
+                static_root: ' '
+
+                # The human-readable title for the lens
+                title: ' '
+
+            # RequiredFiles is a list of regexes of file paths that must all be present for a lens to appear.
+            # The list entries are ANDed together, i.e. all of them are required. You can achieve an OR
+            # by using a pipe in a regex.
+            required_files:
+              - ""
+
+        # TestGridConfig is the path to the TestGrid config proto. If the path begins with
+        # "gs://" it is assumed to be a GCS reference, otherwise it is read from the local filesystem.
+        # If left blank, TestGrid links will not appear.
+        testgrid_config: ' '
+
+        # TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
+        # If left blank, TestGrid links will not appear.
+        testgrid_root: ' '
+
+        # Viewers is deprecated, prefer Lenses instead.
+        # Viewers was a map of Regexp strings to viewer names that defines which sets
+        # of artifacts need to be consumed by which viewers. It is copied in to Lenses at load time.
+        viewers:
+            "": null
+
+    # TideUpdatePeriod specifies how often Deck will fetch status from Tide. Defaults to 10s.
+    tide_update_period: 0s
+
+
+# DefaultJobTimeout this is default deadline for prow jobs. This value is used when
+# no timeout is configured at the job level. This value is set to 24 hours.
+default_job_timeout: 0s
+gerrit:
+    # TickInterval is how often we do a sync with binded gerrit instance
+    tick_interval: 0s
+
+
+# GitHubOptions allows users to control how prow applications display GitHub website links.
+github:
+    # LinkURLFromConfig is the string representation of the link_url config parameter.
+    # This config parameter allows users to override the default GitHub link url for all plugins.
+    # If this option is not set, we assume "https://github.com".
+    link_url: ' '
+github_reporter:
+    # JobTypesToReport is used to determine which type of prowjob
+    # should be reported to github
+
+    # defaults to both presubmit and postsubmit jobs.
+    job_types_to_report:
+      - ""
+in_repo_config:
+    # AllowedClusters is a list of allowed clusternames that can be used for jobs on
+    # a given repo. All clusters that are allowed for the specific repo, its org or
+    # globally can be used.
+    allowed_clusters:
+        "": null
+
+    # Enabled describes whether InRepoConfig is enabled for a given repository. This can
+    # be set globally, per org or per repo using '*', 'org' or 'org/repo' as key. The
+    # narrowest match always takes precedence.
+    enabled:
+        "": false
+jenkins_operators:
+  - # JobURLTemplateString compiles into JobURLTemplate at load time.
+    job_url_template: ' '
+
+    # LabelSelectorString compiles into LabelSelector at load time.
+    # If set, this option needs to match --label-selector used by
+    # the desired jenkins-operator. This option is considered
+    # invalid when provided with a single jenkins-operator config.
+
+    # For label selector syntax, see below:
+    # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+    label_selector: ' '
+
+    # ReportTemplateString compiles into ReportTemplate at load time.
+    report_template: ' '
+
+    # ReportTemplateStrings is a mapping of template comments.
+    # Use `org/repo`, `org` or `*` as a key.
+    report_templates:
+        "": ""
+
+
+# LogLevel enables dynamically updating the log level of the
+# standard logger that is used by all prow components.
+
+# Valid values:
+
+# "debug", "info", "warn", "warning", "error", "fatal", "panic"
+
+# Defaults to "info".
+log_level: ' '
+
+
+# ManagedWebhooks contains information about all github repositories and organizations which are using
+# non-global Hmac token.
+managed_webhooks:
+    org_repo_config:
+        "":
+            token_created_after: "0001-01-01T00:00:00Z"
+    respect_legacy_global_token: false
+
+
+# OwnersDirBlacklist is used to configure regular expressions matching directories
+# to ignore when searching for OWNERS{,_ALIAS} files in a repo.
+owners_dir_blacklist:
+    # Default configures a default blacklist for all repos (or orgs).
+    # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
+    # are already preconfigured to be blacklisted, and need not be included here.
+    default:
+      - ""
+
+    # Repos configures a directory blacklist per repo (or org)
+    repos:
+        "": null
+plank:
+    # DefaultDecorationConfigs holds the default decoration config for specific values.
+    # This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
+    # if extraRefs[0] exists.
+    # Use `org/repo`, `org` or `*` as a key.
+    default_decoration_configs:
+        "":
+            cookiefile_secret: ' '
+            gcs_configuration:
+                bucket: ' '
+                default_org: ' '
+                default_repo: ' '
+                local_output_dir: ' '
+                mediaTypes:
+                    "": ""
+                path_prefix: ' '
+                path_strategy: ' '
+            gcs_credentials_secret: ' '
+            grace_period: 0s
+            oauth_token_secret:
+                key: ' '
+                name: ' '
+            resources:
+                clonerefs:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                initupload:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                place_entrypoint:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                sidecar:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+            s3_credentials_secret: ' '
+            skip_cloning: false
+            ssh_host_fingerprints:
+              - ""
+            ssh_key_secrets:
+              - ""
+            timeout: 0s
+            utility_images:
+                clonerefs: ' '
+                entrypoint: ' '
+                initupload: ' '
+                sidecar: ' '
+
+    # JobURLPrefixConfig is the host and path prefix under which job details
+    # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
+    job_url_prefix_config:
+        "": ""
+
+    # JobURLTemplateString compiles into JobURLTemplate at load time.
+    job_url_template: ' '
+
+    # PodPendingTimeout is after how long the controller will perform a garbage
+    # collection on pending pods. Defaults to one day.
+    pod_pending_timeout: 0s
+
+    # PodRunningTimeout is after how long the controller will abort a prowjob pod
+    # stuck in running state. Defaults to two days.
+    pod_running_timeout: 0s
+
+    # PodUnscheduledTimeout is after how long the controller will abort a prowjob
+    # stuck in an unscheduled state. Defaults to one day.
+    pod_unscheduled_timeout: 0s
+
+    # ReportTemplateString compiles into ReportTemplate at load time.
+    report_template: ' '
+
+    # ReportTemplateStrings is a mapping of template comments.
+    # Use `org/repo`, `org` or `*` as a key.
+    report_templates:
+        "": ""
+
+
+# PodNamespace is the namespace in the cluster that prow
+# components will use for looking up Pods owned by ProwJobs.
+# The namespace needs to exist and will not be created by prow.
+# Defaults to "default".
+pod_namespace: ' '
+
+
+# ProwJobNamespace is the namespace in the cluster that prow
+# components will use for looking up ProwJobs. The namespace
+# needs to exist and will not be created by prow.
+# Defaults to "default".
+prowjob_namespace: ' '
+
+
+# Pub/Sub Subscriptions that we want to listen to
+pubsub_subscriptions:
+    "": null
+
+
+# PushGateway is a prometheus push gateway.
+push_gateway:
+    # Endpoint is the location of the prometheus pushgateway
+    # where prow will push metrics to.
+    endpoint: ' '
+
+    # Interval specifies how often prow will push metrics
+    # to the pushgateway. Defaults to 1m.
+    interval: 0s
+
+    # ServeMetrics tells if or not the components serve metrics
+    serve_metrics: false
+sinker:
+    # MaxPodAge is how old a Pod can be before it is garbage-collected.
+    # Defaults to one day.
+    max_pod_age: 0s
+
+    # MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
+    # Defaults to one week.
+    max_prowjob_age: 0s
+
+    # ResyncPeriod is how often the controller will perform a garbage
+    # collection. Defaults to one hour.
+    resync_period: 0s
+
+    # TerminatedPodTTL is how long a Pod can live after termination before it is
+    # garbage collected.
+    # Defaults to matching MaxPodAge.
+    terminated_pod_ttl: 0s
+
+
+# Deprecated: this option will be removed in May 2020.
+slack_reporter:
+    channel: ' '
+    job_states_to_report:
+      - ""
+    job_types_to_report:
+      - ""
+    report_template: ' '
+slack_reporter_configs:
+    "":
+        channel: ' '
+        job_states_to_report:
+          - ""
+        job_types_to_report:
+          - ""
+        report_template: ' '
+
+
+# StatusErrorLink is the url that will be used for jenkins prowJobs that can't be
+# found, or have another generic issue. The default that will be used if this is not set
+# is: https://github.com/kubernetes/test-infra/issues
+status_error_link: ' '
+tide:
+    # BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+    # integer batch size limit as the value. The empty string key can be used as
+    # a global default.
+    # Special values:
+    # 0 => unlimited batch size
+    # -1 => batch merging disabled :(
+    batch_size_limit:
+        "": 0
+
+    # BlockerLabel is an optional label that is used to identify merge blocking
+    # GitHub issues.
+    # Leave this blank to disable this feature and save 1 API token per sync loop.
+    blocker_label: ' '
+
+    # TideContextPolicyOptions defines merge options for context. If not set it will infer
+    # the required and optional contexts from the prow jobs configured and use the github
+    # combined status; otherwise it may apply the branch protection setting or let user
+    # define their own options in case branch protection is not used.
+    context_options:
+        from-branch-protection: false
+        optional-contexts:
+          - ""
+
+        # GitHub Orgs
+        orgs:
+            "":
+                from-branch-protection: false
+                optional-contexts:
+                  - ""
+                repos:
+                    "":
+                        branches:
+                            "":
+                                # Infer required and optional jobs from Branch Protection configuration
+                                from-branch-protection: false
+                                optional-contexts:
+                                  - ""
+                                required-contexts:
+                                  - ""
+                                required-if-present-contexts:
+                                  - ""
+
+                                # whether to consider unknown contexts optional (skip) or required.
+                                skip-unknown-contexts: false
+                        from-branch-protection: false
+                        optional-contexts:
+                          - ""
+                        required-contexts:
+                          - ""
+                        required-if-present-contexts:
+                          - ""
+                        skip-unknown-contexts: false
+                required-contexts:
+                  - ""
+                required-if-present-contexts:
+                  - ""
+                skip-unknown-contexts: false
+        required-contexts:
+          - ""
+        required-if-present-contexts:
+          - ""
+        skip-unknown-contexts: false
+
+    # A key/value pair of an org/repo as the key and Go template to override
+    # the default merge commit title and/or message. Template is passed the
+    # PullRequest struct (prow/github/types.go#PullRequest)
+    merge_commit_template:
+        "":
+            body: ' '
+            title: ' '
+
+    # MergeLabel is an optional label that is used to identify PRs that should
+    # always be merged with all individual commits from the PR.
+    # Leave this blank to disable this feature.
+    merge_label: ' '
+
+    # A key/value pair of an org/repo as the key and merge method to override
+    # the default method of merge. Valid options are squash, rebase, and merge.
+    merge_method:
+        "": ""
+
+    # PRStatusBaseURL is the base URL for the PR status page.
+    # This is used to link to a merge requirements overview
+    # in the tide status context.
+    # Will be deprecated on June 2020.
+    pr_status_base_url: ' '
+
+    # PRStatusBaseURLs is the base URL for the PR status page
+    # mapped by org or org/repo level.
+    pr_status_base_urls:
+        "": ""
+
+    # Queries represents a list of GitHub search queries that collectively
+    # specify the set of PRs that meet merge requirements.
+    queries:
+      - author: ' '
+        excludedBranches:
+          - ""
+        excludedRepos:
+          - ""
+        includedBranches:
+          - ""
+        labels:
+          - ""
+        milestone: ' '
+        missingLabels:
+          - ""
+        orgs:
+          - ""
+        repos:
+          - ""
+
+    # RebaseLabel is an optional label that is used to identify PRs that should
+    # always be rebased and merged.
+    # Leave this blank to disable this feature.
+    rebase_label: ' '
+
+    # SquashLabel is an optional label that is used to identify PRs that should
+    # always be squash merged.
+    # Leave this blank to disable this feature.
+    squash_label: ' '
+
+    # StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
+    # Defaults to the value of SyncPeriod.
+    status_update_period: 0s
+
+    # SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
+    sync_period: 0s
+
+    # URL for tide status contexts.
+    # We can consider allowing this to be set separately for separate repos, or
+    # allowing it to be a template.
+    target_url: ' '

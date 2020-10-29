@@ -16,7 +16,10 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-master
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
@@ -66,7 +69,10 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.19
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
@@ -116,7 +122,10 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201027-f0200e6-1.18
+      env:
+      - name: KOPS_RUN_TOO_NEW_VERSION
+        value: "1"
       command:
       - runner.sh
       - kubetest
