@@ -41,7 +41,7 @@ periodics:
       args:
         - --project=k8s-artifacts-prod
         - --bucket=gs://k8s-artifacts-prod-vuln-dashboard
-        - --dashboard-file-path=/home/prow/go/src/k8s.io/release/cmd/vulndash/
+        - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
   annotations:
     testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
