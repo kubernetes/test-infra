@@ -615,6 +615,24 @@ func TestResolveBugzillaOptions(t *testing.T) {
 				StateAfterMerge:            &preState,
 			},
 		},
+		{
+			name:     "parent target release is excluded on child",
+			parent:   BugzillaBranchOptions{TargetRelease: &one},
+			child:    BugzillaBranchOptions{ExcludeDefaults: &yes},
+			expected: BugzillaBranchOptions{ExcludeDefaults: &yes},
+		},
+		{
+			name:     "parent target release is excluded on child with other options",
+			parent:   BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}},
+			child:    BugzillaBranchOptions{TargetRelease: &one, ExcludeDefaults: &yes},
+			expected: BugzillaBranchOptions{TargetRelease: &one, ExcludeDefaults: &yes},
+		},
+		{
+			name:     "parent exclude merges with child options",
+			parent:   BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}, ExcludeDefaults: &yes},
+			child:    BugzillaBranchOptions{TargetRelease: &one},
+			expected: BugzillaBranchOptions{DependentBugTargetReleases: &[]string{one}, TargetRelease: &one, ExcludeDefaults: &yes},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -776,7 +794,16 @@ orgs:
             - VERIFIED
             validate_by_default: true
             status_after_validation: MODIFIED
-            status_after_merge: NOTABUG`
+            status_after_merge: NOTABUG
+          "my-special-branch":
+            exclude_defaults: true
+            validate_by_default: false
+      another-repo:
+        branches:
+          "*":
+            exclude_defaults: true
+          "my-org-branch":
+            target_release: my-repo-branch`
 	var config Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -828,6 +855,20 @@ orgs:
 			repo:     "my-repo",
 			branch:   "my-repo-branch",
 			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, ValidStates: &[]BugzillaBugState{modifiedState, closedErrata}, StateAfterValidation: &preState, StateAfterMerge: &notabugState, AllowedGroups: repoAllowedGroups, StateAfterClose: &resetState},
+		},
+		{
+			name:     "exclude branch on configured org and repo gets branch config",
+			org:      "my-org",
+			repo:     "my-repo",
+			branch:   "my-special-branch",
+			expected: BugzillaBranchOptions{ValidateByDefault: &no, ExcludeDefaults: &yes},
+		},
+		{
+			name:     "exclude branch on repo cascades to branch config",
+			org:      "my-org",
+			repo:     "another-repo",
+			branch:   "my-org-branch",
+			expected: BugzillaBranchOptions{TargetRelease: &repoBranch, ExcludeDefaults: &yes},
 		},
 	}
 	for _, testCase := range testCases {
@@ -907,6 +948,19 @@ orgs:
 					AllowedGroups:        orgAllowedGroups,
 					StateAfterClose:      &newState,
 				},
+				"my-special-branch": {
+					ValidateByDefault: &no,
+					ExcludeDefaults:   &yes,
+				},
+			},
+		},
+		{
+			name: "excluded repo gets no defaults",
+			org:  "my-org",
+			repo: "another-repo",
+			expected: map[string]BugzillaBranchOptions{
+				"*":             {ExcludeDefaults: &yes},
+				"my-org-branch": {ExcludeDefaults: &yes, TargetRelease: &repoBranch},
 			},
 		},
 	}
