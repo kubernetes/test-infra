@@ -37,7 +37,7 @@ periodics:
     # TODO(releng): Point to promoted image once this job is fixed
     - image: gcr.io/k8s-staging-artifact-promoter/vulndash-amd64:latest
       command:
-      - vulndash
+      - /vulndash
       args:
         - --project=k8s-artifacts-prod
         - --bucket=gs://k8s-artifacts-prod-vuln-dashboard
