@@ -54,7 +54,6 @@ release(
     ),
     component("needs-rebase", "deployment"),
     component("pipeline", "deployment", "rbac"),
-    component("plank", "service", "deployment", "rbac"),
     component("prow_controller_manager", "service", "deployment", "rbac"),
     component("prow-canary-k8s-io", "managedcertificate"),
     component("prow-k8s-io", "managedcertificate"),
