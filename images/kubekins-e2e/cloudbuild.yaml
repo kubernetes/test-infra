@@ -23,14 +23,16 @@ steps:
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+    - -f
+    - images/kubekins-e2e/Dockerfile
     - .
-    dir: images/kubekins-e2e
+    dir: .
   - name: gcr.io/cloud-builders/docker
     args:
     - tag
     - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
-    dir: images/kubekins-e2e
+    dir: .
 substitutions:
   _BAZEL_VERSION: 3.4.1
   _OLD_BAZEL_VERSION: 2.2.0
