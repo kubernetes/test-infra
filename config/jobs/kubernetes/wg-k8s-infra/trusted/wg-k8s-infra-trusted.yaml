@@ -22,30 +22,6 @@ periodics:
       args:
       - -c
       - "cd groups && make run -- --confirm"
-- name: ci-k8sio-vuln-dashboard-update
-  interval: 2h
-  cluster: k8s-infra-prow-build-trusted
-  max_concurrency: 1
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-  spec:
-    serviceAccountName: k8s-infra-gcr-vuln-dashboard
-    containers:
-    # TODO(releng): Point to promoted image once this job is fixed
-    - image: gcr.io/k8s-staging-artifact-promoter/vulndash-amd64:latest
-      command:
-      - /vulndash
-      args:
-        - --project=k8s-artifacts-prod
-        - --bucket=gs://k8s-artifacts-prod-vuln-dashboard
-        - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
-  annotations:
-    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
 
 postsubmits:
   kubernetes/k8s.io:
