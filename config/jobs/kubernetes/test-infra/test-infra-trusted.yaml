@@ -40,6 +40,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: pusher
       containers:
@@ -59,6 +60,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -79,6 +81,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: pusher
       containers:
@@ -95,6 +98,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer
       containers:
@@ -116,6 +120,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       containers:
       - image: gcr.io/k8s-prow/hmac:v20201029-199c794545
@@ -160,6 +165,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: pusher
       containers:
@@ -179,6 +185,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: pusher
       containers:
@@ -209,6 +216,7 @@ postsubmits:
       grace_period: 10m
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -232,6 +240,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -255,6 +264,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -277,6 +287,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -300,6 +311,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -323,6 +335,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -346,6 +359,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -369,6 +383,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -392,6 +407,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -415,6 +431,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -438,6 +455,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -461,6 +479,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -484,6 +503,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -507,6 +527,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -530,6 +551,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -553,6 +575,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -576,6 +599,7 @@ postsubmits:
     decorate: true
     branches:
     - ^master$
+    max_concurrency: 1
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
@@ -617,6 +641,7 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - ^master$
+    max_concurrency: 1
     run_if_changed: '^triage/Makefile$|^triage/[^/]+(\.html|\.js|\.css)$'
     decorate: true
     spec:
@@ -643,6 +668,7 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - ^master$
+    max_concurrency: 1
     labels:
       preset-bazel-scratch-dir: "true"
     run_if_changed: '^config/(jobs|testgrids)/.*$'
@@ -666,6 +692,7 @@ postsubmits:
     cluster: test-infra-trusted
     branches:
     - ^master$
+    max_concurrency: 1
     run_if_changed: '^config/prow/cluster/boskos-resources.yaml$'
     decorate: true
     spec:
