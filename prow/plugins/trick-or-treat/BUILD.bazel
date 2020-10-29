@@ -8,7 +8,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["trickortreat_test.go"],
+    srcs = ["trick-or-treat_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//prow/github:go_default_library",
@@ -20,10 +20,10 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "trickortreat.go",
         "candies.go",
+        "trick-or-treat.go",
     ],
-    importpath = "k8s.io/test-infra/prow/plugins/trickortreat",
+    importpath = "k8s.io/test-infra/prow/plugins/trick-or-treat",
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

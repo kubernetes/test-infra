@@ -61,6 +61,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/skip"
 	_ "k8s.io/test-infra/prow/plugins/slackevents"
 	_ "k8s.io/test-infra/prow/plugins/stage"
+	_ "k8s.io/test-infra/prow/plugins/trick-or-treat"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"
 	_ "k8s.io/test-infra/prow/plugins/verify-owners"
