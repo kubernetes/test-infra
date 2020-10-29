@@ -32,7 +32,7 @@ shopt -s nullglob
 
 # Identify which files need to be updated. This includes:
 # - Prow component deployment files
-# - config.yaml (to update pod utility image version in plank's default decoration config)
+# - config.yaml (to update pod utility image version in prow-controller-manager's default decoration config)
 # - Any job config files that reference Prow images (e.g. branchprotector, peribolos, config-bootstrapper)
 #   - NOTE: This script only update gcr.io/k8s-prow/* images so it is safe to run on the entire job config.
 #   - NOTE: If you define all ProwJob config in config.yaml you can omit this entirely.
@@ -157,7 +157,7 @@ check-requirements() {
 # List the $1 most recently pushed prow versions
 list-options() {
   local count="$1"
-  gcloud container images list-tags gcr.io/k8s-prow/plank --limit="${count}" --format='value(tags)' \
+  gcloud container images list-tags gcr.io/k8s-prow/prow-controller-manager --limit="${count}" --format='value(tags)' \
       | grep -o -E 'v[^,]+' | "${TAC}"
 }
 
