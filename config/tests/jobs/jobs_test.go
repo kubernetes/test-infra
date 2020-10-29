@@ -339,10 +339,10 @@ func TestTrustedJobs(t *testing.T) {
 	}
 }
 
-// Enforce conventions for jobs that run in k8s-infra-prow-build-trused cluster
+// Enforce conventions for jobs that run in k8s-infra-prow-build-trusted cluster
 func TestK8sInfraTrusted(t *testing.T) {
 	const trusted = "k8s-infra-prow-build-trusted"
-	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted", "wg-k8s-infra-trusted.yaml")
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted") + "/"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use this cluster
@@ -370,7 +370,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 			if err := validateImagePushingImage(job.Spec); err != nil {
 				t.Errorf("%s defined in %s %s", job.Name, job.SourcePath, err)
 			}
-		} else if job.SourcePath != trustedPath {
+		} else if !strings.HasPrefix(job.SourcePath, trustedPath) {
 			t.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted)
 		}
 	}
