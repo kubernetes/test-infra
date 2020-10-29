@@ -90,6 +90,10 @@ presets:
     value: 1
   - name: CL2_ENABLE_CLUSTER_OOMS_TRACKER
     value: true
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_KUBEKINS_LOG_DUMPING
+    value: "true"
 
 ### kubemark-gce-scale
 - labels:
@@ -212,6 +216,10 @@ presets:
       apps/v1/ReplicaSet
       apps/v1/StatefulSet
       extensions/v1beta1/Ingress
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_KUBEKINS_LOG_DUMPING
+    value: "true"
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
@@ -284,10 +292,6 @@ presets:
 - labels:
     preset-e2e-scalability-periodics: "true"
   env:
-  # Switch to using log-dump.sh script included in the kubekins-e2e image
-  # instead of relying on the deprecated one from k/k repository.
-  - name: USE_KUBEKINS_LOG_DUMPING
-    value: "yes"
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
