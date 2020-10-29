@@ -740,7 +740,15 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 func kubemarkDown(err *error, wg *sync.WaitGroup, dump string) {
 	defer wg.Done()
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+		cmd := exec.Command("./cluster/log-dump/log-dump.sh", dump)
+		masterName := os.Getenv("MASTER_NAME")
+		cmd.Env = append(
+			os.Environ(),
+			"KUBEMARK_MASTER_NAME="+masterName,
+			"DUMP_ONLY_MASTER_LOGS=true",
+		)
+		log.Printf("Dumping logs for kubemark master: %s", masterName)
+		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
