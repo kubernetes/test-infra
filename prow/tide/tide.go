@@ -1716,7 +1716,7 @@ type searchQuery struct {
 			EndCursor   githubql.String
 		}
 		Nodes []PRNode
-	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
+	} `graphql:"search(type: ISSUE, first: 37, after: $searchCursor, query: $query)"`
 }
 
 func (pr *PullRequest) logFields() logrus.Fields {
