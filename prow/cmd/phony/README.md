@@ -13,7 +13,11 @@ go run prow/cmd/hook/main.go
 --config-path=config/prow/config.yaml
 --plugin-config=config/prow/plugins.yaml
 --hmac-secret-file=path/to/hmac
--github-token-path=path/to/github-token
+--github-token-path=path/to/github-token
+
+# Note:
+# --deck-url is required because --dry-run flag requires it
+# --hmac-secret-file is required for running locally, use the same hmac token for phony below
 ```
 
 ## Usage
