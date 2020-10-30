@@ -704,6 +704,7 @@ plugins:
   - size
   - skip
   - slackevents
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
@@ -873,6 +874,7 @@ plugins:
   - shrug
   - size
   - skip
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
