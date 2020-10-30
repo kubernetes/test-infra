@@ -18,6 +18,7 @@ package trickortreat
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -63,7 +64,15 @@ func TestReadImage(t *testing.T) {
 		t.Errorf("Could not read candies from %#v: %v", trickOrTreat, err)
 		return
 	}
-	t.Log(img)
+	var found bool
+	for _, cand := range candiesImgs {
+		if want := fmt.Sprintf("![candy image](%s)", cand); want == img {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("Image %q not part of curated list of images", img)
+	}
 }
 
 // Small, unit tests
