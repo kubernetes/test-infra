@@ -19,6 +19,7 @@ package trickortreat
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"regexp"
 	"time"
@@ -82,7 +83,7 @@ func (c *realSnicker) readImage(log *logrus.Entry) (string, error) {
 		tooBig, err = github.ImageTooBig(imgURL)
 		if err == nil {
 			if !tooBig {
-				return imgURL, nil
+				return fmt.Sprintf("![candy image](%s)", imgURL), nil
 			}
 			err = errors.New("image too big")
 		}
