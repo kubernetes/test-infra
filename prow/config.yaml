@@ -31,6 +31,7 @@ tide:
     IBM/ibm-cert-manager-operator: squash
     IBM/ibm-commonui-operator: squash
     IBM/ibm-common-service-operator: squash
+    IBM/ibm-namespace-scope-operator: squash
     IBM/ibm-common-service-webhook: squash
     IBM/ibm-elastic-stack-operator: squash
     IBM/ibm-grafana-ocpthanos-proxy: squash
@@ -91,6 +92,7 @@ tide:
     - IBM/ibm-cert-manager-operator
     - IBM/ibm-commonui-operator
     - IBM/ibm-common-service-operator
+    - IBM/ibm-namespace-scope-operator
     - IBM/ibm-common-service-webhook
     - IBM/ibm-elastic-stack-operator
     - IBM/ibm-grafana-ocpthanos-proxy
