@@ -298,7 +298,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
@@ -332,7 +332,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
