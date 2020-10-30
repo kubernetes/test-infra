@@ -28,8 +28,6 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
-var suite util.TestSuite
-
 func TestXMLWrap(t *testing.T) {
 	cases := []struct {
 		name            string
@@ -77,9 +75,10 @@ func TestXMLWrap(t *testing.T) {
 		terminate := time.NewTimer(time.Duration(0))
 		c := NewControl(time.Duration(0), interrupt, terminate, false)
 		c.interrupted = tc.interrupted
-		suite.Cases = suite.Cases[:0]
-		suite.Failures = 6
-		suite.Tests = 9
+		suite := util.TestSuite{
+			Failures: 6,
+			Tests:    9,
+		}
 		err := c.XMLWrap(&suite, tc.name, func() error {
 			if tc.shouldInterrupt {
 				c.interrupted = true

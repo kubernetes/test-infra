@@ -202,7 +202,7 @@ func defineFlags() *options {
 	return &o
 }
 
-var suite util.TestSuite
+var suite util.TestSuite = util.TestSuite{Name: "kubetest"}
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
