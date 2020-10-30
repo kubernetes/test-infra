@@ -22,8 +22,6 @@ import (
 	"testing"
 )
 
-var suite TestSuite
-
 func TestPushEnv(t *testing.T) {
 	env := "fake-env"
 	empty := ""
