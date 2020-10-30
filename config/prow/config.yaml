@@ -407,6 +407,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        node-feature-discovery:
+          branches:
+            gh-pages:
+              protect: false
     kubeflow:
       protect: true
       required_status_checks:
