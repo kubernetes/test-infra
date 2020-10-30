@@ -28,15 +28,15 @@ class FakeSub:
         self.pulls = pulls
         self.trace = []
 
-    def pull(self, return_immediately=False, **_kwargs):
-        self.trace.append(['pull', return_immediately])
+    def pull(self, subscription, return_immediately=False, **_kwargs):
+        self.trace.append(['pull', subscription, return_immediately])
         return self.pulls.pop(0)
 
-    def acknowledge(self, acks):
-        self.trace.append(['ack', acks])
+    def acknowledge(self, subscription, ack_ids):
+        self.trace.append(['ack', subscription, ack_ids])
 
-    def modify_ack_deadline(self, acks, time):
-        self.trace.append(['modify-ack', acks, time])
+    def modify_ack_deadline(self, subscription, ack_ids, ack_deadline_seconds):
+        self.trace.append(['modify-ack', subscription, ack_ids, ack_deadline_seconds])
 
 
 class FakeTable:
@@ -108,9 +108,10 @@ class StreamTest(unittest.TestCase):
             [],
         ])
         faketable = FakeTable('day', stream.load_schema(FakeSchemaField), fakesub.trace)
+        fake_sub_path = 'projects/{project_id}/subscriptions/{sub}'
         tables = {'day': (faketable, 'incr')}
         stream.main(
-            db, fakesub, tables, make_db_test.MockedClient, [1, 0, 0, 0].pop)
+            db, (fakesub, fake_sub_path), tables, make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
         # uncomment if the trace changes
         # import pprint; pprint.pprint(fakesub.trace)
@@ -120,10 +121,12 @@ class StreamTest(unittest.TestCase):
 
         self.assertEqual(
             fakesub.trace,
-            [['pull', False], ['pull', True], ['pull', True],
-             ['ack', ['a']],
-             ['modify-ack', ['b'], 180],
-             ['ack', ['b']],
+            [['pull', fake_sub_path, False],
+             ['pull', fake_sub_path, True],
+             ['pull', fake_sub_path, True],
+             ['ack', fake_sub_path, ['a']],
+             ['modify-ack', fake_sub_path, ['b'], 180],
+             ['ack', fake_sub_path, ['b']],
              ['insert-data',
               ([(5,
                  now - 5,
@@ -147,11 +150,13 @@ class StreamTest(unittest.TestCase):
                  None)],
                [1]),
               {'skip_invalid_rows': True}],
-             ['pull', False], ['pull', True],
-             ['modify-ack', ['c'], 180],
-             ['ack', ['c']],
-             ['pull', False], ['pull', True],
-             ['ack', ['d']]])
+             ['pull', fake_sub_path, False],
+             ['pull', fake_sub_path, True],
+             ['modify-ack', fake_sub_path, ['c'], 180],
+             ['ack', fake_sub_path, ['c']],
+             ['pull', fake_sub_path, False],
+             ['pull', fake_sub_path, True],
+             ['ack', fake_sub_path, ['d']]])
 
 
 if __name__ == '__main__':

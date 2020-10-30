@@ -30,7 +30,7 @@ import multiprocessing.pool
 
 try:
     from google.cloud import bigquery
-    from google.cloud import pubsub
+    from google.cloud import pubsub_v1
     import google.cloud.exceptions
 except ImportError:
     print('WARNING: unable to load google cloud (test environment?)')
@@ -42,29 +42,29 @@ import make_json
 
 
 def process_changes(results):
-    """Split GCS change events into trivial acks and builds to further process."""
-    acks = []  # pubsub message ids to acknowledge
+    """Split GCS change events into trivial ack_ids and builds to further process."""
+    ack_ids = []  # pubsub message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
 
     # process results, find finished builds to process
     for ack_id, message in results:
         if message.attributes['eventType'] != 'OBJECT_FINALIZE':
-            acks.append(ack_id)
+            ack_ids.append(ack_id)
             continue
         obj = message.attributes['objectId']
         if not obj.endswith('/finished.json'):
-            acks.append(ack_id)
+            ack_ids.append(ack_id)
             continue
         job, build = obj[:-len('/finished.json')].rsplit('/', 1)
         job = 'gs://%s/%s' % (message.attributes['bucketId'], job)
         todo.append((ack_id, job, build))
 
-    return acks, todo
+    return ack_ids, todo
 
 
 def get_started_finished(gcs_client, db, todo):
     """Download started/finished.json from build dirs in todo."""
-    acks = []
+    ack_ids = []
     build_dirs = []
     pool = multiprocessing.pool.ThreadPool(16)
     try:
@@ -80,13 +80,13 @@ def get_started_finished(gcs_client, db, todo):
                        time.strftime('%F %T %Z', start),
                        finished and finished.get('result')))
                 build_dirs.append(build_dir)
-                acks.append(ack_id)
+                ack_ids.append(ack_id)
             else:
                 print('finished.json missing?', build_dir, started, finished)
     finally:
         pool.close()
     db.commit()
-    return acks, build_dirs
+    return ack_ids, build_dirs
 
 
 def retry(func, *args, **kwargs):
@@ -151,7 +151,7 @@ def insert_data(table, rows_iter):
 def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
     # pylint: disable=too-many-locals
     gcs_client = client_class('', {})
-
+    subscriber, subscription_path = sub
     if stop is None:
         stop = lambda: False
 
@@ -163,34 +163,44 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = retry(sub.pull, max_messages=1000)
+        results = retry(subscriber.pull, subscription=subscription_path, max_messages=1000)
         start = time.time()
         while time.time() < start + 7:
-            results_more = sub.pull(max_messages=1000, return_immediately=True)
+            results_more = subscriber.pull(
+                subscription=subscription_path,
+                max_messages=1000,
+                return_immediately=True)
             if not results_more:
                 break
             results += results_more
 
         print('PULLED', len(results))
 
-        acks, todo = process_changes(results)
+        ack_ids, todo = process_changes(results)
 
-        if acks:
-            print('ACK irrelevant', len(acks))
-            for n in range(0, len(acks), 1000):
-                retry(sub.acknowledge, acks[n: n + 1000])
+        if ack_ids:
+            print('ACK irrelevant', len(ack_ids))
+            for n in range(0, len(ack_ids), 1000):
+                retry(
+                    subscriber.acknowledge,
+                    subscription=subscription_path,
+                    ack_ids=ack_ids[n: n + 1000])
 
         if todo:
             print('EXTEND-ACK ', len(todo))
             # give 3 minutes to grab build details
-            retry(sub.modify_ack_deadline, [i for i, _j, _b in todo], 60*3)
+            retry(
+                subscriber.modify_ack_deadline,
+                subscription=subscription_path,
+                ack_ids=[i for i, _j, _b in todo],
+                ack_deadline_seconds=60*3)
 
-        acks, build_dirs = get_started_finished(gcs_client, db, todo)
+        ack_ids, build_dirs = get_started_finished(gcs_client, db, todo)
 
         # notify pubsub queue that we've handled the finished.json messages
-        if acks:
-            print('ACK "finished.json"', len(acks))
-            retry(sub.acknowledge, acks)
+        if ack_ids:
+            print('ACK "finished.json"', len(ack_ids))
+            retry(subscriber.acknowledge, subscription=subscription_path, ack_ids=ack_ids)
 
         # grab junit files for new builds
         make_db.download_junit(db, 16, client_class)
@@ -204,10 +214,25 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
 
 def load_sub(poll):
-    """Return the PubSub subscription specified by the /-separated input."""
-    project, topic, subscription = poll.split('/')
-    pubsub_client = pubsub.Client(project)
-    return pubsub_client.topic(topic).subscription(subscription)
+    """Return the PubSub subscription specified by the /-separated input.
+
+    Args:
+        poll: Follow GCS changes from project/topic/subscription
+              Ex: kubernetes-jenkins/gcs-changes/kettle
+
+    Return:
+        Subscribed client
+    """
+    subscriber = pubsub_v1.SubscriberClient()
+
+    project_id, topic, sub = poll.split('/')
+    topic_path = f'projects/{project_id}/topics/{topic}'
+    subscription_path = f'projects/{project_id}/subscriptions/{sub}'
+
+    #see https://github.com/googleapis/python-pubsub/issues/67 for pylint issue
+    subscriber.create_subscription(name=subscription_path, topic=topic_path) # pylint: disable=no-member
+
+    return subscriber, subscription_path
 
 
 def load_schema(schemafield):
