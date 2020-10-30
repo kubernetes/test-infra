@@ -24,6 +24,11 @@ periodics:
       - image: gcr.io/k8s-testimages/image-builder:v20200612-cd781f9
         command:
           - /run.sh
+        env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+        - name: PULL_BASE_REF
+          value: master
         args:
           # this is the project GCB will run in, which is the same as the GCR
           # images are pushed to.
