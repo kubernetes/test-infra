@@ -1,0 +1,65 @@
+periodics:
+- name: ci-crio-cgroupv1-node-e2e-conformance
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - "--timeout=240"
+      - --scenario=kubernetes_e2e
+      - -- # end bootstrap args, scenario args below
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-project=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --timeout=180m
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv1-node-e2e-conformance
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v1"
+- name: ci-crio-cgroupv1-node-e2e-features
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - "--timeout=240"
+      - --scenario=kubernetes_e2e
+      - -- # end bootstrap args, scenario args below
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-project=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --timeout=180m
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
