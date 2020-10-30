@@ -232,7 +232,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkDownErr error
 	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump)
 	}
 
 	if o.charts {
@@ -737,10 +737,11 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, dump string) {
+func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump string) {
 	defer wg.Done()
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
-		cmd := exec.Command("./cluster/log-dump/log-dump.sh", dump)
+		logDumpPath := logDumpPath(provider)
+		cmd := exec.Command(logDumpPath, dump)
 		masterName := os.Getenv("MASTER_NAME")
 		cmd.Env = append(
 			os.Environ(),
