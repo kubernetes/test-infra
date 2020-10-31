@@ -116,15 +116,14 @@ def insert_data(bq_client, table, rows_iter):
     """
     emitted = {pair[0] for pair in rows_iter}
     rows = [pair[1] for pair in rows_iter]
-    raise Exception(list(rows_iter))
-    if not rows:  # nothing to do
-        return []
+    # raise Exception(list(rows_iter))
+    # if not rows:  # nothing to do
+    #     return []
 
     def insert(bq_client, table, rows):
         """Insert rows with row_ids into table, retrying as necessary."""
-        raise Exception('Not running')
         errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
-
+        raise Exception(bq_client.trace, table, rows)
         if not errors:
             print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
         else:
@@ -194,9 +193,10 @@ def main(db, subscriber, subscription_path, bq_client, tables, client_class=make
 
         # stream new rows to tables
         if build_dirs and tables:
-            for table_name, incremental_table in tables.values():
+            for table, incremental_table in tables.values():
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
-                emitted = insert_data(bq_client, incremental_table, make_json.make_rows(db, builds))
+                # raise Exception(str(list(builds)) + str(list(make_json.make_rows(db, builds))))
+                emitted = insert_data(bq_client, table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
 
 

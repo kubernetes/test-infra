@@ -48,7 +48,7 @@ class FakeClient:
 
 class FakeTable:
     def __init__(self, name, schema, trace=None):
-        self.name = name
+        self.friendly_name = name
         self.schema = schema
 
 class Attrs:
