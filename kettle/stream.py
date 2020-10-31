@@ -114,28 +114,35 @@ def insert_data(bq_client, table, rows_iter):
         rows_iter: row_id, dict representing a make_json.Build
     Returns the row_ids that were inserted.
     """
-    emitted = {pair[0] for pair in rows_iter}
-    rows = [pair[1] for pair in rows_iter]
-    # raise Exception(list(rows_iter))
-    # if not rows:  # nothing to do
-    #     return []
+    emitted, rows = [], []
+    for row_id, build in rows_iter:
+        emitted.append(row_id)
+        rows.append(build)
 
-    def insert(bq_client, table, rows):
-        """Insert rows with row_ids into table, retrying as necessary."""
-        errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
-        raise Exception(bq_client.trace, table, rows)
-        if not errors:
-            print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
-        else:
-            print('Errors:')
-            pprint.pprint(errors)
-            pprint.pprint(table.schema)
+    if not rows:  # nothing to do
+        return []
 
-    insert(bq_client, table, rows)
+    # Insert rows with row_ids into table, retrying as necessary.
+    errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
+    if not errors:
+        print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
+    else:
+        print('Errors:')
+        pprint.pprint(errors)
+        pprint.pprint(table.schema)
+
     return emitted
 
 
-def main(db, subscriber, subscription_path, bq_client, tables, client_class=make_db.GCSClient, stop=None):
+def main(
+        db,
+        subscriber,
+        subscription_path,
+        bq_client,
+        tables,
+        client_class=make_db.GCSClient,
+        stop=None,
+    ):
     # pylint: disable=too-many-locals
     gcs_client = client_class('', {})
     if stop is None:
@@ -195,7 +202,6 @@ def main(db, subscriber, subscription_path, bq_client, tables, client_class=make
         if build_dirs and tables:
             for table, incremental_table in tables.values():
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
-                # raise Exception(str(list(builds)) + str(list(make_json.make_rows(db, builds))))
                 emitted = insert_data(bq_client, table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
 
@@ -253,9 +259,9 @@ def load_tables(dataset, tablespecs):
         table_name, days = spec.split(':')
         table_ref = f'{project}.{dataset_name}.{table_name}'
         try:
-            table = bq_client.get_table(table_ref)
-        except google.cloud.exceptions.NotFound:  # pylint: disable=no-member
-            table = bq_client.create_table(table_ref)
+            table = bq_client.get_table(table_ref) # pylint: disable=no-member
+        except google.cloud.exceptions.NotFound:
+            table = bq_client.create_table(table_ref) # pylint: disable=no-member
             table.schema = load_schema(bigquery.schema.SchemaField)
         tables[table_name] = (table, make_json.get_table(float(days)))
     return bq_client, tables
@@ -305,10 +311,7 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    subscriber, subscription_path = load_sub(OPTIONS.poll)
-    print(subscriber, subscription_path)
-    bq_client, tables = load_tables(OPTIONS.dataset, OPTIONS.tables)
     main(model.Database(),
-         subscriber, subscription_path,
-         bq_client, tables,
+         *load_sub(OPTIONS.poll),
+         *load_tables(OPTIONS.dataset, OPTIONS.tables),
          stop=StopWhen(OPTIONS.stop_at))
