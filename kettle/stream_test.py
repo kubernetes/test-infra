@@ -38,31 +38,18 @@ class FakeSub:
     def modify_ack_deadline(self, subscription, ack_ids, ack_deadline_seconds):
         self.trace.append(['modify-ack', subscription, ack_ids, ack_deadline_seconds])
 
+class FakeClient:
+    def __init__(self, trace=None):
+        self.trace = [] if trace is None else trace
+
+    def insert_rows(self, table, *args, **kwargs):
+        self.trace.append(['insert-rows', args, kwargs])
+        return []
 
 class FakeTable:
     def __init__(self, name, schema, trace=None):
         self.name = name
         self.schema = schema
-        self.trace = [] if trace is None else trace
-
-    def insert_data(self, *args, **kwargs):
-        self.trace.append(['insert-data', args, kwargs])
-        return []
-
-    def row_from_mapping(self, mapping):
-        row = []
-        for field in self.schema:
-            if field.mode == 'REQUIRED':
-                row.append(mapping[field.name])
-            elif field.mode == 'REPEATED':
-                row.append(mapping.get(field.name, ()))
-            elif field.mode == 'NULLABLE':
-                row.append(mapping.get(field.name))
-            else:
-                raise ValueError(
-                    "Unknown field mode: {}".format(field.mode))
-        return tuple(row)
-
 
 class Attrs:
     def __init__(self, attributes):
@@ -107,15 +94,16 @@ class StreamTest(unittest.TestCase):
             ],
             [],
         ])
-        faketable = FakeTable('day', stream.load_schema(FakeSchemaField), fakesub.trace)
+        fake_client = FakeClient()
+        fake_table = FakeTable('day', stream.load_schema(FakeSchemaField))
         fake_sub_path = 'projects/{project_id}/subscriptions/{sub}'
-        tables = {'day': (faketable, 'incr')}
+        tables = {'day': (fake_table, 'incr')}
         stream.main(
-            db, (fakesub, fake_sub_path), tables, make_db_test.MockedClient, [1, 0, 0, 0].pop)
+            db, fakesub, fake_sub_path, fake_client, tables, make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
         # uncomment if the trace changes
-        # import pprint; pprint.pprint(fakesub.trace)
-        # self.maxDiff = 3000
+        import pprint; pprint.pprint(fakesub.trace)
+        self.maxDiff = 3000
 
         now = make_db_test.MockedClient.NOW
 

@@ -102,56 +102,43 @@ def retry(func, *args, **kwargs):
     return func(*args, **kwargs)  # one last attempt
 
 
-def insert_data(table, rows_iter):
+def insert_data(bq_client, table, rows_iter):
     """Upload rows from rows_iter into bigquery table table.
 
     rows_iter should return a series of (row_id, row dictionary) tuples.
     The row dictionary must match the table's schema.
 
+    Args:
+        bq_client: Client connection to BigQuery
+        table: bigquery.Table object that points to a specific table
+        rows_iter: row_id, dict representing a make_json.Build
     Returns the row_ids that were inserted.
     """
-    emitted = set()
-
-    rows = []
-    row_ids = []
-
-    for row_id, row in rows_iter:
-        emitted.add(row_id)
-        if len(json.dumps(row)) > 1e6:
-            print('ERROR: row too long', row['path'])
-            continue
-        row = table.row_from_mapping(row)
-        rows.append(row)
-        row_ids.append(row_id)
-
+    emitted = {pair[0] for pair in rows_iter}
+    rows = [pair[1] for pair in rows_iter]
+    raise Exception(list(rows_iter))
     if not rows:  # nothing to do
         return []
 
-    def insert(table, rows, row_ids):
+    def insert(bq_client, table, rows):
         """Insert rows with row_ids into table, retrying as necessary."""
-        errors = retry(table.insert_data, rows, row_ids, skip_invalid_rows=True)
+        raise Exception('Not running')
+        errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
 
         if not errors:
-            print('Loaded {} builds into {}'.format(len(rows), table.name))
+            print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
         else:
             print('Errors:')
             pprint.pprint(errors)
             pprint.pprint(table.schema)
 
-    if len(json.dumps(rows)) > 10e6:
-        print('WARNING: too big for one insert, doing stupid slow version')
-        for row, row_id in zip(rows, row_ids):
-            insert(table, [row], [row_id])
-    else:
-        insert(table, rows, row_ids)
-
+    insert(bq_client, table, rows)
     return emitted
 
 
-def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
+def main(db, subscriber, subscription_path, bq_client, tables, client_class=make_db.GCSClient, stop=None):
     # pylint: disable=too-many-locals
     gcs_client = client_class('', {})
-    subscriber, subscription_path = sub
     if stop is None:
         stop = lambda: False
 
@@ -207,9 +194,9 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         # stream new rows to tables
         if build_dirs and tables:
-            for table, incremental_table in tables.values():
+            for table_name, incremental_table in tables.values():
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
-                emitted = insert_data(table, make_json.make_rows(db, builds))
+                emitted = insert_data(bq_client, incremental_table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
 
 
@@ -256,22 +243,22 @@ def load_tables(dataset, tablespecs):
         dataset: bigquery.Dataset
         tablespecs: list of strings of "NAME:DAYS", e.g. ["day:1"]
     Returns:
-        {name: (bigquery.Table, incremental table name)}
+        client, {name: (bigquery.Table, incremental table name)}
     """
     project, dataset_name = dataset.split(':')
-    dataset = bigquery.Client(project).dataset(dataset_name)
+    bq_client = bigquery.Client(project)
 
     tables = {}
     for spec in tablespecs:
-        name, days = spec.split(':')
-        table = dataset.table(name)
+        table_name, days = spec.split(':')
+        table_ref = f'{project}.{dataset_name}.{table_name}'
         try:
-            table.reload()
+            table = bq_client.get_table(table_ref)
         except google.cloud.exceptions.NotFound:  # pylint: disable=no-member
+            table = bq_client.create_table(table_ref)
             table.schema = load_schema(bigquery.schema.SchemaField)
-            table.create()
-        tables[name] = (table, make_json.get_table(float(days)))
-    return tables
+        tables[table_name] = (table, make_json.get_table(float(days)))
+    return bq_client, tables
 
 
 class StopWhen:
@@ -318,8 +305,10 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-
+    subscriber, subscription_path = load_sub(OPTIONS.poll)
+    print(subscriber, subscription_path)
+    bq_client, tables = load_tables(OPTIONS.dataset, OPTIONS.tables)
     main(model.Database(),
-         load_sub(OPTIONS.poll),
-         load_tables(OPTIONS.dataset, OPTIONS.tables),
+         subscriber, subscription_path,
+         bq_client, tables,
          stop=StopWhen(OPTIONS.stop_at))
