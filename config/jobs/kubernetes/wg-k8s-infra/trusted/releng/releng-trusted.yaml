@@ -1,4 +1,71 @@
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-image-promo-canary
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+        command:
+        - cip
+        args:
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        # TODO(releng): Set -dry-run=false once we confirm there is nothing wrong
+        #               with service accounts and the jobs succeed.
+        - -dry-run=true
+    annotations:
+      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+
 periodics:
+# TODO(releng): Adjust the interval back to 4 hours once we confirm that the
+#               dry-runs complete without issue.
+# ci-k8sio-image-promo-canary runs every 2 hours, to make sure that the
+# destination GCRs do not deviate away from the intent of the manifest.
+- interval: 2h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  # This name is the "job name", passed in as "--job=NAME" for mkpj.
+  name: ci-k8sio-image-promo-canary
+  # Enable Pod Utilities.
+  # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
+  decorate: true
+  extra_refs:
+  # We clone the below repo automatically (via Pod Utilities), and get dropped
+  # into /home/prow/go/src/github.com/kubernetes/k8s.io.
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    # The k8s-artifacts-prod name was chosen in
+    # https://github.com/kubernetes/k8s.io/pull/695.
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      command:
+      - cip
+      args:
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      # TODO(releng): Set -dry-run=false once we confirm there is nothing wrong
+      #               with service accounts and the jobs succeed.
+      - -dry-run=true
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+
 - name: ci-release-vulndash-update
   interval: 2h
   cluster: k8s-infra-prow-build-trusted
