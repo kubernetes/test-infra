@@ -1269,26 +1269,26 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 	var tests = []struct {
 		name              string
-		removeOwners      bool
-		removeAliases     bool
+		ownersRestored    bool
+		aliasesRestored   bool
 		shouldRemoveLabel bool
 	}{
 		{
-			name:              "OWNERS and OWNERS_ALIASES files removed",
-			removeOwners:      true,
-			removeAliases:     true,
+			name:              "OWNERS and OWNERS_ALIASES files restored",
+			ownersRestored:    true,
+			aliasesRestored:   true,
 			shouldRemoveLabel: true,
 		},
 		{
-			name:              "OWNERS file removed, OWNERS_ALIASES left",
-			removeOwners:      true,
-			removeAliases:     false,
+			name:              "OWNERS file restored, OWNERS_ALIASES left",
+			ownersRestored:    true,
+			aliasesRestored:   false,
 			shouldRemoveLabel: true,
 		},
 		{
 			name:              "OWNERS file left, OWNERS_ALIASES left",
-			removeOwners:      false,
-			removeAliases:     false,
+			ownersRestored:    false,
+			aliasesRestored:   false,
 			shouldRemoveLabel: false,
 		},
 	}
@@ -1329,15 +1329,15 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 			t.Fatalf("Checking out pull branch: %v", err)
 		}
 
-		if test.removeOwners == true {
-			if err := lg.RmCommit("org", "repo", []string{"OWNERS"}); err != nil {
-				t.Fatalf("Removing OWNERS file: %v", err)
+		if test.ownersRestored == false {
+			if err := addFilesToRepo(lg, []string{"OWNERS"}, "invalidSyntax"); err != nil {
+				t.Fatalf("Adding OWNERS file: %v", err)
 			}
 		}
 
-		if test.removeAliases == true {
-			if err := lg.RmCommit("org", "repo", []string{"OWNERS_ALIASES"}); err != nil {
-				t.Fatalf("Removing OWNERS_ALIASES file: %v", err)
+		if test.aliasesRestored == false {
+			if err := addFilesToRepo(lg, []string{"OWNERS_ALIASES"}, "toBeAddedAlias"); err != nil {
+				t.Fatalf("Adding OWNERS_ALIASES file: %v", err)
 			}
 		}
 
@@ -1359,14 +1359,15 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		}
-		filesToRemove := make([]string, 2)
-		if test.removeOwners {
-			filesToRemove = append(filesToRemove, "OWNERS")
+		files := make([]string, 3)
+		files = append(files, "a.go")
+		if !test.ownersRestored {
+			files = append(files, "OWNERS")
 		}
-		if test.removeAliases {
-			filesToRemove = append(filesToRemove, "OWNERS_ALIASES")
+		if !test.aliasesRestored {
+			files = append(files, "OWNERS_ALIASES")
 		}
-		fghc := newFakeGitHubClient(emptyPatch([]string{"a.go"}), filesToRemove, pr)
+		fghc := newFakeGitHubClient(emptyPatch(files), nil, pr)
 
 		fghc.PullRequests = map[int]*github.PullRequest{}
 		fghc.PullRequests[pr] = &github.PullRequest{
@@ -1374,9 +1375,6 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 				Ref: fakegithub.TestRef,
 			},
 		}
-		fghc.RepoLabelsExisting = []string{labels.InvalidOwners}
-
-		froc := makeFakeRepoOwnersClient()
 
 		prInfo := info{
 			org:          "org",
@@ -1384,6 +1382,9 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 			repoFullName: "org/repo",
 			number:       pr,
 		}
+		fghc.AddLabel(prInfo.org, prInfo.repo, prInfo.number, labels.InvalidOwners)
+
+		froc := makeFakeRepoOwnersClient()
 
 		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)

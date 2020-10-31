@@ -205,13 +205,9 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 
 	// List modified OWNERS files.
 	var modifiedOwnersFiles []github.PullRequestChange
-	var ownerModified bool
 	for _, change := range changes {
-		if filepath.Base(change.Filename) == ownersFileName {
-			ownerModified = true
-			if change.Status != github.PullRequestFileRemoved {
-				modifiedOwnersFiles = append(modifiedOwnersFiles, change)
-			}
+		if filepath.Base(change.Filename) == ownersFileName && change.Status != github.PullRequestFileRemoved {
+			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
 		}
 	}
 
@@ -226,7 +222,13 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		}
 	}
 
-	if !ownerModified && !ownerAliasesModified {
+	issueLabels, err := ghc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		return err
+	}
+	hasInvalidOwnersLabel := github.HasLabel(labels.InvalidOwners, issueLabels)
+
+	if len(modifiedOwnersFiles) == 0 && !ownerAliasesModified && !hasInvalidOwnersLabel {
 		return nil
 	}
 
@@ -281,13 +283,6 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 			}
 		}
 	}
-
-	// React if there are files with incorrect configs or non-trusted users.
-	issueLabels, err := ghc.GetIssueLabels(org, repo, number)
-	if err != nil {
-		return err
-	}
-	hasInvalidOwnersLabel := github.HasLabel(labels.InvalidOwners, issueLabels)
 
 	if len(wrongOwnersFiles) > 0 {
 		s := "s"
