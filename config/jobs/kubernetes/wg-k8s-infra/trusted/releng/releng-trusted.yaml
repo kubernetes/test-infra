@@ -19,6 +19,13 @@ periodics:
         - --project=k8s-artifacts-prod
         - --bucket=k8s-artifacts-prod-vuln-dashboard
         - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
+      resources:
+        requests:
+          cpu: 2
+          memory: "8Gi"
+        limits:
+          cpu: 2
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
