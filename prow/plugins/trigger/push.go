@@ -53,6 +53,7 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 	return prowapi.Refs{
 		Org:      pe.Repo.Owner.Name,
 		Repo:     pe.Repo.Name,
+		RepoLink: pe.Repo.HTMLURL,
 		BaseRef:  pe.Branch(),
 		BaseSHA:  pe.After,
 		BaseLink: pe.Compare,
