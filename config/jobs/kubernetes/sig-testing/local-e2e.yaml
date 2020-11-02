@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -54,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
       args:
       - "--timeout=140"
       - "--bare"

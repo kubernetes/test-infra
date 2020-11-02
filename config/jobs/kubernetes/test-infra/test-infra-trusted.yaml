@@ -647,7 +647,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
         command:
         - make
         args:
@@ -911,7 +911,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
       command:
       - runner.sh
       args:
@@ -1105,7 +1105,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
