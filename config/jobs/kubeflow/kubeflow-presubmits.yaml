@@ -180,20 +180,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/metadata.
       testgrid-num-columns-recent: '30'
-  kubeflow/kfserving:
-  - name: kubeflow-kfserving-presubmit
-    cluster: kubeflow
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/kfserving.
-      testgrid-num-columns-recent: '30'
   kubeflow/manifests:
   - name: kubeflow-manifests-presubmit
     cluster: kubeflow
