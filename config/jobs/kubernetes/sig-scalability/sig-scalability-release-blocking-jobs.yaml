@@ -85,11 +85,8 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
+      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_ENABLE_DENSITY_TEST=true
-      - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=CL2_DELETE_TEST_THROUGHPUT=30
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
