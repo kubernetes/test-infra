@@ -194,7 +194,7 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking
     testgrid-tab-name: build-1.18
   interval: 1h
@@ -487,7 +487,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
-      release-managers@kubernetes.io
+      release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.18-blocking, google-unit
     testgrid-tab-name: verify-1.18
   cluster: k8s-infra-prow-build

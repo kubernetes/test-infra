@@ -13,7 +13,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: mdtoc-test
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-mdtoc-verify
     always_run: true
@@ -28,5 +28,5 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: mdtoc-verify
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'

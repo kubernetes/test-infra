@@ -4,7 +4,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^cluster\/images\/etcd\/'
       branches:
@@ -30,7 +30,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^build\/pause\/'
       branches:
