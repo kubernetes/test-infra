@@ -4,7 +4,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
       run_if_changed: '^cmd\/vulndash\/'
@@ -32,7 +32,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-blocking
-        testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
       branches:

@@ -755,7 +755,7 @@ postsubmits:
         - -dry-run=false
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
-      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
   kubernetes/community:
   - name: post-community-tempelis-apply
@@ -1090,7 +1090,7 @@ periodics:
       - -dry-run=false
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
 # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 - interval: 12h
@@ -1116,7 +1116,7 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-release-releng-blocking
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.

@@ -28,7 +28,7 @@ periodics:
           memory: "8Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers@kubernetes.io
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
     github_team_ids:

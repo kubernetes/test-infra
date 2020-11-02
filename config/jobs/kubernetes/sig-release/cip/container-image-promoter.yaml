@@ -95,7 +95,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-auditor-e2e
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
@@ -125,7 +125,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -144,7 +144,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   # Run linter.
   - name: pull-cip-verify
     decorate: true
@@ -162,4 +162,4 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io

@@ -65,7 +65,7 @@ periodics:
     fork-per-release-replacements: "k8s-master -> k8s-beta"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 - interval: 1h
   name: ci-kubernetes-build-canary
@@ -103,7 +103,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
     testgrid-tab-name: build-master-canary
-    testgrid-alert-email: release-managers@kubernetes.io, release-team@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 - interval: 5m
   name: ci-kubernetes-build-fast
@@ -162,7 +162,7 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-debs
 
@@ -185,6 +185,6 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-rpms
