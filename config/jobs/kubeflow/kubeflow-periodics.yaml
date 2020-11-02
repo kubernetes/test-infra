@@ -217,7 +217,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
         imagePullPolicy: Always
         command:
         - "./test/tools/project-cleaner/project_cleaner.sh"
