@@ -19,7 +19,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -59,7 +59,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -261,7 +261,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
@@ -302,7 +302,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
