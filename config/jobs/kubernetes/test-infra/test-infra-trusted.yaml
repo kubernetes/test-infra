@@ -159,25 +159,6 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: reconcile the hmac tokens and webhooks based on the managed_webhooks configuration in prow core config file
-  - name: post-test-infra-push-resultstore
-    cluster: test-infra-trusted
-    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|prow/prow.bzl|experiment/resultstore/)'
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
-        command:
-        - experiment/resultstore/push.sh
-    annotations:
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: push-resultstore
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '3'
-      description: builds and pushes resultstore exporter on effecting changes
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
