@@ -487,8 +487,11 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
-					Timeout:   maxRequestTime,
-					Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+					Timeout: maxRequestTime,
+					Transport: &oauth2.Transport{
+						Source: newReloadingTokenSource(getToken),
+						Base:   newAddHeaderTransport(),
+					},
 				}),
 			client:        &http.Client{Timeout: maxRequestTime},
 			bases:         bases,
@@ -501,6 +504,21 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
+}
+
+func newAddHeaderTransport() http.RoundTripper {
+	return &addHeaderTransport{}
+}
+
+type addHeaderTransport struct {
+}
+
+func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	// We have to add this header to enable the Checks scheme preview:
+	// https://docs.github.com/en/enterprise-server@2.22/graphql/overview/schema-previews
+	// Any GHE version after 2.22 will enable the Checks types per default
+	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
+	return http.DefaultTransport.RoundTrip(r)
 }
 
 // NewClient creates a new fully operational GitHub client.
