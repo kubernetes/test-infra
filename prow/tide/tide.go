@@ -55,6 +55,7 @@ var sleep = time.Sleep
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
@@ -1757,17 +1758,30 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
 	}
-	contexts := make([]Context, 0, len(combined.Statuses))
-	for _, status := range combined.Statuses {
-		contexts = append(
-			contexts,
-			Context{
-				Context:     githubql.String(status.Context),
-				Description: githubql.String(status.Description),
-				State:       githubql.StatusState(strings.ToUpper(status.State)),
-			},
-		)
+	checkRunList, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list checkruns: %w", err)
 	}
+	checkRunNodes := make([]CheckRunNode, 0, len(checkRunList.CheckRuns))
+	for _, checkRun := range checkRunList.CheckRuns {
+		checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: CheckRun{
+			Name: githubql.String(checkRun.Name),
+			// They are uppercase in the V4 api and lowercase in the V3 api
+			Conclusion: githubql.String(strings.ToUpper(checkRun.Conclusion)),
+			Status:     githubql.String(strings.ToUpper(checkRun.Status)),
+		}})
+	}
+
+	contexts := make([]Context, 0, len(combined.Statuses)+len(checkRunNodes))
+	for _, status := range combined.Statuses {
+		contexts = append(contexts, Context{
+			Context:     githubql.String(status.Context),
+			Description: githubql.String(status.Description),
+			State:       githubql.StatusState(strings.ToUpper(status.State)),
+		})
+	}
+	contexts = append(contexts, checkRunNodesToContexts(log, checkRunNodes)...)
+
 	// Add a commit with these contexts to pr for future look ups.
 	pr.Commits.Nodes = append(pr.Commits.Nodes,
 		struct{ Commit Commit }{
