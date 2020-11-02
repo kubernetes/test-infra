@@ -1,6 +1,6 @@
 periodics:
 - name: ci-build-and-push-k8s-at-golang-tip
-  interval: 8h
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -33,7 +33,7 @@ periodics:
             memory: "16Gi"
 
 
-- interval: 8h
+- interval: 4h
   name: ci-golang-tip-k8s-1-18
   cluster: scalability
   tags:
@@ -55,7 +55,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=460
+      - --timeout=210
       # head of perf-tests' master as of 2020-05-29
       - --repo=k8s.io/perf-tests=master:c8e93e287413fb0efec4478e2f47f1e7b1a92bfd
       - --root=/go/src
@@ -88,7 +88,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=430m
+      - --timeout=180m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201030-4553f14-master
       env:
