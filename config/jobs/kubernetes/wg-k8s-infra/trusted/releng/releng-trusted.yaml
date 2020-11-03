@@ -81,9 +81,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    # TODO(releng): We should maybe use the k8s-cloud-builder image here
-    #               instead of kubekins.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.17
+    - image: k8s.gcr.io/releng/releng-ci:v0.1.1
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
