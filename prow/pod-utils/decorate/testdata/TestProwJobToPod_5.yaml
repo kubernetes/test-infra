@@ -5,7 +5,7 @@ metadata:
   labels:
     created-by-prow: "true"
     needstobe: inherited
-    prow.k8s.io/build-id: ""
+    prow.k8s.io/build-id: "blabla"
     prow.k8s.io/id: pod
     prow.k8s.io/job: job-name
     prow.k8s.io/type: periodic
