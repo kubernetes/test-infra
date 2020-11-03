@@ -43,22 +43,20 @@ import make_json
 
 def process_changes(results):
     """Split GCS change events into trivial ack_ids and builds to further process."""
-    ack_ids = []  # pubsub message ids to acknowledge
+    ack_ids = []  # pubsub rec_message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
-
     # process results, find finished builds to process
-    for ack_id, message in results:
-        if message.attributes['eventType'] != 'OBJECT_FINALIZE':
-            ack_ids.append(ack_id)
+    for rec_message in results:
+        if rec_message.message.attributes['eventType'] != 'OBJECT_FINALIZE':
+            ack_ids.append(rec_message.ack_id)
             continue
-        obj = message.attributes['objectId']
+        obj = rec_message.message.attributes['objectId']
         if not obj.endswith('/finished.json'):
-            ack_ids.append(ack_id)
+            ack_ids.append(rec_message.ack_id)
             continue
         job, build = obj[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (message.attributes['bucketId'], job)
-        todo.append((ack_id, job, build))
-
+        job = 'gs://%s/%s' % (rec_message.message.attributes['bucketId'], job)
+        todo.append((rec_message.ack_id, job, build))
     return ack_ids, todo
 
 
@@ -156,16 +154,16 @@ def main(
 
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = retry(subscriber.pull, subscription=subscription_path, max_messages=1000)
+        results = list(retry(subscriber.pull, subscription=subscription_path, max_messages=1000).received_messages)
         start = time.time()
         while time.time() < start + 7:
-            results_more = subscriber.pull(
+            results_more = list(subscriber.pull(
                 subscription=subscription_path,
                 max_messages=1000,
-                return_immediately=True)
+                return_immediately=True).received_messages)
             if not results_more:
                 break
-            results += results_more
+            results.extend(results_more)
 
         print('PULLED', len(results))
 
@@ -217,14 +215,8 @@ def load_sub(poll):
         Subscribed client
     """
     subscriber = pubsub_v1.SubscriberClient()
-
-    project_id, topic, sub = poll.split('/')
-    topic_path = f'projects/{project_id}/topics/{topic}'
+    project_id, _, sub = poll.split('/')
     subscription_path = f'projects/{project_id}/subscriptions/{sub}'
-
-    #see https://github.com/googleapis/python-pubsub/issues/67 for pylint issue
-    subscriber.create_subscription(name=subscription_path, topic=topic_path) # pylint: disable=no-member
-
     return subscriber, subscription_path
 
 
