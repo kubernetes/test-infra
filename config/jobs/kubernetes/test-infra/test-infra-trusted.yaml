@@ -1020,34 +1020,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 
-# TODO(releng): Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
-#               ref: https://github.com/kubernetes-sigs/k8s-container-image-promoter/issues/269
-- interval: 12h
-  cluster: test-infra-trusted
-  max_concurrency: 1
-  name: ci-k8sio-backup
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: master
-  spec:
-    serviceAccountName: k8s-infra-gcr-promoter-bak
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.17
-      command:
-      - infra/gcp/backup_tools/backup.sh
-      env:
-      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
-      # here anyway in case the underlying image changes (the backup.sh script
-      # needs it to be defined).
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-release-releng-blocking
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
 # Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
