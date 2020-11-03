@@ -544,7 +544,6 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 		}
 	} else {
 		// BuildID needs to be set before we execute the job url template.
-		pj.Status.BuildID = getPodBuildID(&pod)
 		pj.Status.PodName = pod.ObjectMeta.Name
 	}
 
@@ -573,7 +572,12 @@ func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 		return fmt.Errorf("error getting build ID: %v", err)
 	}
 
+	prevPJ := pj.DeepCopy()
 	pj.Status.BuildID = buildID
+	if err := c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
+		return fmt.Errorf("error setting build ID on ProwJob: %v", err)
+	}
+
 	pod, err := decorate.ProwJobToPod(*pj)
 	if err != nil {
 		return err
@@ -589,7 +593,13 @@ func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 	if err != nil {
 		return err
 	}
-	pj.Status.PodName = pod.ObjectMeta.Name
+
+	prevPJ = pj.DeepCopy()
+	pj.Status.PodName = pod.Name
+	if err := c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
+		return fmt.Errorf("error setting build ID on ProwJob: %v", err)
+	}
+
 	return nil
 }
 
@@ -616,22 +626,6 @@ func (c *Controller) deletePod(pj *prowapi.ProwJob) error {
 
 func (c *Controller) getBuildID(name string) (string, error) {
 	return pjutil.GetBuildID(name, c.totURL)
-}
-
-func getPodBuildID(pod *corev1.Pod) string {
-	if buildID, ok := pod.ObjectMeta.Labels[kube.ProwBuildIDLabel]; ok && buildID != "" {
-		return buildID
-	}
-
-	// For backwards compatibility: existing pods may not have the buildID label.
-	for _, env := range pod.Spec.Containers[0].Env {
-		if env.Name == "BUILD_ID" {
-			return env.Value
-		}
-	}
-
-	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
-	return ""
 }
 
 // isRequestError extracts an HTTP status code from a kerrors.APIStatus and

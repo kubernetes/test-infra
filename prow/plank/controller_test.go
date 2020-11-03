@@ -40,13 +40,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 type fca struct {
@@ -652,7 +653,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
 				},
 				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+					State:   prowapi.TriggeredState,
+					BuildID: "0987654321",
+					PodName: "foo",
 				},
 			},
 			Pods: map[string][]v1.Pod{
@@ -691,7 +694,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
 				},
 				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+					State:   prowapi.TriggeredState,
+					BuildID: "0987654321",
+					PodName: "foo",
 				},
 			},
 			Pods: map[string][]v1.Pod{
@@ -1990,6 +1995,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			jobs := make(chan prowapi.ProwJob, len(test.PJs))
 			for _, pj := range test.PJs {
+				// We have to set the namespace here otherwise the ProwJobs patch in
+				// startPod won't work
+				pj.Namespace = "prowjobs"
 				jobs <- pj
 			}
 			close(jobs)

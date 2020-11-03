@@ -461,11 +461,6 @@ func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj runtime.O
 
 func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	t.Parallel()
-	r := &reconciler{
-		log:          logrus.NewEntry(logrus.New()),
-		buildClients: map[string]ctrlruntimeclient.Client{"default": &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}},
-		config:       func() *config.Config { return &config.Config{} },
-	}
 	pj := &prowv1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{Name: "name"},
 		Spec: prowv1.ProwJobSpec{
@@ -474,7 +469,13 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 			Type:    prowv1.PeriodicJob,
 		},
 	}
-	if _, _, err := r.startPod(pj); err != nil {
+	r := &reconciler{
+		log:          logrus.NewEntry(logrus.New()),
+		buildClients: map[string]ctrlruntimeclient.Client{"default": &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}},
+		pjClient:     &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pj)},
+		config:       func() *config.Config { return &config.Config{} },
+	}
+	if err := r.startPod(pj); err != nil {
 		t.Fatalf("startPod: %v", err)
 	}
 	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{Name: "name"}, &corev1.Pod{}); err != nil {

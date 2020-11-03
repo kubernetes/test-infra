@@ -257,8 +257,7 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 	if !podExists {
 		// Pod is missing. This can happen in case the previous pod was deleted manually or by
 		// a rescheduler. Start a new pod.
-		id, pn, err := r.startPod(pj)
-		if err != nil {
+		if err := r.startPod(pj); err != nil {
 			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
@@ -267,8 +266,6 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			r.log.WithFields(pjutil.ProwJobFields(pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
-			pj.Status.BuildID = id
-			pj.Status.PodName = pn
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
@@ -449,20 +446,12 @@ func (r *reconciler) syncPendingJob(pj *prowv1.ProwJob) error {
 func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, error) {
 	prevPJ := pj.DeepCopy()
 
-	var id, pn string
-
-	pod, podExists, err := r.pod(pj)
+	_, podExists, err := r.pod(pj)
 	if err != nil {
 		return nil, err
 	}
-	// We may end up in a state where the pod exists but the prowjob is not
-	// updated to pending if we successfully create a new pod in a previous
-	// sync but the prowjob update fails. Simply ignore creating a new pod
-	// and rerun the prowjob update.
-	if podExists {
-		id = getPodBuildID(pod)
-		pn = pod.ObjectMeta.Name
-	} else {
+
+	if !podExists {
 		// Do not start more jobs than specified and check again later.
 		canExecuteConcurrently, err := r.canExecuteConcurrently(pj)
 		if err != nil {
@@ -472,8 +461,7 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 			return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 		}
 		// We haven't started the pod yet. Do so.
-		id, pn, err = r.startPod(pj)
-		if err != nil {
+		if err := r.startPod(pj); err != nil {
 			if !isRequestError(err) {
 				return nil, fmt.Errorf("error starting pod: %v", err)
 			}
@@ -485,12 +473,9 @@ func (r *reconciler) syncTriggeredJob(pj *prowv1.ProwJob) (*reconcile.Result, er
 	}
 
 	if pj.Status.State == prowv1.TriggeredState {
-		// BuildID needs to be set before we execute the job url template.
-		pj.Status.BuildID = id
 		now := metav1.NewTime(r.clock.Now())
 		pj.Status.PendingTime = &now
 		pj.Status.State = prowv1.PendingState
-		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
 		pj.Status.URL, err = pjutil.JobURL(r.config().Plank, *pj, r.log)
 		if err != nil {
@@ -597,28 +582,33 @@ func (r *reconciler) deletePod(pj *prowv1.ProwJob) error {
 	return nil
 }
 
-func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
+func (r *reconciler) startPod(pj *prowv1.ProwJob) error {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+		return fmt.Errorf("error getting build ID: %v", err)
 	}
 
+	prevPJ := pj.DeepCopy()
 	pj.Status.BuildID = buildID
+	if err := r.pjClient.Patch(r.ctx, pj, ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
+		return fmt.Errorf("error setting build ID on ProwJob: %v", err)
+	}
+
 	pod, err := decorate.ProwJobToPod(*pj)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 	pod.Namespace = r.config().PodNamespace
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
 		// TODO: Terminal error to prevent requeuing
-		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
 	err = client.Create(r.ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
 	// We must block until we see the pod, otherwise a new reconciliation may be triggered that tries to create
@@ -633,10 +623,16 @@ func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 		}
 		return true, nil
 	}); err != nil {
-		return "", "", fmt.Errorf("failed waiting for new pod %s in cluster %s  appear in cache: %w", podName.String(), pj.ClusterAlias(), err)
+		return fmt.Errorf("failed waiting for new pod %s in cluster %s  appear in cache: %w", podName.String(), pj.ClusterAlias(), err)
 	}
 
-	return buildID, pod.Name, nil
+	prevPJ = pj.DeepCopy()
+	pj.Status.PodName = pod.Name
+	if err := r.pjClient.Patch(r.ctx, pj, ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
+		return fmt.Errorf("error setting build ID on ProwJob: %v", err)
+	}
+
+	return nil
 }
 
 func (r *reconciler) getBuildID(name string) (string, error) {
