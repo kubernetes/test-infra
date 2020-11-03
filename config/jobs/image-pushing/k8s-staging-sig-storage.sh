@@ -31,6 +31,7 @@ readonly REPOS=(
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-sigs/sig-storage-local-static-provisioner
+    kubernetes-sigs/container-object-storage-interface-api
 )
 
 cat >"${OUTPUT}" <<EOF
