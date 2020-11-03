@@ -47,7 +47,7 @@ periodics:
           memory: "48Gi"
 
 # This is a sig-release-master-blocking job.
-- cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
+- cron: '1 5,17,23 * * *' # In UTC
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
@@ -68,7 +68,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1080
+      - --timeout=360
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -85,8 +85,11 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+      # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
+      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
       - --env=CL2_ENABLE_DENSITY_TEST=true
+      - --env=CL2_LOAD_TEST_THROUGHPUT=50
+      - --env=CL2_DELETE_TEST_THROUGHPUT=30
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -101,7 +104,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1050m
+      - --timeout=330m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
       resources:
