@@ -185,19 +185,19 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			name:      "mergeable no-op",
 			pr:        pr(),
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			name:      "unmergeable no-op",
 			pr:        pr(),
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			pr:        pr(),
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -206,7 +206,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			name:      "unmergeable -> mergeable",
 			pr:        pr(),
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -254,17 +254,17 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		{
 			name:      "mergeable no-op",
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -272,7 +272,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		{
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -316,22 +316,22 @@ func TestHandleAll(t *testing.T) {
 	}{
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,

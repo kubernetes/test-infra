@@ -53,7 +53,6 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/projectmanager"
 	_ "k8s.io/test-infra/prow/plugins/releasenote"
 	_ "k8s.io/test-infra/prow/plugins/require-matching-label"
-	_ "k8s.io/test-infra/prow/plugins/requiresig"
 	_ "k8s.io/test-infra/prow/plugins/retitle"
 	_ "k8s.io/test-infra/prow/plugins/shrug"
 	_ "k8s.io/test-infra/prow/plugins/sigmention"

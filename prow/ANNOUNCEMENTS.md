@@ -127,6 +127,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 24, 2020* The `requiresig` plugin has been removed in favor of the `require-matching-label` plugin
+    which provides equivalent functionality ([example plugin config](https://github.com/kubernetes/test-infra/blob/e42b0745404017bc71c668da0342ef6857d87fa9/config/prow/plugins.yaml#L494-L498))
  - *November 14, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning were deprecated on *August 22, 2020* in favor of the new `exempt_users` and `exempt_branches` fields. The support for these fields shall be stopped in *January 2021*.
  - *November 11th, 2020* The prow-controller-manager and sinker now require RBAC to be set up to manage their leader lock in the `coordination.k8s.io` group. See [here](https://github.com/kubernetes/test-infra/pull/19906/files?diff=split&w=1)
  - *November, 2020* The deprecated `namespace` and `additional_namespaces` properties have been removed from the config updater plugin
