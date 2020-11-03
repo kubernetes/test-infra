@@ -60,19 +60,10 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
 
-# This job is a canary of 'ci-k8sio-backup' with the following qualities:
-# - Runs in k8s-infra-prow-build-trusted
-# - Jobs renamed to include 'gcr-prod-backup' for clarity
-# - Job names are suffixed with '-canary'
-# - Periodic runs every 2 hours (instead of every 12 hours)
-# - Rerun enabled for Release Managers
-#
-# TODO(releng): Adjust the interval back to 12 hours once we confirm that the
-#               dry-runs complete without issue.
-- interval: 2h
+- interval: 4h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
-  name: ci-k8sio-gcr-prod-backup-canary
+  name: ci-k8sio-gcr-prod-backup
   decorate: true
   extra_refs:
   - org: kubernetes
