@@ -20,6 +20,7 @@ go_test(
         ":package-srcs",
         "//config:prowjobs",
         "//config/prow:configs",
+        "//prow/apis/prowjobs/v1:all-srcs",
     ],
     embed = [":go_default_library"],
     deps = [

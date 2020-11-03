@@ -5046,6 +5046,12 @@ func TestGenYamlDocs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("filepath.Glob: %v", err)
 	}
+	prowapiInputFiles, err := filepath.Glob("../apis/prowjobs/v1/*.go")
+	if err != nil {
+		t.Fatalf("prowapi filepath.Glob: %v", err)
+	}
+	inputFiles = append(inputFiles, prowapiInputFiles...)
+
 	commentMap, err := genyaml.NewCommentMap(inputFiles...)
 	if err != nil {
 		t.Fatalf("failed to construct commentMap: %v", err)

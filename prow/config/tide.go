@@ -47,19 +47,19 @@ type TideContextPolicy struct {
 
 // TideOrgContextPolicy overrides the policy for an org, and any repo overrides.
 type TideOrgContextPolicy struct {
-	TideContextPolicy
-	Repos map[string]TideRepoContextPolicy `json:"repos,omitempty"`
+	TideContextPolicy `json:",inline"`
+	Repos             map[string]TideRepoContextPolicy `json:"repos,omitempty"`
 }
 
 // TideRepoContextPolicy overrides the policy for repo, and any branch overrides.
 type TideRepoContextPolicy struct {
-	TideContextPolicy
-	Branches map[string]TideContextPolicy `json:"branches,omitempty"`
+	TideContextPolicy `json:",inline"`
+	Branches          map[string]TideContextPolicy `json:"branches,omitempty"`
 }
 
 // TideContextPolicyOptions holds the default policy, and any org overrides.
 type TideContextPolicyOptions struct {
-	TideContextPolicy
+	TideContextPolicy `json:",inline"`
 	// GitHub Orgs
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
 }

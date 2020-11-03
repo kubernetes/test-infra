@@ -105,9 +105,9 @@ type ProwConfig struct {
 	Plank            Plank            `json:"plank,omitempty"`
 	Sinker           Sinker           `json:"sinker,omitempty"`
 	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection"`
+	Gerrit           Gerrit           `json:"gerrit"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter"`
 	// Deprecated: this option will be removed in May 2020.
 	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
