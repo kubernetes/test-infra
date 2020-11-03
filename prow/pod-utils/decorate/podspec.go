@@ -158,19 +158,19 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
-	return ProwJobToPodLocal(pj, buildID, "")
+func ProwJobToPod(pj prowapi.ProwJob) (*coreapi.Pod, error) {
+	return ProwJobToPodLocal(pj, "")
 }
 
 // ProwJobToPodLocal converts a ProwJob to a Pod that will run the tests.
 // If an output directory is specified, files are copied to the dir instead of uploading to GCS if
 // decoration is configured.
-func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*coreapi.Pod, error) {
+func ProwJobToPodLocal(pj prowapi.ProwJob, outputDir string) (*coreapi.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
 
-	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, buildID, pj.Name))
+	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name))
 	if err != nil {
 		return nil, err
 	}
