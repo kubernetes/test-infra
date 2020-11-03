@@ -20,8 +20,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_testing/kubeflow-testing-postsubmit
 - name: kubeflow-tf-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
-- name: kubeflow-katib-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_katib/kubeflow-katib-postsubmit
 - name: kubeflow-experimental-seldon-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-seldon/kubeflow-experimental-seldon-postsubmit
 - name: kubeflow-caffe2-operator-postsubmit
