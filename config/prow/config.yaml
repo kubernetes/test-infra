@@ -304,6 +304,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        noderesourcetopology-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         org:
           restrictions: # only allow admins
             users: []
@@ -482,6 +487,7 @@ tide:
     - kubernetes/metrics
     - kubernetes/mount-utils
     - kubernetes/node-api
+    - kubernetes/noderesourcetopology-api
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
