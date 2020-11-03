@@ -194,20 +194,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/manifests.
       testgrid-num-columns-recent: '30'
-  kubeflow/kfctl:
-  - name: kubeflow-kfctl-presubmit
-    cluster: kubeflow
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/kfctl.
-      testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
   - name: kubeflow-pipeline-frontend-test
     cluster: kubeflow
