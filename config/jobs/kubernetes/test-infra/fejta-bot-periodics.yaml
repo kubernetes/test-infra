@@ -147,6 +147,8 @@ periodics:
         -label:do-not-merge/hold
         -label:do-not-merge/invalid-commit-message
         -label:do-not-merge/invalid-owners-file
+        -label:do-not-merge/needs-sig
+        -label:do-not-merge/needs-kind
         -label:do-not-merge/release-note-label-needed
         -label:do-not-merge/work-in-progress
         label:lgtm
