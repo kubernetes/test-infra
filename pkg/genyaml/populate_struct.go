@@ -20,6 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // PopulateStruct will recursively populate a struct via reflection for consumption by genyaml by:
@@ -42,6 +45,13 @@ func PopulateStruct(in interface{}) interface{} {
 		// Unexported
 		if !valueOf.Elem().Field(i).CanSet() {
 			continue
+		}
+
+		if typeOf.Elem().Field(i).Anonymous {
+			// We can only warn about this, because the go stdlib and some kube types do this :/
+			if !strings.Contains(typeOf.Elem().Field(i).Tag.Get("json"), ",inline") {
+				logrus.Warningf("Found anonymous field without inline annotation, this will produce invalid results. Please add a `json:\",inline\"` annotation if you control the type. Type: %T, parentType: %T", valueOf.Elem().Field(i).Interface(), valueOf.Elem().Interface())
+			}
 		}
 		switch k := typeOf.Elem().Field(i).Type.Kind(); k {
 		// We must populate strings, because genyaml uses a custom json lib
