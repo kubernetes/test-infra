@@ -714,30 +714,6 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
       description: Uses the Container Image Promoter to promote images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow.
 
-  kubernetes/k8s.io:
-  - name: post-k8sio-cip
-    cluster: test-infra-trusted
-    decorate: true
-    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
-    # Never run more than 1 job at a time. This is because we don't want to run
-    # into a case where an older manifest PR merge gets run last (after a newer
-    # one).
-    max_concurrency: 1
-    branches:
-    - ^master$
-    spec:
-      serviceAccountName: k8s-infra-gcr-promoter
-      containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
-        command:
-        - cip
-        args:
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-        - -dry-run=false
-    annotations:
-      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
-      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '1'
   kubernetes/community:
   - name: post-community-tempelis-apply
     cluster: test-infra-trusted
@@ -1043,36 +1019,7 @@ periodics:
     testgrid-tab-name: label_sync
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
-# ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
-# away from the intent of the manifest.
-- interval: 4h
-  cluster: test-infra-trusted
-  max_concurrency: 1
-  # This name is the "job name", passed in as "--job=NAME" for mkpj.
-  name: ci-k8sio-cip
-  # Enable Pod Utilities. See https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md.
-  decorate: true
-  extra_refs:
-  # Because of Pod Utilities, we clone the below repo automatically, and, get
-  # dropped into /home/prow/go/src/github.com/kubernetes/k8s.io.
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: master
-  spec:
-    # The k8s-artifacts-prod name was chosen in
-    # https://github.com/kubernetes/k8s.io/pull/695.
-    serviceAccountName: k8s-infra-gcr-promoter
-    containers:
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
-      command:
-      - cip
-      args:
-      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-      - -dry-run=false
-  annotations:
-    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
+
 # TODO(releng): Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 #               ref: https://github.com/kubernetes-sigs/k8s-container-image-promoter/issues/269
 - interval: 12h
