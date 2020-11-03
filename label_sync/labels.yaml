@@ -605,18 +605,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG LTS.
-      name: wg/lts
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Machine Learning.
-      name: wg/machine-learning
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Multitenancy.
       name: wg/multitenancy
       target: both
@@ -641,12 +629,6 @@ default:
       prowPlugin: label
       addedBy: anyone
       deleteAfter: 2020-04-08T00:00:00Z
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Security Audit.
-      name: wg/security-audit
-      target: both
-      prowPlugin: label
-      addedBy: anyone
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Component Standard.
       name: wg/component-standard
