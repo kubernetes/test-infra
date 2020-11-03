@@ -1073,7 +1073,8 @@ periodics:
     testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
-# TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+# TODO(releng): Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+#               ref: https://github.com/kubernetes-sigs/k8s-container-image-promoter/issues/269
 - interval: 12h
   cluster: test-infra-trusted
   max_concurrency: 1
