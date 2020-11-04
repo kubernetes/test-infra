@@ -25,7 +25,7 @@ personal repos.
     - Add the `repo` scope if you plan on handing private repos
     - Add the `admin:org_hook` scope if you plan on handling a github org
 1. Set this token aside for later (we'll assume you wrote it to a file on your
-   workstation at `/path/to/oauth/secret`)
+   workstation at `/path/to/github/token`)
 
 ## Tackle deployment
 
@@ -51,7 +51,7 @@ This will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
-* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/oauth/secret`
+* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
 
 See the [Next Steps](#next-steps) section after running this utility.
 
@@ -135,11 +135,11 @@ $ openssl rand -hex 20 > /path/to/hook/secret
 $ kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `github-token` is the OAuth2 token you created above for the [GitHub bot account].
+The `github-token` is the *Personal access token* you created above for the [GitHub bot account].
 If you need to create one, go to <https://github.com/settings/tokens>.
 
 ```sh
-kubectl create secret generic github-token --from-file=token=/path/to/oauth/secret
+kubectl create secret generic github-token --from-file=token=/path/to/github/token
 ```
 
 ### Update the sample manifest
@@ -207,14 +207,14 @@ You have two options to do this:
 1. You can do this with the `update-hook` utility:
 
 ```sh
-# Note /path/to/hook/secret and /path/to/oauth/secret from earlier secrets step
+# Note /path/to/hook/secret and /path/to/github/token from earlier secrets step
 # Note the an.ip.addr.ess from previous ingress step
 
 # Ideally use https://bazel.build, alternatively try:
 #   go get -u k8s.io/test-infra/experiment/update-hook && update-hook
 $ bazel run //experiment/update-hook -- \
   --hmac-path=/path/to/hook/secret \
-  --github-token-path=/path/to/oauth/secret \
+  --github-token-path=/path/to/github/token \
   --hook-url http://an.ip.addr.ess/hook \
   --repo my-org/my-repo \
   --repo my-whole-org \
