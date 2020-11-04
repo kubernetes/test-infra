@@ -306,9 +306,9 @@ test_groups:
 
 #ibm ppc64le test results
 - name: ppc64le-conformance
-  gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-conformance-test-ppc64le
 - name: ppc64le-unit
-  gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-bazel-test-ppc64le
 #Arm arm64 test results
 - name: arm64-conformance
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
