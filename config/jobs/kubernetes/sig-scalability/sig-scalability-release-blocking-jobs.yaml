@@ -25,6 +25,7 @@ periodics:
       - --env=CONCURRENT_SERVICE_SYNCS=5
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
@@ -80,6 +81,7 @@ periodics:
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-size=e2-medium
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
@@ -151,6 +153,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project

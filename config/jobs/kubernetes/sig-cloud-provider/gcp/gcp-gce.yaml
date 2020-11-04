@@ -568,6 +568,7 @@ periodics:
           - --
           - --check-leaked-resources
           - --extract=ci/latest-fast
+          - --extract-ci-bucket=k8s-release-dev
           - --env=KUBE_CONTAINER_RUNTIME=containerd
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
@@ -650,6 +651,7 @@ periodics:
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -773,6 +775,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=err-e2e
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce

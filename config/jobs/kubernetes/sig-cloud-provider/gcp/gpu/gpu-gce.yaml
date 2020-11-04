@@ -36,6 +36,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -72,6 +73,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project=k8s-infra-e2e-gpu-project
