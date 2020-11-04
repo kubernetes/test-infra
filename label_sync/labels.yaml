@@ -1028,7 +1028,7 @@ repos:
       - color: e11d21
         description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
         name: do-not-merge/needs-sig
-        target: both
+        target: prs
         prowPlugin: require-matching-label
         addedBy: prow
 
