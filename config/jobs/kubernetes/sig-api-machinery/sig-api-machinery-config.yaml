@@ -38,7 +38,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -63,7 +65,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -102,7 +106,9 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
-        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -146,7 +152,9 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
-        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
