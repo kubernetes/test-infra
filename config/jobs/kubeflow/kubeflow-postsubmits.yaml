@@ -145,19 +145,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/tf-operator.
-  kubeflow/katib:
-  - name: kubeflow-katib-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/katib.
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-postsubmit
     cluster: kubeflow
