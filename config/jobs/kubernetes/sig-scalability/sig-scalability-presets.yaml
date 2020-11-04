@@ -292,6 +292,10 @@ presets:
 - labels:
     preset-e2e-scalability-periodics: "true"
   env:
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
