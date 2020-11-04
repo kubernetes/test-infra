@@ -1001,6 +1001,19 @@ repos:
         target: prs
         prowPlugin: require-matching-label
         addedBy: prow
+      - color: e11d21
+        description: Indicates a PR lacks a `kind/foo` label and requires one.
+        name: do-not-merge/needs-kind
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+      - color: e11d21
+        description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
+        name: do-not-merge/needs-sig
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+
   kubernetes/org:
     labels:
       - color: 0052cc

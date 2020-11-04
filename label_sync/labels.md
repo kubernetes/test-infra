@@ -308,6 +308,8 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="do-not-merge/contains-merge-commits" href="#do-not-merge/contains-merge-commits">`do-not-merge/contains-merge-commits`</a> | Indicates a PR which contains merge commits.| prow |  [mergecommitblocker](https://git.k8s.io/test-infra/prow/plugins/mergecommitblocker) |
+| <a id="do-not-merge/needs-kind" href="#do-not-merge/needs-kind">`do-not-merge/needs-kind`</a> | Indicates a PR lacks a `kind/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
+| <a id="do-not-merge/needs-sig" href="#do-not-merge/needs-sig">`do-not-merge/needs-sig`</a> | Indicates an issue or PR lacks a `sig/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
 | <a id="needs-priority" href="#needs-priority">`needs-priority`</a> | Indicates a PR lacks a `priority/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
 
 ## Labels that apply to kubernetes/org, for both issues and PRs

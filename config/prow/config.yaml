@@ -519,6 +519,8 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-commit-message
     - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - needs-kind
