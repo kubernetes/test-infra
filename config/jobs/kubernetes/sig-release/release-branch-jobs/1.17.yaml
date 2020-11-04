@@ -1,7 +1,8 @@
 periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com,
+      release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.17-blocking, sig-cli-master
     testgrid-num-columns-recent: "3"
@@ -79,7 +80,7 @@ periodics:
 - annotations:
     fork-per-release-cron: 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
+    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.17-blocking, google-gce
     testgrid-num-failures-to-alert: "12"
@@ -117,7 +118,8 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-periodic-interval: 24h
-    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com,
+      release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, sig-node-kubelet, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-1.17
   cluster: k8s-infra-prow-build
@@ -157,6 +159,7 @@ periodics:
 - annotations:
     testgrid-dashboards: sig-node-kubelet, sig-release-1.17-informing
     testgrid-tab-name: node-kubelet-features-1.17
+    testgrid-alert-email: release-team@kubernetes.io
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -227,7 +230,8 @@ periodics:
 - annotations:
     fork-per-release-cron: 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com,
+      release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
@@ -302,6 +306,7 @@ periodics:
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: kubemark-1.17-500
+    testgrid-alert-email: release-team@kubernetes.io
   cron: 0 15 * * *
   labels:
     preset-dind-enabled: "true"
@@ -361,7 +366,8 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.17'
   - 'perfDashJobType: performance'
 - annotations:
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
+      release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: bazel-build-1.17
   decorate: true
@@ -405,7 +411,8 @@ periodics:
           cpu: 4
           memory: "12Gi"
 - annotations:
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
+      release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.17-blocking, google-unit
     testgrid-tab-name: bazel-test-1.17
   cluster: k8s-infra-prow-build
@@ -525,6 +532,7 @@ periodics:
 - annotations:
     testgrid-dashboards: google-windows, sig-windows-releases, sig-windows-gce, sig-release-1.17-informing
     testgrid-tab-name: gce-windows-1.17
+    testgrid-alert-email: release-team@kubernetes.io
   decorate: true
   extra_refs:
   - base_ref: master
@@ -659,6 +667,7 @@ postsubmits:
   kubernetes/kubernetes:
   - annotations:
       testgrid-dashboards: google-unit, sig-release-job-config-errors
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
     branches:
     - release-1.17
     labels:
@@ -689,7 +698,8 @@ postsubmits:
           requests:
             memory: 6Gi
   - annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
+        release-managers+alerts@kubernetes.io
       testgrid-dashboards: sig-release-1.17-informing, google-unit
     branches:
     - release-1.17

@@ -27,6 +27,7 @@ presubmits:
             memory: "41Gi"
     annotations:
       testgrid-create-test-group: 'true'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 periodics:
 - interval: 1h
