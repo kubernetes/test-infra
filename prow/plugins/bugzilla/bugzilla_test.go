@@ -23,7 +23,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
@@ -1114,7 +1113,7 @@ Instructions for interacting with me using PR comments are available [here](http
 The following pull requests linked via external trackers have not merged:
  * [org/repo#22](https://github.com/org/repo/pull/22) is open
 
-These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state.
+These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state. Once unlinked, request a bug refresh with <code>/bugzilla refresh</code>.
 
 [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has not been moved to the MODIFIED state.
 
@@ -1707,7 +1706,7 @@ func checkComments(client fakegithub.FakeClient, name, expectedComment string, t
 
 	if expectedComment != "" && len(client.IssueCommentsAdded) == 1 {
 		if expectedComment != client.IssueCommentsAdded[0] {
-			t.Errorf("%s: got incorrect comment: %v", name, diff.StringDiff(expectedComment, client.IssueCommentsAdded[0]))
+			t.Errorf("%s: got incorrect comment: %v", name, cmp.Diff(expectedComment, client.IssueCommentsAdded[0]))
 		}
 	}
 }
