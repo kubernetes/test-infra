@@ -373,11 +373,10 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
+func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
 	if len(lgtm.StickyLgtmTeam) > 0 {
 		if teams, err := gc.ListTeams(org); err == nil {
 			for _, teamInOrg := range teams {
-				// lgtm.TrustedAuthorTeams is supposed to be a very short list.
 				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
 					if members, err := gc.ListTeamMembers(teamInOrg.ID, github.RoleAll); err == nil {
 						for _, member := range members {
