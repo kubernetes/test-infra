@@ -22,15 +22,28 @@ import stream
 import make_db_test
 import model
 
+class FakePullResponse:
+    def __init__(self, messages):
+        self.received_messages = messages
+
+class FakeReceivedMessage:
+    def __init__(self, ack_id, message):
+        self.ack_id = ack_id
+        self.message = message
+
+class FakePubSubMessage:
+    def __init__(self, data, attributes):
+        self.data = data
+        self.attributes = attributes
 
 class FakeSub:
-    def __init__(self, pulls):
-        self.pulls = pulls
+    def __init__(self, fake_pr):
+        self.fake_pr = fake_pr
         self.trace = []
 
     def pull(self, subscription, return_immediately=False, **_kwargs):
         self.trace.append(['pull', subscription, return_immediately])
-        return self.pulls.pop(0)
+        return self.fake_pr.pop(0)
 
     def acknowledge(self, subscription, ack_ids):
         self.trace.append(['ack', subscription, ack_ids])
@@ -51,11 +64,6 @@ class FakeTable:
         self.friendly_name = name
         self.schema = schema
 
-class Attrs:
-    def __init__(self, attributes):
-        self.attributes = attributes
-
-
 class FakeSchemaField:
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
@@ -69,31 +77,48 @@ class StreamTest(unittest.TestCase):
         # The components are mostly tested in make_*_test.py.
 
         db = model.Database(':memory:')
-        fake_sub = FakeSub([
+        fake_sub = FakeSub(
             [
-                ('a', Attrs({'eventType': 'OBJECT_DELETE'})),
-            ],
-            [
-                ('b', Attrs({
-                    'eventType': 'OBJECT_FINALIZE',
-                    'objectId': 'logs/fake/123/finished.json',
-                    'bucketId': 'kubernetes-jenkins'})),
-            ],
-            [],
-            [
-                ('c', Attrs({
-                    'eventType': 'OBJECT_FINALIZE',
-                    'objectId': 'logs/fake/123/finished.json',
-                    'bucketId': 'kubernetes-jenkins'})),
-            ],
-            [],
-            [
-                ('d', Attrs({
-                    'eventType': 'OBJECT_FINALIZE',
-                    'objectId': 'logs/fake/124/started.json'})),
-            ],
-            [],
-        ])
+                FakePullResponse(
+                    [FakeReceivedMessage(
+                        'a',
+                        FakePubSubMessage(
+                            'no_data',
+                            {'eventType': 'OBJECT_DELETE'})
+                    )]
+                ),
+                FakePullResponse(
+                    [FakeReceivedMessage(
+                        'b',
+                        FakePubSubMessage(
+                            'no_data', {
+                                'eventType': 'OBJECT_FINALIZE',
+                                'objectId': 'logs/fake/123/finished.json',
+                                'bucketId': 'kubernetes-jenkins'})
+                    )]
+                ),
+                FakePullResponse([]),
+                FakePullResponse(
+                    [FakeReceivedMessage(
+                        'c',
+                        FakePubSubMessage('no_data', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'logs/fake/123/finished.json',
+                            'bucketId': 'kubernetes-jenkins'})
+                    )]
+                ),
+                FakePullResponse([]),
+                FakePullResponse(
+                    [FakeReceivedMessage(
+                        'd',
+                        FakePubSubMessage('no_data', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'logs/fake/124/started.json'})
+                    )]
+                ),
+                FakePullResponse([]),
+            ]
+        )
         fake_client = FakeClient()
         fake_table = FakeTable('day', stream.load_schema(FakeSchemaField))
         fake_sub_path = 'projects/{project_id}/subscriptions/{sub}'

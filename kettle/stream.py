@@ -154,7 +154,8 @@ def main(
 
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = list(retry(subscriber.pull, subscription=subscription_path, max_messages=1000).received_messages)
+        results = retry(subscriber.pull, subscription=subscription_path, max_messages=1000)
+        results = list(results.received_messages)
         start = time.time()
         while time.time() < start + 7:
             results_more = list(subscriber.pull(
