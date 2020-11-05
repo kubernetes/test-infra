@@ -155,8 +155,6 @@ periodics:
         label:approved
         label:"cncf-cla: yes"
         status:failure
-        -label:needs-sig
-        -label:needs-kind
         -label:needs-rebase
         -label:needs-ok-to-test
         -label:"cncf-cla: no"
