@@ -1117,6 +1117,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.17
+    cluster: k8s-infra-prow-build
     decorate: true
     extra_refs:
     - base_ref: master
@@ -1131,7 +1132,7 @@ presubmits:
       - args:
         - -c
         - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+          ../test-infra/hack/bazel.sh build -- //... -//vendor/... -//build/... //build/release-tars
         command:
         - bash
         image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
