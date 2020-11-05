@@ -984,7 +984,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         name: ""
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)

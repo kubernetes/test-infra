@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -33,7 +33,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "make"
         - "verify"
@@ -68,7 +68,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -108,7 +108,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -145,7 +145,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"

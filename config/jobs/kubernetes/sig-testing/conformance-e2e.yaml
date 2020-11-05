@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -165,7 +165,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-master
+    - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
       command:
       - wrapper.sh
       - bash

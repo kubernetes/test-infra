@@ -657,19 +657,19 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.19
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.19
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.17
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.16

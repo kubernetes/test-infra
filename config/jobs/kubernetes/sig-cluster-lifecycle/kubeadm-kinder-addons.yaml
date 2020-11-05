@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

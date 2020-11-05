@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -69,7 +69,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -124,7 +124,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -181,7 +181,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -234,7 +234,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -291,7 +291,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - "runner.sh"
       - "./scripts/ci-entrypoint.sh"
@@ -336,7 +336,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - "runner.sh"
       - "./scripts/ci-entrypoint.sh"
