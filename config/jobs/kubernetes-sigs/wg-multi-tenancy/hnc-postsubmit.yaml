@@ -1,0 +1,29 @@
+postsubmits:
+  kubernetes-sigs/multi-tenancy:
+  - name: postsubmit-hnc-test
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/multi-tenancy
+    run_if_changed: "incubator/hnc/.*"
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: golang:1.14
+        command:
+          - ./incubator/hnc/hack/post-submit-test.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: REPO_INFO
+          value: https://github.com/kubernetes-sigs/multi-tenancy
+        - name: K8S_VERSION
+          value: v1.19.0
+    annotations:
+      testgrid-dashboards: wg-multi-tenancy-hnc
+      testgrid-tab-name: postsubmit-tests
