@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         args:
         - "--repo=github.com/helm/charts=$(PULL_REFS)"
         - "--root=/go/src/"
@@ -47,7 +47,7 @@ periodics:
       - --provider=gce
       - --test=false
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-apps
     testgrid-tab-name: charts-gce
