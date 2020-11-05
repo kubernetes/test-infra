@@ -47,6 +47,12 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-images
   decorate: true
+  extra_refs:
+    # This also becomes the current directory for run.sh and thus
+    # the cloud image build.
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
   spec:
     serviceAccountName: gcb-builder
     containers:
@@ -59,8 +65,12 @@ periodics:
           - --env-passthrough=PULL_BASE_REF,WHAT
           - --build-dir=.
           - test/images
+        env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+        - name: PULL_BASE_REF
+          value: master
         # By default, the E2E test image's WHAT is all-conformance. We override that with
         # the windows-servercore-cache image.
-        env:
         - name: WHAT
           value: "windows-servercore-cache"
