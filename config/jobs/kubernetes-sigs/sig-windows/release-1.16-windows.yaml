@@ -1,3 +1,5 @@
+# TODO(sig-windows): Consider deleting these jobs now that Kubernetes 1.16
+#                    is out of support.
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-azure-disk-windows
@@ -168,7 +170,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -223,7 +225,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, sig-release-1.16-informing, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-1-16-windows-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
