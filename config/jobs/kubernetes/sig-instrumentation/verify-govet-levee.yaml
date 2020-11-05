@@ -9,6 +9,8 @@ presubmits:
     optional: true
     skip_report: false
     path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-create-test-group: "true"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
