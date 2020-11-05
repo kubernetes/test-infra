@@ -45,7 +45,9 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-version-markers=k8s-master
+      # TODO(releng): Remove the k8s-beta marker from this job before cutting
+      #               the 1.20 branch jobs are generated
+      - --extra-version-markers=k8s-master,k8s-beta
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
@@ -62,7 +64,7 @@ periodics:
       - 2241179 # release-managers
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta"
+    fork-per-release-replacements: "k8s-master,k8s-beta -> k8s-beta, k8s-master -> k8s-beta"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
