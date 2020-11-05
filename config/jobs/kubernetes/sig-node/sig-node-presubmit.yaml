@@ -160,7 +160,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: wg-resource-management
+      testgrid-dashboards: sig-node-kubelet
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
     labels:
       preset-service-account: "true"
@@ -194,7 +194,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: wg-resource-management
+      testgrid-dashboards: sig-node-kubelet
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
     labels:
       preset-service-account: "true"
@@ -228,7 +228,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: wg-resource-management
+      testgrid-dashboards: sig-node-kubelet
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-hugepages
     labels:
       preset-service-account: "true"

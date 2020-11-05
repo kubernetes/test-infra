@@ -261,7 +261,7 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
     testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com
 
@@ -292,7 +292,7 @@ periodics:
           - name: GOPATH
             value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
     testgrid-alert-email: vpickard@redhat.com, klueska@gmail.com
 
@@ -323,6 +323,6 @@ periodics:
           - name: GOPATH
             value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-hugepages
     testgrid-alert-email: alukiano@redhat.com, eduard.bartosh@intel.com
