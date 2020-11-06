@@ -40,6 +40,14 @@ periodics:
 # a monthly DLL cache image and use the cache instead.
 # For more info: https://github.com/kubernetes/kubernetes/pull/93889
 - name: kubernetes-e2e-windows-servercore-cache
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: test-infra-admins
+      - org: kubernetes
+        slug: release-engineering
+    github_users:
+      - claudiubelu
   # Since the servercore image is updated once per month, we only need to build this
   # cache once per month.
   interval: 744h
