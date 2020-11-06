@@ -605,25 +605,6 @@ presets:
     mountPath: /etc/service-account
     readOnly: true
 - labels:
-    preset-gke-alpha-service: "true"
-  env:
-  - name: GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
-    value: "Migrate to workload identity, contact sig-testing"
-  # storage e2e tests borrow this as a preconfigured key instead of creating and
-  # injecting a new key. this allows us to avoid mass key download warnings
-  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  volumes:
-  - name: service
-    secret:
-      secretName: gke-alpha-service-account
-  volumeMounts:
-  - name: service
-    mountPath: /etc/service-account
-    readOnly: true
-- labels:
     preset-k8s-ssh: "true"
   env:
   - name: USER

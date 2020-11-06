@@ -636,7 +636,7 @@ func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[stri
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
 			service = false
 			for key, val := range labels {
-				if (key == "preset-gke-alpha-service" || key == "preset-service-account") && val == "true" {
+				if key == "preset-service-account" && val == "true" {
 					service = true
 				}
 			}
