@@ -1131,9 +1131,33 @@ func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T
 		for _, arg := range job.Spec.Containers[0].Args {
 			if strings.HasPrefix(arg, "--extract=") {
 				extract = strings.TrimPrefix(arg, "--extract=")
-				if extract == "ci/latest" {
+				if extract != "ci/latest-fast" {
 					t.Errorf("%s: release-master-blocking e2e jobs must use --extract=ci/latest-fast, found --extract=ci/latest instead", job.Name)
 				}
+			}
+		}
+	}
+}
+
+// To help with migration to community-owned buckets for CI and release artifacts:
+// - jobs extracting from kubernetes-release-dev should use k8s-release-dev instead
+func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		extract := ""
+		extractCIBucket := "kubernetes-release-dev"
+		for _, arg := range job.Spec.Containers[0].Args {
+			if strings.HasPrefix(arg, "--extract=") {
+				extract = strings.TrimPrefix(arg, "--extract=")
+			}
+			if strings.HasPrefix(arg, "--extract-ci-bucket=") {
+				extractCIBucket = strings.TrimPrefix(arg, "--extract-ci-bucket=")
+			}
+		}
+		if strings.HasPrefix(extract, "ci/") && extractCIBucket != "k8s-release-dev" {
+			// TODO(https://github.com/kubernetes/test-infra/issues/19484): widen to all ci/ extracts once ci-kubernetes-build migrated
+			if extract == "ci/latest-fast" {
+				t.Errorf("FAIL - %s: jobs using --extract=%s must have --extract-ci-bucket=k8s-release-dev", job.Name, extract)
 			}
 		}
 	}
