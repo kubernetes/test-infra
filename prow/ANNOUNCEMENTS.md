@@ -127,6 +127,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November, 2020* The `blacklist` flag in status reconciler has been deprecated in favor of `denylist`. The support of `blacklist` will be stopped in February 2021.
  - *October, 2020*  The `plank` binary has been deprecated in favor of the more modern implementation in the prow-controller-manager that provides the same functionality. Check out
                   its [README](/prow//prow-controller-manager/README.md) or check out its [deployment](config/prow/cluster/prow_controller_manager_deployment.yaml) and
                   [rbac](config/prow/cluster/prow_controller_manager_rbac.yaml) manifest. The plank binary will be removed in February, 2021.

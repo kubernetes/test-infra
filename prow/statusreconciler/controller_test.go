@@ -876,12 +876,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString("org"),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString("org"),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -901,12 +901,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString("org/repo"),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString("org/repo"),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -926,12 +926,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
@@ -952,12 +952,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = false
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -977,12 +977,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][secondPrAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -1002,12 +1002,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][thirdPrAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{thirdPrOrgRepoKey: sets.NewString()})
@@ -1027,12 +1027,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -1054,12 +1054,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
@@ -1081,12 +1081,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
@@ -1109,12 +1109,12 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
-					continueOnError:         true,
-					addedPresubmitBlacklist: sets.NewString(),
-					prowJobTriggerer:        &fpjt,
-					githubClient:            &fghc,
-					statusMigrator:          &fsm,
-					trustedChecker:          &ftc,
+					continueOnError:        true,
+					addedPresubmitDenylist: sets.NewString(),
+					prowJobTriggerer:       &fpjt,
+					githubClient:           &fghc,
+					statusMigrator:         &fsm,
+					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
 					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}

@@ -37,7 +37,7 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, opener io.Opener, configPath, jobConfigPath, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitDenylist sets.String, opener io.Opener, configPath, jobConfigPath, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
 	sc := &statusController{
 		logger:        logrus.WithField("client", "statusController"),
 		opener:        opener,
@@ -47,8 +47,8 @@ func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, op
 	}
 
 	return &Controller{
-		continueOnError:         continueOnError,
-		addedPresubmitBlacklist: addedPresubmitBlacklist,
+		continueOnError:        continueOnError,
+		addedPresubmitDenylist: addedPresubmitDenylist,
 		prowJobTriggerer: &kubeProwJobTriggerer{
 			prowJobClient: prowJobClient,
 			githubClient:  githubClient,
@@ -145,13 +145,13 @@ func (c *githubTrustedChecker) trustedPullRequest(author, org, repo string, num 
 
 // Controller reconciles statuses on PRs when config changes impact blocking presubmits
 type Controller struct {
-	continueOnError         bool
-	addedPresubmitBlacklist sets.String
-	prowJobTriggerer        prowJobTriggerer
-	githubClient            githubClient
-	statusMigrator          statusMigrator
-	trustedChecker          trustedChecker
-	statusClient            statusClient
+	continueOnError        bool
+	addedPresubmitDenylist sets.String
+	prowJobTriggerer       prowJobTriggerer
+	githubClient           githubClient
+	statusMigrator         statusMigrator
+	trustedChecker         trustedChecker
+	statusClient           statusClient
 }
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
@@ -213,7 +213,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		}
 		parts := strings.SplitN(orgrepo, "/", 2)
 		org, repo := parts[0], parts[1]
-		if c.addedPresubmitBlacklist.Has(org) || c.addedPresubmitBlacklist.Has(orgrepo) {
+		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) {
 			continue
 		}
 		prs, err := c.githubClient.GetPullRequests(org, repo)
