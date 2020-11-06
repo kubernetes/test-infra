@@ -354,7 +354,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 	// Postsubmits and periodics must
 	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
-	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/wg-k8s-infra-trusted.yaml
+	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
@@ -636,7 +636,7 @@ func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[stri
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
 			service = false
 			for key, val := range labels {
-				if (key == "preset-gke-alpha-service" || key == "preset-service-account" || key == "preset-istio-service") && val == "true" {
+				if key == "preset-service-account" && val == "true" {
 					service = true
 				}
 			}
@@ -969,12 +969,6 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 	return errs
 }
 
-// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
-// resource limits that are equal to their resource requests
-func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
-	return len(verifyPodQOSGuaranteed(spec)) == 0
-}
-
 // A job is merge-blocking if it:
 // - is not optional
 // - reports (aka does not skip reporting)
@@ -1070,50 +1064,6 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 		errs := verifyPodQOSGuaranteed(job.Spec)
 		for _, err := range errs {
 			t.Errorf("%v: %v", job.Name, err)
-		}
-	}
-}
-
-// We have k8s-infra-prow-build setup to auto-scale, but as a quick static
-// check, let's pretend every job schedules one instance to the cluster
-// at the exact same time. This is a poor approximation since there will
-// likely be N presubmits running simultaneously.
-func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
-	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
-	maxLimit := coreapi.ResourceList{
-		coreapi.ResourceCPU:    resource.MustParse("720"),    // 3 * 30 * 8 CPUs per n1-highmem-8
-		coreapi.ResourceMemory: resource.MustParse("4680Gi"), // 3 * 30 * 52 Gi per n1-highmem-8
-	}
-	resourceNames := []coreapi.ResourceName{
-		coreapi.ResourceCPU,
-		coreapi.ResourceMemory,
-	}
-	zero := resource.MustParse("0")
-	totalLimit := coreapi.ResourceList{}
-	for _, r := range resourceNames {
-		totalLimit[r] = zero.DeepCopy()
-	}
-	jobs := allStaticJobs()
-	for _, job := range jobs {
-		// Only consider Pods destined for the k8s-infra-prow-builds cluster
-		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
-			continue
-		}
-		for _, c := range job.Spec.Containers {
-			for _, r := range resourceNames {
-				if limit, ok := c.Resources.Limits[r]; ok {
-					total := totalLimit[r]
-					total.Add(limit)
-					totalLimit[r] = total
-				}
-			}
-		}
-	}
-	for _, r := range resourceNames {
-		total := totalLimit[r]
-		max := maxLimit[r]
-		if total.Cmp(max) > -1 {
-			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
 		}
 	}
 }
