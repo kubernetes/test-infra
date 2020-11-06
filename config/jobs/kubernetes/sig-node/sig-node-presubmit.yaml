@@ -349,7 +349,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-882eb3f-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
