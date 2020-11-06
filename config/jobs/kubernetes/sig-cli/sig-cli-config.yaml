@@ -200,7 +200,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
-      - --extract=ci/latest-fast
+      - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
