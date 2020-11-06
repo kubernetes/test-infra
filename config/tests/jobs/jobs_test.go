@@ -354,7 +354,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 	// Postsubmits and periodics must
 	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
-	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/wg-k8s-infra-trusted.yaml
+	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
