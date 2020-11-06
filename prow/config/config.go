@@ -1097,8 +1097,7 @@ func yamlToConfig(path string, nc interface{}) error {
 		jc = &v.JobConfig
 	}
 	for rep := range jc.PresubmitsStatic {
-		var fix func(*Presubmit)
-		fix = func(job *Presubmit) {
+		fix := func(job *Presubmit) {
 			job.SourcePath = path
 		}
 		for i := range jc.PresubmitsStatic[rep] {
@@ -1106,8 +1105,7 @@ func yamlToConfig(path string, nc interface{}) error {
 		}
 	}
 	for rep := range jc.PostsubmitsStatic {
-		var fix func(*Postsubmit)
-		fix = func(job *Postsubmit) {
+		fix := func(job *Postsubmit) {
 			job.SourcePath = path
 		}
 		for i := range jc.PostsubmitsStatic[rep] {
