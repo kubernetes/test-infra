@@ -29,12 +29,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: http
-      scheme: http
+  - interval: 30s
+    port: http
+    scheme: http
   namespaceSelector:
     matchNames:
-      - prow-monitoring
+    - prow-monitoring
   selector:
     matchLabels:
       app: alertmanager
@@ -48,12 +48,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: http
-      scheme: http
+  - interval: 30s
+    port: http
+    scheme: http
   namespaceSelector:
     matchNames:
-      - prow-monitoring
+    - prow-monitoring
   selector:
     matchLabels:
       app: grafana
@@ -67,9 +67,9 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
       - default
@@ -86,9 +86,9 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
       - default
@@ -105,12 +105,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: hook
@@ -124,12 +124,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: prow-controller-manager
@@ -143,12 +143,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: sinker
@@ -162,12 +162,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: tide
@@ -181,12 +181,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: horologium
@@ -200,12 +200,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: crier

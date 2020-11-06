@@ -53,8 +53,20 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
-	CommentMap                 = genyaml.NewCommentMap("prow/plugins/config.go")
+	CommentMap, _              = genyaml.NewCommentMap()
 )
+
+func init() {
+	// We use a relative path here so this only works when executing from the root of
+	// the test infra repo. Hence initialize with an empty CommentMap whose creation
+	// will never fail and only overwrite that when we were successful here, otherwise
+	// this may lead to a null pointer derefence.
+	if cm, err := genyaml.NewCommentMap("prow/plugins/config.go"); err == nil {
+		CommentMap = cm
+	} else {
+		logrus.WithError(err).Error("Failed to initialize commentMap")
+	}
+}
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
 // plugins. It takes into account the plugins configuration and enabled repositories.

@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -524,6 +525,7 @@ type fgc struct {
 
 	expectedSHA    string
 	combinedStatus map[string]string
+	checkRuns      *github.CheckRunList
 }
 
 func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
@@ -593,6 +595,16 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 			Statuses: statuses,
 		},
 		nil
+}
+
+func (f *fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if f.expectedSHA != ref {
+		return nil, errors.New("bad combined status request: incorrect sha")
+	}
+	if f.checkRuns != nil {
+		return f.checkRuns, nil
+	}
+	return &github.CheckRunList{}, nil
 }
 
 func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
@@ -1759,9 +1771,10 @@ func TestHeadContexts(t *testing.T) {
 	lose := "lose"
 	headSHA := "head"
 	testCases := []struct {
-		name           string
-		commitContexts []commitContext
-		expectAPICall  bool
+		name                string
+		commitContexts      []commitContext
+		expectAPICall       bool
+		expectChecksAPICall bool
 	}{
 		{
 			name: "first commit is head",
@@ -1780,7 +1793,7 @@ func TestHeadContexts(t *testing.T) {
 			},
 		},
 		{
-			name: "no commit is head",
+			name: "no commit is head, falling back to v3 api and getting context via status api",
 			commitContexts: []commitContext{
 				{context: lose, sha: "shaaa"},
 				{context: lose, sha: "other"},
@@ -1788,36 +1801,55 @@ func TestHeadContexts(t *testing.T) {
 			},
 			expectAPICall: true,
 		},
+		{
+			name: "no commit is head, falling back to v3 api and getting context via checks api",
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+			expectAPICall:       true,
+			expectChecksAPICall: true,
+		},
 	}
 
 	for _, tc := range testCases {
-		t.Logf("Running test case %q", tc.name)
-		fgc := &fgc{combinedStatus: map[string]string{win: string(githubql.StatusStateSuccess)}}
-		if tc.expectAPICall {
-			fgc.expectedSHA = headSHA
-		}
-		pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
-		for _, ctx := range tc.commitContexts {
-			commit := Commit{
-				Status: struct{ Contexts []Context }{
-					Contexts: []Context{
-						{
-							Context: githubql.String(ctx.context),
+		t.Run(tc.name, func(t *testing.T) {
+			t.Logf("Running test case %q", tc.name)
+			fgc := &fgc{}
+			if !tc.expectChecksAPICall {
+				fgc.combinedStatus = map[string]string{win: string(githubql.StatusStateSuccess)}
+			} else {
+				fgc.checkRuns = &github.CheckRunList{CheckRuns: []github.CheckRun{
+					{Name: win, Status: "completed", Conclusion: "neutral"},
+				}}
+			}
+			if tc.expectAPICall {
+				fgc.expectedSHA = headSHA
+			}
+			pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
+			for _, ctx := range tc.commitContexts {
+				commit := Commit{
+					Status: struct{ Contexts []Context }{
+						Contexts: []Context{
+							{
+								Context: githubql.String(ctx.context),
+							},
 						},
 					},
-				},
-				OID: githubql.String(ctx.sha),
+					OID: githubql.String(ctx.sha),
+				}
+				pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
 			}
-			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
-		}
 
-		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
-		if err != nil {
-			t.Fatalf("Unexpected error from headContexts: %v", err)
-		}
-		if len(contexts) != 1 || string(contexts[0].Context) != win {
-			t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
-		}
+			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
+			if err != nil {
+				t.Fatalf("Unexpected error from headContexts: %v", err)
+			}
+			if len(contexts) != 1 || string(contexts[0].Context) != win {
+				t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
+			}
+		})
 	}
 }
 
@@ -2036,6 +2068,7 @@ func TestFilterSubpool(t *testing.T) {
 		number    int
 		mergeable bool
 		contexts  []Context
+		checkRuns []CheckRun
 	}
 	tcs := []struct {
 		name string
@@ -2066,6 +2099,103 @@ func TestFilterSubpool(t *testing.T) {
 				},
 			},
 			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), checkrun is considered",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), neutral checkrun is considered success",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: checkRunConclusionNeutral,
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "Incomplete checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+		},
+		{
+			name: "Failing checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateFailure),
+					}},
+				},
+			},
 		},
 		{
 			name: "one unmergeable passing PR",
@@ -2314,11 +2444,20 @@ func TestFilterSubpool(t *testing.T) {
 				pr := PullRequest{
 					Number: githubql.Int(pull.number),
 				}
+				var checkRunNodes []CheckRunNode
+				for _, checkRun := range pull.checkRuns {
+					checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+				}
 				pr.Commits.Nodes = []struct{ Commit Commit }{
 					{
 						Commit{
 							Status: struct{ Contexts []Context }{
 								Contexts: pull.contexts,
+							},
+							StatusCheckRollup: StatusCheckRollup{
+								Contexts: StatusCheckRollupContext{
+									Nodes: checkRunNodes,
+								},
 							},
 						},
 					},
@@ -2455,8 +2594,7 @@ func TestIsPassing(t *testing.T) {
 		log := logrus.WithField("component", "tide")
 		_, err := log.String()
 		if err != nil {
-			t.Errorf("Failed to get log output before testing: %v", err)
-			t.FailNow()
+			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, &tc.config)
@@ -3671,5 +3809,62 @@ func TestNonFailedBatchByBaseAndPullsIndexFunc(t *testing.T) {
 		if diff := deep.Equal(result, tc.expected); diff != nil {
 			t.Errorf("Result differs from expected, diff: %v", diff)
 		}
+	}
+}
+
+func TestCheckRunNodesToContexts(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name      string
+		checkRuns []CheckRun
+		expected  []Context
+	}{
+		{
+			name:      "Empty checkrun is ignored",
+			checkRuns: []CheckRun{{}},
+		},
+		{
+			name:      "Incomplete checkrun is considered pending",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: githubql.String("queued")}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStatePending}},
+		},
+		{
+			name:      "Neutral checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Successful checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Other checkrun conclusion is considered failure",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: "unclear"}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateFailure}},
+		},
+		{
+			name: "Multiple checkruns are translated correctly",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+				{Context: "another-job", State: githubql.StatusStateSuccess},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var checkRunNodes []CheckRunNode
+			for _, checkRun := range tc.checkRuns {
+				checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+			}
+			if diff := cmp.Diff(checkRunNodesToContexts(logrus.New().WithField("test", tc.name), checkRunNodes), tc.expected); diff != "" {
+				t.Errorf("actual result differs from expected: %s", diff)
+			}
+		})
 	}
 }

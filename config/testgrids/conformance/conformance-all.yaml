@@ -13,6 +13,7 @@ dashboard_groups:
     - conformance-arm
     - conformance-ppc64le
     - conformance-gardener
+    - conformance-s390x
 
 dashboards:
 - name: conformance-all
@@ -250,6 +251,19 @@ dashboards:
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
 
+# s390x dashboard
+- name: conformance-s390x
+  dashboard_tab:
+    - name: Periodic s390x conformance test on local cluster
+      test_group_name: s390x-conformance
+      description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.19
+      test_group_name: s390x-conformance-v1.19
+      description: Runs conformance tests by using kubetest against latest v1.19 branch HEAD of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.18
+      test_group_name: s390x-conformance-v1.18
+      description: Runs conformance tests by using kubetest against latest v1.18 branch HEAD of kubernetes on local s390x cluster
+
 test_groups:
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -292,9 +306,9 @@ test_groups:
 
 #ibm ppc64le test results
 - name: ppc64le-conformance
-  gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-conformance-test-ppc64le
 - name: ppc64le-unit
-  gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-bazel-test-ppc64le
 #Arm arm64 test results
 - name: arm64-conformance
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
@@ -340,6 +354,13 @@ test_groups:
 - name: pull-perf-tests-clusterloader2-kubemark
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
   days_of_results: 30
+#IBM s390x test results
+- name: s390x-conformance
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
+- name: s390x-conformance-v1.19
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.19
+- name: s390x-conformance-v1.18
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.18
 
 # google-gce-compute-image-tools
 - name: ci-daisy-e2e

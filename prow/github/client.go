@@ -139,6 +139,7 @@ type CommitClient interface {
 	ListStatuses(org, repo, ref string) ([]Status, error)
 	GetSingleCommit(org, repo, SHA string) (SingleCommit, error)
 	GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error)
+	ListCheckRuns(org, repo, ref string) (*CheckRunList, error)
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
 }
@@ -486,8 +487,11 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
-					Timeout:   maxRequestTime,
-					Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+					Timeout: maxRequestTime,
+					Transport: &oauth2.Transport{
+						Source: newReloadingTokenSource(getToken),
+						Base:   newAddHeaderTransport(),
+					},
 				}),
 			client:        &http.Client{Timeout: maxRequestTime},
 			bases:         bases,
@@ -500,6 +504,21 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
+}
+
+func newAddHeaderTransport() http.RoundTripper {
+	return &addHeaderTransport{}
+}
+
+type addHeaderTransport struct {
+}
+
+func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	// We have to add this header to enable the Checks scheme preview:
+	// https://docs.github.com/en/enterprise-server@2.22/graphql/overview/schema-previews
+	// Any GHE version after 2.22 will enable the Checks types per default
+	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
+	return http.DefaultTransport.RoundTrip(r)
 }
 
 // NewClient creates a new fully operational GitHub client.
@@ -3737,4 +3756,23 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 		return nil, err
 	}
 	return &team, err
+}
+
+// ListCheckRuns lists all checkruns for the given ref
+//
+// See https://docs.github.com/en/free-pro-team@latest/rest/reference/checks#list-check-runs-for-a-git-reference
+func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
+	durationLogger := c.log("ListCheckRuns", org, repo, ref)
+	defer durationLogger()
+
+	var checkRunList CheckRunList
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
+		exitCodes: []int{200},
+	}, &checkRunList)
+	if err != nil {
+		return nil, err
+	}
+	return &checkRunList, nil
 }

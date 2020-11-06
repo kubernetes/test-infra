@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201013-3e48dad509"
-        initupload: "gcr.io/k8s-prow/initupload:v20201013-3e48dad509"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201013-3e48dad509"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20201013-3e48dad509"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201104-7f4d0d52ed"
+        initupload: "gcr.io/k8s-prow/initupload:v20201104-7f4d0d52ed"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201104-7f4d0d52ed"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20201104-7f4d0d52ed"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -70,7 +70,7 @@ deck:
     - lens:
         name: junit
       required_files:
-        - ^artifacts/junit.*\.xml$
+        - ^artifacts(/.*/|/)junit.*\.xml$ # https://regex101.com/r/vCSegS/1
     - lens:
         name: coverage
       required_files:
@@ -304,6 +304,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        noderesourcetopology-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         org:
           restrictions: # only allow admins
             users: []
@@ -407,6 +412,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        node-feature-discovery:
+          branches:
+            gh-pages:
+              protect: false
     kubeflow:
       protect: true
       required_status_checks:
@@ -478,6 +487,7 @@ tide:
     - kubernetes/metrics
     - kubernetes/mount-utils
     - kubernetes/node-api
+    - kubernetes/noderesourcetopology-api
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
@@ -509,11 +519,11 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-commit-message
     - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-kind
     - needs-rebase
-    - needs-sig
   - repos:
     - GoogleCloudPlatform/netd
     labels:

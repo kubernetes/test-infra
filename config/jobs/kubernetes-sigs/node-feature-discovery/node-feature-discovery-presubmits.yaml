@@ -33,13 +33,30 @@ presubmits:
       description: "Build container image of node-feature-discovery"
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         securityContext:
           privileged: true
         command:
         - runner.sh
         args:
         - scripts/test-infra/build-image.sh
+  - name: pull-node-feature-discovery-build-gh-pages
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-gh-pages
+      description: "Test build of gh-pages documentation"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-gh-pages.sh

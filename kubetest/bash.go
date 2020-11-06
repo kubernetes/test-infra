@@ -64,7 +64,7 @@ func (b *bashDeployer) IsUp() error {
 }
 
 func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	return defaultDumpClusterLogs(localPath, gcsPath, b.provider)
 }
 
 func (b *bashDeployer) TestSetup() error {

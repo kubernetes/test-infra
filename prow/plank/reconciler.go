@@ -603,7 +603,8 @@ func (r *reconciler) startPod(pj *prowv1.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod, err := decorate.ProwJobToPod(*pj, buildID)
+	pj.Status.BuildID = buildID
+	pod, err := decorate.ProwJobToPod(*pj)
 	if err != nil {
 		return "", "", err
 	}

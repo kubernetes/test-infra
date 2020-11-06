@@ -142,6 +142,7 @@ filegroup(
         "//prow/pipeline/informers/externalversions:all-srcs",
         "//prow/pipeline/listers/pipeline/v1alpha1:all-srcs",
         "//prow/pjutil:all-srcs",
+        "//prow/pkg/layeredsets:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/pluginhelp:all-srcs",
         "//prow/plugins:all-srcs",

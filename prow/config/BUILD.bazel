@@ -16,11 +16,15 @@ go_test(
         "tide_test.go",
     ],
     data = [
+        ":fixtures",
+        ":package-srcs",
         "//config:prowjobs",
         "//config/prow:configs",
+        "//prow/apis/prowjobs/v1:all-srcs",
     ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/genyaml:go_default_library",
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/gerrit/client:go_default_library",
@@ -94,4 +98,10 @@ filegroup(
         "//prow/config/secret:all-srcs",
     ],
     tags = ["automanaged"],
+)
+
+filegroup(
+    name = "fixtures",
+    srcs = glob(["*.yaml"]),
+    visibility = ["//visibility:private"],
 )

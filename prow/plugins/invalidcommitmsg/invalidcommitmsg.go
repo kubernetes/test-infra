@@ -36,7 +36,7 @@ import (
 const (
 	pluginName                  = "invalidcommitmsg"
 	invalidCommitMsgLabel       = "do-not-merge/invalid-commit-message"
-	invalidCommitMsgCommentBody = `[Keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions are not allowed in commit messages.
+	invalidCommitMsgCommentBody = `[Keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) or hashtag(#) mentions are not allowed in commit messages.
 
 **The list of commits with invalid commit messages**:
 

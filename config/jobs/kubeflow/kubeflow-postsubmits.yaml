@@ -145,19 +145,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/tf-operator.
-  kubeflow/katib:
-  - name: kubeflow-katib-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/katib.
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-postsubmit
     cluster: kubeflow
@@ -274,7 +261,7 @@ postsubmits:
       mountPath: /var/lib/docker
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -296,7 +283,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -320,7 +307,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:

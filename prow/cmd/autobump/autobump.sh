@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-PLANK_DEPLOYMENT_FILE="${PLANK_DEPLOYMENT_FILE:-}"
+PROW_CONTROLLER_MANAGER_FILE="${PROW_CONTROLLER_MANAGER_FILE:-}"
 # Args for use with GH
 GH_ORG="${GH_ORG:-}"
 GH_REPO="${GH_REPO:-}"
@@ -47,11 +47,11 @@ main() {
 	/bump.sh --upstream
 
 	cd "$(git rev-parse --show-toplevel)"
-	old_version=$(git show "HEAD:${PLANK_DEPLOYMENT_FILE}" | extract-version)
-	version=$(cat "${PLANK_DEPLOYMENT_FILE}" | extract-version)
+	old_version=$(git show "HEAD:${PROW_CONTROLLER_MANAGER_FILE}" | extract-version)
+	version=$(cat "${PROW_CONTROLLER_MANAGER_FILE}" | extract-version)
 
 	if [[ -z "${version}" ]]; then
-		echo "Failed to fetch version from ${PLANK_DEPLOYMENT_FILE}"
+		echo "Failed to fetch version from ${PROW_CONTROLLER_MANAGER_FILE}"
 		exit 1
 	fi
 	if [[ "${old_version}" == "${version}" ]]; then
@@ -88,8 +88,8 @@ ensure-git-config() {
 }
 
 check-args() {
-	if [[ -z "${PLANK_DEPLOYMENT_FILE}" ]]; then
-		echo "ERROR: $PLANK_DEPLOYMENT_FILE must be specified." >&2
+	if [[ -z "${PROW_CONTROLLER_MANAGER_FILE}" ]]; then
+		echo "ERROR: $PROW_CONTROLLER_MANAGER_FILE must be specified." >&2
 		return 1
 	fi
 	if [[ -z "${GERRIT_HOST_REPO}" ]]; then
@@ -140,7 +140,7 @@ create-gerrit-pr() {
 	git fetch upstream "+refs/changes/*:refs/remotes/upstream/changes/*" 2> /dev/null
 	local pr_commit="$(git log --all --grep="Change-Id: ${change_id}" -1 --format="%H")"
 	if [[ -n "${pr_commit}" ]]; then
-		local pr_version="$(git show "${pr_commit}:${PLANK_DEPLOYMENT_FILE}" | extract-version)"
+		local pr_version="$(git show "${pr_commit}:${PROW_CONTROLLER_MANAGER_FILE}" | extract-version)"
 		if [[ "${pr_version}" == "${version}" ]]; then
 			echo "Bump PR is already up to date (version ${version}). Aborting no-op update." >&2
 			return 0
@@ -180,8 +180,8 @@ get-change-id() {
 
 # Convert image: gcr.io/k8s-prow/plank:v20181122-abcd to v20181122-abcd
 extract-version() {
-	local v=$(grep plank:v "$@")
-	echo ${v##*plank:}
+	local v=$(grep prow-controller-manager:v "$@")
+	echo ${v##*prow-controller-manager:}
 }
 # Convert v20181111-abcd to abcd
 extract-commit() {

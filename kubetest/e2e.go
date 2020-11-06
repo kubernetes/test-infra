@@ -232,7 +232,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkDownErr error
 	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump)
 	}
 
 	if o.charts {
@@ -515,12 +515,22 @@ func isUp(d deployer) error {
 	return nil
 }
 
-func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
-	logDumpPath := "./cluster/log-dump/log-dump.sh"
-	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
-	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+func logDumpPath(provider string) string {
+	// Use the log dumping script outside of kubernetes/kubernetes repo.
+	// Guarding against K8s provider as the script is tested only for gce
+	// and gke cases at the moment.
+	if os.Getenv("USE_KUBEKINS_LOG_DUMPING") != "" && (provider == "gce" || provider == "gke") {
+		if logDumpPath := os.Getenv("LOG_DUMP_SCRIPT_PATH"); logDumpPath != "" {
+			return logDumpPath
+		}
+	}
+	return "./cluster/log-dump/log-dump.sh"
+}
+
+func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath, provider string) error {
+	logDumpPath := logDumpPath(provider)
 	if _, err := os.Stat(logDumpPath); err != nil {
-		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		log.Printf("Could not find %s.", logDumpPath)
 		if cwd, err := os.Getwd(); err == nil {
 			log.Printf("CWD: %v", cwd)
 		}
@@ -727,10 +737,19 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, dump string) {
+func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump string) {
 	defer wg.Done()
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+		logDumpPath := logDumpPath(provider)
+		cmd := exec.Command(logDumpPath, dump)
+		masterName := os.Getenv("MASTER_NAME")
+		cmd.Env = append(
+			os.Environ(),
+			"KUBEMARK_MASTER_NAME="+masterName,
+			"DUMP_ONLY_MASTER_LOGS=true",
+		)
+		log.Printf("Dumping logs for kubemark master: %s", masterName)
+		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))

@@ -23,11 +23,11 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
@@ -103,7 +103,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for lgtm plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
@@ -373,11 +373,10 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
+func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
 	if len(lgtm.StickyLgtmTeam) > 0 {
 		if teams, err := gc.ListTeams(org); err == nil {
 			for _, teamInOrg := range teams {
-				// lgtm.TrustedAuthorTeams is supposed to be a very short list.
 				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
 					if members, err := gc.ListTeamMembers(teamInOrg.ID, github.RoleAll); err == nil {
 						for _, member := range members {
@@ -505,8 +504,8 @@ func getChangedFiles(gc githubClient, org, repo string, number int) ([]string, e
 
 // loadReviewers returns all reviewers and approvers from all OWNERS files that
 // cover the provided filenames.
-func loadReviewers(ro repoowners.RepoOwner, filenames []string) sets.String {
-	reviewers := sets.String{}
+func loadReviewers(ro repoowners.RepoOwner, filenames []string) layeredsets.String {
+	reviewers := layeredsets.String{}
 	for _, filename := range filenames {
 		reviewers = reviewers.Union(ro.Approvers(filename)).Union(ro.Reviewers(filename))
 	}

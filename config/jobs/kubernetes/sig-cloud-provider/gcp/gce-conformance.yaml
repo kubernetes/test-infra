@@ -23,13 +23,14 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       resources:
         limits:
           cpu: 1
@@ -56,7 +57,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-1.16
+    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
       resources:
         limits:
           cpu: 4

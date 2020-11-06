@@ -5,6 +5,7 @@ presubmits:
       testgrid-dashboards: sig-network-service-apis
       testgrid-tab-name: verify
     labels:
+      preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
     decorate: true
     path_alias: sigs.k8s.io/service-apis
@@ -12,7 +13,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh

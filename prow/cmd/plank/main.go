@@ -93,6 +93,9 @@ func main() {
 		logrus.Warning("The deprecated --skip-report flag has been set. It doesn't do anything anymore and will be removed in September 2020.")
 	}
 
+	logrus.Warning("The plank binary has been deprecated. Please migrate to the prow controller manager that provides a more modern implementation of the same functionality. Check out its readme here: https://github.com/kubernetes/test-infra/blob/master/prow/cmd/prow-controller-manager/README.md")
+	logrus.Warning("The plank binary will be removed in February, 2021")
+
 	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)

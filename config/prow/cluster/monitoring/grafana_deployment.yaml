@@ -35,16 +35,16 @@ spec:
             name: grafana-nginx
       - args:
         - -config=/etc/grafana/grafana.ini
-        image: grafana/grafana:6.1.4
+        image: grafana/grafana:6.7.4
         name: grafana
         env:
-          - name: GF_SECURITY_ADMIN_USER
-            value: adm
-          - name: GF_SECURITY_ADMIN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: grafana
-                key: password
+        - name: GF_SECURITY_ADMIN_USER
+          value: adm
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana
+              key: password
         ports:
         - containerPort: 3001
           name: http

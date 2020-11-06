@@ -605,18 +605,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG LTS.
-      name: wg/lts
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Machine Learning.
-      name: wg/machine-learning
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Multitenancy.
       name: wg/multitenancy
       target: both
@@ -641,12 +629,6 @@ default:
       prowPlugin: label
       addedBy: anyone
       deleteAfter: 2020-04-08T00:00:00Z
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Security Audit.
-      name: wg/security-audit
-      target: both
-      prowPlugin: label
-      addedBy: anyone
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Component Standard.
       name: wg/component-standard
@@ -1019,6 +1001,19 @@ repos:
         target: prs
         prowPlugin: require-matching-label
         addedBy: prow
+      - color: e11d21
+        description: Indicates a PR lacks a `kind/foo` label and requires one.
+        name: do-not-merge/needs-kind
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+      - color: e11d21
+        description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
+        name: do-not-merge/needs-sig
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+
   kubernetes/org:
     labels:
       - color: 0052cc
@@ -1515,6 +1510,11 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to docker provider
+        name: area/provider/docker
+        target: both
+        addedBy: label
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
@@ -1568,3 +1568,12 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
+  kubernetes-sigs/k8s-container-image-promoter:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        previously:
+          - name: area/release-infra
+        target: both
+        addedBy: label

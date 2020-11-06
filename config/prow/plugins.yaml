@@ -34,10 +34,6 @@ owners:
   - kubernetes-sigs/contributor-playground
   - helm/charts
 
-# TODO(fejta): delete these in before April
-use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019: true
-use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019: true
-
 approve:
 - repos:
   - kubernetes/cloud-provider-aws
@@ -67,6 +63,10 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/website
+  require_self_approval: true
+  lgtm_acts_as_approve: false
+- repos:
   - kubernetes/enhancements
   - kubernetes/kops
   - kubernetes/kubernetes
@@ -81,6 +81,7 @@ approve:
   - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/cluster-api-provider-vsphere
   require_self_approval: true
+  ignore_review_state: true
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
@@ -98,6 +99,10 @@ approve:
   - helm/charts
   require_self_approval: false
   lgtm_acts_as_approve: true
+- repos:
+  - kubernetes/cloud-provider-openstack
+  require_self_approval: false
+  ignore_review_state: true
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
@@ -249,16 +254,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.16:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
         release-1.17:
             - cpanato # Branch Manager
             - dougm # Patch Release Team
@@ -323,6 +318,12 @@ slack:
     - wg-k8s-infra
     exempt_users:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/kops
+    channels:
+    - kops-dev
+    exempt_users:
+    - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
@@ -340,11 +341,11 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.20
   kubernetes/kops:
-    master: v1.19
+    master: v1.20
+    release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
-    release-1.15: v1.15
   kubernetes-sigs/cluster-api-provider-azure:
     master: v0.4.10
     release-0.4: v0.4
@@ -485,12 +486,12 @@ welcome:
   message_template: "Welcome @{{.AuthorLogin}}! <br><br>It looks like this is your first PR to <a href='https://github.com/{{.Org}}/{{.Repo}}'>{{.Org}}/{{.Repo}}</a> 🎉. Please refer to our [pull request process documentation](https://git.k8s.io/community/contributors/guide/pull-requests.md) to help your PR have a smooth ride to approval. <br><br>You will be prompted by a bot to use commands during the review process. Do not be afraid to follow the prompts! It is okay to experiment. [Here is the bot commands documentation](https://go.k8s.io/bot-commands). <br><br>You can also check if {{.Org}}/{{.Repo}} has [its own contribution guidelines](https://github.com/{{.Org}}/{{.Repo}}/tree/master/CONTRIBUTING.md). <br><br>You may want to refer to our [testing guide](https://git.k8s.io/community/contributors/devel/sig-testing/testing.md) if you run into trouble with your tests not passing. <br><br>If you are having difficulty getting your pull request seen, please follow the [recommended escalation practices](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#why-is-my-pull-request-not-getting-reviewed). Also, for tips and tricks in the contribution process you may want to read the [Kubernetes contributor cheat sheet](https://git.k8s.io/community/contributors/guide/contributor-cheatsheet/README.md). We want to make sure your contribution gets all the attention it needs! <br><br>Thank you, and welcome to Kubernetes. :smiley:"
 
 require_matching_label:
-- missing_label: needs-kind
+- missing_label: do-not-merge/needs-kind
   org: kubernetes
   repo: kubernetes
   prs: true
   regexp: ^kind/
-- missing_label: needs-sig
+- missing_label: do-not-merge/needs-sig
   org: kubernetes
   repo: kubernetes
   prs: true
@@ -707,6 +708,7 @@ plugins:
   - size
   - skip
   - slackevents
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
@@ -876,6 +878,7 @@ plugins:
   - shrug
   - size
   - skip
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
@@ -945,6 +948,11 @@ plugins:
   - require-matching-label
 
   kubernetes-sigs/security-profiles-operator:
+  - release-note
+
+  kubernetes-sigs/k8s-container-image-promoter:
+  - mergecommitblocker
+  - override
   - release-note
 
   containerd/cri:

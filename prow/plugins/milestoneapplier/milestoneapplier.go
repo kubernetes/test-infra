@@ -62,7 +62,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for milestoneapplier plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	return &pluginhelp.PluginHelp{
 		Description: "The milestoneapplier plugin automatically applies the configured milestone for the base branch after a PR is merged. If a PR targets a non-default branch, it also adds the milestone when the PR is opened.",

@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -36,7 +36,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -70,11 +70,11 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     - org: kubernetes
       repo: kubernetes
-      base_ref: master
+      base_ref: release-1.19
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"

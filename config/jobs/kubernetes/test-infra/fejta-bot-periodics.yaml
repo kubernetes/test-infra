@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -94,7 +94,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -134,7 +134,7 @@ periodics:
     description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -147,14 +147,14 @@ periodics:
         -label:do-not-merge/hold
         -label:do-not-merge/invalid-commit-message
         -label:do-not-merge/invalid-owners-file
+        -label:do-not-merge/needs-sig
+        -label:do-not-merge/needs-kind
         -label:do-not-merge/release-note-label-needed
         -label:do-not-merge/work-in-progress
         label:lgtm
         label:approved
         label:"cncf-cla: yes"
         status:failure
-        -label:needs-sig
-        -label:needs-kind
         -label:needs-rebase
         -label:needs-ok-to-test
         -label:"cncf-cla: no"
@@ -190,7 +190,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -233,7 +233,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -277,7 +277,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/issue-creator:v20201104-7f4d0d52ed
       command:
       - /app/robots/issue-creator/app.binary
       args:
@@ -306,7 +306,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20201013-3e48dad509
+    - image: gcr.io/k8s-prow/commenter:v20201104-7f4d0d52ed
       command:
       - /app/robots/commenter/app.binary
       args:

@@ -32,7 +32,7 @@ periodics:
     # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
     testgrid-dashboards: sig-release-prototype-master-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
 
 # TODO(justaugustus): Decrease interval to 5m once we cut build over to k8s-infra.
 #                     ref: https://github.com/kubernetes/release/issues/911
@@ -66,7 +66,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-prototype-master-blocking
     testgrid-tab-name: build-master-fast
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     description: 'Ends up running: make quick-release'
 
 postsubmits:
@@ -75,7 +75,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
       branches:
@@ -101,7 +101,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
       branches:
@@ -128,7 +128,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       branches:
         - ^master$

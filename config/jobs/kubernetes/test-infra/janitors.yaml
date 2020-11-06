@@ -13,7 +13,7 @@ periodics:
       args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20201002-ae3497d
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20201029-05fda33
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor
@@ -40,7 +40,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       resources:
         requests:
           cpu: 5
@@ -65,7 +65,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-experimental
       resources:
         requests:
           cpu: 5
@@ -91,7 +91,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-experimental
       resources:
         requests:
           cpu: 5

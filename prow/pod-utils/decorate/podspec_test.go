@@ -899,7 +899,8 @@ func TestProwJobToPod(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec, Status: test.pjStatus}
-			got, err := ProwJobToPod(pj, test.buildID)
+			pj.Status.BuildID = test.buildID
+			got, err := ProwJobToPod(pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

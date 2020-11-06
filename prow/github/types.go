@@ -1125,3 +1125,118 @@ type ProjectCard struct {
 	ContentType string `json:"content_type"`
 	ContentURL  string `json:"content_url"`
 }
+
+type CheckRunList struct {
+	Total     int        `json:"total_count,omitempty"`
+	CheckRuns []CheckRun `json:"check_runs,omitempty"`
+}
+
+type CheckRun struct {
+	ID           int64          `json:"id,omitempty"`
+	NodeID       string         `json:"node_id,omitempty"`
+	HeadSHA      string         `json:"head_sha,omitempty"`
+	ExternalID   string         `json:"external_id,omitempty"`
+	URL          string         `json:"url,omitempty"`
+	HTMLURL      string         `json:"html_url,omitempty"`
+	DetailsURL   string         `json:"details_url,omitempty"`
+	Status       string         `json:"status,omitempty"`
+	Conclusion   string         `json:"conclusion,omitempty"`
+	StartedAt    string         `json:"started_at,omitempty"`
+	CompletedAt  string         `json:"completed_at,omitempty"`
+	Output       CheckRunOutput `json:"output,omitempty"`
+	Name         string         `json:"name,omitempty"`
+	CheckSuite   CheckSuite     `json:"check_suite,omitempty"`
+	App          App            `json:"app,omitempty"`
+	PullRequests []PullRequest  `json:"pull_requests,omitempty"`
+}
+
+type CheckRunOutput struct {
+	Title            string               `json:"title,omitempty"`
+	Summary          string               `json:"summary,omitempty"`
+	Text             string               `json:"text,omitempty"`
+	AnnotationsCount int                  `json:"annotations_count,omitempty"`
+	AnnotationsURL   string               `json:"annotations_url,omitempty"`
+	Annotations      []CheckRunAnnotation `json:"annotations,omitempty"`
+	Images           []CheckRunImage      `json:"images,omitempty"`
+}
+
+type CheckRunAnnotation struct {
+	Path            string `json:"path,omitempty"`
+	StartLine       int    `json:"start_line,omitempty"`
+	EndLine         int    `json:"end_line,omitempty"`
+	StartColumn     int    `json:"start_column,omitempty"`
+	EndColumn       int    `json:"end_column,omitempty"`
+	AnnotationLevel string `json:"annotation_level,omitempty"`
+	Message         string `json:"message,omitempty"`
+	Title           string `json:"title,omitempty"`
+	RawDetails      string `json:"raw_details,omitempty"`
+}
+
+type CheckRunImage struct {
+	Alt      string `json:"alt,omitempty"`
+	ImageURL string `json:"image_url,omitempty"`
+	Caption  string `json:"caption,omitempty"`
+}
+
+type CheckSuite struct {
+	ID           int64         `json:"id,omitempty"`
+	NodeID       string        `json:"node_id,omitempty"`
+	HeadBranch   string        `json:"head_branch,omitempty"`
+	HeadSHA      string        `json:"head_sha,omitempty"`
+	URL          string        `json:"url,omitempty"`
+	BeforeSHA    string        `json:"before,omitempty"`
+	AfterSHA     string        `json:"after,omitempty"`
+	Status       string        `json:"status,omitempty"`
+	Conclusion   string        `json:"conclusion,omitempty"`
+	App          *App          `json:"app,omitempty"`
+	Repository   *Repo         `json:"repository,omitempty"`
+	PullRequests []PullRequest `json:"pull_requests,omitempty"`
+
+	// The following fields are only populated by Webhook events.
+	HeadCommit *Commit `json:"head_commit,omitempty"`
+}
+
+type App struct {
+	ID          int64                    `json:"id,omitempty"`
+	Slug        string                   `json:"slug,omitempty"`
+	NodeID      string                   `json:"node_id,omitempty"`
+	Owner       User                     `json:"owner,omitempty"`
+	Name        string                   `json:"name,omitempty"`
+	Description string                   `json:"description,omitempty"`
+	ExternalURL string                   `json:"external_url,omitempty"`
+	HTMLURL     string                   `json:"html_url,omitempty"`
+	CreatedAt   string                   `json:"created_at,omitempty"`
+	UpdatedAt   string                   `json:"updated_at,omitempty"`
+	Permissions *InstallationPermissions `json:"permissions,omitempty"`
+	Events      []string                 `json:"events,omitempty"`
+}
+
+type InstallationPermissions struct {
+	Administration              string `json:"administration,omitempty"`
+	Blocking                    string `json:"blocking,omitempty"`
+	Checks                      string `json:"checks,omitempty"`
+	Contents                    string `json:"contents,omitempty"`
+	ContentReferences           string `json:"content_references,omitempty"`
+	Deployments                 string `json:"deployments,omitempty"`
+	Emails                      string `json:"emails,omitempty"`
+	Followers                   string `json:"followers,omitempty"`
+	Issues                      string `json:"issues,omitempty"`
+	Metadata                    string `json:"metadata,omitempty"`
+	Members                     string `json:"members,omitempty"`
+	OrganizationAdministration  string `json:"organization_administration,omitempty"`
+	OrganizationHooks           string `json:"organization_hooks,omitempty"`
+	OrganizationPlan            string `json:"organization_plan,omitempty"`
+	OrganizationPreReceiveHooks string `json:"organization_pre_receive_hooks,omitempty"`
+	OrganizationProjects        string `json:"organization_projects,omitempty"`
+	OrganizationUserBlocking    string `json:"organization_user_blocking,omitempty"`
+	Packages                    string `json:"packages,omitempty"`
+	Pages                       string `json:"pages,omitempty"`
+	PullRequests                string `json:"pull_requests,omitempty"`
+	RepositoryHooks             string `json:"repository_hooks,omitempty"`
+	RepositoryProjects          string `json:"repository_projects,omitempty"`
+	RepositoryPreReceiveHooks   string `json:"repository_pre_receive_hooks,omitempty"`
+	SingleFile                  string `json:"single_file,omitempty"`
+	Statuses                    string `json:"statuses,omitempty"`
+	TeamDiscussions             string `json:"team_discussions,omitempty"`
+	VulnerabilityAlerts         string `json:"vulnerability_alerts,omitempty"`
+}

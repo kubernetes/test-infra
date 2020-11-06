@@ -55,20 +55,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for Kubeflow.
       testgrid-num-columns-recent: '30'
-  kubeflow/pytorch-operator:
-  - name: kubeflow-pytorch-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/pytorch-operator.
-      testgrid-num-columns-recent: '30'
   kubeflow/reporting:
   - name: kubeflow-reporting-presubmit
     cluster: kubeflow
@@ -124,34 +110,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/testing.
       testgrid-num-columns-recent: '30'
-  kubeflow/tf-operator:
-  - name: kubeflow-tf-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/tf-operator.
-      testgrid-num-columns-recent: '30'
-  kubeflow/katib:
-  - name: kubeflow-katib-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/katib.
-      testgrid-num-columns-recent: '30'
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
     cluster: kubeflow
@@ -166,20 +124,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/experimental-seldon.
       testgrid-num-columns-recent: '30'
-  kubeflow/caffe2-operator:
-  - name: kubeflow-caffe2-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/caffe2-operator.
-      testgrid-num-columns-recent: '30'
   kubeflow/kubebench:
   - name: kubeflow-kubebench-presubmit
     cluster: kubeflow
@@ -193,48 +137,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/kubebench.
-      testgrid-num-columns-recent: '30'
-  kubeflow/mpi-operator:
-  - name: kubeflow-mpi-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for kubeflow/mpi-operator.
-      testgrid-num-columns-recent: '30'
-  kubeflow/chainer-operator:
-  - name: kubeflow-chainer-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for kubeflow/chainer-operator.
-      testgrid-num-columns-recent: '30'
-  kubeflow/mxnet-operator:
-  - name: kubeflow-mxnet-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/mxnet-operator.
       testgrid-num-columns-recent: '30'
   kubeflow/arena:
   - name: kubeflow-arena-presubmit
@@ -278,48 +180,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/metadata.
       testgrid-num-columns-recent: '30'
-  kubeflow/kfserving:
-  - name: kubeflow-kfserving-presubmit
-    cluster: kubeflow
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/kfserving.
-      testgrid-num-columns-recent: '30'
-  kubeflow/manifests:
-  - name: kubeflow-manifests-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/manifests.
-      testgrid-num-columns-recent: '30'
-  kubeflow/kfctl:
-  - name: kubeflow-kfctl-presubmit
-    cluster: kubeflow
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmits for kubeflow/kfctl.
-      testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
   - name: kubeflow-pipeline-frontend-test
     cluster: kubeflow
@@ -354,7 +214,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -370,7 +230,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -388,7 +248,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -408,7 +268,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/presubmit-tests-mkp.sh
   - name: kubeflow-pipeline-upgrade-test
@@ -419,7 +279,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -456,6 +316,18 @@ presubmits:
     spec:
       containers:
       - image: python:3.8
+        command:
+        - ./test/presubmit-tests-sdk.sh
+
+  - name: kubeflow-pipelines-sdk-python39
+    decorate: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+    run_if_changed: "sdk/.*"
+    spec:
+      containers:
+      - image: python:3.9
         command:
         - ./test/presubmit-tests-sdk.sh
 
@@ -536,7 +408,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - ./test/multiuser-tests.sh
         args:
@@ -545,20 +417,6 @@ presubmits:
         - --test_result_folder
         - multiuser_test
 
-  kubeflow/xgboost-operator:
-  - name: kubeflow-xgboost-operator-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for kubeflow/xgboost-operator.
-      testgrid-num-columns-recent: '30'
 #   - name: kubeflow-pipeline-e2e-test-gce-minikube
 #     cluster: kubeflow
 #     always_run: true
@@ -568,7 +426,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:

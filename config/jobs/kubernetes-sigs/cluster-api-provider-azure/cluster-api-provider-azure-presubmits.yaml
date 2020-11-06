@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -39,21 +39,57 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
+          - name: GINKGO_SKIP
+            value: "Creating a GPU-enabled cluster"
+          - name: LOCAL_ONLY
+            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-e2e
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-e2e-full
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "Workload cluster creation"
+          - name: GINKGO_SKIP
+            value: ""
+          - name: LOCAL_ONLY
+            value: "false"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-e2e-full
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-capi-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -70,7 +106,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -93,7 +129,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - "runner.sh"
         - "make"
@@ -111,7 +147,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -128,7 +164,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -145,7 +181,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -162,7 +198,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
@@ -171,87 +207,65 @@ presubmits:
       testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-v1alpha3
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
     decorate: true
     decoration_config:
       timeout: 4h
+    max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: v1.18.6
-      path_alias: k8s.io/kubernetes
+      preset-azure-cred-only: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
-          command:
-            - "runner.sh"
-            - "./scripts/ci-entrypoint.sh"
-          env:
-            - name: FOCUS
-              value: "\\[Conformance\\]|\\[NodeConformance\\]"
-            - name: SKIP
-              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
-            - name: PARALLEL
-              value: "true"
-            - name: KUBERNETES_VERSION
-              value: "v1.18.6"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
+        command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+        env:
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pull-conformance-v1alpha3
-  - name: pull-cluster-api-provider-azure-conformance-machine-pool-v1alpha3
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
     decorate: true
     decoration_config:
       timeout: 4h
+    max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: v1.18.6
-      path_alias: k8s.io/kubernetes
+      preset-azure-cred-only: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
           command:
             - "runner.sh"
-            - "./scripts/ci-entrypoint.sh"
+            - "./scripts/ci-conformance.sh"
           env:
-            - name: FOCUS
-              value: "\\[Conformance\\]|\\[NodeConformance\\]"
-            - name: SKIP
-              value: "\\[Slow\\]|\\[Serial\\]|\\[Flaky\\]"
-            - name: PARALLEL
-              value: "true"
-            - name: KUBERNETES_VERSION
-              value: "v1.18.6"
-            - name: EXP_MACHINE_POOL
-              value: "true"
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "4Gi"
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: pull-conformance-machine-pool-v1alpha3
+      testgrid-tab-name: pr-conformance-k8s-master
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
@@ -266,7 +280,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-apidiff
@@ -282,7 +296,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
         command:
         - runner.sh
         - bash

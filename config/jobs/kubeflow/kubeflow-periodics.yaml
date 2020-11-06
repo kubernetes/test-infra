@@ -23,46 +23,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the 1-0 release
-- name: kubeflow-periodic-1-0
-  cluster: kubeflow
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kfctl
-      - name: BRANCH_NAME
-        value: v1.0-branch
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow on the 1-0 release
-- name: kubeflow-periodic-0-7
-  cluster: kubeflow
-  # Might want to increase this after the 0.7 release is done.
-  # Other periodics run at 8h.
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kfctl
-      - name: BRANCH_NAME
-        value: v0.7-branch
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow on the 0-7 release
 #******************************************************************************
 # kubeflow/kubeflow
 #******************************************************************************
@@ -257,7 +217,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         imagePullPolicy: Always
         command:
         - "./test/tools/project-cleaner/project_cleaner.sh"

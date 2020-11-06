@@ -39,7 +39,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -99,7 +99,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -162,7 +162,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         command:
         - runner.sh
         - kubetest
@@ -201,6 +201,61 @@ presubmits:
       testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
+  - name: pull-kubernetes-e2e-aks-engine-windows-gpu
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_docker_gpu_master.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        # Only run device assignment tests for this job because GPU nodes are expensive!
+        - --test_args=--node-os-distro=windows --ginkgo.focus=device.plugin.for.Windows
+        - --ginkgo-parallel=1
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-tab-name: pr-aks-engine-windows-gpu
+      description: Presubmit job for Windows tests on k8s clusters with assignable GPUs provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 8h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
@@ -221,7 +276,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -275,7 +330,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -329,7 +384,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -383,7 +438,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -437,7 +492,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -491,7 +546,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -549,7 +604,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -612,7 +667,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -634,7 +689,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.19
-      - --aksengine-template-url=https://github.com/kubernetes-sigs/windows-testing/blob/master/job-templates/kubernetes_containerd_csi_proxy.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
@@ -673,7 +728,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -736,7 +791,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - runner.sh
       - kubetest
@@ -758,7 +813,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.19
-      - --aksengine-template-url=https://github.com/kubernetes-sigs/windows-testing/blob/master/job-templates/kubernetes_containerd_csi_proxy.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2

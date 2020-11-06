@@ -98,6 +98,7 @@ type WindowsProfile struct {
 	EnableCSIProxy        bool             `json:"enableCSIProxy,omitempty"`
 	CSIProxyURL           string           `json:"csiProxyURL,omitempty"`
 	WindowsRuntimes       *WindowsRuntimes `json:"windowsRuntimes,omitempty"`
+	WindowsPauseImageURL  string           `json:"windowsPauseImageURL,omitempty"`
 }
 
 // WindowsRuntimes configures containerd runtimes that are available on the windows nodes

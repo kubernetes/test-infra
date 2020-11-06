@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
@@ -38,7 +38,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -47,7 +49,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 - interval: 2h
@@ -63,7 +65,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -72,7 +76,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 
@@ -102,7 +106,9 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
-        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -111,7 +117,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         resources:
           requests:
             cpu: 2
@@ -146,7 +152,9 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --extract=local
-        - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -155,7 +163,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         resources:
           requests:
             cpu: 4

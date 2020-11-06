@@ -1,0 +1,53 @@
+periodics:
+# conformance test against kubernetes master branch with `kind` and auditlogs
+# Other than annotations and modified ci-audit-logging e2e-k8s.sh
+# This should be the same as ci-kubernetes-kind-conformance
+- interval: 10m
+  name: ci-audit-kind-conformance
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        -
+            curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
+            && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
+            && bash e2e-k8s.sh
+      env:
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    testgrid-tab-name: kind-conformance-audit
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: 'Uses patched ci-kubernetes-kind-conformance job to generate ARTIFACT/audit/audit.log'

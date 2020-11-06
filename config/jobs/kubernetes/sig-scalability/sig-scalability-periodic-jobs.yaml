@@ -8,12 +8,14 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -56,12 +58,14 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-containerd: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -107,13 +111,15 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -140,11 +146,10 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
@@ -172,13 +177,15 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-scheduler
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -209,7 +216,6 @@ periodics:
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -236,6 +242,8 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
@@ -245,7 +253,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -271,11 +279,11 @@ periodics:
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -305,6 +313,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
@@ -312,7 +322,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -339,11 +349,11 @@ periodics:
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -376,6 +386,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000-scheduler
@@ -383,7 +395,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -412,7 +424,6 @@ periodics:
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -436,13 +447,15 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-high-density
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -470,7 +483,6 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       # TODO(https://github.com/kubernetes/perf-tests/issues/1007): load test should be used to test high-density.
       - --test-cmd-args=--testconfig=testing/density/high-density-config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/600_nodes_high_density.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -492,12 +504,14 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -531,7 +545,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -567,7 +581,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -601,12 +615,14 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -643,12 +659,14 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

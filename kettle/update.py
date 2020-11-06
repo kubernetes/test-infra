@@ -19,6 +19,9 @@ import os
 
 
 DUMP = 'dump.txt'
+THREADS = 32
+MAX_BAD_RECORDS = 1000
+DAYS_OLD = 1.9
 
 def print_dump(file):
     if os.path.exists(file):
@@ -38,32 +41,37 @@ def call(cmd):
 
 
 def main():
-    call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32')
+    call(f'time python3 make_db.py --buckets buckets.yaml --junit --threads {THREADS}')
 
-    bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
+    bq_cmd = f'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS}'
     mj_cmd = 'pypy3 make_json.py'
 
     mj_ext = ''
     bq_ext = ''
     try:
-        call(mj_cmd + ' --days 1 --assert-oldest 1.9')
+        call(f'{mj_cmd} --days 1 --assert-oldest {DAYS_OLD}')
     except OSError:
         # cycle daily/weekly tables
         bq_ext = ' --replace'
         mj_ext = ' --reset-emitted'
 
-    call(mj_cmd + mj_ext + ' --days 1 | pv | gzip > build_day.json.gz')
-    call(bq_cmd + bq_ext + ' k8s-gubernator:build.day build_day.json.gz schema.json')
+    if os.getenv('DEPLOYMENT', 'staging') == "prod":
+        call(f'{mj_cmd} {mj_ext} --days 1 | pv | gzip > build_day.json.gz')
+        call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.day build_day.json.gz schema.json')
 
-    call(mj_cmd + mj_ext + ' --days 7 | pv | gzip > build_week.json.gz')
-    call(bq_cmd + bq_ext + ' k8s-gubernator:build.week build_week.json.gz schema.json')
+        call(f'{mj_cmd} {mj_ext} --days 7 | pv | gzip > build_week.json.gz')
+        call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.week build_week.json.gz schema.json')
 
-    call(mj_cmd + ' | pv | gzip > build_all.json.gz')
-    call(bq_cmd + ' k8s-gubernator:build.all build_all.json.gz schema.json')
+        call(f'{mj_cmd} | pv | gzip > build_all.json.gz')
+        call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
-    call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle '
-         ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
-
+        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
+            ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
+    else:
+        call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
+        call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
+        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
+            ' --dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))

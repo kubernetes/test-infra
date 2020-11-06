@@ -573,9 +573,8 @@ func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 		return fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	// TODO: remove buildID from input args to ProwJobToPod
 	pj.Status.BuildID = buildID
-	pod, err := decorate.ProwJobToPod(*pj, buildID)
+	pod, err := decorate.ProwJobToPod(*pj)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/image-builder:
-  - name: pull-azure-all
+  - name: pull-azure-vhds
     labels:
       preset-azure-cred: "true"
     decorate: true
@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -20,4 +20,29 @@ presubmits:
             cpu: 1000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
-      testgrid-tab-name: pr-azure-all
+      testgrid-tab-name: pr-azure-vhds
+  - name: pull-azure-sigs
+    labels:
+      preset-azure-cred: "true"
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+        args:
+          - runner.sh
+          - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
+        env:
+          - name: AZURE_BUILD_FORMAT
+            value: "sig"
+        resources:
+          requests:
+            cpu: 1000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-azure-sigs

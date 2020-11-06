@@ -1,12 +1,13 @@
 postsubmits:
-  kubernetes/kubernetes:
-    - name: post-kubernetes-push-image-etcd
+  kubernetes/release:
+    - name: post-release-push-image-vulndash
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
       decorate: true
-      run_if_changed: '^cluster\/images\/etcd\/'
+      run_if_changed: '^cmd\/vulndash\/'
       branches:
         - ^master$
       spec:
@@ -16,23 +17,24 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-etcd
-              - --scratch-bucket=gs://k8s-staging-etcd-gcb
+              - --project=k8s-staging-artifact-promoter
+              - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
               - --build-dir=.
-              - cluster/images/etcd
+              - cmd/vulndash
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
-    - name: post-kubernetes-push-image-pause
+  kubernetes-sigs/k8s-container-image-promoter:
+    - name: cip-postsubmit-push-to-staging
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
-        testgrid-alert-email: release-managers@kubernetes.io
+        testgrid-dashboards: sig-release-releng-blocking
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
       decorate: true
-      run_if_changed: '^build\/pause\/'
       branches:
         - ^master$
       spec:
@@ -42,13 +44,7 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-kubernetes
-              - --scratch-bucket=gs://k8s-staging-kubernetes-gcb
-              - --build-dir=.
-              - build/pause
-            env:
-              - name: LOG_TO_STDOUT
-                value: "y"
-      rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+              - --project=k8s-staging-artifact-promoter
+              - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

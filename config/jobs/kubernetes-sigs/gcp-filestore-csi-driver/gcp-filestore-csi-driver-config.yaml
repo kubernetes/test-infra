@@ -14,7 +14,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=300"
+        - "--timeout=60" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_e2e.sh"
@@ -33,7 +33,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_sanity.sh"
@@ -49,7 +49,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_unit.sh"
@@ -69,3 +69,31 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify_all.sh"
+  - name: pull-gcp-filestore-csi-driver-kubernetes-integration
+    optional: true
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=120" # Minutes
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run-k8s-integration.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

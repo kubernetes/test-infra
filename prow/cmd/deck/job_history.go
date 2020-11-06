@@ -346,15 +346,23 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
-		b.commitHash = commitHash
-	}
 	finished := gcs.Finished{}
 	err = readJSON(ctx, bucket, path.Join(dir, prowv1.FinishedStatusFile), &finished)
 	if err != nil {
 		b.Result = "Pending"
+		for _, ref := range started.Repos {
+			if strings.Contains(ref, ","+started.Pull+":") {
+				started.Pull = ref
+				break
+			}
+		}
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
+
+	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
+		b.commitHash = commitHash
+	}
+
 	// Testgrid metadata.Finished is deprecating the Revision field, however
 	// the actual finished.json is still using revision and maps to DeprecatedRevision.
 	// TODO(ttyang): update both to match when fejta completely removes DeprecatedRevision.

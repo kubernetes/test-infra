@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         command:
         - wrapper.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-experimental
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-experimental
         command:
         - wrapper.sh
         - make
@@ -68,7 +68,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         command:
         - wrapper.sh
         - bash
@@ -115,7 +115,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -161,7 +161,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -212,7 +212,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-master
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-master
         command:
         - wrapper.sh
         - bash
@@ -261,7 +261,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-1.18
+      - image: gcr.io/k8s-testimages/krte:v20201105-c47a42a-1.18
         command:
         - wrapper.sh
         - bash
@@ -311,7 +311,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-1.17
+      - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.17
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -354,7 +354,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200916-8dd1247-1.16
+      - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"

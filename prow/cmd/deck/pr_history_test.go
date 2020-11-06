@@ -169,6 +169,50 @@ func TestUpdateCommitData(t *testing.T) {
 	}
 }
 
+func TestGetPullCommitHash(t *testing.T) {
+	cases := []struct {
+		pull       string
+		commitHash string
+		expErr     bool
+	}{
+		{
+			pull:       "main:4fe6d226e0455ef3d16c1f639a4010d699d0d097,21354:6cf03d53a14f6287d2175b0e9f3fbb31d91981a7",
+			commitHash: "6cf03d53a14f6287d2175b0e9f3fbb31d91981a7",
+		},
+		{
+			pull:       "release45-v8.0:5b30685f6bbf7a0bfef3fa8f2ebe2626ec1df391,54884:d1e309d8d10388000a34b1f705fd78c648ea5faa",
+			commitHash: "d1e309d8d10388000a34b1f705fd78c648ea5faa",
+		},
+		{
+			pull:   "main:6c1db48d6911675873b25457dbe61adca0d428a0,pullre:4905771e4f06c00385d7b1ac3c6de76f173e0212",
+			expErr: true,
+		},
+		{
+			pull:   "23545",
+			expErr: true,
+		},
+		{
+			pull:   "main:6c1db48d6911675873b25457dbe61adca0d428a0,12354:548461",
+			expErr: true,
+		},
+		{
+			pull:   "main:6c1db48d6,12354:e3e9d3eaa3a43f0a4fac47eccd379f077bee6789",
+			expErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		commitHash, err := getPullCommitHash(tc.pull)
+		if (err != nil) != tc.expErr {
+			t.Errorf("%q: unexpected error: %v", tc.pull, err)
+			continue
+		}
+		if commitHash != tc.commitHash {
+			t.Errorf("%s: expected commit hash to be '%s', got '%s'", tc.pull, tc.commitHash, commitHash)
+		}
+	}
+}
+
 func TestParsePullURL(t *testing.T) {
 	cases := []struct {
 		name   string

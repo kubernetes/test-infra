@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
 	"k8s.io/test-infra/prow/repoowners"
@@ -127,12 +128,13 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 }
 
 type fakeRepo struct {
-	approvers, leafApprovers map[string]sets.String
-	approverOwners           map[string]string
-	dirBlacklist             []*regexp.Regexp
+	approvers      map[string]layeredsets.String
+	leafApprovers  map[string]sets.String
+	approverOwners map[string]string
+	dirBlacklist   []*regexp.Regexp
 }
 
-func (fr fakeRepo) Approvers(path string) sets.String {
+func (fr fakeRepo) Approvers(path string) layeredsets.String {
 	return fr.approvers[path]
 }
 func (fr fakeRepo) LeafApprovers(path string) sets.String {
@@ -1046,10 +1048,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	}
 
 	fr := fakeRepo{
-		approvers: map[string]sets.String{
-			"a":   sets.NewString("alice"),
-			"a/b": sets.NewString("alice", "bob"),
-			"c":   sets.NewString("cblecker", "cjwagner"),
+		approvers: map[string]layeredsets.String{
+			"a":   layeredsets.NewString("alice"),
+			"a/b": layeredsets.NewString("alice", "bob"),
+			"c":   layeredsets.NewString("cblecker", "cjwagner"),
 		},
 		leafApprovers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
@@ -1201,8 +1203,8 @@ func (fro fakeRepoOwners) LeafReviewers(path string) sets.String {
 	return sets.NewString()
 }
 
-func (fro fakeRepoOwners) Reviewers(path string) sets.String {
-	return sets.NewString()
+func (fro fakeRepoOwners) Reviewers(path string) layeredsets.String {
+	return layeredsets.NewString()
 }
 
 func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {

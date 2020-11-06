@@ -33,7 +33,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-latest
@@ -66,7 +66,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.19
@@ -99,7 +99,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.18
@@ -132,7 +132,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.17
@@ -160,12 +160,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.16
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.16
@@ -193,12 +194,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.15
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.15
@@ -226,12 +228,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.14
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.14
@@ -259,12 +262,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.13
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.13
@@ -292,12 +296,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.12
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.12
@@ -325,12 +330,13 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.11
       - --ginkgo-parallel
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201014-d8fda77-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.11

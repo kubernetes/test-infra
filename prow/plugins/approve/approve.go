@@ -119,15 +119,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 					"ORGANIZATION",
 					"ORGANIZATION/REPOSITORY",
 				},
-				DeprecatedImplicitSelfApprove: new(bool),
-				RequireSelfApproval:           new(bool),
-				DeprecatedReviewActsAsApprove: new(bool),
-				IgnoreReviewState:             new(bool),
+				RequireSelfApproval: new(bool),
+				IgnoreReviewState:   new(bool),
 			},
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warn("cannot generate comments for approve plugin")
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
@@ -454,7 +452,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	})
 	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
-	log.WithField("duration", time.Since(start).String()).Debug("Completed filering approval comments in handle")
+	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)

@@ -34,13 +34,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 type fakeOwnersClient struct {
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
+	approvers map[string]layeredsets.String
+	reviewers map[string]layeredsets.String
 }
 
 var _ repoowners.Interface = &fakeOwnersClient{}
@@ -62,8 +63,8 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 }
 
 type fakeRepoOwners struct {
-	approvers    map[string]sets.String
-	reviewers    map[string]sets.String
+	approvers    map[string]layeredsets.String
+	reviewers    map[string]layeredsets.String
 	dirBlacklist []*regexp.Regexp
 }
 
@@ -87,9 +88,9 @@ func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string { return
 func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String     { return nil }
 func (f *fakeRepoOwners) IsNoParentOwners(path string) bool             { return false }
 func (f *fakeRepoOwners) LeafApprovers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Approvers(path string) sets.String             { return f.approvers[path] }
+func (f *fakeRepoOwners) Approvers(path string) layeredsets.String      { return f.approvers[path] }
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
+func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String      { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
 func (f *fakeRepoOwners) TopLevelApprovers() sets.String                { return nil }
 
@@ -127,20 +128,12 @@ func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, er
 	return *full, err
 }
 
-var approvers = map[string]sets.String{
-	"doc/README.md": {
-		"cjwagner": {},
-		"jessica":  {},
-	},
+var approvers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("cjwagner", "jessica"),
 }
 
-var reviewers = map[string]sets.String{
-	"doc/README.md": {
-		"alice": {},
-		"bob":   {},
-		"mark":  {},
-		"sam":   {},
-	},
+var reviewers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("alice", "bob", "mark", "sam"),
 }
 
 func TestLGTMComment(t *testing.T) {

@@ -86,10 +86,35 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = fmt.Sprintf(columnsMsg, columnMap)
 		}
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Project: plugins.ProjectConfig{
+			Orgs: map[string]plugins.ProjectOrgConfig{
+				"org": {
+					MaintainerTeamID: 123456,
+					ProjectColumnMap: map[string]string{
+						"project1": "To do",
+						"project2": "Backlog",
+					},
+					Repos: map[string]plugins.ProjectRepoConfig{
+						"repo": {
+							MaintainerTeamID: 123456,
+							ProjectColumnMap: map[string]string{
+								"project3": "To do",
+								"project4": "Backlog",
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The project plugin allows members of a GitHub team to set the project and column on an issue or pull request.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/project <board>, /project <board> <column>, or /project clear <board>",
