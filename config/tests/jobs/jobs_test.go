@@ -1068,50 +1068,6 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
-// We have k8s-infra-prow-build setup to auto-scale, but as a quick static
-// check, let's pretend every job schedules one instance to the cluster
-// at the exact same time. This is a poor approximation since there will
-// likely be N presubmits running simultaneously.
-func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
-	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
-	maxLimit := coreapi.ResourceList{
-		coreapi.ResourceCPU:    resource.MustParse("720"),    // 3 * 30 * 8 CPUs per n1-highmem-8
-		coreapi.ResourceMemory: resource.MustParse("4680Gi"), // 3 * 30 * 52 Gi per n1-highmem-8
-	}
-	resourceNames := []coreapi.ResourceName{
-		coreapi.ResourceCPU,
-		coreapi.ResourceMemory,
-	}
-	zero := resource.MustParse("0")
-	totalLimit := coreapi.ResourceList{}
-	for _, r := range resourceNames {
-		totalLimit[r] = zero.DeepCopy()
-	}
-	jobs := allStaticJobs()
-	for _, job := range jobs {
-		// Only consider Pods destined for the k8s-infra-prow-builds cluster
-		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
-			continue
-		}
-		for _, c := range job.Spec.Containers {
-			for _, r := range resourceNames {
-				if limit, ok := c.Resources.Limits[r]; ok {
-					total := totalLimit[r]
-					total.Add(limit)
-					totalLimit[r] = total
-				}
-			}
-		}
-	}
-	for _, r := range resourceNames {
-		total := totalLimit[r]
-		max := maxLimit[r]
-		if total.Cmp(max) > -1 {
-			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
-		}
-	}
-}
-
 // Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
 // containing the latest merged PRs as soon as possible for the in-development release
 func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T) {
