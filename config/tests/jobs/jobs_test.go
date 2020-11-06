@@ -969,12 +969,6 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 	return errs
 }
 
-// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
-// resource limits that are equal to their resource requests
-func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
-	return len(verifyPodQOSGuaranteed(spec)) == 0
-}
-
 // A job is merge-blocking if it:
 // - is not optional
 // - reports (aka does not skip reporting)
