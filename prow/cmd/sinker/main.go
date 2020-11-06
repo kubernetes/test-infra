@@ -363,6 +363,17 @@ func (c *controller) clean() {
 	// Now clean up old pods.
 	for cluster, client := range c.podClients {
 		log := c.logger.WithField("cluster", cluster)
+		var isClusterExcluded bool
+		for _, excludeCluster := range c.config().Sinker.ExcludeClusters {
+			if excludeCluster == cluster {
+				isClusterExcluded = true
+				break
+			}
+		}
+		if isClusterExcluded {
+			log.Debugf("Cluster %q is excluded, skipping pods deletion.", cluster)
+			break
+		}
 		var pods corev1api.PodList
 		if err := client.List(c.ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(c.config().PodNamespace)); err != nil {
 			log.WithError(err).Error("Error listing pods.")
