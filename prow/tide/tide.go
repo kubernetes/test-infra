@@ -1872,10 +1872,53 @@ func checkRunNodesToContexts(log *logrus.Entry, nodes []CheckRunNode) []Context 
 		}
 		result = append(result, checkRunToContext(node.CheckRun))
 	}
+	result = deduplicateContexts(result)
 	if len(result) > 0 {
 		log.WithField("checkruns", len(result)).Debug("Transformed checkruns to contexts")
 	}
 	return result
+}
+
+type descriptionAndState struct {
+	description githubql.String
+	state       githubql.StatusState
+}
+
+// deduplicateContexts deduplicates contexts, returning the best result for
+// contexts that have multiple entries
+func deduplicateContexts(contexts []Context) []Context {
+	result := map[githubql.String]descriptionAndState{}
+	for _, context := range contexts {
+		previousResult, found := result[context.Context]
+		if !found {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+			continue
+		}
+		if isStateBetter(previousResult.state, context.State) {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+		}
+	}
+
+	var resultSlice []Context
+	for name, descriptionAndState := range result {
+		resultSlice = append(resultSlice, Context{Context: name, Description: descriptionAndState.description, State: descriptionAndState.state})
+	}
+
+	return resultSlice
+}
+
+func isStateBetter(previous, current githubql.StatusState) bool {
+	if current == githubql.StatusStateSuccess {
+		return true
+	}
+	if current == githubql.StatusStatePending && (previous == githubql.StatusStateError || previous == githubql.StatusStateFailure || previous == githubql.StatusStateExpected) {
+		return true
+	}
+	if previous == githubql.StatusStateExpected && (current == githubql.StatusStateError || current == githubql.StatusStateFailure) {
+		return true
+	}
+
+	return false
 }
 
 const (

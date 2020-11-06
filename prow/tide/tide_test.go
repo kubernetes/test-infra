@@ -21,9 +21,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"text/template"
@@ -31,6 +34,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -3850,20 +3854,91 @@ func TestCheckRunNodesToContexts(t *testing.T) {
 				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
 			},
 			expected: []Context{
-				{Context: "some-job", State: githubql.StatusStateSuccess},
 				{Context: "another-job", State: githubql.StatusStateSuccess},
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, success > everything",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, neutral > everything",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, pending > failure",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job")},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStatePending},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, only failures",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateFailure},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Shuffle the checkruns to make sure we don't rely on slice order
+			rand.Shuffle(len(tc.checkRuns), func(i, j int) {
+				tc.checkRuns[i], tc.checkRuns[j] = tc.checkRuns[j], tc.checkRuns[i]
+			})
+
 			var checkRunNodes []CheckRunNode
 			for _, checkRun := range tc.checkRuns {
 				checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
 			}
-			if diff := cmp.Diff(checkRunNodesToContexts(logrus.New().WithField("test", tc.name), checkRunNodes), tc.expected); diff != "" {
+
+			result := checkRunNodesToContexts(logrus.New().WithField("test", tc.name), checkRunNodes)
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].Context+result[i].Description+githubql.String(result[i].State) < result[j].Context+result[j].Description+githubql.String(result[j].State)
+			})
+
+			if diff := cmp.Diff(result, tc.expected); diff != "" {
 				t.Errorf("actual result differs from expected: %s", diff)
+			}
+		})
+	}
+}
+
+func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			context := Context{}
+			fuzz.New().Fuzz(&context)
+			res := deduplicateContexts([]Context{context})
+			if diff := cmp.Diff(context, res[0]); diff != "" {
+				t.Errorf("deduplicateContexts lost data, new object differs: %s", diff)
 			}
 		})
 	}
