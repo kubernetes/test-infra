@@ -40,7 +40,7 @@ def check_no_stdout(*cmd):
 def check_output(*cmd):
     """Log and run the command, raising on errors, return output"""
     print >>sys.stderr, 'Run:', cmd
-    return subprocess.check_output(cmd)
+    return subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
 def check_build_exists(gcs, suffix, fast):
     """ check if a k8s build with same version
