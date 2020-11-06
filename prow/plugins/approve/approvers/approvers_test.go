@@ -746,11 +746,11 @@ func TestGetMessageAllApproved(t *testing.T) {
 	)
 	ap.RequireIssue = true
 	ap.AddApprover("Alice", "REFERENCE", false)
-	ap.AddLGTMer("Bill", "REFERENCE", false)
+	ap.AddApprover("Bill", "REFERENCE", false)
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="LGTM">Bill</a>*
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 

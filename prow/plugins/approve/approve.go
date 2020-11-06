@@ -42,7 +42,6 @@ const (
 
 	approveCommand  = "APPROVE"
 	cancelArgument  = "cancel"
-	lgtmCommand     = "LGTM"
 	noIssueArgument = "no-issue"
 )
 
@@ -109,7 +108,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	approveConfig := map[string]string{}
 	for _, repo := range enabledRepos {
 		opts := config.ApproveFor(repo.Org, repo.Repo)
-		approveConfig[repo.String()] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
+		approveConfig[repo.String()] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.ConsiderReviewState()))
 	}
 
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
@@ -173,7 +172,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 	}
 
 	opts := config.ApproveFor(ce.Repo.Owner.Login, ce.Repo.Name)
-	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
+	if !isApprovalCommand(botName, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		log.Debug("Comment does not constitute approval, skipping event.")
 		return nil
 	}
@@ -242,7 +241,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
 	// review state.
-	if isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+	if isApprovalCommand(botName, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
 		log.Debug("Review constitutes approval, skipping event.")
 		return nil
 	}
@@ -362,7 +361,6 @@ func findAssociatedIssue(body, org string) (int, error) {
 //   - Go through all comments in order of creation.
 //     - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
 //   - If anyone said "/approve", add them to approverSet.
-//   - If anyone said "/lgtm" AND LgtmActsAsApprove is enabled, add them to approverSet.
 //   - If anyone created an approved review AND ReviewActsAsApprove is enabled, add them to approverSet.
 // - Then, for each file, we see if any approver of this file is in approverSet and keep track of files without approval
 //   - An approver of a file is defined as:
@@ -450,7 +448,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
+	approveComments := filterComments(comments, approvalMatcher(botName, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
 	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
@@ -527,20 +525,20 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalMatcher(botName string, lgtmActsAsApprove, reviewActsAsApprove bool) func(*comment) bool {
+func approvalMatcher(botName string, reviewActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
-		return isApprovalCommand(botName, lgtmActsAsApprove, c) || isApprovalState(botName, reviewActsAsApprove, c)
+		return isApprovalCommand(botName, c) || isApprovalState(botName, reviewActsAsApprove, c)
 	}
 }
 
-func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool {
+func isApprovalCommand(botName string, c *comment) bool {
 	if c.Author == botName {
 		return false
 	}
 
 	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 		cmd := strings.ToUpper(match[1])
-		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
+		if cmd == approveCommand {
 			return true
 		}
 	}
@@ -612,7 +610,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			name := strings.ToUpper(match[1])
-			if name != approveCommand && name != lgtmCommand {
+			if name != approveCommand {
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))
@@ -627,22 +625,13 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 					c.HTMLURL,
 					args == noIssueArgument,
 				)
-			}
-
-			if name == approveCommand {
+			} else {
 				approversHandler.AddApprover(
 					c.Author,
 					c.HTMLURL,
 					args == noIssueArgument,
 				)
-			} else {
-				approversHandler.AddLGTMer(
-					c.Author,
-					c.HTMLURL,
-					args == noIssueArgument,
-				)
 			}
-
 		}
 	}
 }

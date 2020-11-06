@@ -30,7 +30,6 @@ limitations under the License.
 //				},
 //				IssueRequired:       false,
 //				RequireSelfApproval: new(bool),
-//				LgtmActsAsApprove:   false,
 //				IgnoreReviewState:   new(bool),
 //			},
 //		},
@@ -56,8 +55,6 @@ limitations under the License.
 //		# RequireSelfApproval requires PR authors to explicitly approve their PRs. Otherwise the plugin assumes the author of the PR approves the changes in the PR.
 //		require_self_approval: false
 //
-//		# LgtmActsAsApprove indicates that the lgtm command should be used to indicate approval
-//		lgtm_acts_as_approve: true
 //
 //		# IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise: * an APPROVE github review is equivalent to leaving an \"/approve\" message. * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel\" message.
 //		ignore_review_state: false

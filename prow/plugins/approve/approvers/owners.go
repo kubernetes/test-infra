@@ -171,7 +171,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	return ap.GetCurrentApproversSet()
 }
 
-// GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
+// GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved.
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
 	for _, fn := range o.filenames {
@@ -290,19 +290,6 @@ func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool 
 	approval, alreadyApproved := ap.approvers[login]
 
 	return alreadyApproved && approval.NoIssue && !noIssue
-}
-
-// AddLGTMer adds a new LGTM Approver
-func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
-	if ap.shouldNotOverrideApproval(login, noIssue) {
-		return
-	}
-	ap.approvers[strings.ToLower(login)] = Approval{
-		Login:     login,
-		How:       "LGTM",
-		Reference: reference,
-		NoIssue:   noIssue,
-	}
 }
 
 // AddApprover adds a new Approver

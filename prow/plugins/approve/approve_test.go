@@ -201,7 +201,6 @@ func TestHandle(t *testing.T) {
 
 		selfApprove         bool
 		needsIssue          bool
-		lgtmActsAsApprove   bool
 		reviewActsAsApprove bool
 		githubLinkURL       *url.URL
 
@@ -221,7 +220,6 @@ func TestHandle(t *testing.T) {
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -254,7 +252,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -287,7 +284,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -323,7 +319,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -361,7 +356,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -400,7 +394,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -420,7 +413,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{},
 			selfApprove:         true, // no-op test
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -459,7 +451,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         true, // no-op test
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -479,27 +470,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "cancel implicit self approve (with lgtm-after-commit message)",
-			prBody:   "Changes the thing.\n fixes #42",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "CJWagner", "/lgtm cancel //PR changed after LGTM, removing LGTM."),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          true,
-			lgtmActsAsApprove:   true,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -537,7 +507,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -557,7 +526,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -576,7 +544,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -604,62 +571,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 <!-- META={"approvers":["alice"]} -->`,
 		},
 		{
-			name:     "lgtm means approve",
-			prBody:   "This is a great PR that will fix\nlots of things!",
-			hasLabel: false,
-			files:    []string{"a/a.go", "a/aa.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   true,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "lgtm does not mean approve",
-			prBody:   "This is a great PR that will fix\nlots of things!",
-			hasLabel: false,
-			files:    []string{"a/a.go", "a/aa.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-
-Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>
-<!-- META={"approvers":["alice"]} -->`),
-				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: false,
-		},
-		{
 			name:                "approve in review body with empty state",
 			hasLabel:            false,
 			files:               []string{"a/a.go"},
@@ -667,7 +578,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			reviews:             []github.Review{newTestReview("Alice", "stuff\n/approve", "")},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -700,7 +610,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{newTestReview("cjwagner", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -733,7 +642,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{newTestReview("Alice", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -770,7 +678,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -808,7 +715,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -846,7 +752,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -884,7 +789,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -919,7 +823,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -952,7 +855,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
 			selfApprove:         false,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -986,7 +888,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
@@ -1020,7 +921,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          false,
-			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.mycorp.com"},
 
@@ -1086,7 +986,6 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				Repos:               []string{"org/repo"},
 				RequireSelfApproval: &rsa,
 				IssueRequired:       test.needsIssue,
-				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 				IgnoreReviewState:   &irs,
 				CommandHelpLink:     "https://go.k8s.io/bot-commands",
 				PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
@@ -1213,11 +1112,10 @@ func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
 
 func TestHandleGenericComment(t *testing.T) {
 	tests := []struct {
-		name              string
-		commentEvent      github.GenericCommentEvent
-		lgtmActsAsApprove bool
-		expectHandle      bool
-		expectState       *state
+		name         string
+		commentEvent github.GenericCommentEvent
+		expectHandle bool
+		expectState  *state
 	}{
 		{
 			name: "valid approve command",
@@ -1299,33 +1197,6 @@ func TestHandleGenericComment(t *testing.T) {
 			},
 			expectHandle: false,
 		},
-		{
-			name: "lgtm without lgtmActsAsApprove",
-			commentEvent: github.GenericCommentEvent{
-				Action: github.GenericCommentActionCreated,
-				IsPR:   true,
-				Body:   "/lgtm",
-				Number: 1,
-				User: github.User{
-					Login: "author",
-				},
-			},
-			expectHandle: false,
-		},
-		{
-			name: "lgtm with lgtmActsAsApprove",
-			commentEvent: github.GenericCommentEvent{
-				Action: github.GenericCommentActionCreated,
-				IsPR:   true,
-				Body:   "/lgtm",
-				Number: 1,
-				User: github.User{
-					Login: "author",
-				},
-			},
-			lgtmActsAsApprove: true,
-			expectHandle:      true,
-		},
 	}
 
 	var handled bool
@@ -1365,8 +1236,7 @@ func TestHandleGenericComment(t *testing.T) {
 		}
 		config := &plugins.Configuration{}
 		config.Approve = append(config.Approve, plugins.Approve{
-			Repos:             []string{test.commentEvent.Repo.Owner.Login},
-			LgtmActsAsApprove: test.lgtmActsAsApprove,
+			Repos: []string{test.commentEvent.Repo.Owner.Login},
 		})
 		err := handleGenericComment(
 			logrus.WithField("plugin", "approve"),
@@ -1405,7 +1275,6 @@ func TestHandleReview(t *testing.T) {
 	tests := []struct {
 		name                string
 		reviewEvent         github.ReviewEvent
-		lgtmActsAsApprove   bool
 		reviewActsAsApprove bool
 		expectHandle        bool
 		expectState         *state
@@ -1511,22 +1380,6 @@ func TestHandleReview(t *testing.T) {
 			expectHandle:        false,
 		},
 		{
-			name: "lgtm command",
-			reviewEvent: github.ReviewEvent{
-				Action: github.ReviewActionSubmitted,
-				Review: github.Review{
-					Body: "/lgtm",
-					User: github.User{
-						Login: "author",
-					},
-					State: stateToLower(github.ReviewStateApproved),
-				},
-			},
-			lgtmActsAsApprove:   true,
-			reviewActsAsApprove: true,
-			expectHandle:        false,
-		},
-		{
 			name: "feature disabled",
 			reviewEvent: github.ReviewEvent{
 				Action: github.ReviewActionSubmitted,
@@ -1587,7 +1440,6 @@ func TestHandleReview(t *testing.T) {
 		irs := !test.reviewActsAsApprove
 		config.Approve = append(config.Approve, plugins.Approve{
 			Repos:             []string{test.reviewEvent.Repo.Owner.Login},
-			LgtmActsAsApprove: test.lgtmActsAsApprove,
 			IgnoreReviewState: &irs,
 		})
 		err := handleReview(
@@ -1786,7 +1638,6 @@ func TestHelpProvider(t *testing.T) {
 						Repos:               []string{"org2/repo"},
 						IssueRequired:       true,
 						RequireSelfApproval: &[]bool{true}[0],
-						LgtmActsAsApprove:   true,
 						IgnoreReviewState:   &[]bool{true}[0],
 					},
 				},
