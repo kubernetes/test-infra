@@ -247,6 +247,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}, gcp-project=k8s-jenkins-blocking-kubemark -> gcp-project-type=scalability-project, us-central1-f -> us-east1-b"
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-master-500
