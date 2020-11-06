@@ -253,9 +253,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, l
 
 	// Compute lint errors.
 	problems, lintErrorComments := problemsInFiles(r, modifiedFiles)
-	if err != nil {
-		return err
-	}
+
 	// Filter out problems that are below our threshold
 	for file := range problems {
 		for line, problem := range problems[file] {
