@@ -17,14 +17,16 @@ limitations under the License.
 package v1
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/gofuzz"
 )
 
-func TestDecorationDefaulting(t *testing.T) {
+func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
 	lies := false
 
@@ -93,12 +95,22 @@ func TestDecorationDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "secret name provided",
+			name: "gcs secret name provided",
 			provided: &DecorationConfig{
 				GCSCredentialsSecret: "somethingSecret",
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name provided",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: "overwritten",
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
 				return def
 			},
 		},
@@ -164,6 +176,7 @@ func TestDecorationDefaulting(t *testing.T) {
 	for _, testCase := range testCases {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			defaults := &DecorationConfig{
 				Timeout:     &Duration{Duration: 1 * time.Minute},
 				GracePeriod: &Duration{Duration: 10 * time.Second},
@@ -181,16 +194,32 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				S3CredentialsSecret:  "s3-secret",
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
 				SkipCloning:          &truth,
 			}
-			t.Parallel()
 
 			expected := tc.expected(tc.provided, defaults)
 			actual := tc.provided.ApplyDefault(defaults)
 			if diff := cmp.Diff(actual, expected, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
+func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			def := &DecorationConfig{}
+			fuzz.New().Fuzz(def)
+
+			defaulted := (&DecorationConfig{}).ApplyDefault(def)
+
+			if diff := cmp.Diff(def, defaulted); diff != "" {
+				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
 			}
 		})
 	}
