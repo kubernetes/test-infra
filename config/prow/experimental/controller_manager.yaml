@@ -22,7 +22,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/prow-controller-manager:v20201106-ea76c130fa
+        image: gcr.io/k8s-prow/prow-controller-manager:v20201109-a36ed74f01
         volumeMounts:
         - name: config
           mountPath: /etc/config
