@@ -105,6 +105,47 @@ periodics:
     testgrid-tab-name: build-master-canary
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
+- name: ci-kubernetes-build-no-bootstrap
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:v1.15.3-1
+      command:
+      - /krel
+      args:
+      - ci-build
+      - --allow-dup
+      - --fast
+      - --bucket=k8s-release-dev
+      - --gcs-suffix=no-bootstrap
+      - --docker-registry=gcr.io/k8s-staging-ci-images
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7300m
+          memory: "34Gi"
+        requests:
+          cpu: 7300m
+          memory: "34Gi"
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, sig-release-releng-informing
+    testgrid-tab-name: build-master-no-bootstrap
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+
 - interval: 5m
   name: ci-kubernetes-build-fast
   cluster: k8s-infra-prow-build
