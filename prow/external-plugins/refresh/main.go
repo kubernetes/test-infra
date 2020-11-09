@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -83,9 +84,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
+	logrusutil.ComponentInit()
 	log := logrus.StandardLogger().WithField("plugin", "refresh")
 
 	configAgent := &config.Agent{}
