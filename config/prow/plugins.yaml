@@ -19,7 +19,30 @@ triggers:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
-  - kubeflow
+  - kubeflow/arena
+  - kubeflow/batch-predict
+  - kubeflow/common
+  - kubeflow/community-infra
+  - kubeflow/examples
+  - kubeflow/fairing
+  - kubeflow/gcp-blueprints
+  - kubeflow/internal-acls
+  - kubeflow/katib
+  - kubeflow/kfp-tekton
+  - kubeflow/kfp-tekton-backend
+  - kubeflow/kfserving
+  - kubeflow/kubebench
+  - kubeflow/kubeflow
+  - kubeflow/manifests
+  - kubeflow/metadata
+  - kubeflow/mpi-operator
+  - kubeflow/mxnet-operator
+  - kubeflow/pipelines
+  - kubeflow/pytorch-operator
+  - kubeflow/reporting
+  - kubeflow/testing
+  - kubeflow/tf-operator
+  - kubeflow/website
   join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
 - repos:
   - tensorflow/minigo
