@@ -185,7 +185,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.19
+      - --aksengine-orchestratorRelease=1.20
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
@@ -237,7 +237,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.19
+      - --aksengine-orchestratorRelease=1.20
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
@@ -292,14 +292,14 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/aramase/manifests/main/dualstack/ipvs-kubenet.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.55.4/aks-engine-v0.55.4-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
         - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
@@ -344,14 +344,14 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/aramase/manifests/main/dualstack/iptables-kubenet.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.55.4/aks-engine-v0.55.4-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
         - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
