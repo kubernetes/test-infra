@@ -107,7 +107,6 @@ func TestUploadWithRetries(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		// fmt.Println(testCase.name, testCase)
 
 		uploadFuncs := map[string]UploadFunc{}
 
@@ -127,20 +126,16 @@ func TestUploadWithRetries(t *testing.T) {
 					currentDestUploadBehavior := currentTestStates[destBehavior.dest]
 
 					if !currentDestUploadBehavior.doesPass {
-						// fmt.Printf("%v: %v failed\n", testCase.name, destBehavior.dest)
 						return fmt.Errorf("%v: %v failed", testCase.name, destBehavior.dest)
 					}
 
 					if currentDestUploadBehavior.isFlaky {
 						currentDestUploadBehavior.isFlaky = false
 						currentTestStates[destBehavior.dest] = currentDestUploadBehavior
-						// fmt.Printf("%v: %v flaky\n", testCase.name, destBehavior.dest)
 						return fmt.Errorf("%v: %v flaky", testCase.name, destBehavior.dest)
 					}
 
-					// fmt.Println(testCase)
 					delete(currentTestStates, destBehavior.dest)
-					// fmt.Printf("%v: %v passed\n", testCase.name, destBehavior.dest)
 					return nil
 				}
 			}
@@ -149,7 +144,6 @@ func TestUploadWithRetries(t *testing.T) {
 
 		}
 
-		// fmt.Println(testCase.name, ": before", currentTestStates)
 		err := Upload("", "", "", uploadFuncs)
 
 		isErrExpected := false
@@ -165,7 +159,6 @@ func TestUploadWithRetries(t *testing.T) {
 			}
 		}
 
-		// fmt.Println(testCase.name, ": after", currentTestStates)
 		if err != nil && !isErrExpected {
 			t.Errorf("%v: Got unexpected error response: %v", testCase.name, err)
 		}
