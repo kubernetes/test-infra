@@ -437,6 +437,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.GCSCredentialsSecret == "" {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret
 	}
+	if merged.S3CredentialsSecret == "" {
+		merged.S3CredentialsSecret = def.S3CredentialsSecret
+	}
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = def.SSHKeySecrets
 	}
@@ -448,6 +451,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.CookiefileSecret == "" {
 		merged.CookiefileSecret = def.CookiefileSecret
+	}
+	if merged.OauthTokenSecret == nil {
+		merged.OauthTokenSecret = def.OauthTokenSecret
 	}
 
 	return &merged
