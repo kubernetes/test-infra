@@ -97,7 +97,7 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 
 			for retryIndex := 1; retryIndex <= retryCount; retryIndex++ {
 				sem.Acquire(context.Background(), 1)
-				log.Infof("Attempting upload %v", retryIndex)
+				log.Debugf("Attempting upload %v", retryIndex)
 				err = f(writer)
 				sem.Release(1)
 
