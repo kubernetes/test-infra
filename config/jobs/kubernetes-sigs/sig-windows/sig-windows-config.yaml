@@ -60,7 +60,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -120,7 +120,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -183,7 +183,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -240,7 +240,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_docker_gpu_master.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
