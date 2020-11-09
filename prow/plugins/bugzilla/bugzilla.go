@@ -1006,7 +1006,7 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:
 %s
 
-These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state.
+These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state. Once unlinked, request a bug refresh with <code>/bugzilla refresh</code>.
 
 `, strings.Join(statements, "\n"))
 
