@@ -19,10 +19,8 @@ package gcs
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"sync"
 	"testing"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
@@ -30,78 +28,140 @@ import (
 	"k8s.io/test-infra/prow/io"
 )
 
-func TestUploadToGcs(t *testing.T) {
+func TestUploadWithRetries(t *testing.T) {
+
+	// doesPass = true, isFlaky = false => Pass in first attempt
+	// doesPass = true, isFlaky = true => Pass in second attempt
+	// doesPass = false, isFlaky = don't care => Fail to upload in all attempts
+	type destUploadBehavior struct {
+		dest     string
+		isFlaky  bool
+		doesPass bool
+	}
+
 	var testCases = []struct {
-		name           string
-		passingTargets int
-		failingTargets int
-		expectedErr    bool
+		name                string
+		destUploadBehaviors []destUploadBehavior
 	}{
 		{
-			name:           "all passing",
-			passingTargets: 10,
-			failingTargets: 0,
-			expectedErr:    false,
+			name: "all passed",
+			destUploadBehaviors: []destUploadBehavior{
+				{
+					dest:     "all-pass-dest1",
+					doesPass: true,
+					isFlaky:  false,
+				},
+				{
+					dest:     "all-pass-dest2",
+					doesPass: true,
+					isFlaky:  false,
+				},
+			},
+		},
+		// {
+		// 	name: "all passed with retries",
+		// 	destUploadBehaviors: []destUploadBehavior{
+		// 		{
+		// 			dest:     "all-pass-retries-dest1",
+		// 			doesPass: true,
+		// 			isFlaky:  true,
+		// 		},
+		// 		{
+		// 			dest:     "all-pass-retries-dest2",
+		// 			doesPass: true,
+		// 			isFlaky:  false,
+		// 		},
+		// 	},
+		// },
+		{
+			name: "all failed",
+			destUploadBehaviors: []destUploadBehavior{
+				{
+					dest:     "all-failed-dest1",
+					doesPass: false,
+					isFlaky:  false,
+				},
+				{
+					dest:     "all-failed-dest2",
+					doesPass: false,
+					isFlaky:  false,
+				},
+			},
 		},
 		{
-			name:           "all but one passing",
-			passingTargets: 10,
-			failingTargets: 1,
-			expectedErr:    true,
-		},
-		{
-			name:           "all but one failing",
-			passingTargets: 1,
-			failingTargets: 10,
-			expectedErr:    true,
-		},
-		{
-			name:           "all failing",
-			passingTargets: 0,
-			failingTargets: 10,
-			expectedErr:    true,
+			name: "some failed",
+			destUploadBehaviors: []destUploadBehavior{
+				{
+					dest:     "some-failed-dest1",
+					doesPass: true,
+					isFlaky:  false,
+				},
+				{
+					dest:     "some-failed-dest2",
+					doesPass: false,
+					isFlaky:  false,
+				},
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
-		lock := sync.Mutex{}
-		count := 0
+		// fmt.Println(testCase.name, testCase)
 
-		update := func() {
-			lock.Lock()
-			defer lock.Unlock()
-			count = count + 1
+		uploadFuncs := map[string]UploadFunc{}
+
+		currentTestStates := map[string]destUploadBehavior{}
+
+		for _, destBehavior := range testCase.destUploadBehaviors {
+
+			currentTestStates[destBehavior.dest] = destBehavior
+
+			getUploadFunc := func(destBehavior destUploadBehavior) UploadFunc {
+
+				return func(writer dataWriter) error {
+					currentDestUploadBehavior := currentTestStates[destBehavior.dest]
+
+					if !currentDestUploadBehavior.doesPass {
+						// fmt.Printf("%v: %v failed\n", testCase.name, destBehavior.dest)
+						return fmt.Errorf("%v: %v failed", testCase.name, destBehavior.dest)
+					}
+
+					if currentDestUploadBehavior.isFlaky {
+						currentDestUploadBehavior.isFlaky = false
+						// fmt.Printf("%v: %v flaky\n", testCase.name, destBehavior.dest)
+						return fmt.Errorf("%v: %v flaky", testCase.name, destBehavior.dest)
+					}
+
+					// fmt.Println(testCase)
+					delete(currentTestStates, destBehavior.dest)
+					// fmt.Printf("%v: %v passed\n", testCase.name, destBehavior.dest)
+					return nil
+				}
+			}
+
+			uploadFuncs[destBehavior.dest] = getUploadFunc(destBehavior)
+
 		}
 
-		fail := func(_ dataWriter) error {
-			update()
-			return errors.New("fail")
+		// fmt.Println(testCase.name, ": before", currentTestStates)
+		err := Upload("", "", "", uploadFuncs)
+
+		isErrExpected := false
+		for _, currentTestState := range currentTestStates {
+
+			if currentTestState.doesPass {
+				t.Errorf("%v: %v did not get uploaded", testCase.name, currentTestState.dest)
+				break
+			}
+
+			if !isErrExpected && !currentTestState.doesPass {
+				isErrExpected = true
+			}
 		}
 
-		success := func(_ dataWriter) error {
-			update()
-			return nil
-		}
-
-		targets := map[string]UploadFunc{}
-		for i := 0; i < testCase.passingTargets; i++ {
-			targets[fmt.Sprintf("pass-%d", i)] = success
-		}
-
-		for i := 0; i < testCase.failingTargets; i++ {
-			targets[fmt.Sprintf("fail-%d", i)] = fail
-		}
-
-		err := Upload("", "", "", targets)
-		if err != nil && !testCase.expectedErr {
-			t.Errorf("%s: expected no error but got %v", testCase.name, err)
-		}
-		if err == nil && testCase.expectedErr {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-
-		if count != (testCase.passingTargets + testCase.failingTargets) {
-			t.Errorf("%s: had %d passing and %d failing targets but only ran %d targets, not %d", testCase.name, testCase.passingTargets, testCase.failingTargets, count, testCase.passingTargets+testCase.failingTargets)
+		// fmt.Println(testCase.name, ": after", currentTestStates)
+		if err != nil && !isErrExpected {
+			t.Errorf("%v: Got unexpected error response: %v", testCase.name, err)
 		}
 	}
 }
