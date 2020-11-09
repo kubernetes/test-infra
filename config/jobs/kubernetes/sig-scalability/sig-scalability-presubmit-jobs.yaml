@@ -551,7 +551,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/bootstrap:v20200924-7fcf543
+        - image: gcr.io/k8s-testimages/bootstrap:v20201106-b01d6e7
           args:
           - --root=/go/src
           - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
