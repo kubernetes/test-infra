@@ -120,8 +120,8 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-releng/k8s-ci-builder:v1.15.3-1
       command:
+      - wrapper.sh
       - /krel
-      args:
       - ci-build
       - --allow-dup
       - --fast
@@ -142,7 +142,7 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-release-releng-informing
+    testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-master-no-bootstrap
     testgrid-alert-email: release-managers+alerts@kubernetes.io
 
