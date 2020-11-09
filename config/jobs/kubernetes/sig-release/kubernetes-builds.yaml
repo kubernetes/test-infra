@@ -133,11 +133,11 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 7300m
-          memory: "34Gi"
+          cpu: 6
+          memory: "20Gi"
         requests:
-          cpu: 7300m
-          memory: "34Gi"
+          cpu: 6
+          memory: "20Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
