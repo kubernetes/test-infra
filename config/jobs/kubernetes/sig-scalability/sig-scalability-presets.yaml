@@ -94,6 +94,10 @@ presets:
   # instead of relying on the deprecated one from k/k repository.
   - name: USE_KUBEKINS_LOG_DUMPING
     value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
 
 ### kubemark-gce-scale
 - labels:
@@ -220,6 +224,10 @@ presets:
   # instead of relying on the deprecated one from k/k repository.
   - name: USE_KUBEKINS_LOG_DUMPING
     value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
@@ -292,10 +300,6 @@ presets:
 - labels:
     preset-e2e-scalability-periodics: "true"
   env:
-  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
-  # of the nodes got logexported successfully, then report a failure.
-  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
-    value: 50
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
