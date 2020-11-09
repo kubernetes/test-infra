@@ -59,21 +59,21 @@ func TestUploadWithRetries(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	name: "all passed with retries",
-		// 	destUploadBehaviors: []destUploadBehavior{
-		// 		{
-		// 			dest:     "all-pass-retries-dest1",
-		// 			doesPass: true,
-		// 			isFlaky:  true,
-		// 		},
-		// 		{
-		// 			dest:     "all-pass-retries-dest2",
-		// 			doesPass: true,
-		// 			isFlaky:  false,
-		// 		},
-		// 	},
-		// },
+		{
+			name: "all passed with retries",
+			destUploadBehaviors: []destUploadBehavior{
+				{
+					dest:     "all-pass-retries-dest1",
+					doesPass: true,
+					isFlaky:  true,
+				},
+				{
+					dest:     "all-pass-retries-dest2",
+					doesPass: true,
+					isFlaky:  false,
+				},
+			},
+		},
 		{
 			name: "all failed",
 			destUploadBehaviors: []destUploadBehavior{
@@ -133,6 +133,7 @@ func TestUploadWithRetries(t *testing.T) {
 
 					if currentDestUploadBehavior.isFlaky {
 						currentDestUploadBehavior.isFlaky = false
+						currentTestStates[destBehavior.dest] = currentDestUploadBehavior
 						// fmt.Printf("%v: %v flaky\n", testCase.name, destBehavior.dest)
 						return fmt.Errorf("%v: %v flaky", testCase.name, destBehavior.dest)
 					}
