@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"sync"
 	"testing"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
@@ -111,6 +112,7 @@ func TestUploadWithRetries(t *testing.T) {
 		uploadFuncs := map[string]UploadFunc{}
 
 		currentTestStates := map[string]destUploadBehavior{}
+		currentTestStatesLock := sync.Mutex{}
 
 		for _, destBehavior := range testCase.destUploadBehaviors {
 
@@ -119,6 +121,9 @@ func TestUploadWithRetries(t *testing.T) {
 			getUploadFunc := func(destBehavior destUploadBehavior) UploadFunc {
 
 				return func(writer dataWriter) error {
+					currentTestStatesLock.Lock()
+					defer currentTestStatesLock.Unlock()
+
 					currentDestUploadBehavior := currentTestStates[destBehavior.dest]
 
 					if !currentDestUploadBehavior.doesPass {
