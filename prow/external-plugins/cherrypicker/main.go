@@ -46,6 +46,7 @@ type options struct {
 	prowAssignments   bool
 	allowAll          bool
 	issueOnConflict   bool
+	labelPrefix       string
 }
 
 func (o *options) Validate() error {
@@ -68,6 +69,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
 	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
+	fs.StringVar(&o.labelPrefix, "label-prefix", defaultLabelPrefix, "Set a custom label prefix.")
 	for _, group := range []flagutil.OptionGroup{&o.github} {
 		group.AddFlags(fs)
 	}
@@ -84,7 +86,7 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.DebugLevel)
-	log := logrus.StandardLogger().WithField("plugin", "cherrypick")
+	log := logrus.StandardLogger().WithField("plugin", pluginName)
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
@@ -132,6 +134,7 @@ func main() {
 		prowAssignments: o.prowAssignments,
 		allowAll:        o.allowAll,
 		issueOnConflict: o.issueOnConflict,
+		labelPrefix:     o.labelPrefix,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
