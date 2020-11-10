@@ -30,7 +30,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -610,7 +609,7 @@ func indexKeyPassingJobs(repo config.OrgRepo, baseSHA, headSHA string) string {
 	return fmt.Sprintf("%s@%s+%s", repo, baseSHA, headSHA)
 }
 
-func indexFuncPassingJobs(obj runtime.Object) []string {
+func indexFuncPassingJobs(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {

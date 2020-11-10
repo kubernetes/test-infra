@@ -168,14 +168,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
 	interrupts.Run(func(ctx context.Context) {
-		if err := mgr.Start(ctx.Done()); err != nil {
+		if err := mgr.Start(ctx); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
 		logrus.Info("Mgr finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
-	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
 	interrupts.OnInterrupt(func() {

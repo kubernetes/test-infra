@@ -34,7 +34,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -1818,7 +1817,7 @@ func cacheIndexKey(org, repo, branch, baseSHA string) string {
 	return fmt.Sprintf("%s/%s:%s@%s", org, repo, branch, baseSHA)
 }
 
-func cacheIndexFunc(obj runtime.Object) []string {
+func cacheIndexFunc(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
@@ -1846,7 +1845,7 @@ func nonFailedBatchByNameBaseAndPullsIndexKey(jobName string, refs *prowapi.Refs
 	return strings.Join(keys, "|")
 }
 
-func nonFailedBatchByNameBaseAndPullsIndexFunc(obj runtime.Object) []string {
+func nonFailedBatchByNameBaseAndPullsIndexFunc(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	if pj.Spec.Type != prowapi.BatchJob || pj.Spec.Refs == nil {
 		return nil

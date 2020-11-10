@@ -29,7 +29,6 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -84,21 +83,21 @@ func startTime(s time.Time) *metav1.Time {
 
 type unreachableCluster struct{ ctrlruntimeclient.Client }
 
-func (unreachableCluster) Delete(_ context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+func (unreachableCluster) Delete(_ context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	return fmt.Errorf("I can't hear you.")
 }
 
-func (unreachableCluster) List(_ context.Context, _ runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+func (unreachableCluster) List(_ context.Context, _ ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
 	return fmt.Errorf("I can't hear you.")
 }
 
-func (unreachableCluster) Patch(_ context.Context, _ runtime.Object, _ ctrlruntimeclient.Patch, _ ...ctrlruntimeclient.PatchOption) error {
+func (unreachableCluster) Patch(_ context.Context, _ ctrlruntimeclient.Object, _ ctrlruntimeclient.Patch, _ ...ctrlruntimeclient.PatchOption) error {
 	return errors.New("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
 
-	pods := []runtime.Object{
+	pods := []ctrlruntimeclient.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-running-pod-failed",
@@ -483,7 +482,7 @@ func TestClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []runtime.Object{
+	prowJobs := []ctrlruntimeclient.Object{
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete",
@@ -692,7 +691,7 @@ func TestClean(t *testing.T) {
 		"oldest-periodic",
 		"old-failed-trusted",
 	)
-	podsTrusted := []runtime.Object{
+	podsTrusted := []ctrlruntimeclient.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed-trusted",
@@ -904,7 +903,7 @@ type podClientWrapper struct {
 	deletedPods sets.String
 }
 
-func (c *podClientWrapper) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+func (c *podClientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	var pod corev1api.Pod
 	name := types.NamespacedName{
 		Namespace: obj.(metav1.Object).GetNamespace(),
@@ -932,7 +931,7 @@ type clientWrapper struct {
 	getOnlyProwJobs map[string]*prowv1.ProwJob
 }
 
-func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey, obj runtime.Object) error {
+func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey, obj ctrlruntimeclient.Object) error {
 	if pj, exists := c.getOnlyProwJobs[key.String()]; exists {
 		*obj.(*prowv1.ProwJob) = *pj
 		return nil

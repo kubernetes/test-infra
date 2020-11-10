@@ -359,11 +359,11 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting manager.")
 		}
 		// Force a cache for ProwJobs
-		if _, err := mgr.GetCache().GetInformer(context.TODO(), &prowapi.ProwJob{}); err != nil {
+		if _, err := mgr.GetCache().GetInformer(interrupts.Context(), &prowapi.ProwJob{}); err != nil {
 			logrus.WithError(err).Fatal("Failed to get prowjob informer")
 		}
 		go func() {
-			if err := mgr.Start(make(chan struct{})); err != nil {
+			if err := mgr.Start(interrupts.Context()); err != nil {
 				logrus.WithError(err).Fatal("Error starting manager.")
 			} else {
 				logrus.Info("Manager stopped gracefully.")
@@ -371,7 +371,7 @@ func main() {
 		}()
 		mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer mgrSyncCtxCancel()
-		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 			logrus.Fatal("Timed out waiting for cachesync")
 		}
 

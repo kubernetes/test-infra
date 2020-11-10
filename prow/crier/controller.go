@@ -51,7 +51,6 @@ type ReportClient interface {
 // logging, client connectivity, informing (list and watching)
 // queueing, and handling of resource changes
 type reconciler struct {
-	ctx         context.Context
 	pjclientset ctrlruntimeclient.Client
 	reporter    ReportClient
 }
@@ -69,7 +68,6 @@ func New(
 		For(&prowv1.ProwJob{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers}).
 		Complete(&reconciler{
-			ctx:         context.Background(),
 			pjclientset: mgr.GetClient(),
 			reporter:    reporter,
 		}); err != nil {
@@ -79,7 +77,7 @@ func New(
 	return nil
 }
 
-func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState) error {
+func (r *reconciler) updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState) error {
 	// update pj report status
 	newpj := pj.DeepCopy()
 	// we set omitempty on PrevReportStates, so here we need to init it if is nil
@@ -88,7 +86,7 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 	}
 	newpj.Status.PrevReportStates[r.reporter.GetName()] = reportedState
 
-	if err := r.pjclientset.Patch(r.ctx, newpj, ctrlruntimeclient.MergeFrom(pj)); err != nil {
+	if err := r.pjclientset.Patch(ctx, newpj, ctrlruntimeclient.MergeFrom(pj)); err != nil {
 		return fmt.Errorf("failed to patch: %w", err)
 	}
 
@@ -97,7 +95,7 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 	// the updated Status
 	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
 	if err := wait.Poll(100*time.Millisecond, 3*time.Second, func() (bool, error) {
-		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
+		if err := r.pjclientset.Get(ctx, name, pj); err != nil {
 			return false, err
 		}
 		if pj.Status.PrevReportStates != nil &&
@@ -111,7 +109,7 @@ func (r *reconciler) updateReportState(pj *prowv1.ProwJob, log *logrus.Entry, re
 	return nil
 }
 
-func (r *reconciler) updateReportStateWithRetries(pj *prowv1.ProwJob, log *logrus.Entry) error {
+func (r *reconciler) updateReportStateWithRetries(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry) error {
 	reportState := pj.Status.State
 	log = log.WithFields(logrus.Fields{
 		"prowjob":   pj.Name,
@@ -122,12 +120,12 @@ func (r *reconciler) updateReportStateWithRetries(pj *prowv1.ProwJob, log *logru
 	if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		// Get it first, this is very cheap
 		name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-		if err := r.pjclientset.Get(r.ctx, name, pj); err != nil {
+		if err := r.pjclientset.Get(ctx, name, pj); err != nil {
 			return err
 		}
 		// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
 		// correctly
-		return r.updateReportState(pj, log, reportState)
+		return r.updateReportState(ctx, pj, log, reportState)
 	}); err != nil {
 		// Very subpar, we will report again. But even if we didn't do that now, we would do so
 		// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
@@ -141,10 +139,10 @@ func (r *reconciler) updateReportStateWithRetries(pj *prowv1.ProwJob, log *logru
 
 // Reconcile retrieves each queued item and takes the necessary handler action based off of if
 // the item was created or deleted.
-func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := logrus.WithField("reporter", r.reporter.GetName()).WithField("key", req.String()).WithField("prowjob", req.Name)
 	log.Debug("processing next key")
-	result, err := r.reconcile(log, req)
+	result, err := r.reconcile(ctx, log, req)
 	if err != nil {
 		log.WithError(err).Error("Reconciliation failed")
 	}
@@ -154,10 +152,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return *result, err
 }
 
-func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*reconcile.Result, error) {
+func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req reconcile.Request) (*reconcile.Result, error) {
 
 	var pj prowv1.ProwJob
-	if err := r.pjclientset.Get(r.ctx, req.NamespacedName, &pj); err != nil {
+	if err := r.pjclientset.Get(ctx, req.NamespacedName, &pj); err != nil {
 		if errors.IsNotFound(err) {
 			log.Debug("object no longer exist")
 			return nil, nil
@@ -196,7 +194,7 @@ func (r *reconciler) reconcile(log *logrus.Entry, req reconcile.Request) (*recon
 
 	log.Info("Reported job(s), now will update pj(s)")
 	for _, pjob := range pjs {
-		if err := r.updateReportStateWithRetries(pjob, log); err != nil {
+		if err := r.updateReportStateWithRetries(ctx, pjob, log); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
 			return nil, err
 		}

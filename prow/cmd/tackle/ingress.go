@@ -17,19 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+
 	extensions "k8s.io/api/extensions/v1beta1"
 	networking "k8s.io/api/networking/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 )
-
-var runtimeScheme = runtime.NewScheme()
-
-func init() {
-	extensions.AddToScheme(runtimeScheme)
-	networking.AddToScheme(runtimeScheme)
-}
 
 // hasResource determines if an API resource is available.
 func hasResource(client discovery.DiscoveryInterface, resource schema.GroupVersionResource) bool {
@@ -49,9 +44,16 @@ func hasResource(client discovery.DiscoveryInterface, resource schema.GroupVersi
 
 // toNewIngress converts a legacy "extensions/v1beta1" IngressList to the newer "networking.k8s.io/v1beta1" IngressList.
 func toNewIngress(oldIng *extensions.IngressList) (*networking.IngressList, error) {
-	var newIng networking.IngressList
 
-	err := runtimeScheme.Convert(oldIng, &newIng, nil)
+	raw, err := json.Marshal(oldIng)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal old ingress: %w", err)
+	}
+
+	var newIng networking.IngressList
+	if err := json.Unmarshal(raw, &newIng); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal new ingress: %w", err)
+	}
 
 	return &newIng, err
 }

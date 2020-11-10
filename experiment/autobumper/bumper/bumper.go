@@ -505,6 +505,11 @@ func isUnderPath(name string, paths []string) bool {
 	return false
 }
 
+type versionTargetMatching struct {
+	version string
+	targets []string
+}
+
 func getNewProwVersion(images map[string]string) (string, error) {
 	found := map[string][]string{}
 	for k, v := range images {
@@ -520,10 +525,22 @@ func getNewProwVersion(images map[string]string) (string, error) {
 			return version, nil
 		}
 	}
+
+	// Need to sort to avoid flaky tests
+	var result []versionTargetMatching
+	for version, targets := range found {
+		sort.Slice(targets, func(i, j int) bool {
+			return targets[i] < targets[j]
+		})
+		result = append(result, versionTargetMatching{version: version, targets: targets})
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].version < result[j].version
+	})
 	return "", fmt.Errorf(
 		"Expected a consistent version for all %q images, but found multiple: %v",
 		prowPrefix,
-		found)
+		result)
 }
 
 // HasChanges checks if the current git repo contains any changes

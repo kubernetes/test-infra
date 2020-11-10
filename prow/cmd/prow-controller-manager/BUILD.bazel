@@ -30,9 +30,9 @@ go_library(
         "@io_k8s_apimachinery//pkg/labels:go_default_library",
         "@io_k8s_apimachinery//pkg/util/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
+        "@io_k8s_sigs_controller_runtime//pkg/log:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/log/zap:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/manager:go_default_library",
-        "@io_k8s_sigs_controller_runtime//pkg/runtime/log:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
