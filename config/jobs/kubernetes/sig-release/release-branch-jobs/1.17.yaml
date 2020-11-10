@@ -200,6 +200,41 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
+  name: ci-kubernetes-build-1-17-canary
+  cluster: k8s-infra-prow-build
+  spec:
+    containers:
+    - args:
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=240
+      - --scenario=kubernetes_build
+      - --
+      - --release=k8s-release-dev
+      - --allow-dup
+      - --extra-version-markers=k8s-stable2
+      - --registry=gcr.io/k8s-staging-ci-images
+      image: gcr.io/k8s-testimages/bootstrap:v20201106-b01d6e7
+      name: ""
+      resources:
+        limits:
+          cpu: 7300m
+          memory: "34Gi"
+        requests:
+          cpu: 7300m
+          memory: "34Gi"
+      securityContext:
+        privileged: true
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.17-blocking, sig-testing-canaries
+    testgrid-tab-name: build-1.17-canary
+  interval: 1h
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
   name: ci-kubernetes-build-stable2
   spec:
     containers:
