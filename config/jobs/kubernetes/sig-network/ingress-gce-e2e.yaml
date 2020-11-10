@@ -92,7 +92,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -114,7 +114,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -142,7 +142,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       args:
       - --timeout=340
       - --bare
@@ -174,7 +174,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       args:
       - --timeout=340
       - --bare
@@ -210,7 +210,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       args:
       - --timeout=340
       - --bare
@@ -242,7 +242,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       args:
       - --timeout=340
       - --bare
@@ -270,7 +270,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       args:
       - --timeout=340
       - --bare

@@ -39,7 +39,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         command:
         - runner.sh
         - kubetest
@@ -99,7 +99,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         command:
         - runner.sh
         - kubetest
@@ -162,7 +162,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         command:
         - runner.sh
         - kubetest
@@ -219,7 +219,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
         command:
         - runner.sh
         - kubetest
@@ -276,7 +276,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -330,7 +330,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -384,7 +384,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -438,7 +438,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -492,7 +492,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -546,7 +546,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -604,7 +604,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -667,7 +667,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -728,7 +728,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
@@ -791,7 +791,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
       command:
       - runner.sh
       - kubetest
