@@ -1,0 +1,51 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-verify-govet-levee
+    cluster: k8s-infra-prow-build
+    always_run: false
+    decorate: true
+    skip_branches:
+      - release-\d+.\d+ # per-release job
+    optional: true
+    skip_report: false
+    path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-create-test-group: "true"
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200831-9529f9c-master
+        imagePullPolicy: Always
+        command:
+        - make
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: govet-levee
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
+        - name: EXCLUDE_FILES_REMAKE
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi

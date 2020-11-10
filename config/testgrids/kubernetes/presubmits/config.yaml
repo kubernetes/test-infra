@@ -148,6 +148,9 @@ dashboards:
   - name: pull-kubernetes-files-remake
     test_group_name: pull-kubernetes-files-remake
     base_options: width=10
+  - name: pull-kubernetes-verify-govet-levee
+    test_group_name: pull-kubernetes-verify-govet-levee
+    base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
