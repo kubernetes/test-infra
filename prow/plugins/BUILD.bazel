@@ -13,8 +13,13 @@ go_test(
         "plugins_test.go",
         "respond_test.go",
     ],
+    data = [
+        ":fixtures",
+        ":package-srcs",
+    ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/genyaml:go_default_library",
         "//prow/bugzilla:go_default_library",
         "//prow/github:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
@@ -125,4 +130,10 @@ filegroup(
         "//prow/plugins/yuks:all-srcs",
     ],
     tags = ["automanaged"],
+)
+
+filegroup(
+    name = "fixtures",
+    srcs = glob(["*.yaml"]),
+    visibility = ["//visibility:private"],
 )
