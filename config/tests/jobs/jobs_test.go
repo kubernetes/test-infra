@@ -969,13 +969,6 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 	return errs
 }
 
-func hasAlertEmails(job cfg.JobBase) bool {
-	if _, ok := job.Annotations["testgrid-alert-email"]; !ok {
-		return false
-	}
-	return true
-}
-
 // A job is merge-blocking if it:
 // - is not optional
 // - reports (aka does not skip reporting)
@@ -1021,19 +1014,6 @@ func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 		errs := verifyPodQOSGuaranteed(job.Spec)
 		for _, err := range errs {
 			t.Errorf("%v: %v", job.Name, err)
-		}
-	}
-}
-
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesReleaseBlockingJobsMustHaveContactInformation(t *testing.T) {
-	for _, job := range allStaticJobs() {
-		// Only consider Pods that are release-blocking
-		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
-			continue
-		}
-		if !hasAlertEmails(job) {
-			t.Logf("%v: should have testgrid-alert-email(s)", job.Name)
 		}
 	}
 }
