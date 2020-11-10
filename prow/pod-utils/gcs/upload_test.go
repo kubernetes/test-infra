@@ -107,61 +107,62 @@ func TestUploadWithRetries(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
 
-		uploadFuncs := map[string]UploadFunc{}
+			uploadFuncs := map[string]UploadFunc{}
 
-		currentTestStates := map[string]destUploadBehavior{}
-		currentTestStatesLock := sync.Mutex{}
+			currentTestStates := map[string]destUploadBehavior{}
+			currentTestStatesLock := sync.Mutex{}
 
-		for _, destBehavior := range testCase.destUploadBehaviors {
+			for _, destBehavior := range testCase.destUploadBehaviors {
 
-			currentTestStates[destBehavior.dest] = destBehavior
+				currentTestStates[destBehavior.dest] = destBehavior
 
-			getUploadFunc := func(destBehavior destUploadBehavior) UploadFunc {
+				uploadFuncs[destBehavior.dest] = func(destBehavior destUploadBehavior) UploadFunc {
 
-				return func(writer dataWriter) error {
-					currentTestStatesLock.Lock()
-					defer currentTestStatesLock.Unlock()
+					return func(writer dataWriter) error {
+						currentTestStatesLock.Lock()
+						defer currentTestStatesLock.Unlock()
 
-					currentDestUploadBehavior := currentTestStates[destBehavior.dest]
+						currentDestUploadBehavior := currentTestStates[destBehavior.dest]
 
-					if !currentDestUploadBehavior.doesPass {
-						return fmt.Errorf("%v: %v failed", testCase.name, destBehavior.dest)
+						if !currentDestUploadBehavior.doesPass {
+							return fmt.Errorf("%v: %v failed", testCase.name, destBehavior.dest)
+						}
+
+						if currentDestUploadBehavior.isFlaky {
+							currentDestUploadBehavior.isFlaky = false
+							currentTestStates[destBehavior.dest] = currentDestUploadBehavior
+							return fmt.Errorf("%v: %v flaky", testCase.name, destBehavior.dest)
+						}
+
+						delete(currentTestStates, destBehavior.dest)
+						return nil
 					}
+				}(destBehavior)
 
-					if currentDestUploadBehavior.isFlaky {
-						currentDestUploadBehavior.isFlaky = false
-						currentTestStates[destBehavior.dest] = currentDestUploadBehavior
-						return fmt.Errorf("%v: %v flaky", testCase.name, destBehavior.dest)
-					}
+			}
 
-					delete(currentTestStates, destBehavior.dest)
-					return nil
+			err := Upload("", "", "", uploadFuncs)
+
+			isErrExpected := false
+			for _, currentTestState := range currentTestStates {
+
+				if currentTestState.doesPass {
+					t.Errorf("%v: %v did not get uploaded", testCase.name, currentTestState.dest)
+					break
+				}
+
+				if !isErrExpected && !currentTestState.doesPass {
+					isErrExpected = true
 				}
 			}
 
-			uploadFuncs[destBehavior.dest] = getUploadFunc(destBehavior)
-
-		}
-
-		err := Upload("", "", "", uploadFuncs)
-
-		isErrExpected := false
-		for _, currentTestState := range currentTestStates {
-
-			if currentTestState.doesPass {
-				t.Errorf("%v: %v did not get uploaded", testCase.name, currentTestState.dest)
-				break
+			if (err != nil) != isErrExpected {
+				t.Errorf("%v: Got unexpected error response: %v", testCase.name, err)
 			}
+		})
 
-			if !isErrExpected && !currentTestState.doesPass {
-				isErrExpected = true
-			}
-		}
-
-		if err != nil && !isErrExpected {
-			t.Errorf("%v: Got unexpected error response: %v", testCase.name, err)
-		}
 	}
 }
 

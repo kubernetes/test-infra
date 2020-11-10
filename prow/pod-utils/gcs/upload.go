@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math"
 	"net/url"
 	"os"
 	"sync"
@@ -40,10 +39,7 @@ type UploadFunc func(writer dataWriter) error
 
 type destToWriter func(dest string) dataWriter
 
-const (
-	retryCount         = 4
-	retryTimeInSeconds = 2
-)
+const retryCount = 4
 
 // Upload uploads all of the data in the
 // uploadTargets map to blob storage in parallel. The map is
@@ -96,16 +92,20 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 			var err error
 
 			for retryIndex := 1; retryIndex <= retryCount; retryIndex++ {
-				sem.Acquire(context.Background(), 1)
-				log.Debugf("Attempting upload %v", retryIndex)
-				err = f(writer)
-				sem.Release(1)
+				err = func() error {
+					sem.Acquire(context.Background(), 1)
+					defer sem.Release(1)
+					if retryIndex > 1 {
+						log.WithField("retry_attempt", retryIndex).Debugf("Retrying upload")
+					}
+					return f(writer)
+				}()
 
 				if err == nil {
 					break
 				}
 				if retryIndex < retryCount {
-					time.Sleep(time.Duration(math.Pow(retryTimeInSeconds, float64(retryIndex))) * time.Second)
+					time.Sleep(time.Duration(retryIndex*retryIndex) * time.Second)
 				}
 			}
 
