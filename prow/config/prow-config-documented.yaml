@@ -655,6 +655,10 @@ push_gateway:
     # ServeMetrics tells if or not the components serve metrics
     serve_metrics: false
 sinker:
+    # ExcludeClusters are build clusters that don't want to be managed by sinker
+    exclude_clusters:
+      - ""
+
     # MaxPodAge is how old a Pod can be before it is garbage-collected.
     # Defaults to one day.
     max_pod_age: 0s

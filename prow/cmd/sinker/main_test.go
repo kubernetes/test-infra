@@ -46,21 +46,25 @@ const (
 	terminatedPodTTL = 30 * time.Minute // must be less than maxPodAge
 )
 
+func newDefaultFakeSinkerConfig() config.Sinker {
+	return config.Sinker{
+		MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
+		MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
+		TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
+	}
+}
+
 type fca struct {
 	c *config.Config
 }
 
-func newFakeConfigAgent() *fca {
+func newFakeConfigAgent(s config.Sinker) *fca {
 	return &fca{
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
-				Sinker: config.Sinker{
-					MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
-					MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
-					TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
-				},
+				Sinker:           s,
 			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{
@@ -725,7 +729,7 @@ func TestClean(t *testing.T) {
 		logger:        logrus.WithField("component", "sinker"),
 		prowJobClient: fpjc,
 		podClients:    fpc,
-		config:        newFakeConfigAgent().Config,
+		config:        newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config,
 	}
 	c.clean()
 	assertSetsEqual(deletedPods, fkc[0].deletedPods, t, "did not delete correct Pods")
@@ -743,6 +747,90 @@ func TestClean(t *testing.T) {
 		actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
 	}
 	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
+}
+
+func TestNotClean(t *testing.T) {
+
+	pods := []ctrlruntimeclient.Object{
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+	}
+	podsExcluded := []ctrlruntimeclient.Object{
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded-on-excluded-cluster",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+	}
+	setComplete := func(d time.Duration) *metav1.Time {
+		completed := metav1.NewTime(time.Now().Add(d))
+		return &completed
+	}
+	prowJobs := []ctrlruntimeclient.Object{
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-60 * time.Second),
+			},
+		},
+	}
+
+	deletedPods := sets.NewString(
+		"job-complete-pod-succeeded",
+	)
+
+	fpjc := &clientWrapper{
+		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
+		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+	}
+	podClientValid := podClientWrapper{
+		t: t, Client: fakectrlruntimeclient.NewFakeClient(pods...),
+	}
+	podClientExcluded := podClientWrapper{
+		t: t, Client: fakectrlruntimeclient.NewFakeClient(podsExcluded...),
+	}
+	fpc := map[string]ctrlruntimeclient.Client{
+		"build-cluster-valid":    &podClientValid,
+		"build-cluster-excluded": &podClientExcluded,
+	}
+	// Run
+	fakeSinkerConfig := newDefaultFakeSinkerConfig()
+	fakeSinkerConfig.ExcludeClusters = []string{"build-cluster-excluded"}
+	fakeConfigAgent := newFakeConfigAgent(fakeSinkerConfig).Config
+	c := controller{
+		logger:        logrus.WithField("component", "sinker"),
+		prowJobClient: fpjc,
+		podClients:    fpc,
+		config:        fakeConfigAgent,
+	}
+	c.clean()
+	assertSetsEqual(deletedPods, podClientValid.deletedPods, t, "did not delete correct Pods")
+	assertSetsEqual(sets.String{}, podClientExcluded.deletedPods, t, "did not delete correct Pods")
 }
 
 func assertSetsEqual(expected, actual sets.String, t *testing.T, prefix string) {
@@ -872,7 +960,7 @@ func TestDeletePodToleratesNotFound(t *testing.T) {
 		podsRemoved:      map[string]int{},
 		podRemovalErrors: map[string]int{},
 	}
-	c := &controller{config: newFakeConfigAgent().Config}
+	c := &controller{config: newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config}
 	l := logrus.NewEntry(logrus.New())
 	pod := &corev1api.Pod{
 		ObjectMeta: metav1.ObjectMeta{
