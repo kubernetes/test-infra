@@ -1,0 +1,589 @@
+approve:
+  - # CommandHelpLink is the link to the help page which shows the available commands for each repo.
+    # The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
+    # and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
+    commandHelpLink: ' '
+
+    # IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
+    # * an APPROVE github review is equivalent to leaving an "/approve" message.
+    # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
+    ignore_review_state: false
+
+    # PrProcessLink is the link to the help page which explains the code review process.
+    # The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
+    pr_process_link: ' '
+
+    # Repos is either of the form org/repos or just org.
+    repos:
+      - ""
+
+    # RequireSelfApproval requires PR authors to explicitly approve their PRs.
+    # Otherwise the plugin assumes the author of the PR approves the changes in the PR.
+    require_self_approval: false
+blockades:
+  - # BlockRegexps are regular expressions matching the file paths to block.
+    blockregexps:
+      - ""
+
+    # ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
+    exceptionregexps:
+      - ""
+
+    # Explanation is a string that will be included in the comment left when blocking a PR. This should
+    # be an explanation of why the paths specified are blockaded.
+    explanation: ' '
+
+    # Repos are either of the form org/repos or just org.
+    repos:
+      - ""
+blunderbuss:
+    # ReviewerCount is the minimum number of reviewers to request
+    # reviews from. Defaults to requesting reviews from 2 reviewers
+    request_count: 0
+bugzilla:
+    # Default settings mapped by branch in any repo in any org.
+    # The `*` wildcard will apply to all branches.
+    default:
+        "":
+            # AddExternalLink determines whether the pull request will be added to the Bugzilla
+            # bug using the ExternalBug tracker API after being validated
+            add_external_link: false
+
+            # AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
+            # link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
+            # plugin will not link the bug to the PR.
+            allowed_groups:
+              - ""
+
+            # DependentBugStates determine states in which a bug's dependents bugs may be
+            # to deem the child bug valid. If set, all blockers must have a valid state.
+            dependent_bug_states: null
+
+            # DependentBugStatuses determine which statuses a bug's dependent bugs may have
+            # to deem the child bug valid. These are merged into DependentBugStates when
+            # resolving branch options.
+            dependent_bug_statuses: null
+
+            # DeprecatedDependentBugTargetRelease determines which release a
+            # bug's dependent bugs need to target to be valid. If set, all
+            # blockers must have a valid target releasee.
+
+            # Deprecated: Use DependentBugTargetReleases instead. If set,
+            # DependentBugTargetRelease will be appended to
+            # DeprecatedDependentBugTargetReleases.
+            dependent_bug_target_release: ""
+
+            # DependentBugTargetReleases determines the set of valid target
+            # releases for dependent bugs. If set, all blockers must have a
+            # valid target release.
+            dependent_bug_target_releases: null
+
+            # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
+            exclude_defaults: false
+
+            # IsOpen determines whether a bug needs to be open to be valid
+            is_open: false
+
+            # StateAfterClose is the state to which the bug will be moved if all pull requests
+            # in the external bug tracker have been closed.
+            state_after_close:
+                resolution: ' '
+                status: ' '
+
+            # StateAfterMerge is the state to which the bug will be moved after all pull requests
+            # in the external bug tracker have been merged.
+            state_after_merge:
+                resolution: ' '
+                status: ' '
+
+            # StateAfterValidation is the state to which the bug will be moved after being
+            # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+            # if others are set.
+            state_after_validation:
+                resolution: ' '
+                status: ' '
+
+            # StatusAfterMerge is the status which the bug will be moved to after all pull requests
+            # in the external bug tracker have been merged.
+            status_after_merge: ""
+
+            # StatusAfterValidation is the status which the bug will be moved to after being
+            # deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
+            # if others are set.
+            status_after_validation: ""
+
+            # Statuses determine which statuses a bug may have to be valid
+            statuses: null
+
+            # TargetRelease determines which release a bug needs to target to be valid
+            target_release: ""
+
+            # ValidStates determine states in which the bug may be to be valid
+            valid_states: null
+
+            # ValidateByDefault determines whether a validation check is run for all pull
+            # requests by default
+            validate_by_default: false
+
+    # Options for specific orgs. The `*` wildcard will apply to all orgs.
+    orgs:
+        "":
+            # Default settings mapped by branch in any repo in this org.
+            # The `*` wildcard will apply to all branches.
+            default:
+                "":
+                    # AddExternalLink determines whether the pull request will be added to the Bugzilla
+                    # bug using the ExternalBug tracker API after being validated
+                    add_external_link: false
+
+                    # AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
+                    # link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
+                    # plugin will not link the bug to the PR.
+                    allowed_groups:
+                      - ""
+
+                    # DependentBugStates determine states in which a bug's dependents bugs may be
+                    # to deem the child bug valid. If set, all blockers must have a valid state.
+                    dependent_bug_states: null
+
+                    # DependentBugStatuses determine which statuses a bug's dependent bugs may have
+                    # to deem the child bug valid. These are merged into DependentBugStates when
+                    # resolving branch options.
+                    dependent_bug_statuses: null
+
+                    # DeprecatedDependentBugTargetRelease determines which release a
+                    # bug's dependent bugs need to target to be valid. If set, all
+                    # blockers must have a valid target releasee.
+
+                    # Deprecated: Use DependentBugTargetReleases instead. If set,
+                    # DependentBugTargetRelease will be appended to
+                    # DeprecatedDependentBugTargetReleases.
+                    dependent_bug_target_release: ""
+
+                    # DependentBugTargetReleases determines the set of valid target
+                    # releases for dependent bugs. If set, all blockers must have a
+                    # valid target release.
+                    dependent_bug_target_releases: null
+
+                    # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
+                    exclude_defaults: false
+
+                    # IsOpen determines whether a bug needs to be open to be valid
+                    is_open: false
+
+                    # StateAfterClose is the state to which the bug will be moved if all pull requests
+                    # in the external bug tracker have been closed.
+                    state_after_close:
+                        resolution: ' '
+                        status: ' '
+
+                    # StateAfterMerge is the state to which the bug will be moved after all pull requests
+                    # in the external bug tracker have been merged.
+                    state_after_merge:
+                        resolution: ' '
+                        status: ' '
+
+                    # StateAfterValidation is the state to which the bug will be moved after being
+                    # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+                    # if others are set.
+                    state_after_validation:
+                        resolution: ' '
+                        status: ' '
+
+                    # StatusAfterMerge is the status which the bug will be moved to after all pull requests
+                    # in the external bug tracker have been merged.
+                    status_after_merge: ""
+
+                    # StatusAfterValidation is the status which the bug will be moved to after being
+                    # deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
+                    # if others are set.
+                    status_after_validation: ""
+
+                    # Statuses determine which statuses a bug may have to be valid
+                    statuses: null
+
+                    # TargetRelease determines which release a bug needs to target to be valid
+                    target_release: ""
+
+                    # ValidStates determine states in which the bug may be to be valid
+                    valid_states: null
+
+                    # ValidateByDefault determines whether a validation check is run for all pull
+                    # requests by default
+                    validate_by_default: false
+
+            # Options for specific repos. The `*` wildcard will apply to all repos.
+            repos:
+                "":
+                    # Options for specific branches in this repo.
+                    # The `*` wildcard will apply to all branches.
+                    branches:
+                        "":
+                            # AddExternalLink determines whether the pull request will be added to the Bugzilla
+                            # bug using the ExternalBug tracker API after being validated
+                            add_external_link: false
+
+                            # AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
+                            # link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
+                            # plugin will not link the bug to the PR.
+                            allowed_groups:
+                              - ""
+
+                            # DependentBugStates determine states in which a bug's dependents bugs may be
+                            # to deem the child bug valid. If set, all blockers must have a valid state.
+                            dependent_bug_states: null
+
+                            # DependentBugStatuses determine which statuses a bug's dependent bugs may have
+                            # to deem the child bug valid. These are merged into DependentBugStates when
+                            # resolving branch options.
+                            dependent_bug_statuses: null
+
+                            # DeprecatedDependentBugTargetRelease determines which release a
+                            # bug's dependent bugs need to target to be valid. If set, all
+                            # blockers must have a valid target releasee.
+
+                            # Deprecated: Use DependentBugTargetReleases instead. If set,
+                            # DependentBugTargetRelease will be appended to
+                            # DeprecatedDependentBugTargetReleases.
+                            dependent_bug_target_release: ""
+
+                            # DependentBugTargetReleases determines the set of valid target
+                            # releases for dependent bugs. If set, all blockers must have a
+                            # valid target release.
+                            dependent_bug_target_releases: null
+
+                            # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
+                            exclude_defaults: false
+
+                            # IsOpen determines whether a bug needs to be open to be valid
+                            is_open: false
+
+                            # StateAfterClose is the state to which the bug will be moved if all pull requests
+                            # in the external bug tracker have been closed.
+                            state_after_close:
+                                resolution: ' '
+                                status: ' '
+
+                            # StateAfterMerge is the state to which the bug will be moved after all pull requests
+                            # in the external bug tracker have been merged.
+                            state_after_merge:
+                                resolution: ' '
+                                status: ' '
+
+                            # StateAfterValidation is the state to which the bug will be moved after being
+                            # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+                            # if others are set.
+                            state_after_validation:
+                                resolution: ' '
+                                status: ' '
+
+                            # StatusAfterMerge is the status which the bug will be moved to after all pull requests
+                            # in the external bug tracker have been merged.
+                            status_after_merge: ""
+
+                            # StatusAfterValidation is the status which the bug will be moved to after being
+                            # deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
+                            # if others are set.
+                            status_after_validation: ""
+
+                            # Statuses determine which statuses a bug may have to be valid
+                            statuses: null
+
+                            # TargetRelease determines which release a bug needs to target to be valid
+                            target_release: ""
+
+                            # ValidStates determine states in which the bug may be to be valid
+                            valid_states: null
+
+                            # ValidateByDefault determines whether a validation check is run for all pull
+                            # requests by default
+                            validate_by_default: false
+cat:
+    # Path to file containing an api key for thecatapi.com
+    key_path: ' '
+cherry_pick_unapproved:
+    # BranchRegexp is the regular expression for branch names such that
+    # the plugin treats only PRs against these branch names as cherrypick PRs.
+    # Compiles into BranchRe during config load.
+    branchregexp: ' '
+
+    # Comment is the comment added by the plugin while adding the
+    # `do-not-merge/cherry-pick-not-approved` label.
+    comment: ' '
+config_updater:
+    # ClusterGroups is a map of ClusterGroups that can be used as a target
+    # in the map config.
+    cluster_groups:
+        "":
+            clusters:
+              - ""
+            namespaces:
+              - ""
+
+    # If GZIP is true then files will be gzipped before insertion into
+    # their corresponding configmap
+    gzip: false
+
+    # A map of filename => ConfigMapSpec.
+    # Whenever a commit changes filename, prow will update the corresponding configmap.
+    # map[string]ConfigMapSpec{ "/my/path.yaml": {Name: "foo", Namespace: "otherNamespace" }}
+    # will result in replacing the foo configmap whenever path.yaml changes
+    maps:
+        "":
+            # Namespaces in which the configMap needs to be deployed, in addition to the above
+            # namespace provided, or the default if it is not set.
+            additional_namespaces:
+              - ""
+
+            # ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
+            cluster_groups:
+              - ""
+
+            # Clusters is a map from cluster to namespaces
+            # which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
+            clusters:
+                "": null
+
+            # GZIP toggles whether the key's data should be GZIP'd before being stored
+            # If set to false and the global GZIP option is enabled, this file will
+            # will not be GZIP'd.
+            gzip: false
+
+            # Key is the key in the ConfigMap to update with the file contents.
+            # If no explicit key is given, the basename of the file will be used.
+            key: ' '
+
+            # Name of ConfigMap
+            name: ' '
+
+            # Namespace in which the configMap needs to be deployed. If no namespace is specified
+            # it will be deployed to the ProwJobNamespace.
+            namespace: ' '
+dco:
+    "":
+        # TrustedOrg is the org whose members' commits will not be checked for DCO signoff
+        # if the skip DCO option is enabled. The default is the PR's org.
+        trusted_org: ' '
+
+
+# ExternalPlugins is a map of repositories (eg "k/k") to lists of
+# external plugins.
+external_plugins:
+    "": null
+golint:
+    # MinimumConfidence is the smallest permissible confidence
+    # in (0,1] over which problems will be printed. Defaults to
+    # 0.8, as does the `go lint` tool.
+    minimum_confidence: 0
+goose:
+    # Path to file containing an api key for unsplash.com
+    key_path: ' '
+heart:
+    # Adorees is a list of GitHub logins for members
+    # for whom we will add emojis to comments
+    adorees:
+      - ""
+
+    # CommentRegexp is the regular expression for comments
+    # made by adorees that the plugin adds emojis to.
+    # If not specified, the plugin will not add emojis to
+    # any comments.
+    # Compiles into CommentRe during config load.
+    commentregexp: ' '
+label:
+    # AdditionalLabels is a set of additional labels enabled for use
+    # on top of the existing "kind/*", "priority/*", and "area/*" labels.
+    additional_labels:
+      - ""
+lgtm:
+  - # Repos is either of the form org/repos or just org.
+    repos:
+      - ""
+
+    # WARNING: This disables the security mechanism that prevents a malicious member (or
+    # compromised GitHub account) from merging arbitrary code. Use with caution.
+
+    # StickyLgtmTeam specifies the GitHub team whose members are trusted with sticky LGTM,
+    # which eliminates the need to re-lgtm minor fixes/updates.
+    trusted_team_for_sticky_lgtm: ' '
+milestone_applier:
+    "": null
+override:
+    # AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+    # members of which are allowed to override contexts
+    allowed_github_teams:
+        "": null
+
+
+# Owners contains configuration related to handling OWNERS files.
+owners:
+    # LabelsBlackList holds a list of labels that should not be present in any
+    # OWNERS file, preventing their automatic addition by the owners-label plugin.
+    # This check is performed by the verify-owners plugin.
+    labels_blacklist:
+      - ""
+
+    # MDYAMLRepos is a list of org and org/repo strings specifying the repos that support YAML
+    # OWNERS config headers at the top of markdown (*.md) files. These headers function just like
+    # the config in an OWNERS file, but only apply to the file itself instead of the entire
+    # directory and all sub-directories.
+    # The yaml header must be at the start of the file and be bracketed with "
+    mdyamlrepos:
+      - ""
+
+    # SkipCollaborators disables collaborator cross-checks and forces both
+    # the approve and lgtm plugins to use solely OWNERS files for access
+    # control in the provided repos.
+    skip_collaborators:
+      - ""
+
+
+# Plugins is a map of repositories (eg "k/k") to lists of
+# plugin names.
+# You can find a comprehensive list of the default avaulable plugins here
+# https://github.com/kubernetes/test-infra/tree/master/prow/plugins
+# note that you're also able to add external plugins.
+plugins:
+    "": null
+project_config:
+    # Org level configs for github projects; key is org name
+    project_org_configs:
+        "":
+            # A map of project name to default column; an issue/PR will be added
+            # to the default column if column name is not provided in the command
+            org_default_column_map:
+                "": ""
+
+            # Repo level configs for github projects; key is repo name
+            project_repo_configs:
+                "":
+                    # A map of project name to default column; an issue/PR will be added
+                    # to the default column if column name is not provided in the command
+                    repo_default_column_map:
+                        "": ""
+project_manager:
+    orgsRepos:
+        "":
+            projects:
+                "":
+                    columns:
+                      - # Either of ID or Name should be specified
+                        id: 0
+
+                        # all the labels here should match to the incoming event to be bale to add the card to the project
+                        labels:
+                          - ""
+                        name: ' '
+
+                        # Configuration is effective is the issue events repo/Owner/Login matched the org
+                        org: ' '
+
+                        # State must be open, closed or all
+                        state: ' '
+repo_milestone:
+    "":
+        maintainers_friendly_name: ' '
+        maintainers_team: ' '
+require_matching_label:
+  - # Branch is the branch ref of PRs that this config applies to.
+    # This field is only valid if `prs: true` and may be omitted to apply this
+    # config across all branches in the repo or org.
+    branch: ' '
+
+    # GracePeriod is the amount of time to wait before processing newly opened
+    # or reopened issues and PRs. This delay allows other automation to apply
+    # labels before we look for matching labels.
+    # Defaults to '5s'.
+    grace_period: ' '
+
+    # MissingComment is the comment to post when we add the MissingLabel to an
+    # issue. This is typically used to explain why MissingLabel was added and
+    # how to move forward.
+    # This field is optional. If unspecified, no comment is created when labeling.
+    missing_comment: ' '
+
+    # MissingLabel is the label to apply if an issue does not have any label
+    # matching the Regexp.
+    missing_label: ' '
+
+    # Org is the GitHub organization that this config applies to.
+    org: ' '
+
+    # Regexp is the string specifying the regular expression used to look for
+    # matching labels.
+    regexp: ' '
+
+    # Repo is the GitHub repository within Org that this config applies to.
+    # This fields may be omitted to apply this config across all repos in Org.
+    repo: ' '
+requiresig:
+    # GroupListURL is the URL where a list of the available SIGs can be found.
+    group_list_url: ' '
+sigmention:
+    # Regexp parses comments and should return matches to team mentions.
+    # These mentions enable labeling issues or PRs with sig/team labels.
+    # Furthermore, teams with the following suffixes will be mapped to
+    # kind/* labels:
+
+    # * @org/team-bugs --maps to--> kind/bug
+    # * @org/team-feature-requests --maps to--> kind/feature
+    # * @org/team-api-reviews --maps to--> kind/api-change
+    # * @org/team-proposals --maps to--> kind/design
+
+    # Note that you need to make sure your regexp covers the above
+    # mentions if you want to use the extra labeling. Defaults to:
+    # (?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)
+
+    # Compiles into Re during config load.
+    regexp: ' '
+slack:
+    mentionchannels:
+      - ""
+    mergewarnings:
+      - # Deprecated: Use ExemptBranches instead.
+        branch_whitelist:
+            "": null
+
+        # List of channels on which a event is published.
+        channels:
+          - ""
+
+        # A slack event is published if the user is not on the exempt branches.
+        exempt_branches:
+            "": null
+
+        # A slack event is published if the user is not part of the ExemptUsers.
+        exempt_users:
+          - ""
+
+        # Repos is either of the form org/repos or just org.
+        repos:
+          - ""
+
+        # Deprecated: Use ExemptUsers instead.
+        whitelist:
+          - ""
+triggers:
+  - # JoinOrgURL is a link that redirects users to a location where they
+    # should be able to read more about joining the organization in order
+    # to become trusted members. Defaults to the GitHub link of TrustedOrg.
+    join_org_url: ' '
+
+    # Repos is either of the form org/repos or just org.
+    repos:
+      - ""
+
+    # TrustedOrg is the org whose members' PRs will be automatically built for
+    # PRs to the above repos. The default is the PR's org.
+
+    # Deprecated: TrustedOrg functionality is deprecated and will be removed in
+    # January 2020.
+    trusted_org: ' '
+welcome:
+  - # MessageTemplate is the welcome message template to post on new-contributor PRs
+    # For the info struct see prow/plugins/welcome/welcome.go's PRInfo
+    message_template: ' '
+
+    # Repos is either of the form org/repos or just org.
+    repos:
+      - ""
