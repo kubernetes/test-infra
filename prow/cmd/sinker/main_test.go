@@ -751,7 +751,7 @@ func TestClean(t *testing.T) {
 
 func TestNotClean(t *testing.T) {
 
-	pods := []runtime.Object{
+	pods := []ctrlruntimeclient.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-succeeded",
@@ -767,7 +767,7 @@ func TestNotClean(t *testing.T) {
 			},
 		},
 	}
-	podsExcluded := []runtime.Object{
+	podsExcluded := []ctrlruntimeclient.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-succeeded-on-excluded-cluster",
@@ -787,7 +787,7 @@ func TestNotClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []runtime.Object{
+	prowJobs := []ctrlruntimeclient.Object{
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete",

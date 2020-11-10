@@ -372,7 +372,7 @@ func (c *controller) clean() {
 		}
 		if isClusterExcluded {
 			log.Debugf("Cluster %q is excluded, skipping pods deletion.", cluster)
-			break
+			continue
 		}
 		var pods corev1api.PodList
 		if err := client.List(c.ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(c.config().PodNamespace)); err != nil {
