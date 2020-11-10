@@ -127,7 +127,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 11th, 2020* The prow-controller-manager and sinker now require RBAC to be set up to manage their leader lock in the `coordination.k8s.io` group. See [here](https://github.com/kubernetes/test-infra/pull/19906/files?diff=split&w=1)
  - *November, 2020* The deprecated `namespace` and `additional_namespaces` properties have been removed from the config updater plugin
+                       for more details.
  - *November, 2020* The `blacklist` flag in status reconciler has been deprecated in favor of `denylist`. The support of `blacklist` will be stopped in February 2021.
  - *October, 2020*  The `plank` binary has been deprecated in favor of the more modern implementation in the prow-controller-manager that provides the same functionality. Check out
                   its [README](/prow//prow-controller-manager/README.md) or check out its [deployment](config/prow/cluster/prow_controller_manager_deployment.yaml) and
