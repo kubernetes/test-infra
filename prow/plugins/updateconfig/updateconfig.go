@@ -63,14 +63,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 				configFileName,
 				configMapSpec.Name,
 			)
-			if len(configMapSpec.AdditionalNamespaces) == 0 {
-				msg = msg + fmt.Sprintf("the %s namespace.\n", configMapSpec.Namespace)
-			} else {
-				for _, nameSpace := range configMapSpec.AdditionalNamespaces {
-					msg = msg + fmt.Sprintf("%s, ", nameSpace)
-				}
-				msg = msg + fmt.Sprintf("and %s namespaces.\n", configMapSpec.Namespace)
-			}
 		}
 		configInfo = map[string]string{"": msg}
 	}

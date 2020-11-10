@@ -107,8 +107,8 @@ func TestSetDefault_Maps(t *testing.T) {
 		{
 			name: "nothing",
 			expected: map[string]ConfigMapSpec{
-				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/config.yaml":  {Name: "config", Clusters: map[string][]string{"default": {""}}},
+				"config/prow/plugins.yaml": {Name: "plugins", Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -120,8 +120,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				},
 			},
 			expected: map[string]ConfigMapSpec{
-				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"world.yaml": {Name: "you-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"hello.yaml": {Name: "my-cm", Clusters: map[string][]string{"default": {""}}},
+				"world.yaml": {Name: "you-cm", Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -134,9 +134,9 @@ func TestSetDefault_Maps(t *testing.T) {
 				},
 			},
 			expected: map[string]ConfigMapSpec{
-				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
-				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config.yaml":        {Name: "overwrite-config", Clusters: map[string][]string{"default": {""}}},
+				"plugins.yaml":       {Name: "overwrite-plugins", Clusters: map[string][]string{"default": {""}}},
+				"unconflicting.yaml": {Name: "ignored", Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 	}
@@ -1267,18 +1267,18 @@ func TestValidateConfigUpdater(t *testing.T) {
 		expectedMsg string
 	}{
 		{
-			name: "same key of different cms in the same ns",
+			name: "same key of different cms in different ns",
 			cu: &ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{
 					"core-services/prow/02_config/_plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "some-namespace",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"first": {"some-namespace"}},
 					},
 					"somewhere/else/plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "other-namespace",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"first": {"other-namespace"}},
 					},
 				},
 			},
@@ -1289,14 +1289,14 @@ func TestValidateConfigUpdater(t *testing.T) {
 			cu: &ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{
 					"core-services/prow/02_config/_plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "some-namespace",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"first": {"some-namespace"}},
 					},
 					"somewhere/else/plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "some-namespace",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"first": {"some-namespace"}},
 					},
 				},
 			},
@@ -1307,26 +1307,14 @@ func TestValidateConfigUpdater(t *testing.T) {
 			cu: &ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{
 					"core-services/prow/02_config/_plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "some-namespace",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"first": {"some-namespace"}},
 					},
 					"somewhere/else/plugins.yaml": {
 						Name:     "plugins",
 						Key:      "plugins.yaml",
 						Clusters: map[string][]string{"other": {"some-namespace"}},
-					},
-				},
-			},
-			expected: nil,
-		},
-		{
-			name: "a cm with additional namespaces",
-			cu: &ConfigUpdater{
-				Maps: map[string]ConfigMapSpec{
-					"ci-operator/templates/openshift/installer/cluster-launch-installer-src.yaml": {
-						Name:                 "prow-job-cluster-launch-installer-src",
-						AdditionalNamespaces: []string{"ci-stg"},
 					},
 				},
 			},
@@ -1375,21 +1363,17 @@ func TestConfigUpdaterResolve(t *testing.T) {
 					"another-group": {Clusters: []string{"cluster-b"}, Namespaces: []string{"namespace-b"}},
 				},
 				Maps: map[string]ConfigMapSpec{"map": {
-					Name:                 "name",
-					Key:                  "key",
-					Namespace:            "namespace",
-					AdditionalNamespaces: []string{"additional-ns"},
-					GZIP:                 utilpointer.BoolPtr(true),
-					ClusterGroups:        []string{"some-group", "another-group"}},
+					Name:          "name",
+					Key:           "key",
+					GZIP:          utilpointer.BoolPtr(true),
+					ClusterGroups: []string{"some-group", "another-group"}},
 				},
 			},
 			expectedConfig: ConfigUpdater{
 				Maps: map[string]ConfigMapSpec{"map": {
-					Name:                 "name",
-					Key:                  "key",
-					Namespace:            "namespace",
-					AdditionalNamespaces: []string{"additional-ns"},
-					GZIP:                 utilpointer.BoolPtr(true),
+					Name: "name",
+					Key:  "key",
+					GZIP: utilpointer.BoolPtr(true),
 					Clusters: map[string][]string{
 						"cluster-a": {"namespace-a"},
 						"cluster-b": {"namespace-b"},

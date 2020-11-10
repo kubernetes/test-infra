@@ -393,18 +393,10 @@ type ConfigMapSpec struct {
 	// Key is the key in the ConfigMap to update with the file contents.
 	// If no explicit key is given, the basename of the file will be used.
 	Key string `json:"key,omitempty"`
-	// Namespace in which the configMap needs to be deployed. If no namespace is specified
-	// it will be deployed to the ProwJobNamespace.
-	Namespace string `json:"namespace,omitempty"`
-	// Namespaces in which the configMap needs to be deployed, in addition to the above
-	// namespace provided, or the default if it is not set.
-	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
 	// GZIP toggles whether the key's data should be GZIP'd before being stored
 	// If set to false and the global GZIP option is enabled, this file will
 	// will not be GZIP'd.
 	GZIP *bool `json:"gzip,omitempty"`
-	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
-	Namespaces []string `json:"-"`
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
 	Clusters map[string][]string `json:"clusters"`
@@ -469,13 +461,10 @@ func (cu *ConfigUpdater) resolve() error {
 		}
 
 		cu.Maps[k] = ConfigMapSpec{
-			Name:                 v.Name,
-			Key:                  v.Key,
-			Namespace:            v.Namespace,
-			AdditionalNamespaces: v.AdditionalNamespaces,
-			GZIP:                 v.GZIP,
-			Namespaces:           v.Namespaces,
-			Clusters:             clusters,
+			Name:     v.Name,
+			Key:      v.Key,
+			GZIP:     v.GZIP,
+			Clusters: clusters,
 		}
 	}
 
@@ -852,14 +841,8 @@ func (cu *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range cu.Maps {
-		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
-			logrus.Warn("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin and will be removed in October, 2020, use 'clusters' instead")
-		}
-		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
-		// and clusters will never be an empty map (map[cluster] could be am empty slice)
-		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
 		if len(spec.Clusters) == 0 {
-			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: spec.Namespaces}
+			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: {""}}
 		}
 		cu.Maps[name] = spec
 	}
