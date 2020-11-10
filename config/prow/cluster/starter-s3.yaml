@@ -738,30 +738,45 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-      - "prow.k8s.io"
+    - "prow.k8s.io"
     resources:
-      - prowjobs
+    - prowjobs
     verbs:
-      - delete
-      - list
-      - watch
-      - get
+    - delete
+    - list
+    - watch
+    - get
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
+    - leases
     resourceNames:
-      - prow-sinker-leaderlock
+    - prow-sinker-leaderlock
     verbs:
-      - get
-      - update
+    - get
+    - update
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
-      - events
+    - leases
     verbs:
-      - create
+    - create
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    resourceNames:
+    - prow-sinker-leaderlock
+    verbs:
+    - get
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - events
+    verbs:
+    - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -1044,31 +1059,46 @@ metadata:
   name: prow-controller-manager
 rules:
   - apiGroups:
-      - "prow.k8s.io"
+    - "prow.k8s.io"
     resources:
-      - prowjobs
+    - prowjobs
     verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
+    - get
+    - list
+    - watch
+    - update
+    - patch
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
+    - leases
     resourceNames:
-      - prow-controller-manager-leader-lock
+    - prow-controller-manager-leader-lock
     verbs:
-      - get
-      - update
+    - get
+    - update
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
-      - events
+    - leases
     verbs:
-      - create
+    - create
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    resourceNames:
+    - prow-controller-manager-leader-lock
+    verbs:
+    - get
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - events
+    verbs:
+    - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
