@@ -75,6 +75,7 @@ approve:
   - kubernetes-sigs
   require_self_approval: false
 - repos:
+  - kubernetes/cloud-provider-openstack
   - kubernetes-sigs/cluster-api
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
@@ -99,10 +100,6 @@ approve:
   - helm/charts
   require_self_approval: false
   lgtm_acts_as_approve: true
-- repos:
-  - kubernetes/cloud-provider-openstack
-  require_self_approval: false
-  ignore_review_state: true
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
