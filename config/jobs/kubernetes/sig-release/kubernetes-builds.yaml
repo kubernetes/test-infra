@@ -118,7 +118,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:v1.15.3-1
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:default
       command:
       - wrapper.sh
       - /krel
@@ -127,7 +127,7 @@ periodics:
       - --fast
       - --bucket=k8s-release-dev
       - --gcs-suffix=no-bootstrap
-      - --docker-registry=gcr.io/k8s-staging-ci-images
+      - --registry=gcr.io/k8s-staging-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
