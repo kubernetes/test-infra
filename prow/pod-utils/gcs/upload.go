@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
@@ -35,7 +36,10 @@ import (
 
 // UploadFunc knows how to upload into an object
 type UploadFunc func(writer dataWriter) error
+
 type destToWriter func(dest string) dataWriter
+
+const retryCount = 4
 
 // Upload uploads all of the data in the
 // uploadTargets map to blob storage in parallel. The map is
@@ -83,11 +87,31 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 		log := logrus.WithField("dest", dest)
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
-			sem.Acquire(context.Background(), 1)
-			defer sem.Release(1)
 			defer group.Done()
-			if err := f(writer); err != nil {
+
+			var err error
+
+			for retryIndex := 1; retryIndex <= retryCount; retryIndex++ {
+				err = func() error {
+					sem.Acquire(context.Background(), 1)
+					defer sem.Release(1)
+					if retryIndex > 1 {
+						log.WithField("retry_attempt", retryIndex).Debugf("Retrying upload")
+					}
+					return f(writer)
+				}()
+
+				if err == nil {
+					break
+				}
+				if retryIndex < retryCount {
+					time.Sleep(time.Duration(retryIndex*retryIndex) * time.Second)
+				}
+			}
+
+			if err != nil {
 				errCh <- err
+				log.Info("Failed upload")
 			} else {
 				log.Info("Finished upload")
 			}
