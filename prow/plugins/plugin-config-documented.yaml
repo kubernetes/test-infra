@@ -330,11 +330,6 @@ config_updater:
     # will result in replacing the foo configmap whenever path.yaml changes
     maps:
         "":
-            # Namespaces in which the configMap needs to be deployed, in addition to the above
-            # namespace provided, or the default if it is not set.
-            additional_namespaces:
-              - ""
-
             # ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
             cluster_groups:
               - ""
@@ -355,10 +350,6 @@ config_updater:
 
             # Name of ConfigMap
             name: ' '
-
-            # Namespace in which the configMap needs to be deployed. If no namespace is specified
-            # it will be deployed to the ProwJobNamespace.
-            namespace: ' '
 dco:
     "":
         # TrustedOrg is the org whose members' commits will not be checked for DCO signoff

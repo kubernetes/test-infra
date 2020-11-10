@@ -1123,8 +1123,8 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 						Key:  "test-key",
 					},
 					"boskos/resources.yaml": {
-						Name:      "boskos-config",
-						Namespace: "boskos",
+						Name:     "boskos-config",
+						Clusters: map[string][]string{"default": {"boskos"}},
 					},
 					"config/foo.yaml": {
 						Name: "multikey-config",
@@ -1403,8 +1403,8 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 						Key:  "test-key",
 					},
 					"boskos/resources.yaml": {
-						Name:      "boskos-config",
-						Namespace: "boskos",
+						Name:     "boskos-config",
+						Clusters: map[string][]string{"default": {"boskos"}},
 					},
 					"config/foo.yaml": {
 						Name: "multikey-config",
