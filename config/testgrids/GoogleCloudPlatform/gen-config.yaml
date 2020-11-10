@@ -402,6 +402,15 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-terraform-e2e
+    name: verification-terrafrom-e2e
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-terraform-e2e
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
     description: ci-en-verification-server-terraform-smoke
     name: verification-terrafrom-smoke
     open_bug_template:
@@ -451,6 +460,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-en-server-terraform-smoke
   name: ci-en-server-terraform-smoke
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-e2e
+  name: ci-en-verification-server-terraform-e2e
   num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
   name: ci-en-verification-server-terraform-smoke
