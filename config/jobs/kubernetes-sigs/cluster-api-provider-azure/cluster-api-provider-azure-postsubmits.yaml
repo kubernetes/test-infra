@@ -1,0 +1,34 @@
+postsubmits:
+  kubernetes-sigs/cluster-api-provider-azure:
+  - name: postsubmits-cluster-api-provider-azure-e2e-full-master
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-1.18
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "Workload cluster creation"
+          - name: GINKGO_SKIP
+            value: ""
+          - name: LOCAL_ONLY
+            value: "false"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: postsubmit-capi-e2e-full
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
