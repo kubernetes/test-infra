@@ -115,7 +115,11 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 		}
 	case github.PullRequestActionSynchronize:
-		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
+		var errs []error
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			errs = append(errs, fmt.Errorf("failed to abort jobs: %w", err))
+		}
+		return utilerrors.NewAggregate(append(errs, buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)))
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {

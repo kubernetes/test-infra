@@ -389,6 +389,15 @@ func TestHandlePullRequest(t *testing.T) {
 			ShouldBuild: false,
 			jobToAbort:  jobToAbort,
 		},
+		{
+			name: "Abort old jobs and build on push",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionSynchronize,
+			ShouldBuild: true,
+			jobToAbort:  jobToAbort,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
