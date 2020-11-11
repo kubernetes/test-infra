@@ -522,7 +522,6 @@ periodics:
           - --
           - --check-leaked-resources
           - --env=ENABLE_POD_SECURITY_POLICY=true
-          - --extract=ci/latest
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
@@ -530,6 +529,8 @@ periodics:
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
           - --env=KUBE_CONTAINER_RUNTIME=docker
+          - --extract=ci/latest-fast
+          - --extract-ci-bucket=k8s-release-dev
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
@@ -567,8 +568,6 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
-          - --extract=ci/latest-fast
-          - --extract-ci-bucket=k8s-release-dev
           - --env=KUBE_CONTAINER_RUNTIME=containerd
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
@@ -581,6 +580,8 @@ periodics:
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --extract=ci/latest-fast
+          - --extract-ci-bucket=k8s-release-dev
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
