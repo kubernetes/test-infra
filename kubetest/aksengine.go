@@ -1224,13 +1224,6 @@ func (c *aksEngineDeployer) TestSetup() error {
 	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobCSIDriver || *testSMBCSIDriver || *testNFSCSIDriver {
 		// Set env vars required by CSI driver e2e jobs.
 		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
-		// TODO (CecileRobertMichon): remove RESOURCE_GROUP and LOCATION once image and tests have been updated
-		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
-			return err
-		}
-		if err := os.Setenv("LOCATION", c.location); err != nil {
-			return err
-		}
 		if err := os.Setenv("AZURE_RESOURCE_GROUP", c.resourceGroup); err != nil {
 			return err
 		}
