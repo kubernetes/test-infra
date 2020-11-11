@@ -19,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
       - --timeout=220m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
 
   annotations:
     testgrid-dashboards: google-gce
