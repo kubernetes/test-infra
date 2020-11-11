@@ -36,7 +36,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
       securityContext:
           privileged: true
   annotations:
@@ -80,7 +80,7 @@ periodics:
         value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
       securityContext:
           privileged: true
   annotations:
@@ -128,7 +128,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
         securityContext:
           privileged: true
     annotations:
@@ -174,7 +174,7 @@ presubmits:
           value: "win1909"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
         securityContext:
           privileged: true
     annotations:
@@ -221,7 +221,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201109-db1f6d7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
         securityContext:
           privileged: true
     annotations:
