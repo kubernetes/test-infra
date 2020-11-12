@@ -38,11 +38,6 @@ presets:
   # Reduce etcd compaction frequency to match production.
   - name: KUBEMARK_ETCD_COMPACTION_INTERVAL_SEC
     value: "150"
-  # Use Taint based evictions to control hollow node recreation in case of
-  # node VM restart.
-  # See https://github.com/kubernetes/kubernetes/issues/67120 for context.
-  - name: KUBE_FEATURE_GATES
-    value: "TaintBasedEvictions=true"
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
     value: 1
