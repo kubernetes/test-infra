@@ -260,6 +260,9 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []run
 	var commands []runnable
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
+		if prRef.SHA != "" {
+			ref = prRef.SHA
+		}
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
