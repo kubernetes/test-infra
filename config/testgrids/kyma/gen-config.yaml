@@ -2,9 +2,9 @@ dashboard_groups:
 - dashboard_names:
   - kyma_integration
   - kyma_control-plane
+  - kyma_release-1.17
   - kyma_release-1.16
   - kyma_release-1.15
-  - kyma_release-1.14
   - kyma-incubator_compass
   name: kyma
 dashboards:
@@ -127,6 +127,22 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: GitHub Release job for Kyma 1.17.
+    name: post-rel117-kyma-github-release
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel117-kyma-github-release
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Release candidate job for Kyma 1.17.
+    name: post-rel117-kyma-release-candidate
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel117-kyma-release-candidate
+  name: kyma_release-1.17
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: GitHub Release job for Kyma 1.16.
     name: post-rel116-kyma-github-release
     open_bug_template:
@@ -156,22 +172,6 @@ dashboards:
       url: https://github.com/kyma-project/kyma/issues/
     test_group_name: post-rel115-kyma-release-candidate
   name: kyma_release-1.15
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: GitHub Release job for Kyma 1.14.
-    name: post-rel114-kyma-github-release
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel114-kyma-github-release
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Release candidate job for Kyma 1.14.
-    name: post-rel114-kyma-release-candidate
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel114-kyma-release-candidate
-  name: kyma_release-1.14
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
@@ -233,13 +233,6 @@ test_groups:
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
   name: post-master-kyma-integration
 - days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-github-release
-  name: post-rel114-kyma-github-release
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel114-kyma-release-candidate
-  name: post-rel114-kyma-release-candidate
-  num_failures_to_alert: 1
-- days_of_results: 90
   gcs_prefix: kyma-prow-logs/logs/post-rel115-kyma-github-release
   name: post-rel115-kyma-github-release
 - days_of_results: 90
@@ -252,4 +245,11 @@ test_groups:
 - days_of_results: 90
   gcs_prefix: kyma-prow-logs/logs/post-rel116-kyma-release-candidate
   name: post-rel116-kyma-release-candidate
+  num_failures_to_alert: 1
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-github-release
+  name: post-rel117-kyma-github-release
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-release-candidate
+  name: post-rel117-kyma-release-candidate
   num_failures_to_alert: 1
