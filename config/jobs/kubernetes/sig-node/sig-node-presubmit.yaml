@@ -76,7 +76,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --node-args=--image-config-file=/workspace/jobs/e2e_node/image-config.yaml
         resources:
           limits:
             cpu: 4
