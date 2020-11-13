@@ -47,7 +47,7 @@ latest_stable_k8s_minor_version="1.19"
 hostpath_driver_version="v1.4.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20200916-8dd1247-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -277,6 +277,24 @@ pull_alwaysrun() {
     fi
 }
 
+snapshotter_version() {
+    local kubernetes="$1"
+    local canary="$2"
+
+    if [ "$kubernetes" = "latest" ] || [ "$canary" = "canary" ]; then
+        # Kubernetes master and canary images may need a more recent
+        # snapshot controller and/or CRD than the ones from the latest
+        # stable release.
+        echo '"master"'
+    else
+        # All other jobs test against the latest stable snapshotter
+        # release. Additional jobs could be created to cover version
+        # skew, if desired.
+        echo '"v3.0.2"'
+    fi
+}
+
+
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
     cat >"$base/$repo/$repo-config.yaml" <<EOF
@@ -332,6 +350,8 @@ EOF
           value: "$deployment"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "$kubernetes" "")
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -375,6 +395,8 @@ EOF
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "latest" "")
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -448,6 +470,8 @@ EOF
         env:
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "" "")
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -487,6 +511,9 @@ EOF
         - runner.sh
         args:
         - ./.prow.sh
+        env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "" "")
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -559,6 +586,8 @@ for tests in non-alpha alpha; do
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: $(snapshotter_version "$actual" "")
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -616,6 +645,8 @@ for kubernetes in $k8s_versions master; do
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: $(snapshotter_version "$actual" "canary")
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
