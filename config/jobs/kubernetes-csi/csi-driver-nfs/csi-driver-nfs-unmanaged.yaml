@@ -1,3 +1,5 @@
+# manually defined jobs
+
 presubmits:
   kubernetes-csi/csi-driver-nfs:
   - name: pull-csi-driver-nfs-sanity
@@ -24,4 +26,51 @@ presubmits:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-nfs-sanity
       description: "Run sanity tests for NFS CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-nfs-e2e
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-nfs
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Specific test args
+        - --test-csi-driver-nfs
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-nfs-e2e
+      description: "Run E2E tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
