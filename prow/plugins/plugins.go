@@ -41,6 +41,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+	"k8s.io/test-infra/prow/version"
 )
 
 var (
@@ -57,10 +58,13 @@ var (
 )
 
 func init() {
-	// We use a relative path here so this only works when executing from the root of
-	// the test infra repo. Hence initialize with an empty CommentMap whose creation
-	// will never fail and only overwrite that when we were successful here, otherwise
-	// this may lead to a null pointer derefence.
+	// This requires the source code to be present and to be in the right relative
+	// location to the working directory. Don't even bother to try outside of the
+	// hook binary, otherwise all components that load the plugin config initially
+	// show an error which is confusing.
+	if version.Name != "hook" {
+		return
+	}
 	if cm, err := genyaml.NewCommentMap("prow/plugins/config.go"); err == nil {
 		CommentMap = cm
 	} else {
