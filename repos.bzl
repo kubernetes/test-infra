@@ -428,8 +428,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/golang/mock",
-        sum = "h1:GV+pQPG/EUUbkh47niozDcADz6go/dUwhVzdUQHIVRw=",
-        version = "v1.4.3",
+        sum = "h1:l75CXGRSwbaYNpl/Z2X1XIIAMSCquvXgpVZDhwEIJsc=",
+        version = "v1.4.4",
     )
     go_repository(
         name = "com_github_golang_protobuf",
@@ -509,8 +509,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/google/pprof",
-        sum = "h1:lIC98ZUNah83ky7d9EXktLFe4H7Nwus59dTOLXr8xAI=",
-        version = "v0.0.0-20200507031123-427632fa3b1c",
+        sum = "h1:k+KkMRk8mGOu1xG38StS7dQ+Z6oW1i9n3dgrAVU9Q/E=",
+        version = "v0.0.0-20200905233945-acf8798be1f7",
     )
     go_repository(
         name = "com_github_google_uuid",
@@ -1291,8 +1291,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "cloud.google.com/go",
-        sum = "h1:R+tDlceO7Ss+zyvtsdhTxacDyZ1k99xwskQ4FT7ruoM=",
-        version = "v0.60.0",
+        sum = "h1:DZeAkuQGQqnm9Xv36SbMJEU8aFBz4wL04UpMWPWwjzg=",
+        version = "v0.66.0",
     )
     go_repository(
         name = "in_gopkg_airbrake_gobrake_v2",
@@ -1498,8 +1498,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "google.golang.org/api",
-        sum = "h1:BaiDisFir8O4IJxvAabCGGkQ6yCJegNQqSVoYUNAnbk=",
-        version = "v0.29.0",
+        sum = "h1:Le77IccnTqEa8ryp9wIpX5W3zYm7Gf9LhOp9PHcwFts=",
+        version = "v0.32.0",
     )
     go_repository(
         name = "org_golang_google_appengine",
@@ -1514,16 +1514,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "google.golang.org/genproto",
-        sum = "h1:JwLN1jVnmIsfE4HkDVe2AblFAbo0Z+4cjteDSOnv6oE=",
-        version = "v0.0.0-20200709005830-7a2ca40e9dc3",
+        sum = "h1:B9nroC8SSX5GtbVvxPF9tYIVkaCpjhVLOrlAY8ONzm8=",
+        version = "v0.0.0-20200921151605-7abf4a1a14d5",
     )
     go_repository(
         name = "org_golang_google_grpc",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "google.golang.org/grpc",
-        sum = "h1:M5a8xTlYTxwMn5ZFkwhRabsygDY5G8TYLyQDBxJNAxE=",
-        version = "v1.30.0",
+        sum = "h1:zWTV+LMdc3kaiJMSTOFz2UgSBgx8RNQoTGiZu3fR9S0=",
+        version = "v1.32.0",
     )
     go_repository(
         name = "org_golang_x_crypto",
@@ -1555,16 +1555,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/net",
-        sum = "h1:VXak5I6aEWmAXeQjA+QSZzlgNrpq9mjcfDemuexIKsU=",
-        version = "v0.0.0-20200707034311-ab3426394381",
+        sum = "h1:MXfv8rhZWmFeqX3GNZRsd6vOLoaCHjYEX3qkRo3YBUA=",
+        version = "v0.0.0-20200904194848-62affa334b73",
     )
     go_repository(
         name = "org_golang_x_oauth2",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/oauth2",
-        sum = "h1:TzXSXBo42m9gQenoE3b9BGiEpg5IG2JkU5FkPIawgtw=",
-        version = "v0.0.0-20200107190931-bf48bf16ab8d",
+        sum = "h1:ld7aEMNHoBnnDAX15v1T6z31v8HwR2A9FYOuAhWqkwc=",
+        version = "v0.0.0-20200902213428-5d25da1a8d43",
     )
     go_repository(
         name = "org_golang_x_sync",
@@ -1579,8 +1579,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/sys",
-        sum = "h1:Ih9Yo4hSPImZOpfGuA4bR/ORKTAbhZo2AbWNRCnevdo=",
-        version = "v0.0.0-20200625212154-ddb9806d33ae",
+        sum = "h1:Fqb3ao1hUmOR3GkUOg/Y+BadLwykBIzs5q8Ez2SbHyc=",
+        version = "v0.0.0-20200905004654-be1d3432aa8f",
     )
     go_repository(
         name = "org_golang_x_text",
@@ -1603,8 +1603,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/tools",
-        sum = "h1:BT/vSbkiKG3rURL2PMNvsoVnPUqYiSv4HYQL/gVKAZw=",
-        version = "v0.0.0-20200709181711-e327e1019dfe",
+        sum = "h1:k7tVuG0g1JwmD3Jh8oAl1vQ1C3jb4Hi/dUl1wWDBJpQ=",
+        version = "v0.0.0-20200918232735-d647fc253266",
     )
     go_repository(
         name = "org_uber_go_atomic",
@@ -1951,8 +1951,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/xerrors",
-        sum = "h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=",
-        version = "v0.0.0-20191204190536-9bdfabe68543",
+        sum = "h1:go1bK/D/BFZV2I8cIQd1NKEZ+0owSTG1fDTci4IqFcE=",
+        version = "v0.0.0-20200804184101-5ec99f83aff1",
     )
     go_repository(
         name = "com_github_go_test_deep",
@@ -3807,8 +3807,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/yuin/goldmark",
-        sum = "h1:5tjfNdR2ki3yYQ842+eX2sQHeiwpKJ0RnHO4IYOc4V8=",
-        version = "v1.1.32",
+        sum = "h1:ruQGxdhGHe7FWOJPT0mKs5+pD2Xs1Bm/kdGlHO04FmM=",
+        version = "v1.2.1",
     )
     go_repository(
         name = "com_google_cloud_go_bigquery",
@@ -3832,8 +3832,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "cloud.google.com/go/storage",
-        sum = "h1:STgFzyU5/8miMl0//zKh2aQeTyeaUH3WN9bSUiJ09bA=",
-        version = "v1.10.0",
+        sum = "h1:4y3gHptW1EHVtcPAVE0eBBlFuGqEejTTG3KdIE0lUX4=",
+        version = "v1.12.0",
     )
     go_repository(
         name = "com_shuralyov_dmitri_gpu_mtl",
@@ -5249,4 +5249,12 @@ def go_repositories():
         importpath = "gotest.tools/v3",
         sum = "h1:kG1BFyqVHuQoVQiR1bWGnfz/fmHvvuiSPIV7rvl360E=",
         version = "v3.0.2",
+    )
+    go_repository(
+        name = "com_github_google_martian_v3",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/google/martian/v3",
+        sum = "h1:pMen7vLs8nvgEYhywH3KDWJIJTeEr2ULsVWHWYHQyBs=",
+        version = "v3.0.0",
     )
