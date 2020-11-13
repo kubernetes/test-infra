@@ -41,6 +41,9 @@ dashboards:
     - name: pull-e2e-gci
       test_group_name: pull-kubernetes-e2e-containerd-gce
       base_options: width=10
+    - name: pull-e2e-podutil
+      test_group_name: pull-kubernetes-node-e2e-podutil
+      base_options: width=10
 
 - name: sig-node-ppc64le
   dashboard_tab:
