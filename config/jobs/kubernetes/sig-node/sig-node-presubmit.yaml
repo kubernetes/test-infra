@@ -53,6 +53,11 @@ presubmits:
     optional: true
     decorate: true
     path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     cluster: k8s-infra-prow-build
     max_concurrency: 12
     labels:
@@ -76,7 +81,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
-        - --node-args=--image-config-file=/workspace/jobs/e2e_node/image-config.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
         resources:
           limits:
             cpu: 4
