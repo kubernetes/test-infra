@@ -27318,7 +27318,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.19'
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.19, kops-latest, kops-misc, sig-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.19, kops-latest, kops-misc, provider-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 

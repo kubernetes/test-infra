@@ -4,7 +4,7 @@ postsubmits:
     - name: cloud-provider-aws-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-aws-cloud-provider-aws
+        testgrid-dashboards: provider-aws-cloud-provider-aws
         testgrid-tab-name: cloud-provider-aws-image-pushes
       decorate: true
       branches:
@@ -35,7 +35,7 @@ postsubmits:
     - name: aws-ebs-csi-driver-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-aws-cloud-provider-aws
+        testgrid-dashboards: provider-aws-cloud-provider-aws
         testgrid-tab-name: aws-ebs-csi-driver-image-pushes
       decorate: true
       branches:

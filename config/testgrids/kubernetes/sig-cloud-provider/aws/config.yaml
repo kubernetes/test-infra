@@ -1,19 +1,19 @@
 dashboard_groups:
-- name: sig-aws
+- name: provider-aws
   dashboard_names:
-    - sig-aws-encryption-provider
-    - sig-aws-load-balancer-controller
-    - sig-aws-cloud-provider-aws
-    - sig-aws-ebs-csi-driver
-    - sig-aws-efs-csi-driver
-    - sig-aws-eks-presubmits
-    - sig-aws-fsx-csi-driver
+    - provider-aws-encryption-provider
+    - provider-aws-load-balancer-controller
+    - provider-aws-cloud-provider-aws
+    - provider-aws-ebs-csi-driver
+    - provider-aws-efs-csi-driver
+    - provider-aws-eks-presubmits
+    - provider-aws-fsx-csi-driver
 
 dashboards:
-- name: sig-aws-encryption-provider
-- name: sig-aws-load-balancer-controller
-- name: sig-aws-cloud-provider-aws
-- name: sig-aws-ebs-csi-driver
-- name: sig-aws-efs-csi-driver
-- name: sig-aws-eks-presubmits
-- name: sig-aws-fsx-csi-driver
+- name: provider-aws-encryption-provider
+- name: provider-aws-load-balancer-controller
+- name: provider-aws-cloud-provider-aws
+- name: provider-aws-ebs-csi-driver
+- name: provider-aws-efs-csi-driver
+- name: provider-aws-eks-presubmits
+- name: provider-aws-fsx-csi-driver

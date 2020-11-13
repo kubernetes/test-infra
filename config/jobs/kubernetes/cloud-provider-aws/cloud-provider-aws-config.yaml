@@ -17,7 +17,7 @@ presubmits:
         - make
         - check
     annotations:
-      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: check
       description: aws cloud provider checks
       testgrid-num-columns-recent: '30'
@@ -38,7 +38,7 @@ presubmits:
         - make
         - test
     annotations:
-      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: test
       description: aws cloud provider tests
       testgrid-num-columns-recent: '30'

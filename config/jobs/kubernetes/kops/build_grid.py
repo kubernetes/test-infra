@@ -540,7 +540,7 @@ def generate():
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                             '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
-               extra_dashboards=['sig-aws-cloud-provider-aws', 'kops-misc'])
+               extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'])
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))

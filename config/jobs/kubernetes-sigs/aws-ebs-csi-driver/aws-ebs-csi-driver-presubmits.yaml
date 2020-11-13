@@ -16,7 +16,7 @@ presubmits:
         - make
         - verify
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: verify
       description: aws ebs csi driver basic code verification
       testgrid-num-columns-recent: '30'
@@ -36,7 +36,7 @@ presubmits:
         - make
         - test
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: unit-test
       description: aws ebs csi driver unit test
       testgrid-num-columns-recent: '30'
@@ -60,7 +60,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: e2e-test-single-az
       description: aws ebs csi driver e2e test on single az
       testgrid-num-columns-recent: '30'
@@ -84,7 +84,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: e2e-test-multi-az
       description: aws ebs csi driver e2e test on mutiple AZs
       testgrid-num-columns-recent: '30'
@@ -108,7 +108,7 @@ presubmits:
           securityContext:
             privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: pull-migration-test-latest
       description: aws ebs csi driver migration test on latest kubernetes
       testgrid-num-columns-recent: '30'
