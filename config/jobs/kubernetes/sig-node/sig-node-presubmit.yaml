@@ -50,6 +50,7 @@ presubmits:
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
     always_run: false
+    optional: true
     decorate: true
     cluster: k8s-infra-prow-build
     max_concurrency: 12
@@ -61,19 +62,13 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
         command:
         - runner.sh
-        - kubetest
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --timeout=90m
-        - --dump=$(ARTIFACTS)
         - --deployment=node
-        - --provider=gce
         - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
+        - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
