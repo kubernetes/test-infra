@@ -826,10 +826,13 @@ type Commit struct {
 // https://developer.github.com/v3/repos/commits/#get-a-single-commit
 type SingleCommit struct {
 	Commit struct {
-		Tree struct {
-			SHA string `json:"sha"`
-		} `json:"tree"`
+		Tree Tree `json:"tree"`
 	} `json:"commit"`
+}
+
+// Tree represents a GitHub tree.
+type Tree struct {
+	SHA string `json:"sha,omitempty"`
 }
 
 // ReviewEventAction enumerates the triggers for this
@@ -1090,20 +1093,81 @@ type Milestone struct {
 // Note that it's wrapping a GitCommit, so author/committer information is in two places,
 // but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
 type RepositoryCommit struct {
-	SHA         string    `json:"sha"`
-	Commit      GitCommit `json:"commit"`
-	Author      User      `json:"author"`
-	Committer   User      `json:"committer"`
-	Parents     []Commit  `json:"parents,omitempty"`
-	HTMLURL     string    `json:"html_url"`
-	URL         string    `json:"url"`
-	CommentsURL string    `json:"comments_url"`
+	NodeID      string      `json:"node_id,omitempty"`
+	SHA         string      `json:"sha,omitempty"`
+	Commit      GitCommit   `json:"commit,omitempty"`
+	Author      User        `json:"author,omitempty"`
+	Committer   User        `json:"committer,omitempty"`
+	Parents     []GitCommit `json:"parents,omitempty"`
+	HTMLURL     string      `json:"html_url,omitempty"`
+	URL         string      `json:"url,omitempty"`
+	CommentsURL string      `json:"comments_url,omitempty"`
+
+	// Details about how many changes were made in this commit. Only filled in during GetCommit!
+	Stats *CommitStats `json:"stats,omitempty"`
+	// Details about which files, and how this commit touched. Only filled in during GetCommit!
+	Files []CommitFile `json:"files,omitempty"`
+}
+
+// CommitStats represents the number of additions / deletions from a file in a given RepositoryCommit or GistCommit.
+type CommitStats struct {
+	Additions int `json:"additions,omitempty"`
+	Deletions int `json:"deletions,omitempty"`
+	Total     int `json:"total,omitempty"`
+}
+
+// CommitFile represents a file modified in a commit.
+type CommitFile struct {
+	SHA              string `json:"sha,omitempty"`
+	Filename         string `json:"filename,omitempty"`
+	Additions        int    `json:"additions,omitempty"`
+	Deletions        int    `json:"deletions,omitempty"`
+	Changes          int    `json:"changes,omitempty"`
+	Status           string `json:"status,omitempty"`
+	Patch            string `json:"patch,omitempty"`
+	BlobURL          string `json:"blob_url,omitempty"`
+	RawURL           string `json:"raw_url,omitempty"`
+	ContentsURL      string `json:"contents_url,omitempty"`
+	PreviousFilename string `json:"previous_filename,omitempty"`
 }
 
 // GitCommit represents a GitHub commit.
 type GitCommit struct {
-	SHA     string `json:"sha,omitempty"`
-	Message string `json:"message,omitempty"`
+	SHA          string                 `json:"sha,omitempty"`
+	Author       CommitAuthor           `json:"author,omitempty"`
+	Committer    CommitAuthor           `json:"committer,omitempty"`
+	Message      string                 `json:"message,omitempty"`
+	Tree         Tree                   `json:"tree,omitempty"`
+	Parents      []GitCommit            `json:"parents,omitempty"`
+	Stats        *CommitStats           `json:"stats,omitempty"`
+	HTMLURL      string                 `json:"html_url,omitempty"`
+	URL          string                 `json:"url,omitempty"`
+	Verification *SignatureVerification `json:"verification,omitempty"`
+	NodeID       string                 `json:"node_id,omitempty"`
+
+	// CommentCount is the number of GitHub comments on the commit. This
+	// is only populated for requests that fetch GitHub data like
+	// Pulls.ListCommits, Repositories.ListCommits, etc.
+	CommentCount *int `json:"comment_count,omitempty"`
+}
+
+// CommitAuthor represents the author or committer of a commit. The commit
+// author may not correspond to a GitHub User.
+type CommitAuthor struct {
+	Date  time.Time `json:"date,omitempty"`
+	Name  string    `json:"name,omitempty"`
+	Email string    `json:"email,omitempty"`
+
+	// The following fields are only populated by Webhook events.
+	Login *string `json:"username,omitempty"`
+}
+
+// SignatureVerification represents GPG signature verification.
+type SignatureVerification struct {
+	Verified  bool   `json:"verified,omitempty"`
+	Reason    string `json:"reason,omitempty"`
+	Signature string `json:"signature,omitempty"`
+	Payload   string `json:"payload,omitempty"`
 }
 
 // Project is a github project
