@@ -244,7 +244,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration
     decorate: true
-    always_run: true
+    always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
