@@ -127,6 +127,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 14, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning were deprecated on *August 22, 2020* in favor of the new `exempt_users` and `exempt_branches` fields. The support for these fields shall be stopped in *January 2021*.
  - *November 11th, 2020* The prow-controller-manager and sinker now require RBAC to be set up to manage their leader lock in the `coordination.k8s.io` group. See [here](https://github.com/kubernetes/test-infra/pull/19906/files?diff=split&w=1)
  - *November, 2020* The deprecated `namespace` and `additional_namespaces` properties have been removed from the config updater plugin
                        for more details.
