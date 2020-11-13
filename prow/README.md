@@ -91,7 +91,6 @@ Prow is used by the following organizations and projects:
 - [Kubeflow](https://github.com/kubeflow)
 - [Azure AKS Engine](https://github.com/Azure/aks-engine/tree/master/.prowci)
 - [tensorflow/minigo](https://github.com/tensorflow/minigo#automated-tests)
-- [helm/charts](https://github.com/helm/charts)
 - [Daisy(google compute image tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
 - [KubeEdge (Kubernetes Native Edge Computing Framework)](https://github.com/kubeedge/kubeedge)
 - [Volcano (Kubernetes Native Batch System)](https://github.com/volcano-sh/volcano)
