@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -231,12 +232,9 @@ func (bucket blobStorageBucket) listAll(ctx context.Context, prefix string) ([]s
 
 // Gets all build ids for a job.
 func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) ([]int64, error) {
-	ids := []int64{}
+	var ids []int64
 	if strings.HasPrefix(root, logsPrefix) {
-		dirs, err := bucket.listSubDirs(ctx, root)
-		if err != nil {
-			return ids, fmt.Errorf("failed to list directories: %v", err)
-		}
+		dirs, listErr := bucket.listSubDirs(ctx, root)
 		for _, dir := range dirs {
 			leaf := path.Base(dir)
 			i, err := strconv.ParseInt(leaf, 10, 64)
@@ -246,11 +244,11 @@ func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) (
 				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
 			}
 		}
-	} else {
-		keys, err := bucket.listAll(ctx, root)
-		if err != nil {
-			return ids, fmt.Errorf("failed to list keys: %v", err)
+		if listErr != nil {
+			return ids, fmt.Errorf("failed to list directories: %w", listErr)
 		}
+	} else {
+		keys, listErr := bucket.listAll(ctx, root)
 		for _, key := range keys {
 			matches := linkRe.FindStringSubmatch(key)
 			if len(matches) == 2 {
@@ -261,6 +259,9 @@ func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) (
 					logrus.Warningf("unrecognized file name (expected <int64>.txt): %s", key)
 				}
 			}
+		}
+		if listErr != nil {
+			return ids, fmt.Errorf("failed to list keys: %w", listErr)
 		}
 	}
 	return ids, nil
@@ -434,8 +435,11 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 		tmpl.LatestLink = linkID(url, emptyID)
 	}
 
-	buildIDs, err := bucket.listBuildIDs(ctx, root)
-	if err != nil {
+	// Don't spend an unbound amount of time finding a potentially huge history
+	buildIDListCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	buildIDs, err := bucket.listBuildIDs(buildIDListCtx, root)
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
 	}
 	sort.Sort(sort.Reverse(int64slice(buildIDs)))

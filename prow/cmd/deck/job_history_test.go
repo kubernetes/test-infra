@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"reflect"
 	"testing"
@@ -399,4 +400,58 @@ func Test_getJobHistory(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestListBuildIDsReturnsResultsOnError verifies that we get results even when there was an error,
+// mostly important so we can timeout it and still get some results.
+func TestListBuildIDsReturnsResultsOnError(t *testing.T) {
+	t.Run("logs-prefix", func(t *testing.T) {
+		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
+			result: io.ObjectAttributes{Name: "1327350934719696896", IsDir: true},
+			err:    errors.New("some-err"),
+		}}}
+		ids, err := bucket.listBuildIDs(context.Background(), logsPrefix)
+		if err == nil || err.Error() != "failed to list directories: some-err" {
+			t.Fatalf("didn't get expected error message 'failed to list directories: some-err' but got err %v", err)
+		}
+		if n := len(ids); n != 1 {
+			t.Errorf("didn't get result back, ids were %v", ids)
+		}
+	})
+	t.Run("no-prefix", func(t *testing.T) {
+		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
+			result: io.ObjectAttributes{Name: "/1327350934719696896.txt", IsDir: false},
+			err:    errors.New("some-err"),
+		}}}
+		ids, err := bucket.listBuildIDs(context.Background(), "")
+		if err == nil || err.Error() != "failed to list keys: some-err" {
+			t.Fatalf("didn't get expected error message 'failed to list keys: some-err' but got err %v", err)
+		}
+		if n := len(ids); n != 1 {
+			t.Errorf("didn't get result back, ids were %v", ids)
+		}
+	})
+}
+
+type fakeIterator struct {
+	ranOnce bool
+	result  io.ObjectAttributes
+	err     error
+}
+
+func (fi *fakeIterator) Next(_ context.Context) (io.ObjectAttributes, error) {
+	if !fi.ranOnce {
+		fi.ranOnce = true
+		return fi.result, nil
+	}
+	return io.ObjectAttributes{}, fi.err
+}
+
+type fakeOpener struct {
+	io.Opener
+	iterator fakeIterator
+}
+
+func (fo fakeOpener) Iterator(_ context.Context, _, _ string) (io.ObjectIterator, error) {
+	return &fo.iterator, nil
 }
