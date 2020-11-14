@@ -798,6 +798,7 @@ plugins:
 
   kubernetes/website:
   - milestone
+  - milestoneapplier
   - project
   - require-matching-label
 
