@@ -440,19 +440,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     - needs-rebase
-  - repos:
-    - helm/charts
-    labels:
-    - lgtm
-    - approved
-    - "Contribution Allowed"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-rebase
   - orgs:
     - kubernetes
     - kubernetes-client
@@ -561,7 +548,6 @@ tide:
     - do-not-merge/work-in-progress
 
   merge_method:
-    helm/charts: squash
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash

@@ -109,8 +109,6 @@ func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
 		MergeType: map[string]github.PullRequestMergeType{
 			"kubernetes/kops":             github.MergeRebase,
-			"kubernetes/charts":           github.MergeSquash,
-			"helm/charts":                 github.MergeSquash,
 			"kubernetes-helm":             github.MergeSquash,
 			"kubernetes-helm/chartmuseum": github.MergeMerge,
 		},
@@ -130,11 +128,6 @@ func TestMergeMethod(t *testing.T) {
 			"kubernetes",
 			"kops",
 			github.MergeRebase,
-		},
-		{
-			"kubernetes",
-			"charts",
-			github.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
@@ -162,14 +155,6 @@ func TestMergeTemplate(t *testing.T) {
 				TitleTemplate: "",
 				BodyTemplate:  "",
 			},
-			"kubernetes/charts": {
-				TitleTemplate: "{{ .Number }}",
-				BodyTemplate:  "",
-			},
-			"helm/charts": {
-				TitleTemplate: "",
-				BodyTemplate:  "{{ .Body }}",
-			},
 			"kubernetes-helm": {
 				TitleTemplate: "{{ .Title }}",
 				BodyTemplate:  "{{ .Body }}",
@@ -193,22 +178,6 @@ func TestMergeTemplate(t *testing.T) {
 			expected: TideMergeCommitTemplate{
 				TitleTemplate: "",
 				BodyTemplate:  "",
-			},
-		},
-		{
-			org:  "kubernetes",
-			repo: "charts",
-			expected: TideMergeCommitTemplate{
-				TitleTemplate: "{{ .Number }}",
-				BodyTemplate:  "",
-			},
-		},
-		{
-			org:  "helm",
-			repo: "charts",
-			expected: TideMergeCommitTemplate{
-				TitleTemplate: "",
-				BodyTemplate:  "{{ .Body }}",
 			},
 		},
 		{

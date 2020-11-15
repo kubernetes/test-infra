@@ -32,7 +32,6 @@ owners:
   - kubernetes/website
   skip_collaborators:
   - kubernetes-sigs/contributor-playground
-  - helm/charts
 
 approve:
 - repos:
@@ -96,10 +95,6 @@ approve:
   - kubernetes/cloud-provider-gcp
   require_self_approval: false
   ignore_review_state: false
-- repos:
-  - helm/charts
-  require_self_approval: false
-  lgtm_acts_as_approve: true
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
@@ -671,17 +666,6 @@ plugins:
   - verify-owners   # Validates OWNERS file changes in PRs.
   - wip   # Applies a label to PRs with wip in the title to block merge
   - trigger
-
-  helm/charts:
-  - approve
-  - assign
-  - blunderbuss
-  - cla
-  - hold
-  - lgtm
-  - trigger
-  - verify-owners
-  - wip
 
   kubernetes:
   - approve
