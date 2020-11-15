@@ -184,7 +184,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	if b, err := exec.Command(c.git, "clone", cache, t).CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
-	return &Repo{
+	r := &Repo{
 		dir:    t,
 		logger: c.logger,
 		git:    c.git,
@@ -194,7 +194,12 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		repo:   repository,
 		user:   user,
 		pass:   pass,
-	}, nil
+	}
+	// disable git GC
+	if err := r.Config("gc.auto", "0"); err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
