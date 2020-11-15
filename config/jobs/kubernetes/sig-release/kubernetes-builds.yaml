@@ -126,7 +126,7 @@ periodics:
       - --allow-dup
       - --fast
       - --bucket=k8s-release-dev
-      - --gcs-suffix=no-bootstrap
+      - --gcs-root=ci-no-bootstrap
       - --registry=gcr.io/k8s-staging-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
