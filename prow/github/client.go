@@ -672,28 +672,6 @@ func (c *client) request(r *request, ret interface{}) (int, error) {
 	return statusCode, nil
 }
 
-// Make a request with retries. If ret is not nil, unmarshal the response body
-// into it. Returns an error if the exit code is not one of the provided codes.
-// Returns githubError if HTTP Status Code is not 2xx.
-func (c *client) requestWithGitHubError(r *request, ret interface{}) (int, githubError, error) {
-	statusCode, b, err := c.requestRaw(r)
-	if err != nil {
-		return statusCode, githubError{}, err
-	}
-	if ret != nil && statusCode > 199 && statusCode < 300 {
-		if err := json.Unmarshal(b, ret); err != nil {
-			return statusCode, githubError{}, err
-		}
-		return statusCode, githubError{}, nil
-	}
-
-	ghe := githubError{}
-	if err := json.Unmarshal(b, &ghe); err != nil {
-		return statusCode, githubError{}, err
-	}
-	return statusCode, ghe, nil
-}
-
 // requestRaw makes a request with retries and returns the response body.
 // Returns an error if the exit code is not one of the provided codes.
 func (c *client) requestRaw(r *request) (int, []byte, error) {
@@ -2312,8 +2290,7 @@ func (c *client) AddLabel(org, repo string, number int, label string) error {
 }
 
 type githubError struct {
-	Message string   `json:"message,omitempty"`
-	Errors  []string `json:"errors,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // RemoveLabel removes label from org/repo#number, returning an error on any failure.
@@ -2378,27 +2355,24 @@ func (c *client) AssignIssue(org, repo string, number int, logins []string) erro
 
 	assigned := make(map[string]bool)
 	var i Issue
-	httpStatusCode, githubError, err := c.requestWithGitHubError(&request{
+	httpStatusCode, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
-		exitCodes: []int{
-			http.StatusCreated,             //201
-			http.StatusUnprocessableEntity, //422
-		},
+		exitCodes:   []int{http.StatusCreated}, //201
 	}, &i)
 	if err != nil {
-		return err
-	}
-	if httpStatusCode == http.StatusUnprocessableEntity {
-		if githubError.Message == "Validation Failed" && githubError.Errors != nil && len(githubError.Errors) == 1 &&
-			githubError.Errors[0] == "Could not add assignees: Validation failed: Assignee has already been taken" {
-			c.logger.WithFields(logrus.Fields{
-				"org": org, "repo": repo, "number": number, "users": logins, "httpStatusCode": httpStatusCode, "githubError": githubError,
-			}).Debug("User was already assigned")
-			return nil
+		if reqErr, isReqErr := err.(requestError); isReqErr && (httpStatusCode == http.StatusUnprocessableEntity) {
+			if altClientErr, isAltClientErr := reqErr.ClientError.(AlternativeClientError); isAltClientErr &&
+				altClientErr.Message == "Validation Failed" && altClientErr.Errors != nil && len(altClientErr.Errors) == 1 &&
+				altClientErr.Errors[0] == "Could not add assignees: Validation failed: Assignee has already been taken" {
+				c.logger.WithFields(logrus.Fields{
+					"org": org, "repo": repo, "number": number, "users": logins, "httpStatusCode": httpStatusCode, "altClientErr": altClientErr,
+				}).Debug("User was already assigned")
+				return nil
+			}
 		}
-		return fmt.Errorf("AssignIssue(%v,%v, %v, %v) failed with status: %v, response: %#v", org, repo, number, logins, httpStatusCode, githubError)
+		return err
 	}
 	for _, assignee := range i.Assignees {
 		assigned[NormLogin(assignee.Login)] = true

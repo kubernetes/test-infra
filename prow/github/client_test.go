@@ -846,11 +846,11 @@ func TestAssignIssue422Other(t *testing.T) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 
-		ge := &githubError{
+		altClientErr := &AlternativeClientError{
 			Message: "Some Other failure",
 			Errors:  []string{"error 1"},
 		}
-		b, err := json.Marshal(&ge)
+		b, err := json.Marshal(&altClientErr)
 		if err != nil {
 			t.Fatalf("Didn't expect error: %v", err)
 		}
@@ -872,11 +872,12 @@ func TestAssignIssue422AlreadyAssigned(t *testing.T) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 
-		ge := &githubError{
-			Message: "Validation Failed",
-			Errors:  []string{"Could not add assignees: Validation failed: Assignee has already been taken"},
+		altClientErr := &AlternativeClientError{
+			Message:          "Validation Failed",
+			Errors:           []string{"Could not add assignees: Validation failed: Assignee has already been taken"},
+			DocumentationURL: "https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue",
 		}
-		b, err := json.Marshal(&ge)
+		b, err := json.Marshal(&altClientErr)
 		if err != nil {
 			t.Fatalf("Didn't expect error: %v", err)
 		}
@@ -885,7 +886,7 @@ func TestAssignIssue422AlreadyAssigned(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
-		t.Errorf("Got unexpected error %v", err)
+		t.Errorf("Got unexpected error: %v", err)
 	}
 }
 
