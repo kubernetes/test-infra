@@ -19,30 +19,7 @@ triggers:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
-  - kubeflow/arena
-  - kubeflow/batch-predict
-  - kubeflow/common
-  - kubeflow/community-infra
-  - kubeflow/examples
-  - kubeflow/fairing
-  - kubeflow/gcp-blueprints
-  - kubeflow/internal-acls
-  - kubeflow/katib
-  - kubeflow/kfp-tekton
-  - kubeflow/kfp-tekton-backend
-  - kubeflow/kfserving
-  - kubeflow/kubebench
-  - kubeflow/kubeflow
-  - kubeflow/manifests
-  - kubeflow/metadata
-  - kubeflow/mpi-operator
-  - kubeflow/mxnet-operator
-  - kubeflow/pipelines
-  - kubeflow/pytorch-operator
-  - kubeflow/reporting
-  - kubeflow/testing
-  - kubeflow/tf-operator
-  - kubeflow/website
+  - kubeflow
   join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
 - repos:
   - tensorflow/minigo
@@ -696,6 +673,89 @@ plugins:
   - skip  # Allows cleaning up stale commit statuses
   - verify-owners   # Validates OWNERS file changes in PRs.
   - wip   # Applies a label to PRs with wip in the title to block merge
+
+  kubeflow/arena:
+  - trigger
+
+  kubeflow/batch-predict:
+  - trigger
+
+  kubeflow/caffe2-operator:
+  - trigger
+
+  kubeflow/chainer-operator:
+  - trigger
+
+  kubeflow/common:
+  - trigger
+
+  kubeflow/community-infra:
+  - trigger
+
+  kubeflow/examples:
+  - trigger
+
+  kubeflow/experimental-seldon:
+  - trigger
+
+  kubeflow/fairing:
+  - trigger
+
+  kubeflow/gcp-blueprints:
+  - trigger
+
+  kubeflow/internal-acls:
+  - trigger
+
+  kubeflow/katib:
+  - trigger
+
+  kubeflow/kfp-tekton:
+  - trigger
+
+  kubeflow/kfp-tekton-backend:
+  - trigger
+
+  kubeflow/kfserving:
+  - trigger
+
+  kubeflow/kubebench:
+  - trigger
+
+  kubeflow/kubeflow:
+  - trigger
+
+  kubeflow/manifests:
+  - trigger
+
+  kubeflow/metadata:
+  - trigger
+
+  kubeflow/mpi-operator:
+  - trigger
+
+  kubeflow/mxnet-operator:
+  - trigger
+
+  kubeflow/pipelines:
+  - trigger
+
+  kubeflow/pytorch-operator:
+  - trigger
+
+  kubeflow/reporting:
+  - trigger
+
+  kubeflow/testing:
+  - trigger
+
+  kubeflow/tf-operator:
+  - trigger
+
+  kubeflow/website:
+  - trigger
+
+  kubeflow/xgboost-operator:
   - trigger
 
   helm/charts:
