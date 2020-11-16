@@ -71,7 +71,7 @@ class GCSClient:
     @staticmethod
     def _parse_uri(path):
         if not path.startswith('gs://'):
-            raise ValueError("Bad GCS path")
+            raise ValueError("Bad path: %s, should start with 'gs://" % path)
         bucket, prefix = path[5:].split('/', 1)
         return bucket, prefix
 
