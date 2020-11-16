@@ -36,6 +36,8 @@ presubmits:
           value: "1.17"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v3.0.2"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -74,6 +76,8 @@ presubmits:
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -120,6 +124,8 @@ presubmits:
           value: "1.18"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v3.0.2"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -158,6 +164,8 @@ presubmits:
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -204,6 +212,8 @@ presubmits:
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v3.0.2"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -242,6 +252,8 @@ presubmits:
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -288,6 +300,8 @@ presubmits:
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v3.0.2"
         - name: CSI_PROW_TESTS
           value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
@@ -326,6 +340,8 @@ presubmits:
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.4.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
@@ -403,6 +419,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.17"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -443,6 +461,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.18"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -483,6 +503,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -523,6 +545,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -563,6 +587,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.18"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -603,6 +629,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -643,6 +671,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -683,6 +713,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -723,6 +755,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -763,6 +797,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "v3.0.2"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -808,6 +844,8 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
@@ -854,6 +892,8 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
@@ -900,6 +940,8 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
@@ -946,6 +988,8 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
@@ -992,6 +1036,8 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
       # ... but the RBAC rules only when testing on master.
       # The other jobs test against the unmodified deployment for
       # that Kubernetes version, i.e. with the original RBAC rules.
