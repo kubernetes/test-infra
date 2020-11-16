@@ -16,12 +16,11 @@
 set -o errexit
 
 readonly OUTPUT="$(dirname $0)/k8s-staging-sig-storage.yaml"
+
+# Repos for which cloud image builds are working.
 readonly REPOS=(
     kubernetes-csi/csi-driver-host-path
-    kubernetes-csi/csi-driver-iscsi
-    kubernetes-csi/csi-driver-nfs
     kubernetes-csi/csi-driver-smb
-    kubernetes-csi/csi-proxy
     kubernetes-csi/csi-test
     kubernetes-csi/external-attacher
     kubernetes-csi/external-health-monitor
@@ -31,6 +30,14 @@ readonly REPOS=(
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-sigs/sig-storage-local-static-provisioner
+)
+
+# Repos which should eventually enable cloud image builds but currently
+# don't.
+readonly BROKEN_REPOS=(
+    kubernetes-csi/csi-driver-iscsi
+    kubernetes-csi/csi-driver-nfs
+    kubernetes-csi/csi-proxy
     kubernetes-sigs/container-object-storage-interface-api
 )
 
@@ -40,7 +47,7 @@ cat >"${OUTPUT}" <<EOF
 postsubmits:
 EOF
 
-for repo in "${REPOS[@]}"; do
+for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
     IFS=/ read -r org repo <<<"${repo}"
     cat >>"${OUTPUT}" <<EOF
   ${org}/${repo}:
