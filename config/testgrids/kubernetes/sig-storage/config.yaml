@@ -15,6 +15,7 @@ dashboard_groups:
     - sig-storage-csi-other
     - sig-storage-image-build
     - sig-storage-container-object-storage-interface-api
+    - sig-storage-container-object-storage-interface-controller
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -117,3 +118,4 @@ dashboards:
 - name: sig-storage-lib-external-provisioner
 - name: sig-storage-image-build
 - name: sig-storage-container-object-storage-interface-api
+- name: sig-storage-container-object-storage-interface-controller
