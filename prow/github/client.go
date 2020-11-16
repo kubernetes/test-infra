@@ -2362,10 +2362,11 @@ func (c *client) AssignIssue(org, repo string, number int, logins []string) erro
 		exitCodes:   []int{http.StatusCreated}, //201
 	}, &i)
 	if err != nil {
-		if reqErr, isReqErr := err.(requestError); isReqErr && (httpStatusCode == http.StatusUnprocessableEntity) {
-			if altClientErr, isAltClientErr := reqErr.ClientError.(AlternativeClientError); isAltClientErr &&
-				altClientErr.Message == "Validation Failed" && altClientErr.Errors != nil && len(altClientErr.Errors) == 1 &&
-				altClientErr.Errors[0] == "Could not add assignees: Validation failed: Assignee has already been taken" {
+		var reqErr requestError
+		if errors.As(err, &reqErr) && (httpStatusCode == http.StatusUnprocessableEntity) {
+			var altClientErr AlternativeClientError
+			if errors.As(reqErr.ClientError, &altClientErr) && altClientErr.Message == "Validation Failed" && altClientErr.Errors != nil &&
+				len(altClientErr.Errors) == 1 && altClientErr.Errors[0] == "Could not add assignees: Validation failed: Assignee has already been taken" {
 				c.logger.WithFields(logrus.Fields{
 					"org": org, "repo": repo, "number": number, "users": logins, "httpStatusCode": httpStatusCode, "altClientErr": altClientErr,
 				}).Debug("User was already assigned")
