@@ -54,6 +54,7 @@ prow_push(
         ],
         targets = {
             "ghproxy": "//ghproxy:image",
+            "label_sync": "//label_sync:image",
             "needs-rebase": "//prow/external-plugins/needs-rebase:image",
         },
     ),
