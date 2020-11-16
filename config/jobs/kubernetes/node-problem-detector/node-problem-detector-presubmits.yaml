@@ -79,7 +79,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           cd $(GOPATH)/src/k8s.io/kubernetes &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -116,7 +116,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -152,7 +152,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          ./test/build.sh -p $(BUILD_ID) -f pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -188,7 +188,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -224,7 +224,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          ./test/build.sh -p $(BUILD_ID) -f pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
