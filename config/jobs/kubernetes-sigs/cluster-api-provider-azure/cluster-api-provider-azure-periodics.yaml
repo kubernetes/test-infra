@@ -57,6 +57,8 @@ periodics:
       env:
         - name: GINKGO_FOCUS
           value: "Cluster API E2E tests"
+        - name: LOCAL_ONLY
+          value: "false"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
