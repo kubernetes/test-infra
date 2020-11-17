@@ -96,27 +96,6 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/ibm-ingress-nginx-operator:
-  - name: coverage-ibm-ingress-nginx-operator-postsubmit
-    cluster: default
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/ibm-ingress-nginx-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-ingress-nginx-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: image-ibm-ingress-nginx-operator-amd64-postsubmit
     cluster: default
     branches:
