@@ -206,7 +206,6 @@ def main(
 
 
 def load_sub(poll):
-<<<<<<< HEAD
     """Return the PubSub subscription specified by the /-separated input.
 
     Args:
@@ -220,12 +219,6 @@ def load_sub(poll):
     project_id, _, sub = poll.split('/')
     subscription_path = f'projects/{project_id}/subscriptions/{sub}'
     return subscriber, subscription_path
-=======
-    """Return the PubSub subscription specified by the /-separated input."""
-    project, topic, subscription = poll.split('/')
-    pubsub_client = pubsub.Client(project) # pylint: disable=no-member
-    return pubsub_client.topic(topic).subscription(subscription)
->>>>>>> 6e711b3b52 (Clean up kettle)
 
 
 def load_schema(schemafield):
