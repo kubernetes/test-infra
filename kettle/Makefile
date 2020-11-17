@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/kettle
-TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date +v%Y%m%d%S)-$(shell git describe --tags --always --dirty)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-gubernator
