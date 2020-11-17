@@ -224,7 +224,6 @@ presubmits:
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
-        env:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

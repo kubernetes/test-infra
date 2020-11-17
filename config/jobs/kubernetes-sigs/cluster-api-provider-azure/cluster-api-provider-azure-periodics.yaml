@@ -19,9 +19,6 @@ periodics:
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
-        env:
-          - name: GINKGO_FOCUS
-            value: "Conformance Tests"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -33,6 +30,42 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: periodic-conformance-v1alpha3
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
+- name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201105-c47a42a-1.18
+        command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+        env:
+        - name: E2E_ARGS
+          value: "-kubetest.use-ci-artifacts"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: periodic-capz-conformance-k8s-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-capi-e2e
   decorate: true
   decoration_config:
