@@ -113,7 +113,7 @@ postsubmits:
         - name: CODECOV_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ibm-ibm-ingress-nginx-operator-codecov-token
+              name: ibm-ingress-nginx-operator-codecov-token
               key: codecov-token
         securityContext:
           privileged: true
