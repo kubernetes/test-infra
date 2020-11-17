@@ -54,7 +54,7 @@ class GCSClient:
         cloud.google.com/storage/docs/gsutil/addlhelp/RetryHandlingStrategy
 
         """
-        url = 'https://www.googleapis.com/storage/v1/b/%s' % path
+        url = f'https://www.googleapis.com/storage/v1/b/{path}'
         for retry in range(23):
             try:
                 resp = self.session.get(url, params=params, stream=False)
@@ -78,7 +78,7 @@ class GCSClient:
     def get(self, path, as_json=False):
         """Get an object from GCS."""
         bucket, path = self._parse_uri(path)
-        return self._request('%s/o/%s' % (bucket, urllib.parse.quote(path, '')),
+        return self._request(f'{bucket}/o/{urllib.parse.quote(path, "")}',
                              {'alt': 'media'}, as_json=as_json)
 
     def ls(self,
@@ -98,18 +98,18 @@ class GCSClient:
             if dirs:
                 params['fields'] += ',prefixes'
         if files:
-            params['fields'] += ',items(%s)' % item_field
+            params['fields'] += f',items({item_field})'
         while build_limit > 0:
-            resp = self._request('%s/o' % bucket, params)
+            resp = self._request(f'{bucket}/o', params)
             if resp is None:  # nothing under path?
                 return
             for prefix in resp.get('prefixes', []):
                 build_limit -= 1
-                yield 'gs://%s/%s' % (bucket, prefix)
+                yield f'gs://{bucket}/{prefix}'
             for item in resp.get('items', []):
                 if item_field == 'name':
                     build_limit -= 1
-                    yield 'gs://%s/%s' % (bucket, item['name'])
+                    yield f'gs://{bucket}/{item["name"]}'
                 else:
                     build_limit -= 1
                     yield item[item_field]
@@ -122,7 +122,7 @@ class GCSClient:
 
     def _ls_junit_paths(self, build_dir):
         """Lists the paths of JUnit XML files for a build."""
-        url = '%sartifacts/' % (build_dir)
+        url = f'{build_dir}artifacts/'
         for path in self.ls(url):
             if re.match(r'.*/junit.*\.xml$', path):
                 yield path
@@ -144,25 +144,24 @@ class GCSClient:
         '''Returns whether builds are precise (guarantees existence)'''
         if self.metadata.get('sequential', True):
             try:
-                latest_build = int(self.get('%s%s/latest-build.txt'
-                                            % (self.jobs_dir, job)))
+                latest_build = int(self.get(f'{self.jobs_dir}{job}/latest-build.txt'))
             except (ValueError, TypeError):
                 pass
             else:
                 return False, (str(n) for n in range(latest_build, 0, -1)[:build_limit])
         # Invalid latest-build or bucket is using timestamps
-        build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
+        build_paths = self.ls_dirs(f'{self.jobs_dir}{job}/')
         return True, sorted(
             (os.path.basename(os.path.dirname(b)) for b in build_paths),
             key=pad_numbers, reverse=True)[:build_limit]
 
     def get_started_finished(self, job, build):
         if self.metadata.get('pr'):
-            build_dir = self.get('%s/directory/%s/%s.txt' % (self.jobs_dir, job, build)).strip()
+            build_dir = self.get(f'{self.jobs_dir}/directory/{job}/{build}.txt').strip()
         else:
-            build_dir = '%s%s/%s' % (self.jobs_dir, job, build)
-        started = self.get('%s/started.json' % build_dir, as_json=True)
-        finished = self.get('%s/finished.json' % build_dir, as_json=True)
+            build_dir = f'{self.jobs_dir}{job}/{build}'
+        started = self.get(f'{build_dir}/started.json', as_json=True)
+        finished = self.get(f'{build_dir}/finished.json', as_json=True)
         return build_dir, started, finished
 
     def get_builds(self, builds_have, build_limit=sys.maxsize):
@@ -220,7 +219,7 @@ def get_junits(build_info):
         raise
 
 
-def get_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
+def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
     """
     Adds information about tests to a dictionary.
 
@@ -232,11 +231,11 @@ def get_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
     """
     gcs = client_class(jobs_dir, metadata)
 
-    print('Loading builds from %s' % jobs_dir)
+    logging.info('Loading builds from %s', jobs_dir)
     sys.stdout.flush()
 
     builds_have = db.get_existing_builds(jobs_dir)
-    print('already have %d builds' % len(builds_have))
+    logging.info('already have %d builds', len(builds_have))
     sys.stdout.flush()
 
     jobs_and_builds = gcs.get_builds(builds_have, build_limit)
@@ -254,7 +253,7 @@ def get_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
 
     try:
         for n, (build_dir, started, finished) in enumerate(builds_iterator):
-            print(build_dir)
+            logging.info('inserting build: %s', build_dir)
             if started or finished:
                 db.insert_build(build_dir, started, finished)
             if n % 200 == 0:
@@ -286,7 +285,7 @@ def remove_system_out(data):
 
 def download_junit(db, threads, client_class):
     """Download junit results for builds without them."""
-    print("Downloading JUnit artifacts.")
+    logging.info('Downloading JUnit artifacts.')
     sys.stdout.flush()
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
@@ -301,8 +300,8 @@ def download_junit(db, threads, client_class):
         test_iterator = (
             get_junits(build_path) for build_path in builds_to_grab)
     for n, (build_id, build_path, junits) in enumerate(test_iterator, 1):
-        print('%d/%d' % (n, len(builds_to_grab)),
-              build_path, len(junits), len(''.join(junits.values())))
+        logging.info('%d/%d %s %d %d', n, len(builds_to_grab),
+                     build_path, len(junits), len(''.join(junits.values())))
         junits = {k: remove_system_out(v) for k, v in junits.items()}
 
         db.insert_build_junits(build_id, junits)
@@ -316,12 +315,12 @@ def download_junit(db, threads, client_class):
 
 def main(db, jobs_dirs, threads, get_junit, build_limit, client_class=GCSClient):
     """Collect test info in matching jobs."""
-    get_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
-               threads, client_class, build_limit)
+    get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
+                   threads, client_class, build_limit)
     for bucket, metadata in jobs_dirs.items():
         if not bucket.endswith('/'):
             bucket += '/'
-        get_builds(db, bucket, metadata, threads, client_class, build_limit)
+        get_all_builds(db, bucket, metadata, threads, client_class, build_limit)
     if get_junit:
         download_junit(db, threads, client_class)
 
