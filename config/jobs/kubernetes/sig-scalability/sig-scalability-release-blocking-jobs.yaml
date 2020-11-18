@@ -163,7 +163,6 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test=false

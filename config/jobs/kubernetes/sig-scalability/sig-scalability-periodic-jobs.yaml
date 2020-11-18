@@ -204,7 +204,6 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh

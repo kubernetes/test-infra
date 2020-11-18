@@ -80,7 +80,6 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test=false
@@ -129,7 +128,6 @@ periodics:
           - --gcp-project-type=scalability-project
           - --gcp-zone=us-east1-b
           - --provider=gce
-          - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
