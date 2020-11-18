@@ -29,6 +29,7 @@ readonly REPOS=(
     kubernetes-csi/external-snapshotter
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
+    kubernetes-csi/csi-driver-nfs
     kubernetes-sigs/sig-storage-local-static-provisioner
 )
 
@@ -36,7 +37,6 @@ readonly REPOS=(
 # don't.
 readonly BROKEN_REPOS=(
     kubernetes-csi/csi-driver-iscsi
-    kubernetes-csi/csi-driver-nfs
     kubernetes-csi/csi-proxy
     kubernetes-sigs/container-object-storage-interface-api
 )
