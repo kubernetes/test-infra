@@ -367,8 +367,6 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 - name: ci-daisy-e2e-daily
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-daily
-- name: ci-daisy-e2e-weekly
-  gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-weekly
 - name: ci-images-import-export-cli-e2e-tests
   gcs_prefix: compute-image-tools-test/logs/ci-images-import-export-cli-e2e-tests
 - name: ci-ovf-import-e2e-tests-daily
@@ -377,10 +375,6 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-windows-upgrade-e2e-tests
 - name: ci-v2v-adapt-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-v2v-adapt-e2e
-- name: linux-image-tests
-  gcs_prefix: compute-image-tools-test/logs/linux-image-tests
-- name: windows-image-tests
-  gcs_prefix: compute-image-tools-test/logs/windows-image-tests
 - name: osconfig-unstable
   gcs_prefix: compute-image-tools-test/logs/osconfig-unstable
 - name: osconfig-staging
