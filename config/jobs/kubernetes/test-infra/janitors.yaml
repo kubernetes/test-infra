@@ -13,7 +13,7 @@ periodics:
       args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20201113-e5ff1b5
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20201118-c6d730e
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor
