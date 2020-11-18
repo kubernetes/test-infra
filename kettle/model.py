@@ -62,6 +62,8 @@ class Database:
                 ' and started_json IS NOT NULL and finished_json IS NULL',
                 (jobs_dir + '\x00', jobs_dir + '\x7f')):
             started = json.loads(started_json)
+            if 'timestamp' not in started.keys():
+                continue # malformed started
             if int(started['timestamp']) < time.time() - 60*60*24*5:
                 # over 5 days old, no need to try looking for finished any more.
                 builds_have.add(path_tuple(path))

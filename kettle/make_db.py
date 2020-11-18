@@ -17,6 +17,7 @@
 
 import argparse
 import logging
+import json
 import os
 import random
 import re
@@ -62,7 +63,11 @@ class GCSClient:
                     return None
                 resp.raise_for_status()
                 if as_json:
-                    return resp.json()
+                    try:
+                        return resp.json()
+                    except json.decoder.JSONDecodeError:
+                        logging.exception('Failed to decode request for %s', path)
+                        return None
                 return resp.text
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
@@ -205,9 +210,9 @@ def get_started_finished(job_info):
     (job, build) = job_info
     try:
         return WORKER_CLIENT.get_started_finished(job, build)
-    except:
+    except: # pylint: disable=W0702
         logging.exception('failed to get tests for %s/%s', job, build)
-        raise
+        return None, None, None
 
 def get_junits(build_info):
     (build_id, gcs_path) = build_info
@@ -231,11 +236,11 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
     """
     gcs = client_class(jobs_dir, metadata)
 
-    logging.info('Loading builds from %s', jobs_dir)
+    print(f'Loading builds from {jobs_dir}')
     sys.stdout.flush()
 
     builds_have = db.get_existing_builds(jobs_dir)
-    logging.info('already have %d builds', len(builds_have))
+    print(f'already have {len(builds_have)} builds')
     sys.stdout.flush()
 
     jobs_and_builds = gcs.get_builds(builds_have, build_limit)
@@ -253,7 +258,9 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
 
     try:
         for n, (build_dir, started, finished) in enumerate(builds_iterator):
-            logging.info('inserting build: %s', build_dir)
+            if not build_dir:
+                continue # skip builds that raised exceptions
+            print(f'inserting build: {build_dir}')
             if started or finished:
                 db.insert_build(build_dir, started, finished)
             if n % 200 == 0:
