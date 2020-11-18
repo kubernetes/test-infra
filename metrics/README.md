@@ -76,6 +76,17 @@ Add the new metric to the list above.
 
 After merging, find the new metric on GCS within 24 hours.
 
+## Testing Metrics
+The metrics executed in these queries are stored in [BigQuery](https://cloud.google.com/bigquery). The tables that hold k8s test data are populated by [Kettle](https://github.com/kubernetes/test-infra/blob/master/kettle/README.md) and live in the `k8s-gubernator` project of [Big Query Tables].
+
+From these tables open `k8s-gubernator` -> `build` -> `<table you care about>`
+- Click on `Query Table`
+- Build or Copy Query into the editor
+- Click `> Run`
+- The results will be visible in a table at the bottom
+
+You can see the last time a table was updated by selecting a table, and opening the `Details` tab. The `Last modified` field will show the last time this table was updated. If data is stale, please create an issue against `Kettle`.
+
 ## Details
 
 Each query is run every 24 hours to produce a json
@@ -104,3 +115,5 @@ example suppose we run a build of a job 5 times at the same commit:
 * 5 passing runs, 0 failing runs: consistent
 * 0 passing runs, 5 failing runs: consistent
 * 1-4 passing runs, 1-4 failing runs: inconsistent aka flaked
+
+[Big Query Tables]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
