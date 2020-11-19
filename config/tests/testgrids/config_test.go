@@ -46,6 +46,7 @@ var (
 		"istio",
 		"googleoss",
 		"google",
+		"knative", // This allows both "knative" and "knative-sandbox", as well as "knative-google"
 		"kopeio",
 		"redhat",
 		"vmware",
