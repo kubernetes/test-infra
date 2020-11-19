@@ -344,7 +344,7 @@ func TestConfig(t *testing.T) {
 		}
 	}
 
-	// All Testgroup should be mapped to one or more dashboardToGroupMap
+	// All Testgroup should be mapped to one or more tabs
 	missedTestgroups := false
 	for testgroupname, occurrence := range testgroupMap {
 		if occurrence == 1 {
