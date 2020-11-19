@@ -75,7 +75,7 @@ func (a *repoClientAdapter) Commit(title, body string) error {
 }
 
 func (a *repoClientAdapter) PushToFork(branch string, force bool) error {
-	return a.Repo.Push(branch)
+	return a.Repo.Push(branch, force)
 }
 
 func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
