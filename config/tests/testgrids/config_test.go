@@ -330,12 +330,17 @@ func TestConfig(t *testing.T) {
 
 		// Dashboards that match this dashboard group's prefix should be a part of it
 		for dashboard := range dashboardmap {
-			if strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
-				group, ok := tabs[dashboard]
+			thisGroup := dashboardGroup.Name
+			if strings.HasPrefix(dashboard, thisGroup+"-") {
+				assignedGroup, ok := tabs[dashboard]
 				if !ok {
-					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, dashboardGroup.Name)
-				} else if group != dashboardGroup.Name {
-					t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, dashboardGroup.Name, group)
+					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, thisGroup)
+				} else if assignedGroup != thisGroup {
+					// If the assigned group includes this group name as a prefix (e.g. 'knative-sandbox' and 'knative')
+					// then the arrangment is ok. Otherwise, this group should be the assigned group.
+					if !strings.HasPrefix(dashboard, assignedGroup+"-") {
+						t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, thisGroup, assignedGroup)
+					}
 				}
 			}
 		}
