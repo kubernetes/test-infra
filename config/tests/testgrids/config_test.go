@@ -328,18 +328,17 @@ func TestConfig(t *testing.T) {
 			}
 		}
 
-		// All dashboards must be prefixed with their group.
-		for dashboard := range dashboardmap {
-			assignedGroup, ok := dashboardToGroupMap[dashboard]
-			if !ok {
-				t.Errorf("Dashboard %v did not have an assigned group", dashboard)
-			} else if !strings.HasPrefix(dashboard, assignedGroup+"-") {
-				t.Errorf("Dashboard %v is not prefixed with its assigned group %v", dashboard, assignedGroup)
-			}
-		}
 	}
 
-	// Dashboards
+	// All dashboards must be prefixed with their group.
+	for dashboard := range dashboardmap {
+		assignedGroup, ok := dashboardToGroupMap[dashboard]
+		if !ok {
+			t.Errorf("Dashboard %v did not have an assigned group", dashboard)
+		} else if !strings.HasPrefix(dashboard, assignedGroup+"-") {
+			t.Errorf("Dashboard %v is not prefixed with its assigned group %v", dashboard, assignedGroup)
+		}
+	}
 
 	// All Testgroup should be mapped to one or more tabs
 	missedTestgroups := false
