@@ -293,16 +293,6 @@ test_groups:
 # CEL Conformance Tests
 - name: cel-go-conformance-tests
   gcs_prefix: cel-conformance/test-logs
-  open_test_template: # The URL template to visit after clicking on a cell
-    url:
-  file_bug_template: # The URL template to visit when filing a bug
-    url: https://github.com/google/cel-go/issues/new
-  results_text: # Text to show in the about menu as a link to another view of the results
-  results_url_template: # The URL template to visit after clicking
-    url:
-  code_search_path: github.com/google/cel-go/search # URL for regression search links.
-  code_search_url_template: # The URL template to visit when searching for changelists
-    url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 #ibm ppc64le test results
 - name: ppc64le-conformance
