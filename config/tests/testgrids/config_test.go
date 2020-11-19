@@ -337,7 +337,7 @@ func TestConfig(t *testing.T) {
 					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, thisGroup)
 				} else if assignedGroup != thisGroup {
 					// If the assigned group includes this group name as a prefix (e.g. 'knative-sandbox' and 'knative')
-					// then the arrangment is ok. Otherwise, this group should be the assigned group.
+					// then the arrangement is ok. Otherwise, this group should be the assigned group.
 					if !strings.HasPrefix(dashboard, assignedGroup+"-") {
 						t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, thisGroup, assignedGroup)
 					}
