@@ -137,7 +137,7 @@ presubmits:
             -v 2
             --build --up --down
             --cloud-provider=aws
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux_amd64_pure_stripped/kops
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops
           ;
         # docker-in-docker needs privileged mode
         securityContext:
