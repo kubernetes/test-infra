@@ -42,6 +42,7 @@ const (
 )
 
 type Client struct {
+	// Keys are <imageHost>/<imageName>:<currentTag>. Values are corresponding tags.
 	tagCache   map[string]string
 	httpClient http.Client
 }
@@ -152,6 +153,11 @@ func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 	}
 
 	return latestTag, nil
+}
+
+// AddToCache keeps track of changed tags
+func (cli *Client) AddToCache(image, newTag string) {
+	cli.tagCache[image] = newTag
 }
 
 func updateAllTags(tagPicker func(host, image, tag string) (string, error), content []byte, imageFilter *regexp.Regexp) []byte {

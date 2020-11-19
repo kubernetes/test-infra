@@ -875,20 +875,7 @@ periodics:
       - go
       - run
       - experiment/autobumper/main.go
-      - --github-login=k8s-ci-robot
-      - --github-token=/etc/github-token/oauth
-      - --git-name=Kubernetes Prow Robot
-      - --git-email=k8s.ci.robot@gmail.com
-      - --github-org=kubernetes
-      - --github-repo=test-infra
-      - --oncall-address=https://storage.googleapis.com/kubernetes-jenkins/oncall.json
-      - --bump-prow-images
-      - --bump-boskos-images
-      - --bump-test-images
-      - --target-version=latest
-      - --include-config-paths=.
-      - --exclude-config-paths=config/prow-staging
-      - --extra-files=config/jobs/kubernetes/kops/build-grid.py,config/jobs/kubernetes/kops/build-pipeline.py,releng/generate_tests.py,images/kubekins-e2e/Dockerfile
+      - --config=config/jobs/kubernetes/test-infra/autobump-config.yaml
       volumeMounts:
       - name: github
         mountPath: /etc/github-token

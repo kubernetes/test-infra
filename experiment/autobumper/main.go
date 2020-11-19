@@ -18,39 +18,41 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/experiment/autobumper/bumper"
+
+	"gopkg.in/yaml.v2"
 )
 
-func parseOptions() *bumper.Options {
-	var o bumper.Options
-	flag.StringVar(&o.GitHubToken, "github-token", "", "The path to the GitHub token file.")
-	flag.StringVar(&o.GitHubLogin, "github-login", "", "The GitHub username to use. If not specified, uses values from the user associated with the access token.")
-	flag.StringVar(&o.GitName, "git-name", "", "The name to use on the git commit. Requires --git-email. If not specified, uses values from the user associated with the access token.")
-	flag.StringVar(&o.GitEmail, "git-email", "", "The email to use on the git commit. Requires --git-name. If not specified, uses values from the user associated with the access token.")
-	flag.StringVar(&o.GitHubOrg, "github-org", "", "The GitHub org name where the autobump PR will be created. Must not be empty when --create-pull-request is not false.")
-	flag.StringVar(&o.GitHubRepo, "github-repo", "", "The GitHub repo name where the autobump PR will be created. Must not be empty when --create-pull-request is not false.")
-	flag.StringVar(&o.RemoteBranch, "remote-branch", "autobump", "The remote branch name where the files will be updated. Must not be empty when --create-pull-request is not false.")
-	flag.StringVar(&o.OncallAddress, "oncall-address", "", "The oncall address where we can get the JSON file that stores the current oncall information.")
+func parseOptions() (*bumper.Options, error) {
+	var config string
 
-	flag.BoolVar(&o.BumpProwImages, "bump-prow-images", false, "Whether to bump up version of images in gcr.io/k8s-prow/.")
-	flag.BoolVar(&o.BumpBoskosImages, "bump-boskos-images", false, "Whether to bump up version of images in gcr.io/k8s-staging-boskos/.")
-	flag.BoolVar(&o.BumpTestImages, "bump-test-images", false, "Whether to bump up version of images in gcr.io/k8s-testimages/.")
-	flag.StringVar(&o.TargetVersion, "target-version", "", "The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.")
-
-	flag.Var(&o.IncludedConfigPaths, "include-config-paths", "The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.")
-	flag.Var(&o.ExcludedConfigPaths, "exclude-config-paths", "The config paths to be excluded in this bump, in which only .yaml files will be considered.")
-	flag.Var(&o.ExtraFiles, "extra-files", "The extra non-yaml file to be considered in this bump.")
-
-	flag.BoolVar(&o.SkipPullRequest, "skip-pull-request", false, "Whether to skip creating the pull request for this bump.")
+	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
 	flag.Parse()
-	return &o
+
+	var o bumper.Options
+	data, err := ioutil.ReadFile(config)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read in config file, %s", config)
+	}
+
+	err = yaml.UnmarshalStrict(data, &o)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+	}
+
+	return &o, nil
 }
 
 func main() {
-	o := parseOptions()
+	o, err := parseOptions()
+	if err != nil {
+		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
+	}
 
 	if err := bumper.Run(o); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
