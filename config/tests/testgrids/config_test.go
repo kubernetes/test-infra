@@ -275,8 +275,8 @@ func TestConfig(t *testing.T) {
 	}
 
 	// No dup of dashboard groups, and no dup dashboard in a dashboard group
-	groups := make(map[string]bool)
-	tabs := make(map[string]string)
+	groupSet := make(map[string]bool)
+	dashboardToGroupMap := make(map[string]string)
 
 	for idx, dashboardGroup := range cfg.DashboardGroups {
 		// All dashboard must have a name
@@ -301,10 +301,10 @@ func TestConfig(t *testing.T) {
 		}
 
 		// All dashboardgroup must not have duplicated names
-		if _, ok := groups[dashboardGroup.Name]; ok {
+		if _, ok := groupSet[dashboardGroup.Name]; ok {
 			t.Errorf("Duplicated dashboard: %v", dashboardGroup.Name)
 		} else {
-			groups[dashboardGroup.Name] = true
+			groupSet[dashboardGroup.Name] = true
 		}
 
 		if _, ok := dashboardmap[dashboardGroup.Name]; ok {
@@ -313,10 +313,10 @@ func TestConfig(t *testing.T) {
 
 		for _, dashboard := range dashboardGroup.DashboardNames {
 			// All dashboard must not have duplicated names
-			if exist, ok := tabs[dashboard]; ok {
+			if exist, ok := dashboardToGroupMap[dashboard]; ok {
 				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, exist, dashboardGroup.Name)
 			} else {
-				tabs[dashboard] = dashboardGroup.Name
+				dashboardToGroupMap[dashboard] = dashboardGroup.Name
 			}
 
 			if _, ok := dashboardmap[dashboard]; !ok {
@@ -328,23 +328,18 @@ func TestConfig(t *testing.T) {
 			}
 		}
 
-		// Dashboards that match this dashboard group's prefix should be a part of it
+		// All dashboards must be prefixed with their group.
 		for dashboard := range dashboardmap {
-			thisGroup := dashboardGroup.Name
-			if strings.HasPrefix(dashboard, thisGroup+"-") {
-				assignedGroup, ok := tabs[dashboard]
-				if !ok {
-					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, thisGroup)
-				} else if assignedGroup != thisGroup {
-					// If the assigned group includes this group name as a prefix (e.g. 'knative-sandbox' and 'knative')
-					// then the arrangement is ok. Otherwise, this group should be the assigned group.
-					if !strings.HasPrefix(dashboard, assignedGroup+"-") {
-						t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, thisGroup, assignedGroup)
-					}
-				}
+			assignedGroup, ok := dashboardToGroupMap[dashboard]
+			if !ok {
+				t.Errorf("Dashboard %v did not have an assigned group", dashboard)
+			} else if !strings.HasPrefix(dashboard, assignedGroup+"-") {
+				t.Errorf("Dashboard %v is not prefixed with its assigned group %v", dashboard, assignedGroup)
 			}
 		}
 	}
+
+	// Dashboards
 
 	// All Testgroup should be mapped to one or more tabs
 	missedTestgroups := false
