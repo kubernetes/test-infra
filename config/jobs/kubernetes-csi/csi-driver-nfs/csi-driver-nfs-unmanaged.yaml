@@ -27,6 +27,53 @@ presubmits:
       testgrid-tab-name: pull-csi-driver-nfs-sanity
       description: "Run sanity tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-nfs-unit
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-nfs
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-nfs-unit
+      description: "Run unit tests for NFS CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-nfs-integration
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-nfs
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-nfs-integration
+      description: "Run integration tests for NFS CSI driver."
+      testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-e2e
     decorate: true
     always_run: true
