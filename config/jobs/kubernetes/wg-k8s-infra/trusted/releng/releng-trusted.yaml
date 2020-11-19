@@ -94,6 +94,8 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
   decorate: true
+  decoration_config:
+    timeout: 6h
   extra_refs:
   - org: kubernetes
     repo: release
@@ -109,6 +111,7 @@ periodics:
         - --project=k8s-artifacts-prod
         - --bucket=k8s-artifacts-prod-vuln-dashboard
         - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
+        - --log-level=debug
       resources:
         requests:
           cpu: 2
