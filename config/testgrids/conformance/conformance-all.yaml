@@ -264,6 +264,18 @@ dashboards:
       test_group_name: s390x-conformance-v1.18
       description: Runs conformance tests by using kubetest against latest v1.18 branch HEAD of kubernetes on local s390x cluster
 
+# CEL Conformance Tests
+- name: google-cel
+  dashboard_tab:
+  - name: cel-go
+    test_group_name: cel-go-conformance-tests
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/google/cel-go/issues/new
+    results_text: # Text to show in the about menu as a link to another view of the results
+    code_search_path: github.com/google/cel-go/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
+
 test_groups:
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}

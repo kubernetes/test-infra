@@ -246,17 +246,6 @@ dashboards:
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
 - name: google-rules_k8s
-    
-- name: google-cel
-  dashboard_tab:
-  - name: cel-go
-    test_group_name: cel-go-conformance-tests
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/google/cel-go/issues/new
-    results_text: # Text to show in the about menu as a link to another view of the results
-    code_search_path: github.com/google/cel-go/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 #
 # Start dashboard groups
