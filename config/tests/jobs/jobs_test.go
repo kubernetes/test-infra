@@ -1086,27 +1086,114 @@ func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T
 	}
 }
 
+// matches regex used by the "version" extractMode defined in kubetest/extract_k8s.go
+var kubetestVersionExtractModeRegex = regexp.MustCompile(`^(v\d+\.\d+\.\d+[\w.\-+]*)$`)
+
+// extractUsesCIBucket returns true if kubetest --extract=foo
+// would use the value of --extract-ci-bucket, false otherwise
+func extractUsesCIBucket(extract string) bool {
+	if strings.HasPrefix(extract, "ci/") || strings.HasPrefix(extract, "gci/") {
+		return true
+	}
+	mat := kubetestVersionExtractModeRegex.FindStringSubmatch(extract)
+	if mat != nil {
+		version := mat[1]
+		// non-gke versions that include a + are CI builds
+		return !strings.Contains(version, "-gke.") && strings.Contains(version, "+")
+	}
+	return false
+}
+
+// extractUsesReleaseBucket returns true if kubetest --extract=foo
+// would use the value of --extract-release-bucket, false otherwise
+func extractUsesReleaseBucket(extract string) bool {
+	if strings.HasPrefix(extract, "release/") {
+		return true
+	}
+	mat := kubetestVersionExtractModeRegex.FindStringSubmatch(extract)
+	if mat != nil {
+		version := mat[1]
+		// non-gke versions that lack a + are release builds
+		return !strings.Contains(version, "-gke.") && !strings.Contains(version, "+")
+	}
+	return false
+}
+
 // To help with migration to community-owned buckets for CI and release artifacts:
-// - jobs extracting from kubernetes-release-dev should use k8s-release-dev instead
+// - jobs using --extract=ci/latest-fast MUST pull from gs://k8s-release-dev
+// - release-blocking jobs using --extract=ci/*  MUST from pull gs://k8s-release-dev
+// TODO(https://github.com/kubernetes/k8s.io/issues/846): switch from SHOULD to MUST once all jobs migrated
+// - jobs using --extract=ci/* SHOULD pull from gs://k8s-release-dev
+// TODO(https://github.com/kubernetes/k8s.io/issues/1569): start warning once gs://k8s-release populated
+// - jobs using --extract=release/* SHOULD pull from gs://k8s-release
 func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
 	jobs := allStaticJobs()
+	var totalJobs, needsFixJobs int
 	for _, job := range jobs {
-		extract := ""
-		extractCIBucket := "kubernetes-release-dev"
-		for _, arg := range job.Spec.Containers[0].Args {
-			if strings.HasPrefix(arg, "--extract=") {
-				extract = strings.TrimPrefix(arg, "--extract=")
+		needsFix := false
+		extracts := []string{}
+		const (
+			defaultCIBucket       = "kubernetes-release-dev" // ensure this matches kubetest --extract-ci-bucket default
+			expectedCIBucket      = "k8s-release-dev"
+			defaultReleaseBucket  = "kubernetes-release" // ensure this matches kubetest --extract-release-bucket default
+			expectedReleaseBucket = "k8s-release"
+			k8sReleaseIsPopulated = false // TODO(kubernetes/k8s.io#1569): drop this once gs://k8s-release populated
+		)
+		ciBucket := defaultCIBucket
+		releaseBucket := defaultReleaseBucket
+		for _, container := range job.Spec.Containers {
+			for _, arg := range container.Args {
+				if strings.HasPrefix(arg, "--extract=") {
+					extracts = append(extracts, strings.TrimPrefix(arg, "--extract="))
+				}
+				if strings.HasPrefix(arg, "--extract-ci-bucket=") {
+					ciBucket = strings.TrimPrefix(arg, "--extract-ci-bucket=")
+				}
+				if strings.HasPrefix(arg, "--extract-release-bucket=") {
+					releaseBucket = strings.TrimPrefix(arg, "--extract-release-bucket=")
+				}
 			}
-			if strings.HasPrefix(arg, "--extract-ci-bucket=") {
-				extractCIBucket = strings.TrimPrefix(arg, "--extract-ci-bucket=")
+			for _, extract := range extracts {
+				fail := false
+				if extractUsesCIBucket(extract) && ciBucket != expectedCIBucket {
+					needsFix = true
+					jobDesc := "jobs"
+					fail = extract == "ci/latest-fast"
+					if isKubernetesReleaseBlocking(job) {
+						fail = true
+						jobDesc = "release-blocking jobs"
+					}
+					msg := fmt.Sprintf("%s: %s using --extract=%s must have --extract-ci-bucket=%s", job.Name, jobDesc, extract, expectedCIBucket)
+					if fail {
+						t.Errorf("FAIL - %s", msg)
+					} else {
+						t.Logf("WARN - %s", msg)
+					}
+				}
+				if k8sReleaseIsPopulated && extractUsesReleaseBucket(extract) && releaseBucket != expectedReleaseBucket {
+					needsFix = true
+					jobDesc := "jobs"
+					if isKubernetesReleaseBlocking(job) {
+						fail = true
+						jobDesc = "release-blocking jobs"
+					}
+					fail := isKubernetesReleaseBlocking(job)
+					msg := fmt.Sprintf("%s: %s using --extract=%s must have --extract-release-bucket=%s", job.Name, jobDesc, extract, expectedCIBucket)
+					if fail {
+						t.Errorf("FAIL - %s", msg)
+					} else {
+						t.Logf("WARN - %s", msg)
+					}
+				}
 			}
 		}
-		if strings.HasPrefix(extract, "ci/") && extractCIBucket != "k8s-release-dev" {
-			// TODO(https://github.com/kubernetes/test-infra/issues/19484): widen to all ci/ extracts once ci-kubernetes-build migrated
-			if extract == "ci/latest-fast" {
-				t.Errorf("FAIL - %s: jobs using --extract=%s must have --extract-ci-bucket=k8s-release-dev", job.Name, extract)
-			}
+		totalJobs++
+		if needsFix {
+			needsFixJobs++
 		}
+	}
+	if needsFixJobs > 0 {
+		t.Logf("%4d/%4d jobs should be updated to pull from community-owned gcs buckets", needsFixJobs, totalJobs)
 	}
 }
 
