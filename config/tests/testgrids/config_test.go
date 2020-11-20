@@ -319,7 +319,7 @@ func TestConfig(t *testing.T) {
 				dashboardToGroupMap[dashboard] = dashboardGroup.Name
 			}
 
-			if dashboardSet.Has(dashboard) {
+			if !dashboardSet.Has(dashboard) {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
 			}
 
