@@ -34,38 +34,40 @@ import (
 func TestValidateOptions(t *testing.T) {
 	emptyStr := ""
 	whateverStr := "whatever"
+	falseBool := false
+	trueBool := true
 	emptyArr := make([]string, 0)
-	emptyPrefixes := make([]Prefix, 0)
-	latestPrefixes := []Prefix{{
-		Name:                 "test",
-		Prefix:               "gcr.io/test/",
-		RefConfigFile:        "",
-		StagingRefConfigFile: "",
-	}}
-	upstreamPrefixes := []Prefix{{
-		Name:                 "test",
-		Prefix:               "gcr.io/test/",
-		RefConfigFile:        "ref",
-		StagingRefConfigFile: "stagingRef",
-	}}
 	upstreamVersion := "upstream"
-	stagingVersion := "upstream-staging"
 	cases := []struct {
-		name                string
-		githubToken         *string
-		githubOrg           *string
-		githubRepo          *string
-		skipPullRequest     *bool
-		targetVersion       *string
-		includeConfigPaths  *[]string
-		prefixes            *[]Prefix
-		upstreamURLBase     *string
-		err                 bool
-		upstreamBaseChanged bool
+		name               string
+		bumpProwImages     *bool
+		bumpBoskosImages   *bool
+		bumpTestImages     *bool
+		githubToken        *string
+		githubOrg          *string
+		githubRepo         *string
+		remoteBranch       *string
+		skipPullRequest    *bool
+		targetVersion      *string
+		includeConfigPaths *[]string
+		err                bool
 	}{
 		{
-			name: "Everything correct",
+			name: "bumping up Prow, Boskos and test images together works",
 			err:  false,
+		},
+		{
+			name:             "only bumping up Prow images works",
+			bumpBoskosImages: &falseBool,
+			bumpTestImages:   &falseBool,
+			err:              false,
+		},
+		{
+			name:             "at least one type of bumps needs to be specified",
+			bumpProwImages:   &falseBool,
+			bumpBoskosImages: &falseBool,
+			bumpTestImages:   &falseBool,
+			err:              true,
 		},
 		{
 			name:        "GitHubToken must not be empty when SkipPullRequest is false",
@@ -83,47 +85,41 @@ func TestValidateOptions(t *testing.T) {
 			err:        true,
 		},
 		{
-			name:          "unformatted TargetVersion is also allowed",
-			targetVersion: &whateverStr,
-			err:           false,
+			name:         "RemoteBranch cannot be empty when SkipPullRequest is false",
+			remoteBranch: &emptyStr,
+			err:          true,
+		},
+		{
+			name:            "all GitHub related fields can be empty when SkipPullRequest is true",
+			githubOrg:       &emptyStr,
+			githubRepo:      &emptyStr,
+			githubToken:     &emptyStr,
+			remoteBranch:    &emptyStr,
+			skipPullRequest: &trueBool,
+			err:             false,
+		},
+		{
+			name:           "unformatted TargetVersion is also allowed",
+			targetVersion:  &whateverStr,
+			bumpTestImages: &falseBool,
+			err:            false,
+		},
+		{
+			name:             "only latest version can be used if both Prow and test images are bumped",
+			bumpBoskosImages: &falseBool,
+			targetVersion:    &upstreamVersion,
+			err:              true,
+		},
+		{
+			name:           "only latest version can be used if both Boskos and test images are bumped",
+			bumpProwImages: &falseBool,
+			targetVersion:  &upstreamVersion,
+			err:            true,
 		},
 		{
 			name:               "must include at least one config path",
 			includeConfigPaths: &emptyArr,
 			err:                true,
-		},
-		{
-			name:                "must include upstreamURLBase if target version is upstream",
-			upstreamURLBase:     &emptyStr,
-			targetVersion:       &upstreamVersion,
-			prefixes:            &upstreamPrefixes,
-			err:                 false,
-			upstreamBaseChanged: true,
-		},
-		{
-			name:                "must include upstreamURLBase if target version is upstreamStaging",
-			upstreamURLBase:     &emptyStr,
-			targetVersion:       &stagingVersion,
-			prefixes:            &upstreamPrefixes,
-			err:                 false,
-			upstreamBaseChanged: true,
-		},
-		{
-			name:     "must include at least one prefix",
-			prefixes: &emptyPrefixes,
-			err:      true,
-		},
-		{
-			name:          "must have ref files for upstream version",
-			targetVersion: &upstreamVersion,
-			prefixes:      &latestPrefixes,
-			err:           true,
-		},
-		{
-			name:          "must have stagingRef files for Stagingupstream version",
-			targetVersion: &stagingVersion,
-			prefixes:      &latestPrefixes,
-			err:           true,
 		},
 	}
 	for _, tc := range cases {
@@ -135,8 +131,10 @@ func TestValidateOptions(t *testing.T) {
 				GitHubToken:         "whatever-token",
 				GitName:             "whatever-name",
 				GitEmail:            "whatever-email",
-				UpstreamURLBase:     "whatever-URLBase",
-				Prefixes:            latestPrefixes,
+				RemoteBranch:        "whatever-branch",
+				BumpProwImages:      true,
+				BumpBoskosImages:    true,
+				BumpTestImages:      true,
 				TargetVersion:       latestVersion,
 				IncludedConfigPaths: []string{"whatever-config-path1", "whatever-config-path2"},
 				SkipPullRequest:     false,
@@ -154,17 +152,23 @@ func TestValidateOptions(t *testing.T) {
 			if tc.githubRepo != nil {
 				defaultOption.GitHubRepo = *tc.githubRepo
 			}
+			if tc.remoteBranch != nil {
+				defaultOption.RemoteBranch = *tc.remoteBranch
+			}
+			if tc.bumpProwImages != nil {
+				defaultOption.BumpProwImages = *tc.bumpProwImages
+			}
+			if tc.bumpBoskosImages != nil {
+				defaultOption.BumpBoskosImages = *tc.bumpBoskosImages
+			}
+			if tc.bumpTestImages != nil {
+				defaultOption.BumpTestImages = *tc.bumpTestImages
+			}
 			if tc.targetVersion != nil {
 				defaultOption.TargetVersion = *tc.targetVersion
 			}
 			if tc.includeConfigPaths != nil {
 				defaultOption.IncludedConfigPaths = *tc.includeConfigPaths
-			}
-			if tc.prefixes != nil {
-				defaultOption.Prefixes = *tc.prefixes
-			}
-			if tc.upstreamURLBase != nil {
-				defaultOption.UpstreamURLBase = *tc.upstreamURLBase
 			}
 
 			err := validateOptions(defaultOption)
@@ -174,9 +178,6 @@ func TestValidateOptions(t *testing.T) {
 			}
 			if err != nil && !tc.err {
 				t.Errorf("Expected to not get an error for %#v but got %v", defaultOption, err)
-			}
-			if tc.upstreamBaseChanged && defaultOption.UpstreamURLBase != defaultUpstreamURLBase {
-				t.Errorf("UpstreamURLBase should have been changed to %q, but was %q", defaultOption.UpstreamURLBase, defaultUpstreamURLBase)
 			}
 		})
 	}
@@ -372,7 +373,6 @@ func TestGetAssignment(t *testing.T) {
 
 type fakeImageBumperCli struct {
 	replacements map[string]string
-	tagCache     map[string]string
 }
 
 func (c *fakeImageBumperCli) FindLatestTag(imageHost, imageName, currentTag string) (string, error) {
@@ -388,10 +388,6 @@ func (c *fakeImageBumperCli) UpdateFile(tagPicker func(imageHost, imageName, cur
 
 func (c *fakeImageBumperCli) GetReplacements() map[string]string {
 	return c.replacements
-}
-
-func (c *fakeImageBumperCli) AddToCache(image, newTag string) {
-	c.tagCache[image] = newTag
 }
 
 func TestUpdateReferences(t *testing.T) {
@@ -465,15 +461,9 @@ func TestUpdateReferences(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
-				TargetVersion:       tc.targetVersion,
-				IncludedConfigPaths: tc.includeConfigPaths,
-				SkipPullRequest:     false,
-				ExtraFiles:          tc.extraFiles,
-				ExcludedConfigPaths: tc.excludeConfigPaths,
-			}
 			cli := &fakeImageBumperCli{replacements: map[string]string{}}
-			res, err := updateReferences(cli, nil, option)
+			res, err := updateReferences(cli, nil, tc.targetVersion,
+				tc.includeConfigPaths, tc.excludeConfigPaths, tc.extraFiles)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected to get an error but the result is nil")
 			}
@@ -556,34 +546,19 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 	prowStagingFakeVersion := "v-prow-staging-version"
 	boskosProdFakeVersion := "v-boskos-prod-version"
 	boskosStagingFakeVersion := "v-boskos-staging-version"
-	prowRefConfigFile := "prow-prod"
-	boskosRefConfigFile := "boskos-prod"
-	prowStagingRefConfigFile := "prow-staging"
-	boskosStagingRefConfigFile := "boskos-staging"
-	fakeUpstreamURLBase := "test.com"
-	prowPrefix := "gcr.io/k8s-prow/"
-	boskosPrefix := "gcr.io/k8s-boskos/"
 
-	prowPrefixStruct := Prefix{
-		Prefix:               prowPrefix,
-		RefConfigFile:        prowRefConfigFile,
-		StagingRefConfigFile: prowStagingRefConfigFile,
-	}
-	boskosPrefixStruct := Prefix{
-		Prefix:               boskosPrefix,
-		RefConfigFile:        boskosRefConfigFile,
-		StagingRefConfigFile: boskosStagingRefConfigFile,
-	}
+	prowProdUpstreamAddress, boskosProdUpstreamAddress, _ := upstreamConfigFileAddresses(upstreamVersion)
+	prowStagingUpstreamAddress, boskosStagingUpstreamAddress, _ := upstreamConfigFileAddresses(upstreamStagingVersion)
 
 	fakeImageVersionParser := func(upstreamAddress string) (string, error) {
 		switch upstreamAddress {
-		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
+		case prowProdUpstreamAddress:
 			return prowProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + prowStagingRefConfigFile:
+		case prowStagingUpstreamAddress:
 			return prowStagingFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosRefConfigFile:
+		case boskosProdUpstreamAddress:
 			return boskosProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosStagingRefConfigFile:
+		case boskosStagingUpstreamAddress:
 			return boskosStagingFakeVersion, nil
 		default:
 			return "", fmt.Errorf("unsupported upstream address %q for parsing the image version", upstreamAddress)
@@ -598,50 +573,62 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 		currentTag          string
 		expectedTargetTag   string
 		expectError         bool
-		prefixes            []Prefix
 	}{
 		{
 			description:         "resolve image version with an invalid version type",
 			upstreamVersionType: "whatever-version-type",
 			expectError:         true,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
 		},
 		{
-			description:         "resolve image with two prefixes possible and upstreamVersion",
+			description:         "resolve production Prow image version",
 			upstreamVersionType: upstreamVersion,
-			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
 			imageHost:           prowPrefix,
+			imageName:           "whatever-image-name",
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   prowProdFakeVersion,
+			expectError:         false,
 		},
 		{
-			description:         "resolve image with two prefixes possible and staging version",
+			description:         "resolve staging Prow image version",
 			upstreamVersionType: upstreamStagingVersion,
+			imageHost:           prowPrefix,
+			imageName:           "whatever-image-name",
+			currentTag:          "whatever-current-tag",
+			expectedTargetTag:   prowStagingFakeVersion,
 			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+		},
+		{
+			description:         "resolve production Boskos image version",
+			upstreamVersionType: upstreamVersion,
 			imageHost:           boskosPrefix,
+			imageName:           "whatever-image-name",
+			currentTag:          "whatever-current-tag",
+			expectedTargetTag:   boskosProdFakeVersion,
+			expectError:         false,
+		},
+		{
+			description:         "resolve staging Boskos image version",
+			upstreamVersionType: upstreamStagingVersion,
+			imageHost:           boskosPrefix,
+			imageName:           "whatever-image-name",
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   boskosStagingFakeVersion,
+			expectError:         false,
 		},
 		{
-			description:         "resolve image when unknown prefix",
+			description:         "resolve random image version",
 			upstreamVersionType: upstreamVersion,
-			expectError:         false,
-			prefixes:            []Prefix{boskosPrefixStruct},
-			imageHost:           prowPrefix,
+			imageHost:           "whatever-image-host",
+			imageName:           "whatever-image-name",
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   "whatever-current-tag",
+			expectError:         false,
 		},
 	}
+
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
-				UpstreamURLBase: fakeUpstreamURLBase,
-				Prefixes:        tc.prefixes,
-			}
-			cli := &fakeImageBumperCli{replacements: map[string]string{}, tagCache: map[string]string{}}
-			resolver, err := upstreamImageVersionResolver(option, tc.upstreamVersionType, fakeImageVersionParser, cli)
+			resolver, err := upstreamImageVersionResolver(tc.upstreamVersionType, fakeImageVersionParser)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected to get an error but the result is nil")
 				return
@@ -662,99 +649,65 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 					t.Errorf("Expected to get target tag %q but got %q", tc.expectedTargetTag, res)
 				}
 			}
-
 		})
 	}
 }
 
-func TestUpstreamConfigVersions(t *testing.T) {
-	prowProdFakeVersion := "v-prow-prod-version"
-	prowStagingFakeVersion := "v-prow-staging-version"
-	boskosProdFakeVersion := "v-boskos-prod-version"
-	boskosStagingFakeVersion := "v-boskos-staging-version"
-	prowRefConfigFile := "prow-prod"
-	boskosRefConfigFile := "boskos-prod"
-	prowStagingRefConfigFile := "prow-staging"
-	boskosStagingRefConfigFile := "boskos-staging"
-	fakeUpstreamURLBase := "test.com"
-	prowPrefix := "gcr.io/k8s-prow/"
-	boskosPrefix := "gcr.io/k8s-boskos/"
+func TestUpstreamConfigFileAddresses(t *testing.T) {
+	prowProdUpstreamAddress := upstreamURLBase + "/" + prowRefConfigFile
+	boskosProdUpstreamAddress := upstreamURLBase + "/" + boskosRefConfigFile
+	prowStagingUpstreamAddress := upstreamURLBase + "/" + prowStagingRefConfigFile
+	boskosStagingUpstreamAddress := upstreamURLBase + "/" + boskosStagingRefConfigFile
 
-	prowPrefixStruct := Prefix{
-		Prefix:               prowPrefix,
-		RefConfigFile:        prowRefConfigFile,
-		StagingRefConfigFile: prowStagingRefConfigFile,
-	}
-	boskosPrefixStruct := Prefix{
-		Prefix:               boskosPrefix,
-		RefConfigFile:        boskosRefConfigFile,
-		StagingRefConfigFile: boskosStagingRefConfigFile,
-	}
-
-	fakeImageVersionParser := func(upstreamAddress string) (string, error) {
-		switch upstreamAddress {
-		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
-			return prowProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + prowStagingRefConfigFile:
-			return prowStagingFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosRefConfigFile:
-			return boskosProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosStagingRefConfigFile:
-			return boskosStagingFakeVersion, nil
-		default:
-			return "", fmt.Errorf("unsupported upstream address %q for parsing the image version", upstreamAddress)
-		}
-	}
 	cases := []struct {
-		description         string
-		upstreamVersionType string
-		expectedResult      map[string]string
-		expectError         bool
-		prefixes            []Prefix
+		description                   string
+		upstreamVersionType           string
+		expectedProwUpstreamAddress   string
+		expectedBoskosUpstreamAddress string
+		expectError                   bool
 	}{
 		{
-			description:         "resolve image version with an invalid version type",
-			upstreamVersionType: "whatever-version-type",
-			expectError:         true,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			description:                   "get config file addresses for prod",
+			upstreamVersionType:           upstreamVersion,
+			expectedProwUpstreamAddress:   prowProdUpstreamAddress,
+			expectedBoskosUpstreamAddress: boskosProdUpstreamAddress,
+			expectError:                   false,
 		},
 		{
-			description:         "correct versions map for production",
-			upstreamVersionType: upstreamVersion,
-			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
-			expectedResult:      map[string]string{prowPrefix: prowProdFakeVersion, boskosPrefix: boskosProdFakeVersion},
+			description:                   "get config file addresses for staging",
+			upstreamVersionType:           upstreamStagingVersion,
+			expectedProwUpstreamAddress:   prowStagingUpstreamAddress,
+			expectedBoskosUpstreamAddress: boskosStagingUpstreamAddress,
+			expectError:                   false,
 		},
 		{
-			description:         "correct versions map for staging",
-			upstreamVersionType: upstreamStagingVersion,
-			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
-			expectedResult:      map[string]string{prowPrefix: prowStagingFakeVersion, boskosPrefix: boskosStagingFakeVersion},
+			description:                   "get config file addresses for an invalid version type",
+			upstreamVersionType:           "whatever-version-type",
+			expectedProwUpstreamAddress:   "",
+			expectedBoskosUpstreamAddress: "",
+			expectError:                   true,
 		},
 	}
+
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
-				UpstreamURLBase: fakeUpstreamURLBase,
-				Prefixes:        tc.prefixes,
-			}
-			versions, err := upstreamConfigVersions(tc.upstreamVersionType, option, fakeImageVersionParser)
+			prowUpstreamAddress, boskosUpstreamAddress, err := upstreamConfigFileAddresses(tc.upstreamVersionType)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected to get an error but the result is nil")
-				return
 			}
 			if !tc.expectError && err != nil {
 				t.Errorf("Expected to not get an error but got one: %v", err)
-				return
 			}
-			if err == nil && versions == nil {
-				t.Error("Expected to get an versions but did not")
-				return
+			if prowUpstreamAddress != tc.expectedProwUpstreamAddress {
+				t.Errorf("Expected to get %q for the Prow upstream address but got %q",
+					tc.expectedProwUpstreamAddress, prowUpstreamAddress)
+			}
+			if boskosUpstreamAddress != tc.expectedBoskosUpstreamAddress {
+				t.Errorf("Expected to get %q for the Boskos upstream address but got %q",
+					tc.expectedBoskosUpstreamAddress, boskosUpstreamAddress)
 			}
 		})
 	}
-
 }
 
 func TestCDToRootDir(t *testing.T) {
@@ -807,97 +760,44 @@ func TestCDToRootDir(t *testing.T) {
 	}
 }
 
-func TestGetVersionsAndCheckConsistency(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/"}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/"}
+func TestGetNewProwVersion(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
-		name             string
-		images           map[string]string
-		prefixes         []Prefix
-		expectedVersions map[string][]string
-		isConsistent     bool
+		name          string
+		images        map[string]string
+		expectedTag   string
+		expectedError string
 	}{
 		{
-			name:             "two prefixes being bumped with consistent tags",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
-			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1"},
-			isConsistent:     true,
-			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}},
+			name: "No images, no result, no error",
 		},
 		{
-			name:             "two prefixes being bumped with inconsistent tags",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
-			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test:tag2": "newtag2"},
-			isConsistent:     false,
-			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}, "newtag2": {"gcr.io/k8s-prow/test:tag2"}},
+			name:        "One version is returned",
+			images:      map[string]string{"gcr.io/k8s-prow/deck": "v20200914-1ac05b0ca2"},
+			expectedTag: "v20200914-1ac05b0ca2",
 		},
 		{
-			name:             "two prefixes being bumped with no bumps",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
-			images:           map[string]string{},
-			isConsistent:     true,
-			expectedVersions: map[string][]string{},
+			name:          "Multiple versions, error",
+			images:        map[string]string{"gcr.io/k8s-prow/deck": "v20200914-1ac05b0ca2", "gcr.io/k8s-prow/hook": "v20200915-1ac05", "gcr.io/k8s-prow/tide": "v20200915-1ac05"},
+			expectedError: `Expected a consistent version for all "gcr.io/k8s-prow/" images, but found multiple: [{v20200914-1ac05b0ca2 [gcr.io/k8s-prow/deck]} {v20200915-1ac05 [gcr.io/k8s-prow/hook gcr.io/k8s-prow/tide]}]`,
 		},
 	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			versions, consistency := getVersionsAndCheckConsistency(tc.prefixes, tc.images)
-			if tc.isConsistent && !consistency {
-				t.Errorf("images are consistent, but reported inconsistent")
-			}
-			if !tc.isConsistent && consistency {
-				t.Errorf("images are not consistent, but reported as consistent")
-			}
-			if !reflect.DeepEqual(tc.expectedVersions, versions) {
-				t.Errorf("expected versions map to be %v, but got %v instead", tc.expectedVersions, versions)
-			}
-		})
-	}
-}
 
-func TestMakeCommitSummary(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/"}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/"}
-	testCases := []struct {
-		name           string
-		prefixes       []Prefix
-		versions       map[string][]string
-		consistency    bool
-		expectedResult string
-	}{
-		{
-			name:           "Inconsistent bump",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    false,
-			expectedResult: "Update gcr.io/k8s-prow/, gcr.io/k8s-boskos/ images as necessary",
-		},
-		{
-			name:           "Two prefixes, but only one bumped",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
-			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
-			expectedResult: "Update gcr.io/k8s-prow/ to tag1,",
-		},
-		{
-			name:           "Two prefixes, both bumped",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
-			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
-			expectedResult: "Update gcr.io/k8s-prow/ to tag1, gcr.io/k8s-boskos/ to tag2,",
-		},
-		{
-			name:           "Empty versions",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
-			versions:       map[string][]string{},
-			expectedResult: "Update gcr.io/k8s-prow/, gcr.io/k8s-boskos/ images as necessary",
-		},
-	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := makeCommitSummary(tc.prefixes, tc.versions, tc.consistency)
-			if res != tc.expectedResult {
-				t.Errorf("expected commit string to be %q, but was %q", tc.expectedResult, res)
+			var errMsg string
+			actualTag, err := getNewProwVersion(tc.images)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Fatalf("got error '%v', expected error %s", err, tc.expectedError)
+			}
+			if err != nil {
+				return
+			}
+			if actualTag != tc.expectedTag {
+				t.Errorf("expected tag %s, got tag %s", tc.expectedTag, actualTag)
 			}
 		})
 	}
