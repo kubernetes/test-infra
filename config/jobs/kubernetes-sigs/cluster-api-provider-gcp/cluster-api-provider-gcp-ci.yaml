@@ -208,7 +208,7 @@ periodics:
       path_alias: "sigs.k8s.io/image-builder"
     - org: kubernetes
       repo: kubernetes
-      base_ref: master
+      base_ref: release-1.19
       path_alias: k8s.io/kubernetes
   spec:
     containers:
