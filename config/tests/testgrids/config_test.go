@@ -171,7 +171,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	// dashboard name set
-	dashboardmap := make(map[string]bool)
+	dashboardSet := sets.NewString()
 
 	for dashboardidx, dashboard := range cfg.Dashboards {
 		// All dashboard must have a name
@@ -196,10 +196,10 @@ func TestConfig(t *testing.T) {
 		}
 
 		// All dashboard must not have duplicated names
-		if dashboardmap[dashboard.Name] {
+		if dashboardSet.Has(dashboard.Name) {
 			t.Errorf("Duplicated dashboard: %v", dashboard.Name)
 		} else {
-			dashboardmap[dashboard.Name] = true
+			dashboardSet.Insert(dashboard.Name)
 		}
 
 		// All dashboard must have at least one tab
@@ -275,8 +275,8 @@ func TestConfig(t *testing.T) {
 	}
 
 	// No dup of dashboard groups, and no dup dashboard in a dashboard group
-	groups := make(map[string]bool)
-	tabs := make(map[string]string)
+	groupSet := sets.NewString()
+	dashboardToGroupMap := make(map[string]string)
 
 	for idx, dashboardGroup := range cfg.DashboardGroups {
 		// All dashboard must have a name
@@ -301,25 +301,25 @@ func TestConfig(t *testing.T) {
 		}
 
 		// All dashboardgroup must not have duplicated names
-		if _, ok := groups[dashboardGroup.Name]; ok {
+		if groupSet.Has(dashboardGroup.Name) {
 			t.Errorf("Duplicated dashboard: %v", dashboardGroup.Name)
 		} else {
-			groups[dashboardGroup.Name] = true
+			groupSet.Insert(dashboardGroup.Name)
 		}
 
-		if _, ok := dashboardmap[dashboardGroup.Name]; ok {
+		if dashboardSet.Has(dashboardGroup.Name) {
 			t.Errorf("%v is both a dashboard and dashboard group name.", dashboardGroup.Name)
 		}
 
 		for _, dashboard := range dashboardGroup.DashboardNames {
 			// All dashboard must not have duplicated names
-			if exist, ok := tabs[dashboard]; ok {
-				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, exist, dashboardGroup.Name)
+			if assignedGroup, ok := dashboardToGroupMap[dashboard]; ok {
+				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, assignedGroup, dashboardGroup.Name)
 			} else {
-				tabs[dashboard] = dashboardGroup.Name
+				dashboardToGroupMap[dashboard] = dashboardGroup.Name
 			}
 
-			if _, ok := dashboardmap[dashboard]; !ok {
+			if !dashboardSet.Has(dashboard) {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
 			}
 
@@ -327,15 +327,18 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v in group %v must have the group name as a prefix", dashboard, dashboardGroup.Name)
 			}
 		}
+	}
 
-		// Dashboards that match this dashboard group's prefix should be a part of it
-		for dashboard := range dashboardmap {
-			if strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
-				group, ok := tabs[dashboard]
+	// Dashboards that match this dashboard group's prefix should be a part of it, unless this group is the prefix of the assigned group
+	// (e.g. knative and knative-sandbox).
+	for thisGroup := range groupSet {
+		for dashboard := range dashboardSet {
+			if strings.HasPrefix(dashboard, thisGroup+"-") {
+				assignedGroup, ok := dashboardToGroupMap[dashboard]
 				if !ok {
-					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, dashboardGroup.Name)
-				} else if group != dashboardGroup.Name {
-					t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, dashboardGroup.Name, group)
+					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, thisGroup)
+				} else if assignedGroup != thisGroup && !strings.HasPrefix(assignedGroup, thisGroup) {
+					t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, thisGroup, assignedGroup)
 				}
 			}
 		}
