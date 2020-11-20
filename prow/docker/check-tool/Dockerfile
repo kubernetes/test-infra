@@ -42,7 +42,7 @@ ADD https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/h
 RUN chmod 555 ${OUTDIR}/usr/bin/hadolint
 
 # Helm
-ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz /tmp
+ADD https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz /tmp
 RUN tar -xf /tmp/helm-${HELM_VERSION}-linux-amd64.tar.gz -C /tmp
 RUN mv /tmp/linux-amd64/helm ${OUTDIR}/usr/bin
 
