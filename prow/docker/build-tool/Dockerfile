@@ -57,7 +57,7 @@ RUN set -eux; \
     fi;
 
 # Helm
-ADD https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz /tmp
+ADD https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz /tmp
 RUN tar -xf /tmp/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz -C /tmp
 RUN mv /tmp/linux-${ARCH}/helm ${OUTDIR}/usr/bin
 
