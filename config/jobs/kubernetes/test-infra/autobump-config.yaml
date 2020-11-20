@@ -16,7 +16,8 @@ excludedConfigPaths:
 extraFiles:
   - "config/jobs/kubernetes/kops/build-grid.py"
   - "config/jobs/kubernetes/kops/build-pipeline.py"
-  - "releng/generate_tests.py,images/kubekins-e2e/Dockerfile"
+  - "releng/generate_tests.py"
+  - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
