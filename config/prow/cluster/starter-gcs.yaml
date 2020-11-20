@@ -1269,15 +1269,3 @@ subjects:
 - kind: ServiceAccount
   name: crier
   namespace: prow
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: minio
-  namespace: prow
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Gi
