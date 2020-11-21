@@ -1,13 +1,19 @@
 aliases:
   # business hours oncall for prow etc (https://go.k8s.io/oncall)
   test-infra-oncall:
-  - BenTheElder
+  - chaodaiG
   - chases2
   - cjwagner
   - e-blackwelder
   - fejta
   - michelle192837
-  - chaodaiG
+
+  # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
+  build-admins:
+    - amwat
+    - BenTheElder
+    - MushuEE
+    - spiffxp
 
   wg-k8s-infra-oncall:
   - BenTheElder
