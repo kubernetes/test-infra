@@ -307,6 +307,10 @@ func parseJobHistURL(url *url.URL) (storageProvider, bucketName, root string, bu
 		err = fmt.Errorf("invalid path for job: %v", url.Path)
 		return
 	}
+	// Append / to root if it does not end with it.
+	if !strings.HasSuffix(root, "/") {
+		root += "/"
+	}
 
 	if idVals := url.Query()[idParam]; len(idVals) >= 1 && idVals[0] != "" {
 		buildID, err = strconv.ParseInt(idVals[0], 10, 64)

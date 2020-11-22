@@ -44,63 +44,63 @@ func TestJobHistURL(t *testing.T) {
 			address:         "http://www.example.com/job-history/foo-bucket/logs/bar-e2e",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/foo-bucket/logs/bar-e2e?buildId=",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/foo-bucket/logs/bar-e2e?buildId=123456789123456789",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              123456789123456789,
 		},
 		{
 			address:         "http://www.example.com/job-history/gs/foo-bucket/logs/bar-e2e",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/gs/foo-bucket/logs/bar-e2e?buildId=",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/gs/foo-bucket/logs/bar-e2e?buildId=123456789123456789",
 			bktName:         "foo-bucket",
 			storageProvider: providers.GS,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              123456789123456789,
 		},
 		{
 			address:         "http://www.example.com/job-history/s3/foo-bucket/logs/bar-e2e",
 			bktName:         "foo-bucket",
 			storageProvider: providers.S3,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/s3/foo-bucket/logs/bar-e2e?buildId=",
 			bktName:         "foo-bucket",
 			storageProvider: providers.S3,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              emptyID,
 		},
 		{
 			address:         "http://www.example.com/job-history/s3/foo-bucket/logs/bar-e2e?buildId=123456789123456789",
 			bktName:         "foo-bucket",
 			storageProvider: providers.S3,
-			root:            "logs/bar-e2e",
+			root:            "logs/bar-e2e/",
 			id:              123456789123456789,
 		},
 		{
@@ -299,7 +299,7 @@ func Test_getJobHistory(t *testing.T) {
 		},
 	}
 	wantedPRLogsJobHistoryTemplate := jobHistoryTemplate{
-		Name:         "pr-logs/directory/pull-test-infra-bazel",
+		Name:         "pr-logs/directory/pull-test-infra-bazel/",
 		ResultsShown: 2,
 		ResultsTotal: 2,
 		Builds: []buildData{
@@ -324,7 +324,7 @@ func Test_getJobHistory(t *testing.T) {
 		},
 	}
 	wantedLogsJobHistoryTemplate := jobHistoryTemplate{
-		Name:         "logs/post-cluster-api-provider-openstack-push-images",
+		Name:         "logs/post-cluster-api-provider-openstack-push-images/",
 		ResultsShown: 1,
 		ResultsTotal: 1,
 		Builds: []buildData{
