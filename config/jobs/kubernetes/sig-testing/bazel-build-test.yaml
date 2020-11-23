@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -24,8 +25,6 @@ presubmits:
         - ../test-infra/hack/bazel.sh
         args:
         - build
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - --
         - //...
         - -//vendor/...
