@@ -247,6 +247,8 @@ postsubmits:
         - "7200"
     annotations:
       testgrid-dashboards: sig-big-data
+      testgrid-alert-email: cloud-ml-pipeline-oncall@google.com
+      testgrid-num-failures-to-alert: "3"       
       description: Postsubmit component tests for kubeflow/pipeline.
   - name: kubeflow-pipeline-postsubmit-integration-test
     cluster: kubeflow
