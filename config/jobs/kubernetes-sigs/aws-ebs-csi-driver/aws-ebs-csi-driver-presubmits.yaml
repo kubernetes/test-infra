@@ -3,6 +3,8 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
@@ -21,6 +23,8 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
@@ -39,6 +43,8 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -61,6 +67,8 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -83,6 +91,8 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-migration-test-latest
     always_run: false
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
