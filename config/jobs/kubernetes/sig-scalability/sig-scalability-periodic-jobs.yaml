@@ -232,6 +232,74 @@ periodics:
           cpu: 2
           memory: "2Gi"
 
+- name: ci-kubernetes-kubemark-100-gce-scheduler-highqps
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes-scheduler-highqps"
+  - "perfDashJobType: performance"
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100-scheduler-highqps
+    testgrid-num-failures-to-alert: '1'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=170
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100-scheduler-highqps
+      - --build=bazel
+      - --extract=bazel
+      - --gcp-master-size=e2-standard-2
+      - --gcp-node-image=gci
+      - --gcp-node-size=e2-standard-4
+      - --gcp-nodes=4
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=100
+      - --provider=gce
+      - --env=KUBE_SCHEDULER_API_QPS=300
+      - --env=KUBE_SCHEDULER_API_BURST=300
+      - --env=KUBE_CONTROLLER_MANAGER_API_QPS=300
+      - --env=KUBE_CONTROLLER_MANAGER_API_BURST=300
+      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=150m
+      - --use-logexporter
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "2Gi"
+
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
