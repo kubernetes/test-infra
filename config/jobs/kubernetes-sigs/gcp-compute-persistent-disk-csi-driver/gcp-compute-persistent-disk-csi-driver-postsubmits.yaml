@@ -33,6 +33,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Release 0.7
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.7
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
   interval: 4h
@@ -68,6 +69,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
 - name: ci-gcp-compute-persistent-disk-csi-driver-stable-k8s-master-migration
   interval: 4h
@@ -104,6 +106,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver Stable
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
   interval: 1h
@@ -140,4 +143,5 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Latest
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver latest build
