@@ -38,15 +38,15 @@ jqfilter: |
 * failures - find jobs that have been failing the longest
     - [Config](configs/failures-config.yaml)
     - [failures-latest.json](http://storage.googleapis.com/k8s-metrics/failures-latest.json)
-* flakes - find the flakiest jobs this week (and the flakiest tests in each job).
+* flakes - Find the flakiest jobs this week (and the flakiest tests in each job) **includes Pod Utils Jobs*
     - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
-* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results.
+* flakes (deprecated) - find the flakiest jobs this week (and the flakiest tests in each job) **does not include Pod Utils Jobs*.
+    - [Config](configs/flakes-config-deprecated.yaml)
+    - [flakes-depricated-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-deprecated-latest.json)
+* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results. **does not include Pod Utils Jobs*.
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
-* flakes-experiment - Trial run of `flakes` using new repo field in BQ (#19209)
-    - [Config](configs/flakes-experiment-config.yaml)
-    - [flakes-experiment-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-experiment-latest.json)
 * job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
     - [Config](configs/job-health.yaml)
     - [job-health-latest.json](http://storage.googleapis.com/k8s-metrics/job-health-latest.json)
