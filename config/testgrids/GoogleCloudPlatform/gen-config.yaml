@@ -380,6 +380,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
     test_group_name: ci-en-server-performance
+  - code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-release-unit
+    name: key-server-continuous
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-release-unit
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
@@ -394,7 +401,7 @@ dashboards:
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
     description: ci-en-server-terraform-smoke
-    name: terrafrom-smoke
+    name: terraform-smoke
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
     test_group_name: ci-en-server-terraform-smoke
@@ -407,6 +414,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/exposure-notifications-verification-server/issues/
     test_group_name: ci-en-verification-server-e2e
+  - code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-release-unit
+    name: verification-server-continuous
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-release-unit
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
@@ -455,6 +469,8 @@ test_groups:
 - gcs_prefix: oss-prow/logs/ci-en-server-performance
   name: ci-en-server-performance
   num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-server-release-unit
+  name: ci-en-server-release-unit
 - gcs_prefix: oss-prow/logs/ci-en-server-terraform-e2e
   name: ci-en-server-terraform-e2e
   num_failures_to_alert: 1
@@ -464,6 +480,8 @@ test_groups:
 - gcs_prefix: oss-prow/logs/ci-en-verification-server-e2e
   name: ci-en-verification-server-e2e
   num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-release-unit
+  name: ci-en-verification-server-release-unit
 - gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
   name: ci-en-verification-server-terraform-smoke
   num_failures_to_alert: 1
