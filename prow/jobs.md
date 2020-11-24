@@ -2,10 +2,10 @@
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
-For a brief cookbook for jobs intended for [prow.k8s.io], please refer to
+For a brief cookbook for jobs intended for [prow.k8s.io](https://prow.k8s.io/), please refer to
 [`config/jobs/README.md`](/config/jobs/README.md)
 
-Make sure prow has been [deployed] correctly:
+Make sure Prow has been [deployed] correctly:
 
 * The `horologium` component schedules periodic jobs.
 * The `hook` component schedules presubmit and postsubmit jobs, ensuring the repo:
@@ -160,6 +160,7 @@ conditions are met.
 
 A developer may trigger presubmits by posting a comment to a pull request that
 contains one or more of the following phrases:
+
  - `/test job-name` : When posting `/test job-name`, any jobs with matching triggers
    will be triggered unconditionally.
  - `/retest` : When posting `/retest`, two types of jobs will be triggered:
@@ -190,8 +191,6 @@ If a job should no longer trigger on the pull request, use the
 Repo administrators can also `/override job-name` in case of emergency
 (depends on the `override` plugin).
 
-
-
 ### Requiring Job Statuses
 #### Requiring Jobs for Auto-Merge Through Tide
 
@@ -217,7 +216,6 @@ context to GitHub, they cannot be required through this mechanism.
 ## Pod Utilities
 
 If you are adding a new job that will execute on a Kubernetes cluster (`agent: kubernetes`, the default value) you should consider using the [Pod Utilities](/prow/pod-utilities.md). The pod utils decorate jobs with additional containers that transparently provide source code checkout and log/metadata/artifact uploading to GCS.
-
 
 ## Job Environment Variables
 
