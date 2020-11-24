@@ -238,6 +238,9 @@ branch-protection:
         kops:
           required_status_checks:
             contexts:
+            - build-linux-amd64
+            - build-macos-amd64
+            - verify
             - continuous-integration/travis-ci/pr
         kubelet:
           restrictions:
