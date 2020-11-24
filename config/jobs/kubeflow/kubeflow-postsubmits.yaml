@@ -54,19 +54,7 @@ postsubmits:
       # TODO: use a public email group
       testgrid-alert-email: kubeflow-engineering@google.com
       testgrid-num-failures-to-alert: "3"
-  kubeflow/pytorch-operator:
-  - name: kubeflow-pytorch-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
 
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/pytorch-operator.
   kubeflow/reporting:
   - name: kubeflow-reporting-postsubmit
     cluster: kubeflow
