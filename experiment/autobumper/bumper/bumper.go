@@ -99,8 +99,6 @@ type Options struct {
 	OncallAddress string `yaml:"onCallAddress"`
 	//Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `yaml:"skipPullRequest"`
-	//Whether all tags should be consistent after the bump
-	ConsistentImages bool `yaml:"consistentImages"`
 	//The URL where upstream images are located. Must not be empty if Target Version is "upstream" or "upstreamStaging"
 	UpstreamURLBase string `yaml:"upstreamURLBase"`
 	//The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
@@ -111,6 +109,8 @@ type Options struct {
 	ExtraFiles []string `yaml:"extraFiles"`
 	//The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
 	TargetVersion string `yaml:"targetVersion"`
+	//The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
+	RemoteName string `yaml:"remoteName"`
 	//List of prefixes that the autobumped is looking for, and other information needed to bump them
 	Prefixes []Prefix `yaml:"prefixes"`
 }
@@ -129,6 +129,8 @@ type Prefix struct {
 	Repo string `yaml:"repo"`
 	//Whether or not the format of the PR summary for this prefix should be summarised.
 	Summarise bool `yaml:"summarise"`
+	//Whether the prefix tags should be consistent after the bump
+	ConsistentImages bool `yaml:"consistentImages"`
 }
 
 // GitAuthorOptions is specifically to read the author info for a commit
@@ -189,6 +191,9 @@ func validateOptions(o *Options) error {
 	if !o.SkipPullRequest && (o.GitHubOrg == "" || o.GitHubRepo == "") {
 		return fmt.Errorf("gitHubOrg and gitHubRepo are mandatory when skipPullRequest is false or unspecified")
 	}
+	if !o.SkipPullRequest && (o.RemoteName == "") {
+		return fmt.Errorf("remoteName is mandatory when skipPullRequest is false or unspecified")
+	}
 	if len(o.IncludedConfigPaths) == 0 {
 		return fmt.Errorf("includedConfigPaths is mandatory")
 	}
@@ -200,14 +205,14 @@ func validateOptions(o *Options) error {
 	if o.TargetVersion == upstreamVersion {
 		for _, prefix := range o.Prefixes {
 			if prefix.RefConfigFile == "" {
-				return fmt.Errorf("targetVersion can't be %q without refConfigFile for each prefix", upstreamVersion)
+				return fmt.Errorf("targetVersion can't be %q without refConfigFile for each prefix. %q is missing one", upstreamVersion, prefix.Name)
 			}
 		}
 	}
 	if o.TargetVersion == upstreamStagingVersion {
 		for _, prefix := range o.Prefixes {
 			if prefix.StagingRefConfigFile == "" {
-				return fmt.Errorf("targetVersion can't be %q without stagingRefConfigFile for each prefix", upstreamStagingVersion)
+				return fmt.Errorf("targetVersion can't be %q without stagingRefConfigFile for each prefix. %q is missing one", upstreamStagingVersion, prefix.Name)
 			}
 		}
 	}
@@ -244,10 +249,9 @@ func Run(o *Options) error {
 		return nil
 	}
 
-	versions, consistent := getVersionsAndCheckConsistency(o.Prefixes, images)
-
-	if !consistent && o.ConsistentImages {
-		return fmt.Errorf("consistentImages flag was set, but images were not bumped consistently")
+	versions, err := getVersionsAndCheckConsistency(o.Prefixes, images)
+	if err != nil {
+		return err
 	}
 
 	if o.SkipPullRequest {
@@ -279,11 +283,11 @@ func Run(o *Options) error {
 		remoteBranch := "autobump"
 		stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 		stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
-		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.GitHubLogin), remoteBranch, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions, consistent); err != nil {
+		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), remoteBranch, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), "Update prow to", o.GitHubLogin+":"+remoteBranch, "master", updater.PreventMods, o.Prefixes, versions, consistent); err != nil {
+		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), "Update prow to", o.GitHubLogin+":"+remoteBranch, "master", updater.PreventMods, o.Prefixes, versions); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}
@@ -345,8 +349,8 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // with "matchTitle" from "source" to "branch"
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody string, matchTitle, source, branch string, allowMods bool, prefixes []Prefix, versions map[string][]string, consistency bool) error {
-	summary := makeCommitSummary(prefixes, versions, consistency)
+func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, matchTitle, source, branch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
+	summary := makeCommitSummary(prefixes, versions)
 	return UpdatePullRequest(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), matchTitle, source, branch, allowMods)
 }
 
@@ -520,23 +524,24 @@ func isUnderPath(name string, paths []string) bool {
 	return false
 }
 
-func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, bool) {
-	//Key is tag, value is full image.
+func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, error) {
+	// Key is tag, value is full image.
 	versions := map[string][]string{}
-	consistent := true
 	for _, prefix := range prefixes {
 		newVersions := 0
 		for k, v := range images {
 			if strings.HasPrefix(k, prefix.Prefix) {
+				if _, ok := versions[v]; !ok {
+					newVersions++
+				}
 				versions[v] = append(versions[v], k)
-				newVersions++
-				if newVersions > 1 {
-					consistent = false
+				if prefix.ConsistentImages && newVersions > 1 {
+					return nil, fmt.Errorf("%q was supposed to be bumped consistently but was not", prefix.Name)
 				}
 			}
 		}
 	}
-	return versions, consistent
+	return versions, nil
 }
 
 // HasChanges checks if the current git repo contains any changes
@@ -555,21 +560,30 @@ func getPrefixesString(prefixes []Prefix) string {
 	return strings.Join(getAllPrefixes(prefixes), ", ")
 }
 
-func makeCommitSummary(prefixes []Prefix, versions map[string][]string, consistency bool) string {
-	if !consistency || len(versions) == 0 {
+func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
+	if len(versions) == 0 {
 		return fmt.Sprintf("Update %s images as necessary", getPrefixesString(prefixes))
 	}
-	res := fmt.Sprintf("Update")
+	inconsistentBumps := ""
+	consistentBumps := "Update"
 	for _, prefix := range prefixes {
-		for tag, imageList := range versions {
-			//Should not be possible for tag to be in map with empty imageList
-			if strings.HasPrefix(imageList[0], prefix.Prefix) {
-				res = fmt.Sprintf("%s %s to %s,", res, prefix.Prefix, tag)
-				break
+		if !prefix.ConsistentImages {
+			inconsistentBumps = fmt.Sprintf("%s, %s", prefix.Prefix, inconsistentBumps)
+		} else {
+			for tag, imageList := range versions {
+				//Should not be possible for tag to be in map with empty imageList
+				if strings.HasPrefix(imageList[0], prefix.Prefix) {
+					consistentBumps = fmt.Sprintf("%s %s to %s,", consistentBumps, prefix.Prefix, tag)
+					break
+				}
 			}
 		}
 	}
-	return res
+	if inconsistentBumps != "" {
+		return fmt.Sprintf("%s and %s as needed", consistentBumps, inconsistentBumps)
+	}
+	return consistentBumps
+
 }
 
 // MakeGitCommit runs a sequence of git commands to
@@ -577,8 +591,8 @@ func makeCommitSummary(prefixes []Prefix, versions map[string][]string, consiste
 // "name" and "email" are used for git-commit command
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
-func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, stdout, stderr io.Writer, versions map[string][]string, consistency bool) error {
-	summary := makeCommitSummary(prefixes, versions, consistency)
+func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, stdout, stderr io.Writer, versions map[string][]string) error {
+	summary := makeCommitSummary(prefixes, versions)
 	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr)
 }
 

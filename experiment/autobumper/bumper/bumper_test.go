@@ -28,6 +28,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/config/secret"
 )
 
@@ -55,6 +58,7 @@ func TestValidateOptions(t *testing.T) {
 		githubToken         *string
 		githubOrg           *string
 		githubRepo          *string
+		remoteName          *string
 		skipPullRequest     *bool
 		targetVersion       *string
 		includeConfigPaths  *[]string
@@ -71,6 +75,11 @@ func TestValidateOptions(t *testing.T) {
 			name:        "GitHubToken must not be empty when SkipPullRequest is false",
 			githubToken: &emptyStr,
 			err:         true,
+		},
+		{
+			name:       "remoteName must not be empty when SkipPullRequest is false",
+			remoteName: &emptyStr,
+			err:        true,
 		},
 		{
 			name:      "GitHubOrg cannot be empty when SkipPullRequest is false",
@@ -136,6 +145,7 @@ func TestValidateOptions(t *testing.T) {
 				GitName:             "whatever-name",
 				GitEmail:            "whatever-email",
 				UpstreamURLBase:     "whatever-URLBase",
+				RemoteName:          "whatever-name",
 				Prefixes:            latestPrefixes,
 				TargetVersion:       latestVersion,
 				IncludedConfigPaths: []string{"whatever-config-path1", "whatever-config-path2"},
@@ -147,6 +157,9 @@ func TestValidateOptions(t *testing.T) {
 			}
 			if tc.githubToken != nil {
 				defaultOption.GitHubToken = *tc.githubToken
+			}
+			if tc.remoteName != nil {
+				defaultOption.RemoteName = *tc.remoteName
 			}
 			if tc.githubOrg != nil {
 				defaultOption.GitHubOrg = *tc.githubOrg
@@ -808,56 +821,64 @@ func TestCDToRootDir(t *testing.T) {
 }
 
 func TestGetVersionsAndCheckConsistency(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/"}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/"}
+	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
+	inconsistentPrefix := Prefix{Prefix: "inconsistent/", ConsistentImages: false}
 	testCases := []struct {
 		name             string
 		images           map[string]string
 		prefixes         []Prefix
 		expectedVersions map[string][]string
-		isConsistent     bool
+		err              bool
 	}{
 		{
 			name:             "two prefixes being bumped with consistent tags",
 			prefixes:         []Prefix{prowPrefix, boskosPrefix},
-			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1"},
-			isConsistent:     true,
-			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}},
+			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
 		{
-			name:             "two prefixes being bumped with inconsistent tags",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
-			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test:tag2": "newtag2"},
-			isConsistent:     false,
-			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}, "newtag2": {"gcr.io/k8s-prow/test:tag2"}},
+			name:     "two prefixes being bumped with inconsistent tags",
+			prefixes: []Prefix{prowPrefix, boskosPrefix},
+			images:   map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test:tag2": "newtag2"},
+			err:      true,
 		},
 		{
 			name:             "two prefixes being bumped with no bumps",
 			prefixes:         []Prefix{prowPrefix, boskosPrefix},
 			images:           map[string]string{},
-			isConsistent:     true,
+			err:              false,
 			expectedVersions: map[string][]string{},
+		},
+		{
+			name:             "Prefix being bumped with inconsistent tags",
+			prefixes:         []Prefix{inconsistentPrefix},
+			images:           map[string]string{"inconsistent/test:tag1": "newtag1", "inconsistent/test2:tag2": "newtag2"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"inconsistent/test:tag1"}, "newtag2": {"inconsistent/test2:tag2"}},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			versions, consistency := getVersionsAndCheckConsistency(tc.prefixes, tc.images)
-			if tc.isConsistent && !consistency {
-				t.Errorf("images are consistent, but reported inconsistent")
+			versions, err := getVersionsAndCheckConsistency(tc.prefixes, tc.images)
+			if tc.err && err == nil {
+				t.Errorf("expected error but did not get one")
 			}
-			if !tc.isConsistent && consistency {
-				t.Errorf("images are not consistent, but reported as consistent")
+			if !tc.err && err != nil {
+				t.Errorf("expected no error, but got one: %v", err)
 			}
-			if !reflect.DeepEqual(tc.expectedVersions, versions) {
-				t.Errorf("expected versions map to be %v, but got %v instead", tc.expectedVersions, versions)
+			if diff := cmp.Diff(tc.expectedVersions, versions, cmpopts.SortSlices(func(x, y string) bool { return strings.Compare(x, y) > 0 })); diff != "" {
+				t.Errorf("versions returned unexpected value (-want +got):\n%s", diff)
 			}
 		})
 	}
 }
 
 func TestMakeCommitSummary(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/"}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/"}
+	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
+	inconsistentPrefix := Prefix{Prefix: "gcr.io/inconsistent/", ConsistentImages: false}
 	testCases := []struct {
 		name           string
 		prefixes       []Prefix
@@ -866,36 +887,33 @@ func TestMakeCommitSummary(t *testing.T) {
 		expectedResult string
 	}{
 		{
-			name:           "Inconsistent bump",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    false,
-			expectedResult: "Update gcr.io/k8s-prow/, gcr.io/k8s-boskos/ images as necessary",
-		},
-		{
 			name:           "Two prefixes, but only one bumped",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
 			expectedResult: "Update gcr.io/k8s-prow/ to tag1,",
 		},
 		{
 			name:           "Two prefixes, both bumped",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update gcr.io/k8s-prow/ to tag1, gcr.io/k8s-boskos/ to tag2,",
 		},
 		{
 			name:           "Empty versions",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
-			consistency:    true,
 			versions:       map[string][]string{},
 			expectedResult: "Update gcr.io/k8s-prow/, gcr.io/k8s-boskos/ images as necessary",
+		},
+		{
+			name:           "One bumped inconsistently",
+			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}, "tag3": {"gcr.io/inconsistnet/test:tag2"}},
+			expectedResult: "Update gcr.io/k8s-prow/ to tag1, gcr.io/k8s-boskos/ to tag2, and gcr.io/inconsistent/,  as needed",
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := makeCommitSummary(tc.prefixes, tc.versions, tc.consistency)
+			res := makeCommitSummary(tc.prefixes, tc.versions)
 			if res != tc.expectedResult {
 				t.Errorf("expected commit string to be %q, but was %q", tc.expectedResult, res)
 			}

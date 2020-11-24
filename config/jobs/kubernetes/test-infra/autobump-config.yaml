@@ -5,9 +5,9 @@ gitName: "Kubernetes Prow Robot"
 gitEmail: "k8s.ci.robot@gmail.com"
 onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
 skipPullRequest: false
-consistentImages: true
 gitHubOrg: "kubernetes"
 gitHubRepo: "test-infra"
+remoteName: "test-infra"
 upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 includedConfigPaths:
   - "."
@@ -16,7 +16,8 @@ excludedConfigPaths:
 extraFiles:
   - "config/jobs/kubernetes/kops/build-grid.py"
   - "config/jobs/kubernetes/kops/build-pipeline.py"
-  - "releng/generate_tests.py,images/kubekins-e2e/Dockerfile"
+  - "releng/generate_tests.py"
+  - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
@@ -25,13 +26,16 @@ prefixes:
     stagingRefConfigFile: "config/prow-staging/cluster/deck_deployment.yaml"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: true
+    consistentImages: true
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
     refConfigFile: "config/prow/cluster/boskos.yaml"
     stagingRefConfigFile: "config/prow-staging/cluster/boskos.yaml"
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false
+    consistentImages: true
   - name: "Prow-Test-Images"
     prefix: "gcr.io/k8s-testimages/"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
+    consistentImages: false
