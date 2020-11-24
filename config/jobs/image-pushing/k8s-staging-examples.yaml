@@ -1,0 +1,24 @@
+postsubmits:
+  # this is the github repo we'll build from; this block needs to be repeated for each repo.
+  kubernetes-sigs/examples:
+    - name: post-examples-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-apps
+      decorate: true
+      branches:
+        - ^master$
+        - ^v[0-9].*
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-examples
+              - --scratch-bucket=gs://k8s-staging-examples-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
