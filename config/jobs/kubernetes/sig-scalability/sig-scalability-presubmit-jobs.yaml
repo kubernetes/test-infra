@@ -40,7 +40,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -98,7 +97,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -204,7 +202,6 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -281,7 +278,6 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -351,7 +347,6 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=5000
         - --test-cmd-args=--provider=kubemark
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -445,7 +440,6 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -515,7 +509,6 @@ presubmits:
             - --test-cmd-args=--provider=kubemark
             - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-            - --env=CL2_ENABLE_DENSITY_TEST=true
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
