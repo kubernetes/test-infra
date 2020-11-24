@@ -28,10 +28,10 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/oauth2"
-
+	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/github"
@@ -53,6 +53,7 @@ func (mh *MockQueryHandler) getHeadContexts(ghc githubStatusFetcher, pr PullRequ
 
 type fgc struct {
 	combinedStatus *github.CombinedStatus
+	checkruns      *github.CheckRunList
 	botName        string
 }
 
@@ -62,6 +63,13 @@ func (c fgc) Query(context.Context, interface{}, map[string]interface{}) error {
 
 func (c fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
 	return c.combinedStatus, nil
+}
+
+func (c fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if c.checkruns != nil {
+		return c.checkruns, nil
+	}
+	return &github.CheckRunList{}, nil
 }
 
 func (c fgc) BotName() (string, error) {
@@ -335,12 +343,11 @@ func TestGetHeadContexts(t *testing.T) {
 	mockAgent := createMockAgent(repos, mockConfig)
 	testCases := []struct {
 		combinedStatus   *github.CombinedStatus
-		pr               PullRequest
+		checkruns        *github.CheckRunList
 		expectedContexts []Context
 	}{
 		{
 			combinedStatus:   &github.CombinedStatus{},
-			pr:               PullRequest{},
 			expectedContexts: []Context{},
 		},
 		{
@@ -363,12 +370,11 @@ func TestGetHeadContexts(t *testing.T) {
 					},
 				},
 			},
-			pr: PullRequest{},
 			expectedContexts: []Context{
 				{
+					State:       "FAILURE",
 					Context:     "gofmt-job",
 					Description: "job failed",
-					State:       "FAILURE",
 				},
 				{
 					State:       "SUCCESS",
@@ -382,19 +388,82 @@ func TestGetHeadContexts(t *testing.T) {
 				},
 			},
 		},
+		{
+			combinedStatus: &github.CombinedStatus{
+				Statuses: []github.Status{
+					{
+						State:       "FAILURE",
+						Description: "job failed",
+						Context:     "gofmt-job",
+					},
+					{
+						State:       "SUCCESS",
+						Description: "job succeed",
+						Context:     "k8s-job",
+					},
+					{
+						State:       "PENDING",
+						Description: "triggered",
+						Context:     "test-job",
+					},
+				},
+			},
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expectedContexts: []Context{
+				{
+					State:       "FAILURE",
+					Context:     "gofmt-job",
+					Description: "job failed",
+				},
+				{
+					State:       "SUCCESS",
+					Description: "job succeed",
+					Context:     "k8s-job",
+				},
+				{
+					State:       "PENDING",
+					Description: "triggered",
+					Context:     "test-job",
+				},
+				{
+					State:   "PENDING",
+					Context: "incomplete-checkrun",
+				},
+				{
+					State:   "SUCCESS",
+					Context: "neutral-is-considered-success-checkrun",
+				},
+				{
+					State:   "SUCCESS",
+					Context: "success-checkrun",
+				},
+				{
+					State:   "FAILURE",
+					Context: "failure-checkrun",
+				},
+			},
+		},
 	}
 	for id, testcase := range testCases {
-		t.Logf("Test %d:", id)
-		contexts, err := mockAgent.getHeadContexts(&fgc{
-			combinedStatus: testcase.combinedStatus,
-		}, testcase.pr)
-		if err != nil {
-			t.Fatalf("Error with getting head contexts")
-		}
-		if !reflect.DeepEqual(contexts, testcase.expectedContexts) {
-			t.Fatalf("Invalid user data. Got %v, expected %v.", contexts, testcase.expectedContexts)
-		}
-		t.Logf("Passed")
+		t.Run(strconv.Itoa(id), func(t *testing.T) {
+			contexts, err := mockAgent.getHeadContexts(&fgc{
+				combinedStatus: testcase.combinedStatus,
+				checkruns:      testcase.checkruns,
+			}, PullRequest{})
+			if err != nil {
+				t.Fatalf("Error with getting head contexts")
+			}
+			if diff := cmp.Diff(contexts, testcase.expectedContexts); diff != "" {
+				t.Fatalf("contexts differ from expected: %s", diff)
+			}
+		})
 	}
 }
 
