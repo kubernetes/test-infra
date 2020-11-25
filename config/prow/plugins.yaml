@@ -699,25 +699,16 @@ plugins:
   kubeflow/internal-acls:
   - trigger
 
-  kubeflow/katib:
-  - trigger
-
   kubeflow/kfp-tekton:
   - trigger
 
   kubeflow/kfp-tekton-backend:
   - trigger
 
-  kubeflow/kfserving:
-  - trigger
-
   kubeflow/kubebench:
   - trigger
 
   kubeflow/kubeflow:
-  - trigger
-
-  kubeflow/manifests:
   - trigger
 
   kubeflow/metadata:
@@ -730,9 +721,6 @@ plugins:
   - trigger
 
   kubeflow/pipelines:
-  - trigger
-
-  kubeflow/pytorch-operator:
   - trigger
 
   kubeflow/reporting:

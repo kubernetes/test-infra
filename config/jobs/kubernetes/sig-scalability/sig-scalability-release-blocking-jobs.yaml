@@ -89,7 +89,6 @@ periodics:
       - --provider=gce
       # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
-      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=30
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
@@ -164,7 +163,6 @@ periodics:
       - --provider=gce
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
