@@ -76,7 +76,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
@@ -157,6 +157,7 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
+      - --gcp-node-size=e2-medium
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b

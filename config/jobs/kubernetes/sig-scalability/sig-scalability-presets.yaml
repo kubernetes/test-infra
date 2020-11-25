@@ -104,8 +104,6 @@ presets:
     value: "--use-real-proxier=false"
   - name: HEAPSTER_KUBELET_TEST_ARGS
     value: "--register-with-taints=monitoring=:NoSchedule"
-  - name: HEAPSTER_MACHINE_TYPE
-    value: "n1-standard-8"
 
 
 ###### Scalability Envs
@@ -243,7 +241,7 @@ presets:
   - name: MASTER_SIZE
     value: "n1-standard-4"
   - name: NODE_SIZE
-    value: "n1-standard-8"
+    value: "e2-standard-8"
   - name: NODE_DISK_SIZE
     value: "100GB"
   - name: REGISTER_MASTER
