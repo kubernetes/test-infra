@@ -38,7 +38,7 @@ readonly BROKEN_REPOS=(
     kubernetes-csi/csi-driver-iscsi
     kubernetes-csi/csi-driver-nfs
     kubernetes-csi/csi-proxy
-    kubernetes-sigs/container-object-storage-interface-api
+    kubernetes-sigs/container-object-storage-interface-controller
 )
 
 cat >"${OUTPUT}" <<EOF

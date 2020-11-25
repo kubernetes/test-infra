@@ -407,8 +407,8 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-  kubernetes-sigs/container-object-storage-interface-api:
-    - name: post-container-object-storage-interface-api-push-images
+  kubernetes-sigs/container-object-storage-interface-controller:
+    - name: post-container-object-storage-interface-controller-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
