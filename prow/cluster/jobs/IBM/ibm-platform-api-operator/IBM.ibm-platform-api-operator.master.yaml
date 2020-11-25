@@ -15,7 +15,7 @@ presubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -32,7 +32,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -50,7 +50,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -68,7 +68,7 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -83,7 +83,7 @@ postsubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -100,7 +100,7 @@ postsubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -117,7 +117,7 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/build-tool:v20201120-43ea344a6
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
