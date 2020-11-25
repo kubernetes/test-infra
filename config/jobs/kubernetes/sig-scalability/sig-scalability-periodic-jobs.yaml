@@ -131,7 +131,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-4
+      - --gcp-node-size=e2-standard-4
       - --gcp-nodes=4
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -196,7 +196,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-4
+      - --gcp-node-size=e2-standard-4
       - --gcp-nodes=4
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -264,7 +264,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-4
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=8
       - --gcp-project=k8s-jenkins-blocking-kubemark
       - --gcp-zone=us-central1-f
@@ -330,7 +330,7 @@ periodics:
       - --cluster=kubemark-5000
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=84
       - --gcp-project=kubemark-scalability-testing
       - --gcp-zone=us-east1-b
@@ -401,7 +401,7 @@ periodics:
       - --cluster=kubemark-5000
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=84
       - --gcp-project=kubemark-scalability-testing
       - --gcp-zone=us-east1-b
@@ -461,7 +461,7 @@ periodics:
       - --cluster=kubemark-100pods
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=9
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -628,6 +628,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=kube-dns-benchmark
       - --extract=ci/latest
+      - --gcp-node-size=e2-standard-2
       - --gcp-nodes=3
       - --gcp-zone=us-east1-b
       - --provider=gce
@@ -673,6 +674,7 @@ periodics:
       - --cluster=node-local-dns-benchmark
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
+      - --gcp-node-size=e2-standard-2
       - --gcp-nodes=3
       - --gcp-zone=us-east1-b
       - --provider=gce
