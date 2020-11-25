@@ -30,7 +30,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-amazon-vpc
@@ -65,7 +65,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-calico
@@ -100,7 +100,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-canal
@@ -136,7 +136,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|should.set.TCP.CLOSE_WAIT|rejected.when.no.endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-cilium
@@ -171,7 +171,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-flannel
@@ -206,7 +206,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-kopeio
@@ -240,7 +240,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-kuberouter
@@ -275,7 +275,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-tab-name: kops-aws-cni-weave
