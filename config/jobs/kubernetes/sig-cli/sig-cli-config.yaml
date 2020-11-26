@@ -115,7 +115,7 @@ periodics:
           memory: 6Gi
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
@@ -142,7 +142,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
@@ -293,7 +293,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
@@ -319,7 +319,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
@@ -347,7 +347,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
@@ -374,7 +374,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
@@ -401,7 +401,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
@@ -427,5 +427,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
