@@ -73,7 +73,7 @@ periodics:
             value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
-          - "./scripts/ci-e2e.sh"
+          - "./scripts/ci-conformance.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -218,7 +218,7 @@ periodics:
             value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
-          - "./scripts/ci-e2e.sh"
+          - "./scripts/ci-conformance.sh"
           - "--use-ci-artifacts"
         # we need privileged mode in order to do docker in docker
         securityContext:
