@@ -104,6 +104,9 @@ presets:
     value: "--use-real-proxier=false"
   - name: HEAPSTER_KUBELET_TEST_ARGS
     value: "--register-with-taints=monitoring=:NoSchedule"
+  # Heapster node is needed in order for Prometheus pods to fit in a cluster.
+  - name: HEAPSTER_MACHINE_TYPE
+    value: "e2-standard-8"
 
 
 ###### Scalability Envs
