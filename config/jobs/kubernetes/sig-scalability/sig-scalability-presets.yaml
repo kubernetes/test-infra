@@ -116,7 +116,7 @@ presets:
   env:
   # Override GCE defaults.
   - name: NODE_SIZE
-    value: "n1-standard-1"
+    value: "e2-medium"
   - name: NODE_DISK_SIZE
     value: "50GB"
   - name: REGISTER_MASTER
