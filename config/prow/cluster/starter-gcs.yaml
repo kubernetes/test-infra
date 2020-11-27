@@ -371,6 +371,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
+        - --github-graphql-endpoint=https://api.github.com/graphql
         - --plugin-config=/etc/plugins/plugins.yaml
         - --spyglass=true
         ports:
@@ -495,6 +496,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
+        - --github-graphql-endpoint=https://api.github.com/graphql
         - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
         - --status-path=gs://tide/tide-status
         - --history-uri=gs://tide/tide-history.json
