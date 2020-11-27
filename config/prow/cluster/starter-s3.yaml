@@ -369,6 +369,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
+        - --github-graphql-endpoint=https://api.github.com/graphql
         - --plugin-config=/etc/plugins/plugins.yaml
         - --s3-credentials-file=/etc/s3-credentials/service-account.json
         - --spyglass=true
@@ -493,6 +494,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
+        - --github-graphql-endpoint=https://api.github.com/graphql
         - --s3-credentials-file=/etc/s3-credentials/service-account.json
         - --status-path=s3://tide/tide-status
         - --history-uri=s3://tide/tide-history.json
