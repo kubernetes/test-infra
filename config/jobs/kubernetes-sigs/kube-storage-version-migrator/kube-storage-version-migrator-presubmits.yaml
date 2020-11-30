@@ -74,3 +74,33 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated
+  - name: pull-kube-storage-version-migrator-manually-launched-e2e
+    decorate: true
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --extract=ci/latest
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../test/e2e/test-cmd.sh
+        - --timeout=50m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-manually-launched
