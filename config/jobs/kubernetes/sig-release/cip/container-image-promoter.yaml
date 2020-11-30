@@ -13,14 +13,12 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.0.0
         command:
         - cip
         args:
-        # Pod Utilities already sets pwd to
-        # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
-        # suffice, but it's nice to be explicit.
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - run
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
   # Check that images to be promoted are free of fixable vulnerabilities
   - name: pull-k8sio-cip-vuln
     annotations:
@@ -36,12 +34,13 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.0.0
         command:
         - cip
         args:
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-        - -vuln-severity-threshold=1
+        - run
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --vuln-severity-threshold=1
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     annotations:
