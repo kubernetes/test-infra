@@ -439,7 +439,7 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
-func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
+func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {
 		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
@@ -687,8 +687,8 @@ func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID 
 }
 
 // TeamHasMember checks if a user belongs to a team
-func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error) {
-	teamMembers, _ := f.ListTeamMembers(teamID, github.RoleAll)
+func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
+	teamMembers, _ := f.ListTeamMembers(org, teamID, github.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
 			return true, nil

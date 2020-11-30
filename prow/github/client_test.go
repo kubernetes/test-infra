@@ -1598,10 +1598,10 @@ func TestEditTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.EditTeam(Team{ID: 0, Name: "frobber"}); err == nil {
+	if _, err := c.EditTeam("", Team{ID: 0, Name: "frobber"}); err == nil {
 		t.Errorf("client should reject id 0")
 	}
-	switch team, err := c.EditTeam(Team{ID: 63, Name: "frobber"}); {
+	switch team, err := c.EditTeam("", Team{ID: 63, Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1617,7 +1617,7 @@ func TestListTeamMembers(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers(1, RoleAll)
+	teamMembers, err := c.ListTeamMembers("", 1, RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
@@ -2451,7 +2451,7 @@ func TestListTeamRepos(t *testing.T) {
 	)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	repos, err := c.ListTeamRepos(1)
+	repos, err := c.ListTeamRepos("", 1)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(repos) != 1 {

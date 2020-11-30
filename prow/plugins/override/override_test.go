@@ -220,7 +220,7 @@ func (c *fakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
 	if id == 1 {
 		return []github.TeamMember{
 			{Login: "user1"},
