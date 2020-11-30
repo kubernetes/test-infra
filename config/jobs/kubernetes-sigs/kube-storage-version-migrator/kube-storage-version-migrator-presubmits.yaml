@@ -74,8 +74,14 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated
-  - name: pull-kube-storage-version-migrator-manually-launched-e2e
+  - name: pull-kube-storage-version-migrator-manually-launched-e2e-optional-custom-build
     decorate: true
+    extra_refs:
+    - org: roycaihw
+      repo: kubernetes
+      base_ref: storage-version/conditions
+      path_alias: k8s.io/kubernetes
+    optional: true
     always_run: true
     labels:
       preset-service-account: "true"
@@ -88,8 +94,10 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --up
+        - --down
+        - --build=quick
         - --check-leaked-resources
-        - --extract=ci/latest
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --gcp-nodes=1
@@ -98,9 +106,11 @@ presubmits:
         - --test=false
         - --test-cmd=../test/e2e/test-cmd.sh
         - --timeout=50m
+        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      testgrid-tab-name: pr-e2e-manually-launched
+      testgrid-tab-name: pr-e2e-manually-launched-optional-custom-build
