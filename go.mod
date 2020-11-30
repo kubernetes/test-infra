@@ -40,6 +40,7 @@ require (
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v1.13.1
 	github.com/evanphx/json-patch v4.9.0+incompatible

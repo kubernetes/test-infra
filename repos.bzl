@@ -5258,3 +5258,11 @@ def go_repositories():
         sum = "h1:pMen7vLs8nvgEYhywH3KDWJIJTeEr2ULsVWHWYHQyBs=",
         version = "v3.0.0",
     )
+    go_repository(
+        name = "com_github_dgrijalva_jwt_go_v4",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/dgrijalva/jwt-go/v4",
+        sum = "h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=",
+        version = "v4.0.0-preview1",
+    )

@@ -63,6 +63,11 @@ const (
 
 	// cacheEntryCreationDateHeader contains the creation date of the cache entry
 	cacheEntryCreationDateHeader = "X-PROW-REQUEST-DATE"
+
+	// TokenBudgetIdentifierHeader is used to identify the token budget for
+	// which metrics should be recorded if set. If unset, the sha256sum of
+	// the Authorization header will be used.
+	TokenBudgetIdentifierHeader = "X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"
 )
 
 func CacheModeIsFree(mode CacheResponseMode) bool {
@@ -162,13 +167,18 @@ type upstreamTransport struct {
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
-	authHeaderHash := u.hasher.Hash(req)
+	var tokenBudgetName string
+	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+		tokenBudgetName = val
+	} else {
+		tokenBudgetName = u.hasher.Hash(req)
+	}
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
 	if err != nil {
-		ghmetrics.CollectRequestTimeoutMetrics(authHeaderHash, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
+		ghmetrics.CollectRequestTimeoutMetrics(tokenBudgetName, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
 		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
 		return nil, err
 	}
@@ -193,8 +203,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		apiVersion = "v4"
 	}
 
-	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
-	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
+	ghmetrics.CollectGitHubTokenMetrics(tokenBudgetName, apiVersion, resp.Header, reqStartTime, responseTime)
+	ghmetrics.CollectGitHubRequestMetrics(tokenBudgetName, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
 
 	return resp, nil
 }
