@@ -75,7 +75,6 @@ periodics:
       - --cluster=e2e-scalability-calico
       - --env=CL2_ENABLE_NETWORKPOLICIES=true
       - --extract=ci/latest
-      - --gcp-node-size=e2-medium
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -123,7 +122,6 @@ periodics:
           - --check-leaked-resources
           - --cluster=e2e-big
           - --extract=ci/latest
-          - --gcp-node-size=e2-medium
           - --gcp-node-image=gci
           - --gcp-nodes=100
           - --gcp-project-type=scalability-project
