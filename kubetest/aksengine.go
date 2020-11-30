@@ -477,6 +477,9 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 	if c.name != "" {
 		v.Name = c.name
 	}
+	if v.Properties.OrchestratorProfile == nil {
+		v.Properties.OrchestratorProfile = &OrchestratorProfile{}
+	}
 	if c.k8sVersion != "" {
 		v.Properties.OrchestratorProfile.OrchestratorRelease = c.k8sVersion
 	}
