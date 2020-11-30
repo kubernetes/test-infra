@@ -2,7 +2,7 @@
 # Binary tools
 #############
 
-FROM golang:1.14.7 as binary_tools_context
+FROM golang:1.14.12 as binary_tools_context
 
 # Pinned versions of stuff
 ENV GOIMPORTS_VERSION=379209517ffe
