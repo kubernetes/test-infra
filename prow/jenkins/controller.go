@@ -246,7 +246,7 @@ func (c *Controller) Sync() error {
 func (c *Controller) SyncMetrics() {
 	c.pjLock.RLock()
 	defer c.pjLock.RUnlock()
-	kube.GatherProwJobMetrics(c.pjs)
+	kube.GatherProwJobMetrics(c.log, c.pjs)
 }
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
