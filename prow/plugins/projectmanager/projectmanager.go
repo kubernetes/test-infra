@@ -131,9 +131,9 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)
-	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
-	GetColumnProjectCards(columnID int) ([]github.ProjectCard, error)
-	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
+	GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error)
+	GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error)
+	CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
 }
 
 type eventData struct {
@@ -275,13 +275,13 @@ func getColumnID(gc githubClient, orgRepoName, projectName, columnName, issueURL
 
 	for _, project := range projects {
 		if project.Name == projectName {
-			columns, err := gc.GetProjectColumns(project.ID)
+			columns, err := gc.GetProjectColumns(orgRepoParts[0], project.ID)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, column := range columns {
-				cards, err := gc.GetColumnProjectCards(column.ID)
+				cards, err := gc.GetColumnProjectCards(orgRepoParts[0], column.ID)
 				if err != nil {
 					return nil, err
 				}
@@ -312,6 +312,6 @@ func addIssueToColumn(gc githubClient, columnID int, e eventData) error {
 		projectCard.ContentType = "Issue"
 	}
 	projectCard.ContentID = e.id
-	_, err := gc.CreateProjectCard(columnID, projectCard)
+	_, err := gc.CreateProjectCard(e.org, columnID, projectCard)
 	return err
 }
