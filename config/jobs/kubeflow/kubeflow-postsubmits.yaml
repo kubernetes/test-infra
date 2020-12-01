@@ -235,7 +235,7 @@ postsubmits:
         - "7200"
     annotations:
       testgrid-dashboards: sig-big-data
-      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"       
       description: Postsubmit component tests for kubeflow/pipeline.
   - name: kubeflow-pipeline-postsubmit-integration-test
@@ -262,7 +262,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit integration tests for kubeflow/pipeline.
-      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"  
   - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
     cluster: kubeflow
@@ -288,7 +288,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/pipeline.
-      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"  
   kubeflow/xgboost-operator:
   - name: kubeflow-xgboost-operator-postsubmit
