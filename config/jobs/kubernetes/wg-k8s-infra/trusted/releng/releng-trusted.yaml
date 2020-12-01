@@ -46,13 +46,12 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/cip:v3.0.0
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
       command:
       - cip
       args:
-      - run
-      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
-      - --dry-run=false
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -dry-run=false
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
