@@ -241,7 +241,6 @@ periodics:
 # periodic bazel test jobs
 - name: periodic-kubernetes-bazel-test-canary
   annotations:
-    fork-per-release: "true"
     fork-per-release-periodic-interval: 6h
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
@@ -282,6 +281,7 @@ periodics:
           memory: "38Gi"
 - name: periodic-kubernetes-bazel-test-master
   annotations:
+    fork-per-release: "true"
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
