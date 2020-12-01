@@ -247,35 +247,41 @@ slack:
     - k8s-release-robot # anago
     exempt_branches:
         release-1.17:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         release-1.18:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         release-1.19:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
+        release-1.20:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
