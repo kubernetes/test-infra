@@ -673,7 +673,7 @@ nodeK8sVersions:
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.16
 
 nodeTestSuites:
   default:
