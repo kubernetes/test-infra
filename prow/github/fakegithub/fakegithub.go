@@ -439,7 +439,7 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
-func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
+func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {
 		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
@@ -515,7 +515,7 @@ func (f *FakeClient) GetOrgProjects(org string) ([]github.Project, error) {
 }
 
 // GetProjectColumns returns the list of columns for a given project.
-func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, error) {
+func (f *FakeClient) GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error) {
 	// Get project name
 	for _, projects := range f.RepoProjects {
 		for _, project := range projects {
@@ -528,7 +528,7 @@ func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, e
 }
 
 // CreateProjectCard creates a project card under a given column.
-func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
+func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
@@ -538,7 +538,7 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 			for id := range columnIDMap {
 				// Make sure that we behave same as github API
 				// Create project will generate an error when the card already exist in the project
-				card, err := f.GetColumnProjectCard(id, projectCard.ContentURL)
+				card, err := f.GetColumnProjectCard(org, id, projectCard.ContentURL)
 				if err == nil && card != nil {
 					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
 				}
@@ -559,7 +559,7 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 }
 
 // DeleteProjectCard deletes the project card of a specific issue or PR
-func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
+func (f *FakeClient) DeleteProjectCard(org string, projectCardID int) error {
 	if f.ColumnCardsMap == nil {
 		return fmt.Errorf("Project card doesn't exist")
 	}
@@ -591,7 +591,7 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 }
 
 // GetColumnProjectCards fetches project cards  under given column
-func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, error) {
+func (f *FakeClient) GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
@@ -599,8 +599,8 @@ func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, 
 }
 
 // GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
-func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
-	cards, err := f.GetColumnProjectCards(columnID)
+func (f *FakeClient) GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(org, columnID)
 	if err != nil {
 		return nil, err
 	}
@@ -644,7 +644,7 @@ func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
 }
 
 // MoveProjectCard moves a specific project card to a specified column in the same project
-func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
+func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID int) error {
 	// Remove project card from old column
 	newCards := []github.ProjectCard{}
 	oldColumnID := -1
@@ -687,8 +687,8 @@ func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 }
 
 // TeamHasMember checks if a user belongs to a team
-func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error) {
-	teamMembers, _ := f.ListTeamMembers(teamID, github.RoleAll)
+func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
+	teamMembers, _ := f.ListTeamMembers(org, teamID, github.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
 			return true, nil

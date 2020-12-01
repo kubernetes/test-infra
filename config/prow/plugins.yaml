@@ -247,35 +247,41 @@ slack:
     - k8s-release-robot # anago
     exempt_branches:
         release-1.17:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         release-1.18:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         release-1.19:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hasheddan # Branch Manager
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
+        release-1.20:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -322,10 +328,10 @@ milestone_applier:
     master: v1.20
   kubernetes/kubernetes:
     master: v1.20
+    release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
-    release-1.16: v1.16
   kubernetes/release:
     master: v1.20
   kubernetes/sig-release:
@@ -339,7 +345,7 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api-provider-azure:
-    master: v0.4.10
+    master: v0.4.11
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-digitalocean:
@@ -699,25 +705,16 @@ plugins:
   kubeflow/internal-acls:
   - trigger
 
-  kubeflow/katib:
-  - trigger
-
   kubeflow/kfp-tekton:
   - trigger
 
   kubeflow/kfp-tekton-backend:
   - trigger
 
-  kubeflow/kfserving:
-  - trigger
-
   kubeflow/kubebench:
   - trigger
 
   kubeflow/kubeflow:
-  - trigger
-
-  kubeflow/manifests:
   - trigger
 
   kubeflow/metadata:
@@ -730,9 +727,6 @@ plugins:
   - trigger
 
   kubeflow/pipelines:
-  - trigger
-
-  kubeflow/pytorch-operator:
   - trigger
 
   kubeflow/reporting:

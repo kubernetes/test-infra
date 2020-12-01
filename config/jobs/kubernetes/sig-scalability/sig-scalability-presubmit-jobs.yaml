@@ -40,7 +40,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -54,7 +53,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
@@ -89,7 +88,7 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env=HEAPSTER_MACHINE_TYPE=n1-standard-4
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=500
@@ -98,7 +97,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -110,7 +108,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -147,11 +145,11 @@ presubmits:
         - --build=bazel
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
-        - --env=HEAPSTER_MACHINE_TYPE=n1-standard-2
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
         - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
-        - --gcp-node-size=g1-small
+        - --gcp-node-size=e2-small
         - --gcp-nodes=100
         - --gcp-project-type=scalability-project
         - --gcp-ssh-proxy-instance-name=gce-cluster-master
@@ -162,7 +160,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         resources:
           limits:
             cpu: 6
@@ -196,7 +194,7 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=2000
@@ -204,7 +202,6 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -218,7 +215,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -248,7 +245,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -265,7 +262,7 @@ presubmits:
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-master-size=n1-standard-4
-        - --gcp-node-size=n1-standard-8
+        - --gcp-node-size=e2-standard-8
         - --gcp-nodes=7
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
@@ -281,7 +278,6 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -321,7 +317,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -337,7 +333,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
-        - --gcp-node-size=n1-standard-8
+        - --gcp-node-size=e2-standard-8
         - --gcp-nodes=84
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
@@ -351,7 +347,6 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=5000
         - --test-cmd-args=--provider=kubemark
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -410,7 +405,7 @@ presubmits:
         - --test-cmd-args=/workspace/_artifacts
         - --test-cmd-name=KubeDnsBenchmark
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
 
   - name: pull-perf-tests-clusterloader2
     always_run: false
@@ -445,7 +440,6 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-        - --env=CL2_ENABLE_DENSITY_TEST=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -461,7 +455,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         resources:
           limits:
             cpu: 2
@@ -498,7 +492,7 @@ presubmits:
             - --cluster=
             - --extract=ci/latest
             - --gcp-master-size=n1-standard-2
-            - --gcp-node-size=n1-standard-4
+            - --gcp-node-size=e2-standard-4
             - --gcp-nodes=4
             - --gcp-project-type=scalability-presubmit-project
             - --gcp-zone=us-east1-b
@@ -515,7 +509,6 @@ presubmits:
             - --test-cmd-args=--provider=kubemark
             - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-            - --env=CL2_ENABLE_DENSITY_TEST=true
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -525,7 +518,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
           resources:
             limits:
               cpu: 2

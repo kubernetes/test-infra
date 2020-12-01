@@ -465,6 +465,8 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	return b, err
 }
 
+// Diff runs 'git diff HEAD <sha> --name-only' and returns a list
+// of file names with upcoming changes
 func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 	r.logger.Infof("Diff head with %s'.", sha)
 	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()

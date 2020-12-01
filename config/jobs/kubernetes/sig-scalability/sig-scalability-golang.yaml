@@ -67,7 +67,7 @@ periodics:
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project=k8s-presubmit-scale
       - --gcp-zone=us-east1-b
@@ -90,7 +90,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=180m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
       env:
       - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
         value: "true"

@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201123-dbc92a6558"
-        initupload: "gcr.io/k8s-prow/initupload:v20201123-dbc92a6558"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201123-dbc92a6558"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20201123-dbc92a6558"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201124-061f85d859"
+        initupload: "gcr.io/k8s-prow/initupload:v20201124-061f85d859"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201124-061f85d859"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20201124-061f85d859"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -238,6 +238,9 @@ branch-protection:
         kops:
           required_status_checks:
             contexts:
+            - build-linux-amd64
+            - build-macos-amd64
+            - verify
             - continuous-integration/travis-ci/pr
         kubelet:
           restrictions:
@@ -518,6 +521,7 @@ tide:
     milestone: v1.20
     includedBranches:
     - master
+    - release-1.20
     labels:
     - lgtm
     - approved

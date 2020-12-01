@@ -38,7 +38,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
       resources:
         requests:
           cpu: 6
@@ -76,20 +76,18 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --gcp-node-size=e2-medium
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
       # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
-      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=30
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
@@ -110,7 +108,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=330m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
       resources:
         requests:
           cpu: 6
@@ -145,7 +143,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -164,7 +162,6 @@ periodics:
       - --provider=gce
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=CL2_ENABLE_DENSITY_TEST=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2

@@ -1542,11 +1542,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-metal-serial-4.7
   name: release-openshift-ocp-installer-e2e-metal-serial-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-4.7
   name: release-openshift-ocp-installer-e2e-openstack-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-serial-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-serial-4.7
   name: release-openshift-ocp-installer-e2e-openstack-serial-4.7
 - days_of_results: 25
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-4.7

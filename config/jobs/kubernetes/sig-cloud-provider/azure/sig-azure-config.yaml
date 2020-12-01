@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         command:
         - runner.sh
         - kubetest
@@ -37,7 +37,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/kubernetes.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/kubernetes.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
@@ -69,7 +69,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         command:
         - runner.sh
         - kubetest
@@ -124,7 +124,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         command:
         - runner.sh
         - kubetest
@@ -181,7 +181,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
         command:
         - runner.sh
         - kubetest
@@ -234,7 +234,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
       command:
       - runner.sh
       - kubetest

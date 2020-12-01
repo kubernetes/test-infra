@@ -1523,6 +1523,14 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/cluster-api-provider-aws:
+    labels:
+      - color: c2e0c6
+        description: Denotes an issue or PR contains a decision that needs documenting using an ADR.
+        name: adr-required
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/krew:
     labels:
       - color: ee0000

@@ -1385,16 +1385,22 @@ type pluginsCfg func() *plugins.Configuration
 
 // canTriggerJob determines whether the given user can trigger any job.
 func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginsCfg pluginsCfg, log *logrus.Entry) (bool, error) {
+	var org string
+	if pj.Spec.Refs != nil {
+		org = pj.Spec.Refs.Org
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		org = pj.Spec.ExtraRefs[0].Org
+	}
 
 	// Then check config-level rerun auth config.
-	if auth, err := cfg.IsAuthorized(user, cli); err != nil {
+	if auth, err := cfg.IsAuthorized(org, user, cli); err != nil {
 		return false, err
 	} else if auth {
 		return true, err
 	}
 
 	// Check job-level rerun auth config.
-	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(user, cli); err != nil {
+	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(org, user, cli); err != nil {
 		return false, err
 	} else if auth {
 		return true, nil

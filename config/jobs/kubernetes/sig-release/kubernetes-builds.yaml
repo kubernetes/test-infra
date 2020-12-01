@@ -118,7 +118,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:default
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:v20201128-v0.6.0-6-g6313f696-default
       command:
       - wrapper.sh
       - /krel

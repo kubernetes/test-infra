@@ -372,7 +372,7 @@ func TestRerunAuthConfigIsAuthorized(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			if actual, _ := tc.config.IsAuthorized(tc.user, nil); actual != tc.authorized {
+			if actual, _ := tc.config.IsAuthorized("", tc.user, nil); actual != tc.authorized {
 				t.Errorf("Expected %v, got %v", tc.authorized, actual)
 			}
 		})

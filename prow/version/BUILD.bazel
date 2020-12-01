@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -6,6 +6,12 @@ go_library(
     importpath = "k8s.io/test-infra/prow/version",
     visibility = ["//visibility:public"],
     x_defs = {"Version": "{DOCKER_TAG}"},
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["doc_test.go"],
+    embed = [":go_default_library"],
 )
 
 filegroup(
