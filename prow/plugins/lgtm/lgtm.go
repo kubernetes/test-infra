@@ -135,7 +135,7 @@ type githubClient interface {
 	GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error)
 	IsMember(org, user string) (bool, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 }
 
 // reviewCtx contains information about each review event
@@ -378,7 +378,7 @@ func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lg
 		if teams, err := gc.ListTeams(org); err == nil {
 			for _, teamInOrg := range teams {
 				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
-					if members, err := gc.ListTeamMembers(teamInOrg.ID, github.RoleAll); err == nil {
+					if members, err := gc.ListTeamMembers(org, teamInOrg.ID, github.RoleAll); err == nil {
 						for _, member := range members {
 							if strings.Compare(member.Login, author) == 0 {
 								// The author is in a trusted team

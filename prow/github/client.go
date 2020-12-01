@@ -170,17 +170,17 @@ type RepositoryClient interface {
 // TeamClient interface for team related API actions
 type TeamClient interface {
 	CreateTeam(org string, team Team) (*Team, error)
-	EditTeam(t Team) (*Team, error)
-	DeleteTeam(id int) error
+	EditTeam(org string, t Team) (*Team, error)
+	DeleteTeam(org string, id int) error
 	ListTeams(org string) ([]Team, error)
-	UpdateTeamMembership(id int, user string, maintainer bool) (*TeamMembership, error)
-	RemoveTeamMembership(id int, user string) error
-	ListTeamMembers(id int, role string) ([]TeamMember, error)
-	ListTeamRepos(id int) ([]Repo, error)
+	UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error)
+	RemoveTeamMembership(org string, id int, user string) error
+	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
+	ListTeamRepos(org string, id int) ([]Repo, error)
 	UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
-	ListTeamInvitations(id int) ([]OrgInvitation, error)
-	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
+	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
 }
 
@@ -212,7 +212,7 @@ type MilestoneClient interface {
 
 // RerunClient interface for job rerun access check related API actions
 type RerunClient interface {
-	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
@@ -2879,7 +2879,7 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 // EditTeam patches team.ID to contain the specified other values.
 //
 // See https://developer.github.com/v3/teams/#edit-team
-func (c *client) EditTeam(t Team) (*Team, error) {
+func (c *client) EditTeam(org string, t Team) (*Team, error) {
 	durationLogger := c.log("EditTeam", t)
 	defer durationLogger()
 
@@ -2916,7 +2916,7 @@ func (c *client) EditTeam(t Team) (*Team, error) {
 // DeleteTeam removes team.ID from GitHub.
 //
 // See https://developer.github.com/v3/teams/#delete-team
-func (c *client) DeleteTeam(id int) error {
+func (c *client) DeleteTeam(org string, id int) error {
 	durationLogger := c.log("DeleteTeam", id)
 	defer durationLogger()
 	path := fmt.Sprintf("/teams/%d", id)
@@ -2963,7 +2963,7 @@ func (c *client) ListTeams(org string) ([]Team, error) {
 // If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
 //
 // https://developer.github.com/v3/teams/members/#add-or-update-team-membership
-func (c *client) UpdateTeamMembership(id int, user string, maintainer bool) (*TeamMembership, error) {
+func (c *client) UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error) {
 	durationLogger := c.log("UpdateTeamMembership", id, user, maintainer)
 	defer durationLogger()
 
@@ -2993,7 +2993,7 @@ func (c *client) UpdateTeamMembership(id int, user string, maintainer bool) (*Te
 // RemoveTeamMembership removes the user from the team (but not the org).
 //
 // https://developer.github.com/v3/teams/members/#remove-team-member
-func (c *client) RemoveTeamMembership(id int, user string) error {
+func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 	durationLogger := c.log("RemoveTeamMembership", id, user)
 	defer durationLogger()
 
@@ -3013,7 +3013,7 @@ func (c *client) RemoveTeamMembership(id int, user string) error {
 // Role options are "all", "maintainer" and "member"
 //
 // https://developer.github.com/v3/teams/members/#list-team-members
-func (c *client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
+func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
 	durationLogger := c.log("ListTeamMembers", id, role)
 	defer durationLogger()
 
@@ -3047,7 +3047,7 @@ func (c *client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 // ListTeamRepos gets a list of team repos for the given team id
 //
 // https://developer.github.com/v3/teams/#list-team-repos
-func (c *client) ListTeamRepos(id int) ([]Repo, error) {
+func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
 	durationLogger := c.log("ListTeamRepos", id)
 	defer durationLogger()
 
@@ -3134,7 +3134,7 @@ func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 // given team id
 //
 // https://developer.github.com/v3/teams/members/#list-pending-team-invitations
-func (c *client) ListTeamInvitations(id int) ([]OrgInvitation, error) {
+func (c *client) ListTeamInvitations(org string, id int) ([]OrgInvitation, error) {
 	durationLogger := c.log("ListTeamInvites", id)
 	defer durationLogger()
 
@@ -3720,11 +3720,11 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 }
 
 // TeamHasMember checks if a user belongs to a team
-func (c *client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
+func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
 	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
 	defer durationLogger()
 
-	projectMaintainers, err := c.ListTeamMembers(teamID, RoleAll)
+	projectMaintainers, err := c.ListTeamMembers(org, teamID, RoleAll)
 	if err != nil {
 		return false, err
 	}

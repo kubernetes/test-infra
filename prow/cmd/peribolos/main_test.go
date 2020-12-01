@@ -282,7 +282,7 @@ func (c *fakeClient) UpdateOrgMembership(org, user string, admin bool) (*github.
 	}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team 66 supported, not %d", id)
 	}
@@ -296,7 +296,7 @@ func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, 
 	}
 }
 
-func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error) {
+func (c *fakeClient) ListTeamInvitations(org string, id int) ([]github.OrgInvitation, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team 66 supported, not %d", id)
 	}
@@ -316,7 +316,7 @@ func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error)
 
 const teamID = 66
 
-func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error) {
+func (c *fakeClient) UpdateTeamMembership(org string, id int, user string, maintainer bool) (*github.TeamMembership, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team %d supported, not %d", teamID, id)
 	}
@@ -347,7 +347,7 @@ func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) 
 	}, nil
 }
 
-func (c *fakeClient) RemoveTeamMembership(id int, user string) error {
+func (c *fakeClient) RemoveTeamMembership(org string, id int, user string) error {
 	if id != teamID {
 		return fmt.Errorf("only team %d supported, not %d", teamID, id)
 	}
@@ -758,7 +758,7 @@ func (c *fakeTeamClient) ListTeams(name string) ([]github.Team, error) {
 	return teams, nil
 }
 
-func (c *fakeTeamClient) DeleteTeam(id int) error {
+func (c *fakeTeamClient) DeleteTeam(org string, id int) error {
 	switch _, ok := c.teams[id]; {
 	case !ok:
 		return fmt.Errorf("not found %d", id)
@@ -769,7 +769,7 @@ func (c *fakeTeamClient) DeleteTeam(id int) error {
 	return nil
 }
 
-func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
+func (c *fakeTeamClient) EditTeam(org string, team github.Team) (*github.Team, error) {
 	id := team.ID
 	t, ok := c.teams[id]
 	if !ok {
@@ -1357,7 +1357,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, gt, tc.team)
+			err := configureTeamMembers(fc, "", gt, tc.team)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -2122,7 +2122,7 @@ func (c fakeDumpClient) ListTeams(name string) ([]github.Team, error) {
 	return c.teams, nil
 }
 
-func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c fakeDumpClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
 	var mapping map[int][]string
 	switch {
 	case id < 0:
@@ -2141,7 +2141,7 @@ func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMembe
 	return c.makeMembers(people)
 }
 
-func (c fakeDumpClient) ListTeamRepos(id int) ([]github.Repo, error) {
+func (c fakeDumpClient) ListTeamRepos(org string, id int) ([]github.Repo, error) {
 	if id < 0 {
 		return nil, errors.New("injected ListTeamRepos error")
 	}
@@ -2266,7 +2266,7 @@ type fakeTeamRepoClient struct {
 	failList, failUpdate, failRemove bool
 }
 
-func (c *fakeTeamRepoClient) ListTeamRepos(id int) ([]github.Repo, error) {
+func (c *fakeTeamRepoClient) ListTeamRepos(org string, id int) ([]github.Repo, error) {
 	if c.failList {
 		return nil, errors.New("injected failure to ListTeamRepos")
 	}

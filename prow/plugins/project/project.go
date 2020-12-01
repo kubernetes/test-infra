@@ -56,7 +56,7 @@ var (
 type githubClient interface {
 	BotName() (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)
@@ -65,7 +65,7 @@ type githubClient interface {
 	GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error)
 	MoveProjectCard(org string, projectCardID int, newColumnID int) error
 	DeleteProjectCard(org string, projectCardID int) error
-	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 }
 
 func init() {
@@ -212,7 +212,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if maintainerTeamID == -1 {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
 	}
-	isAMember, err := gc.TeamHasMember(maintainerTeamID, e.User.Login)
+	isAMember, err := gc.TeamHasMember(org, maintainerTeamID, e.User.Login)
 	if err != nil {
 		return err
 	}
