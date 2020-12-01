@@ -28,6 +28,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     python \
     python3 \
     python3-pip \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install requests google-cloud-pubsub==2.1.0 google-cloud-bigquery==2.2.0 influxdb ruamel.yaml==0.16
