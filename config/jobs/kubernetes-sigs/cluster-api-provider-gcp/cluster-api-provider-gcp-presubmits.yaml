@@ -67,7 +67,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     decoration_config:
       timeout: 3h
@@ -107,7 +107,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-    always_run: true
+    always_run: false
     optional: true
     decorate: true
     decoration_config:
