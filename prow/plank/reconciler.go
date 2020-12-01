@@ -160,7 +160,7 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 				r.log.WithError(err).Error("failed to list prowjobs for metrics")
 				continue
 			}
-			kube.GatherProwJobMetrics(pjs.Items)
+			kube.GatherProwJobMetrics(r.log, pjs.Items)
 		}
 	}
 }
