@@ -51,7 +51,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 12h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
@@ -99,7 +99,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 12h
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
