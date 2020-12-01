@@ -59,6 +59,13 @@ dashboards:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-integration-gardener-gcp
   - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GCP Gardener integration job using parallel installation library.
+    name: kyma-integration-gardener-gcp-parallel
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-gardener-gcp-parallel
+  - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: post-kyma-release-upgrade
     name: post-kyma-release-upgrade
@@ -203,6 +210,8 @@ test_groups:
   name: kyma-integration-gardener-azure
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-gcp
   name: kyma-integration-gardener-gcp
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-gcp-parallel
+  name: kyma-integration-gardener-gcp-parallel
 - gcs_prefix: kyma-prow-logs/logs/post-master-compass-gke-integration
   name: post-master-compass-gke-integration
 - days_of_results: 60
