@@ -445,7 +445,7 @@ func TestLoadYAML(t *testing.T) {
 	}
 	for i, tc := range testcases {
 		actual, err := LoadConfig(tc.path, "org")
-		errNil := (err == nil)
+		errNil := err == nil
 		if errNil != tc.ok {
 			t.Errorf("TestLoadYAML: test case number %d, expected ok: %v, got %v (error=%v)", i+1, tc.ok, err == nil, err)
 		}

@@ -57,9 +57,6 @@ const (
 	bothTarget              = "both"
 )
 
-// LabelTargets is a slice of options: pr, issue, both
-var LabelTargets = []LabelTarget{prTarget, issueTarget, bothTarget}
-
 // Label holds declarative data about the label.
 type Label struct {
 	// Name is the current name of the label
@@ -94,9 +91,6 @@ type Configuration struct {
 type RepoConfig struct {
 	Labels []Label `json:"labels"`
 }
-
-// RepoList holds a slice of repos.
-type RepoList []github.Repo
 
 // RepoLabels holds a repo => []github.Label mapping.
 type RepoLabels map[string][]github.Label
