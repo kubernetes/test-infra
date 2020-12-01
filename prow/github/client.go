@@ -232,6 +232,8 @@ type Client interface {
 	MilestoneClient
 	UserClient
 	HookClient
+	ListAppInstallations() ([]AppInstallation, error)
+	GetApp() (*App, error)
 
 	Throttle(hourlyTokens, burst int)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
@@ -3775,4 +3777,56 @@ func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 		return nil, err
 	}
 	return &checkRunList, nil
+}
+
+// ListAppInstallations lists the installations for the current app. Will not work with
+// a Personal Access Token.
+//
+// See https://docs.github.com/en/free-pro-team@latest/rest/reference/apps#list-installations-for-the-authenticated-app
+func (c *client) ListAppInstallations() ([]AppInstallation, error) {
+	durationLogger := c.log("AppInstallation")
+	defer durationLogger()
+
+	var ais []AppInstallation
+	if _, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      "/app/installations",
+		exitCodes: []int{200},
+	}, &ais); err != nil {
+		return nil, err
+	}
+	return ais, nil
+}
+
+func (c *client) getAppInstallationToken(installationId int64) (*AppInstallationToken, error) {
+	durationLogger := c.log("AppInstallationToken")
+	defer durationLogger()
+
+	var token AppInstallationToken
+	if _, err := c.request(&request{
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/app/installations/%d/access_tokens", installationId),
+		exitCodes: []int{201},
+	}, &token); err != nil {
+		return nil, err
+	}
+
+	return &token, nil
+}
+
+// GetApp gets the current app. Will not work with a Personal Access Token.
+func (c *client) GetApp() (*App, error) {
+	durationLogger := c.log("App")
+	defer durationLogger()
+
+	var app App
+	if _, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      "/app",
+		exitCodes: []int{200},
+	}, &app); err != nil {
+		return nil, err
+	}
+
+	return &app, nil
 }
