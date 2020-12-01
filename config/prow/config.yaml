@@ -521,6 +521,7 @@ tide:
     milestone: v1.20
     includedBranches:
     - master
+    - release-1.20
     labels:
     - lgtm
     - approved
