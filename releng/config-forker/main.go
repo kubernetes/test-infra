@@ -85,6 +85,8 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p := presubmit
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
+			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
+			p.Name = generatePresubmitNameVariant(p.Name, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
@@ -349,6 +351,28 @@ func generateNameVariant(name, version string, generic bool) string {
 		return name + suffix
 	}
 	return strings.ReplaceAll(name, "-master", suffix)
+}
+
+func generatePresubmitNameVariant(name, version string) string {
+	suffix := "-" + version
+	if !strings.HasSuffix(name, "-master") {
+		return name + suffix
+	}
+	return strings.ReplaceAll(name, "-master", suffix)
+}
+
+func generatePresubmitContextVariant(name, context, version string) string {
+	suffix := "-" + version
+
+	if context != "" {
+		return strings.ReplaceAll(context, "-master", suffix)
+	}
+
+	context = name
+	if !strings.HasSuffix(context, "-master") {
+		return context + suffix
+	}
+	return strings.ReplaceAll(context, "-master", suffix)
 }
 
 type options struct {
