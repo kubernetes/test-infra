@@ -195,12 +195,12 @@ type UserClient interface {
 type ProjectClient interface {
 	GetRepoProjects(owner, repo string) ([]Project, error)
 	GetOrgProjects(org string) ([]Project, error)
-	GetProjectColumns(projectID int) ([]ProjectColumn, error)
-	CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error)
-	GetColumnProjectCards(columnID int) ([]ProjectCard, error)
-	GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error)
-	MoveProjectCard(projectCardID int, newColumnID int) error
-	DeleteProjectCard(projectCardID int) error
+	GetProjectColumns(org string, projectID int) ([]ProjectColumn, error)
+	CreateProjectCard(org string, columnID int, projectCard ProjectCard) (*ProjectCard, error)
+	GetColumnProjectCards(org string, columnID int) ([]ProjectCard, error)
+	GetColumnProjectCard(org string, columnID int, issueURL string) (*ProjectCard, error)
+	MoveProjectCard(org string, projectCardID int, newColumnID int) error
+	DeleteProjectCard(org string, projectCardID int) error
 }
 
 // MilestoneClient interface for milestone related API actions
@@ -3592,7 +3592,7 @@ func (c *client) GetOrgProjects(org string) ([]Project, error) {
 // GetProjectColumns returns the list of columns in a project.
 //
 // See https://developer.github.com/v3/projects/columns/#list-project-columns
-func (c *client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
+func (c *client) GetProjectColumns(org string, projectID int) ([]ProjectColumn, error) {
 	durationLogger := c.log("GetProjectColumns", projectID)
 	defer durationLogger()
 
@@ -3617,7 +3617,7 @@ func (c *client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
 // CreateProjectCard adds a project card to the specified project column.
 //
 // See https://developer.github.com/v3/projects/cards/#create-a-project-card
-func (c *client) CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error) {
+func (c *client) CreateProjectCard(org string, columnID int, projectCard ProjectCard) (*ProjectCard, error) {
 	durationLogger := c.log("CreateProjectCard", columnID, projectCard)
 	defer durationLogger()
 
@@ -3641,7 +3641,7 @@ func (c *client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 
 // GetProjectColumnCards get all project cards in a column. This helps in iterating all
 // issues and PRs that are under a column
-func (c *client) GetColumnProjectCards(columnID int) ([]ProjectCard, error) {
+func (c *client) GetColumnProjectCards(org string, columnID int) ([]ProjectCard, error) {
 	durationLogger := c.log("GetColumnProjectCards", columnID)
 	defer durationLogger()
 
@@ -3667,8 +3667,8 @@ func (c *client) GetColumnProjectCards(columnID int) ([]ProjectCard, error) {
 // GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
 // This method requires the URL of the issue/pr to compare the issue with the content_url
 // field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
-func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
-	cards, err := c.GetColumnProjectCards(columnID)
+func (c *client) GetColumnProjectCard(org string, columnID int, issueURL string) (*ProjectCard, error) {
+	cards, err := c.GetColumnProjectCards(org, columnID)
 	if err != nil {
 		return nil, err
 	}
@@ -3684,7 +3684,7 @@ func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCa
 // MoveProjectCard moves a specific project card to a specified column in the same project
 //
 // See https://developer.github.com/v3/projects/cards/#move-a-project-card
-func (c *client) MoveProjectCard(projectCardID int, newColumnID int) error {
+func (c *client) MoveProjectCard(org string, projectCardID int, newColumnID int) error {
 	durationLogger := c.log("MoveProjectCard", projectCardID, newColumnID)
 	defer durationLogger()
 
@@ -3706,7 +3706,7 @@ func (c *client) MoveProjectCard(projectCardID int, newColumnID int) error {
 // DeleteProjectCard deletes the project card of a specific issue or PR
 //
 // See https://developer.github.com/v3/projects/cards/#delete-a-project-card
-func (c *client) DeleteProjectCard(projectCardID int) error {
+func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 	durationLogger := c.log("DeleteProjectCard", projectCardID)
 	defer durationLogger()
 

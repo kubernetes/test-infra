@@ -60,11 +60,11 @@ type githubClient interface {
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)
-	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
-	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
-	GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error)
-	MoveProjectCard(projectCardID int, newColumnID int) error
-	DeleteProjectCard(projectCardID int) error
+	GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error)
+	CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
+	GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error)
+	MoveProjectCard(org string, projectCardID int, newColumnID int) error
+	DeleteProjectCard(org string, projectCardID int) error
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
 }
 
@@ -273,7 +273,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	// Get all columns for proposedProject
-	projectColumns, err := gc.GetProjectColumns(projectID)
+	projectColumns, err := gc.GetProjectColumns(org, projectID)
 	if err != nil {
 		return err
 	}
@@ -333,7 +333,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	for _, colID := range projectColumns {
 		// make issue URL in the form of card content URL
 		issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", org, repo, e.Number)
-		existingProjectCard, err = gc.GetColumnProjectCard(colID.ID, issueURL)
+		existingProjectCard, err = gc.GetColumnProjectCard(org, colID.ID, issueURL)
 		if err != nil {
 			return err
 		}
@@ -352,7 +352,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	// Clear issue/PR from project if command is to clear
 	if shouldClear {
 		if existingProjectCard != nil {
-			if err := gc.DeleteProjectCard(existingProjectCard.ID); err != nil {
+			if err := gc.DeleteProjectCard(org, existingProjectCard.ID); err != nil {
 				return err
 			}
 			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
@@ -365,7 +365,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project
 	if existingProjectCard != nil {
 		log.Infof("Move card to column proposedColumnID: %v with issue: %v ", proposedColumnID, e.Number)
-		if err := gc.MoveProjectCard(existingProjectCard.ID, proposedColumnID); err != nil {
+		if err := gc.MoveProjectCard(org, existingProjectCard.ID, proposedColumnID); err != nil {
 			return err
 		}
 		msg = fmt.Sprintf(successMovingCardMsg, proposedColumnName, proposedColumnID)
@@ -380,7 +380,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		projectCard.ContentType = "Issue"
 	}
 
-	if _, err := gc.CreateProjectCard(proposedColumnID, projectCard); err != nil {
+	if _, err := gc.CreateProjectCard(org, proposedColumnID, projectCard); err != nil {
 		return err
 	}
 
