@@ -180,7 +180,7 @@ func (h *History) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		b = []byte("{}")
 	}
 	if _, err = w.Write(b); err != nil {
-		logrus.WithError(err).Error("Writing JSON history response.")
+		logrus.WithError(err).Debug("Writing JSON history response.")
 	}
 }
 
