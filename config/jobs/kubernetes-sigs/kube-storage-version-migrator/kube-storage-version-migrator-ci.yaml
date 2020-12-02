@@ -25,6 +25,8 @@ presubmits:
         - --test-cmd=../test/e2e/test-fully-automated.sh
         - --test-cmd-args=--focus=\[Disruptive\]
         - --timeout=50m
+        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
