@@ -91,6 +91,8 @@ presets:
   # of the nodes got logexported successfully, then report a failure.
   - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
     value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -222,6 +224,8 @@ presets:
   # of the nodes got logexported successfully, then report a failure.
   - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
     value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
