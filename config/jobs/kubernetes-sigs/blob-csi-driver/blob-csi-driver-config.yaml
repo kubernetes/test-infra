@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         - kubetest
@@ -161,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         - kubetest

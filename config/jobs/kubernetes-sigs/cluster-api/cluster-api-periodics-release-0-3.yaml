@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -35,7 +35,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -60,7 +60,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       command:
       - "runner.sh"
       - "make"
