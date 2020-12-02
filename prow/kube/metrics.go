@@ -75,6 +75,7 @@ func (jl *jobLabel) values() []string {
 func init() {
 	prometheus.MustRegister(prowJobs)
 	prometheus.MustRegister(prowJobTransitions)
+	prometheus.MustRegister(prowVersion)
 }
 
 func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
