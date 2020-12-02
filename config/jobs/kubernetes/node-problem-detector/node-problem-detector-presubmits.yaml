@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -38,7 +38,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -72,7 +72,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -109,7 +109,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -145,7 +145,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -181,7 +181,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -217,7 +217,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         command:
         - runner.sh
         args:
@@ -252,7 +252,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
         env:
         - name: ZONE
           value: us-central1-a
