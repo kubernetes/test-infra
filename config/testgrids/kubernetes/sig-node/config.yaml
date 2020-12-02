@@ -10,6 +10,7 @@ dashboard_groups:
     - sig-node-ppc64le
     - sig-node-cri-o
     - sig-node-cri
+    - sig-node-cri-tools
     - sig-node-arm64
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
@@ -72,6 +73,7 @@ dashboards:
       base_options: width=10
 
 - name: sig-node-cri
+- name: sig-node-cri-tools
 - name: sig-node-arm64
   dashboard_tab:
     - name: conformance
