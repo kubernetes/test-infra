@@ -79,19 +79,23 @@ func (o Options) Run(ctx context.Context) (int, error) {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	// If we are being asked to terminate by the kubelet but we have
-	// NOT seen the test process exit cleanly, we need a to start
-	// uploading artifacts to GCS immediately. If we notice the process
-	// exit while doing this best-effort upload, we can race with the
-	// second upload but we can tolerate this as we'd rather get SOME
-	// data into GCS than attempt to cancel these uploads and get none.
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		select {
 		case s := <-interrupt:
-			logrus.Errorf("Received an interrupt: %s, cancelling...", s)
-			cancel()
+			if o.IgnoreInterrupts {
+				logrus.Warnf("Received an interrupt: %s, ignoring...", s)
+			} else {
+				// If we are being asked to terminate by the kubelet but we have
+				// NOT seen the test process exit cleanly, we need a to start
+				// uploading artifacts to GCS immediately. If we notice the process
+				// exit while doing this best-effort upload, we can race with the
+				// second upload but we can tolerate this as we'd rather get SOME
+				// data into GCS than attempt to cancel these uploads and get none.
+				logrus.Errorf("Received an interrupt: %s, cancelling...", s)
+				cancel()
+			}
 		case <-ctx.Done():
 		}
 	}()
