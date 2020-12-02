@@ -1304,3 +1304,31 @@ type InstallationPermissions struct {
 	TeamDiscussions             string `json:"team_discussions,omitempty"`
 	VulnerabilityAlerts         string `json:"vulnerability_alerts,omitempty"`
 }
+
+// AppInstallation represents a GitHub Apps installation.
+type AppInstallation struct {
+	ID                  int64                   `json:"id,omitempty"`
+	NodeID              string                  `json:"node_id,omitempty"`
+	AppID               int64                   `json:"app_id,omitempty"`
+	TargetID            int64                   `json:"target_id,omitempty"`
+	Account             User                    `json:"account,omitempty"`
+	AccessTokensURL     string                  `json:"access_tokens_url,omitempty"`
+	RepositoriesURL     string                  `json:"repositories_url,omitempty"`
+	HTMLURL             string                  `json:"html_url,omitempty"`
+	TargetType          string                  `json:"target_type,omitempty"`
+	SingleFileName      string                  `json:"single_file_name,omitempty"`
+	RepositorySelection string                  `json:"repository_selection,omitempty"`
+	Events              []string                `json:"events,omitempty"`
+	Permissions         InstallationPermissions `json:"permissions,omitempty"`
+	CreatedAt           string                  `json:"created_at,omitempty"`
+	UpdatedAt           string                  `json:"updated_at,omitempty"`
+}
+
+// AppInstallationToken is the response when retrieving an app installation
+// token.
+type AppInstallationToken struct {
+	Token        string                  `json:"token,omitempty"`
+	ExpiresAt    time.Time               `json:"expires_at,omitempty"`
+	Permissions  InstallationPermissions `json:"permissions,omitempty"`
+	Repositories []Repo                  `json:"repositories,omitempty"`
+}

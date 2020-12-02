@@ -35,19 +35,6 @@ For all jobs:
 - If the `testgrid-tab-name` annotation is specified, references to `master` are changed to `1.15`.
 - If the `description` annotation is specified, it is removed (for now).
 
-For presubmits only:
-
-- If `name` has no `-master` ending, then `-1.15` will be appended.
-- If `name` has a `-master` ending, it is replaced with `1.15`.
-- If `context` is unset and `name` has no `-master` ending, it will be set to the original `name` without appending `-1.15`.
-- If `context` is unset and `name` has a `-master` ending, it will be set to the `name`, including the `-1.15` suffix.
-- If `context` is set and it has a `-master` ending, it is replaced with `-1.15`.
-- If `context` is set and it has no `-master` ending, it will be taken over unmodified.
-
-The `context` is modified in a way to report the same context name on different branches if `-master` was not included
-in the original context. If `-master` was included (either in an explicit context value, or inferred from the job name),
-it gets added to the context.
-
 For presubmits and postsubmits:
 
 - `skip_branches` will be deleted
