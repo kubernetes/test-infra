@@ -92,7 +92,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201111-a263fd7-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
+        - kubetest
         args:
         - --up
         - --down
