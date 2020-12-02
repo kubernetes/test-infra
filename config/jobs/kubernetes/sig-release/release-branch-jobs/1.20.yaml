@@ -388,7 +388,7 @@ periodics:
       - -//vendor/...
       command:
       - ../test-infra/hack/bazel.sh
-      image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-1.20
+      image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
       name: ""
       resources:
         limits:
@@ -1341,7 +1341,7 @@ presubmits:
         - //build/release-tars
         command:
         - ../test-infra/hack/bazel.sh
-        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-1.20
+        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         name: ""
         resources:
           limits:
@@ -1374,7 +1374,7 @@ presubmits:
         - -//vendor/...
         command:
         - ../test-infra/hack/bazel.sh
-        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-1.20
+        image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         name: ""
         resources:
           limits:
