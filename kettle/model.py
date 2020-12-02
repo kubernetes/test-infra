@@ -174,7 +174,7 @@ class Database:
                 except UnicodeDecodeError:
                     print(f'Failed to decode data for {path}')
                     break
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-except
             print(f'Exception of type {type(e)}: {e} on path: {path}')
         return results
 
