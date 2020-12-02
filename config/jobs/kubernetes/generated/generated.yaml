@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.20
       resources:
         requests:
           cpu: 1000m
@@ -66,7 +66,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.20
       resources:
         requests:
           cpu: 1000m
@@ -105,7 +105,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.19
       resources:
         requests:
           cpu: 1000m
@@ -144,7 +144,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.19
       resources:
         requests:
           cpu: 1000m
@@ -183,7 +183,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       resources:
         requests:
           cpu: 1000m
@@ -222,7 +222,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       resources:
         requests:
           cpu: 1000m
@@ -261,7 +261,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.17
       resources:
         requests:
           cpu: 1000m
@@ -300,7 +300,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.17
       resources:
         requests:
           cpu: 1000m
@@ -339,7 +339,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.20
       resources:
         requests:
           cpu: 1000m
@@ -378,7 +378,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.20
       resources:
         requests:
           cpu: 1000m
@@ -417,7 +417,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.19
       resources:
         requests:
           cpu: 1000m
@@ -456,7 +456,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.19
       resources:
         requests:
           cpu: 1000m
@@ -495,7 +495,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       resources:
         requests:
           cpu: 1000m
@@ -534,7 +534,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.18
       resources:
         requests:
           cpu: 1000m
@@ -573,7 +573,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.17
       resources:
         requests:
           cpu: 1000m
@@ -612,7 +612,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-1.17
       resources:
         requests:
           cpu: 1000m
