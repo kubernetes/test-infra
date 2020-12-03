@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -66,7 +66,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -107,7 +107,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -154,7 +154,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -195,7 +195,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -242,7 +242,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -283,7 +283,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -330,7 +330,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -371,7 +371,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -411,7 +411,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -453,7 +453,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -495,7 +495,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -537,7 +537,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -579,7 +579,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -621,7 +621,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -663,7 +663,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -705,7 +705,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -747,7 +747,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -789,7 +789,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -831,7 +831,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -879,7 +879,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -927,7 +927,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -975,7 +975,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
@@ -1023,7 +1023,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       command:
       - runner.sh
       args:
