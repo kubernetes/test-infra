@@ -25,7 +25,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - "runner.sh"
         args:
