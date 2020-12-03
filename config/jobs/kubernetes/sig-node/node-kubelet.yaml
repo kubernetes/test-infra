@@ -204,6 +204,37 @@ periodics:
     testgrid-tab-name: node-kubelet-orphans
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 
+- name: ci-kubernetes-node-kubelet-lock-contention
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201201-1941b8f-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+          - --node-test-args=--kubelet-flags="--exit-on-lock-contention --lock-file=/var/run/kubelet.lock"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[NodeFeature:LockContention\]" --restart-kubelet=false
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-lock
+    description: "Contains disruptive tests for the Lock Contention feature."
+
 - name: ci-kubernetes-node-kubelet-serial
   interval: 4h30m
   labels:
