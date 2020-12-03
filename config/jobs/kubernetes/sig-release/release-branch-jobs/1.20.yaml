@@ -904,7 +904,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.3
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=ENABLE_POD_SECURITY_POLICY=true
@@ -958,7 +958,7 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.3
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=ENABLE_POD_SECURITY_POLICY=true
