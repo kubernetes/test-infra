@@ -507,9 +507,6 @@ require_matching_label:
     # Repo is the GitHub repository within Org that this config applies to.
     # This fields may be omitted to apply this config across all repos in Org.
     repo: ' '
-requiresig:
-    # GroupListURL is the URL where a list of the available SIGs can be found.
-    group_list_url: ' '
 sigmention:
     # Regexp parses comments and should return matches to team mentions.
     # These mentions enable labeling issues or PRs with sig/team labels.

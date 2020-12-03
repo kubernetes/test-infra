@@ -78,7 +78,6 @@ type Configuration struct {
 	Project              ProjectConfig                `json:"project_config,omitempty"`
 	ProjectManager       ProjectManager               `json:"project_manager,omitempty"`
 	RequireMatchingLabel []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
-	RequireSIG           RequireSIG                   `json:"requiresig,omitempty"`
 	Retitle              Retitle                      `json:"retitle,omitempty"`
 	Slack                Slack                        `json:"slack,omitempty"`
 	SigMention           SigMention                   `json:"sigmention,omitempty"`
@@ -181,12 +180,6 @@ func (c *Configuration) SkipCollaborators(org, repo string) bool {
 		}
 	}
 	return false
-}
-
-// RequireSIG specifies configuration for the require-sig plugin.
-type RequireSIG struct {
-	// GroupListURL is the URL where a list of the available SIGs can be found.
-	GroupListURL string `json:"group_list_url,omitempty"`
 }
 
 // Retitle specifies configuration for the retitle plugin.

@@ -40,7 +40,6 @@ go_library(
         "//prow/plugins/projectmanager:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/require-matching-label:go_default_library",
-        "//prow/plugins/requiresig:go_default_library",
         "//prow/plugins/retitle:go_default_library",
         "//prow/plugins/shrug:go_default_library",
         "//prow/plugins/sigmention:go_default_library",
