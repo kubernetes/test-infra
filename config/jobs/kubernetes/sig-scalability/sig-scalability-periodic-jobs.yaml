@@ -190,7 +190,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=260
+      - --timeout=170
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100
@@ -219,7 +219,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=240m
+      - --timeout=150m
       - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
@@ -270,10 +270,8 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
-      - --env=KUBE_SCHEDULER_API_QPS=300
-      - --env=KUBE_SCHEDULER_API_BURST=300
-      - --env=KUBE_CONTROLLER_MANAGER_API_QPS=300
-      - --env=KUBE_CONTROLLER_MANAGER_API_BURST=300
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
+      - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
