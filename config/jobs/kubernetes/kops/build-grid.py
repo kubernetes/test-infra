@@ -356,6 +356,16 @@ def generate():
                                kops_version=kops_version,
                                networking=networking,)
 
+    # A one-off scenario testing arm64
+    # TODO: Would be nice to default the arm image, perhaps based on the instance type
+    build_test(force_name="scenario-arm64",
+               cloud="aws",
+               distro="u2004",
+               extra_flags=['--zones=us-east-2b',
+                            '--node-size=m6g.large',
+                            '--master-size=m6g.large',
+                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201026']) # pylint: disable=line-too-long
+
     # A special test for JWKS
     build_test(force_name="scenario-public-jwks",
                cloud="aws",
