@@ -57,8 +57,8 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: pr-lint
   - name: pull-cluster-api-provider-digitalocean-e2e
-    always_run: false
-    optional: true
+    always_run: true
+    optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     decoration_config:
