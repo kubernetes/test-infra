@@ -15,6 +15,8 @@
 import json
 import zlib
 
+import yaml
+
 template = """
 - name: e2e-kops-grid{{suffix}}
   cron: '{{cron}}'
@@ -55,9 +57,6 @@ template = """
         requests:
           cpu: "2"
           memory: 2Gi
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-{{distro}}, kops-k8s-{{k8s_version}}
-    testgrid-tab-name: {{tab}}
 """
 
 # We support rapid focus on a few tests of high concern
@@ -257,7 +256,6 @@ def build_test(cloud='aws',
 
     y = template
     y = y.replace('{{cluster_name}}', cluster_name)
-    y = y.replace('{{tab}}', tab)
     y = y.replace('{{suffix}}', suffix)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{kops_args}}', kops_args)
@@ -267,16 +265,6 @@ def build_test(cloud='aws',
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
-
-    if distro:
-        y = y.replace('{{distro}}', distro)
-    else:
-        y = y.replace('{{distro}}', "default")
-
-    if k8s_version:
-        y = y.replace('{{k8s_version}}', k8s_version)
-    else:
-        y = y.replace('{{k8s_version}}', "latest")
 
     if kops_version:
         y = y.replace('{{kops_version}}', kops_version)
@@ -306,9 +294,34 @@ def build_test(cloud='aws',
         spec['extra_flags'] = extra_flags
     jsonspec = json.dumps(spec, sort_keys=True)
 
+    dashboards = [
+        'sig-cluster-lifecycle-kops',
+        'google-aws',
+        'kops-grid',
+    ]
+
+    if distro:
+        dashboards.append('kops-distro-' + distro)
+    else:
+        dashboards.append('kops-distro-default')
+
+    if k8s_version:
+        dashboards.append('kops-k8s-' + k8s_version)
+    else:
+        dashboards.append('kops-k8s-latest')
+
+    annotations = {
+        'testgrid-dashboards': ', '.join(dashboards),
+        'testgrid-tab-name': tab,
+    }
+
+    extra = yaml.dump({'annotations': annotations}, width=9999)
+
     print("")
     print("# " + jsonspec)
     print(y.strip())
+    for line in extra.splitlines():
+        print("  " + line)
 
 networking_options = [
     None,
