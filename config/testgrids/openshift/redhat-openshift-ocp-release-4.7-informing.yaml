@@ -1596,8 +1596,7 @@ test_groups:
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.6-stable-to-4.7-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.6-stable-to-4.7-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.6-to-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.6-to-4.7
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.6-to-4.7
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.7
