@@ -43,7 +43,6 @@ const (
 	MergeCommits                = "do-not-merge/contains-merge-commits"
 	NeedsOkToTest               = "needs-ok-to-test"
 	NeedsRebase                 = "needs-rebase"
-	NeedsSig                    = "needs-sig"
 	OkToTest                    = "ok-to-test"
 	Shrug                       = "¯\\_(ツ)_/¯"
 	TriageAccepted              = "triage/accepted"

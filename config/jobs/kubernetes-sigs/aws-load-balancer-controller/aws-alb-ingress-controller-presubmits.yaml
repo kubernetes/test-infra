@@ -1,31 +1,31 @@
 presubmits:
-  kubernetes-sigs/aws-alb-ingress-controller:
-  - name: pull-aws-alb-ingress-controller-lint
+  kubernetes-sigs/aws-load-balancer-controller:
+  - name: pull-aws-load-balancer-controller-lint
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
         - make
         - lint
     annotations:
-      testgrid-dashboards: sig-aws-alb-ingress-controller
+      testgrid-dashboards: sig-aws-load-balancer-controller
       testgrid-tab-name: lint
-      description: aws alb ingress controller code lint
+      description: aws load balancer controller code lint
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-alb-ingress-controller-unit-test
+  - name: pull-aws-load-balancer-controller-unit-test
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -40,11 +40,11 @@ presubmits:
         secret:
           secretName: k8s-aws-alb-ingress-coveralls-token
     annotations:
-      testgrid-dashboards: sig-aws-alb-ingress-controller
+      testgrid-dashboards: sig-aws-load-balancer-controller
       testgrid-tab-name: unit test
-      description: aws alb ingress controller unit tests
+      description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-alb-ingress-controller-e2e-test
+  - name: pull-aws-load-balancer-controller-e2e-test
     always_run: true
     decorate: true
     labels:
@@ -54,7 +54,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
         command:
         - runner.sh
         args:
@@ -63,7 +63,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-alb-ingress-controller
+      testgrid-dashboards: sig-aws-load-balancer-controller
       testgrid-tab-name: e2e test
-      description: aws alb ingress controller e2e tests
+      description: aws load balancer controller e2e tests
       testgrid-num-columns-recent: '30'

@@ -30,7 +30,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       imagePullPolicy: Always
   annotations:
     testgrid-num-columns-recent: '20'

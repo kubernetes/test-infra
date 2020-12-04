@@ -33,7 +33,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -76,7 +76,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -119,7 +119,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -162,7 +162,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -205,7 +205,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -248,7 +248,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -291,7 +291,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -334,7 +334,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -377,7 +377,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -420,7 +420,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -463,7 +463,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -506,7 +506,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -549,7 +549,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -592,7 +592,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -635,7 +635,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -678,7 +678,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -721,7 +721,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -764,7 +764,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -807,7 +807,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -850,7 +850,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -893,7 +893,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -936,7 +936,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -979,7 +979,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1022,7 +1022,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1065,7 +1065,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1108,7 +1108,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1151,7 +1151,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1194,7 +1194,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1237,7 +1237,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -1280,7 +1280,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -1323,7 +1323,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1366,7 +1366,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1409,7 +1409,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1452,7 +1452,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1495,7 +1495,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1538,7 +1538,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1581,7 +1581,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -1624,7 +1624,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -1667,7 +1667,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1710,7 +1710,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -1753,7 +1753,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1796,7 +1796,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -1839,7 +1839,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1882,7 +1882,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -1925,7 +1925,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -1968,7 +1968,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -2011,7 +2011,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2054,7 +2054,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2097,7 +2097,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2140,7 +2140,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2183,7 +2183,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2226,7 +2226,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2269,7 +2269,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -2312,7 +2312,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -2355,7 +2355,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2398,7 +2398,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2441,7 +2441,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2484,7 +2484,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2527,7 +2527,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2570,7 +2570,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2613,7 +2613,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -2656,7 +2656,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -2699,7 +2699,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2742,7 +2742,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -2785,7 +2785,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2828,7 +2828,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -2871,7 +2871,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2914,7 +2914,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -2957,7 +2957,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3000,7 +3000,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3043,7 +3043,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3086,7 +3086,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3129,7 +3129,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3172,7 +3172,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3215,7 +3215,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3258,7 +3258,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3301,7 +3301,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3344,7 +3344,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3387,7 +3387,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3430,7 +3430,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3473,7 +3473,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3516,7 +3516,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3559,7 +3559,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3602,7 +3602,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3645,7 +3645,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3688,7 +3688,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -3731,7 +3731,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3774,7 +3774,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -3817,7 +3817,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3860,7 +3860,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -3903,7 +3903,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3946,7 +3946,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -3989,7 +3989,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4032,7 +4032,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4075,7 +4075,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4118,7 +4118,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4161,7 +4161,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4204,7 +4204,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4247,7 +4247,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -4290,7 +4290,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -4333,7 +4333,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4376,7 +4376,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4419,7 +4419,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4462,7 +4462,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4505,7 +4505,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4548,7 +4548,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4591,7 +4591,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -4634,7 +4634,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -4677,7 +4677,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4720,7 +4720,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -4763,7 +4763,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4806,7 +4806,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -4849,7 +4849,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4892,7 +4892,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -4935,7 +4935,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -4978,7 +4978,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -5021,7 +5021,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5064,7 +5064,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5107,7 +5107,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5150,7 +5150,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5193,7 +5193,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5236,7 +5236,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5279,7 +5279,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -5322,7 +5322,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -5365,7 +5365,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5408,7 +5408,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5451,7 +5451,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5494,7 +5494,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5537,7 +5537,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5580,7 +5580,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5623,7 +5623,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -5666,7 +5666,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -5709,7 +5709,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5752,7 +5752,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -5795,7 +5795,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5838,7 +5838,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -5881,7 +5881,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5924,7 +5924,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -5967,7 +5967,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6010,7 +6010,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6053,7 +6053,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6096,7 +6096,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6139,7 +6139,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6182,7 +6182,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6225,7 +6225,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -6268,7 +6268,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -6311,7 +6311,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6354,7 +6354,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6397,7 +6397,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6440,7 +6440,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6483,7 +6483,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6526,7 +6526,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6569,7 +6569,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -6612,7 +6612,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -6655,7 +6655,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6698,7 +6698,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6741,7 +6741,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6784,7 +6784,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -6827,7 +6827,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6870,7 +6870,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -6913,7 +6913,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -6956,7 +6956,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -6999,7 +6999,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7042,7 +7042,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -7085,7 +7085,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7128,7 +7128,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7171,7 +7171,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7214,7 +7214,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7257,7 +7257,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -7300,7 +7300,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7343,7 +7343,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7386,7 +7386,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -7429,7 +7429,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7472,7 +7472,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7515,7 +7515,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -7558,7 +7558,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -7601,7 +7601,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7644,7 +7644,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7687,7 +7687,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -7730,7 +7730,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -7773,7 +7773,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7816,7 +7816,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -7859,7 +7859,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -7902,7 +7902,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -7945,7 +7945,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -7988,7 +7988,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -8031,7 +8031,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8074,7 +8074,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8117,7 +8117,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8160,7 +8160,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8203,7 +8203,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8246,7 +8246,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8289,7 +8289,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -8332,7 +8332,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -8375,7 +8375,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -8418,7 +8418,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -8461,7 +8461,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8504,7 +8504,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8547,7 +8547,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8590,7 +8590,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8633,7 +8633,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8676,7 +8676,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -8719,7 +8719,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -8762,7 +8762,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -8805,7 +8805,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -8848,7 +8848,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -8891,7 +8891,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8934,7 +8934,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -8977,7 +8977,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9020,7 +9020,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9063,7 +9063,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9106,7 +9106,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9149,7 +9149,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9192,7 +9192,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9235,7 +9235,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -9278,7 +9278,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -9321,7 +9321,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9364,7 +9364,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9407,7 +9407,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9450,7 +9450,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9493,7 +9493,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9536,7 +9536,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9579,7 +9579,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -9622,7 +9622,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -9665,7 +9665,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9708,7 +9708,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -9751,7 +9751,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9794,7 +9794,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -9837,7 +9837,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9880,7 +9880,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -9923,7 +9923,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -9966,7 +9966,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10009,7 +10009,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10052,7 +10052,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10095,7 +10095,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10138,7 +10138,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10181,7 +10181,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10224,7 +10224,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10267,7 +10267,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10310,7 +10310,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10353,7 +10353,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10396,7 +10396,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10439,7 +10439,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10482,7 +10482,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10525,7 +10525,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10568,7 +10568,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10611,7 +10611,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10654,7 +10654,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10697,7 +10697,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10740,7 +10740,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -10783,7 +10783,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10826,7 +10826,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -10869,7 +10869,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10912,7 +10912,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -10955,7 +10955,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -10998,7 +10998,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -11041,7 +11041,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11084,7 +11084,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11127,7 +11127,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11170,7 +11170,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11213,7 +11213,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11256,7 +11256,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11299,7 +11299,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -11342,7 +11342,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -11385,7 +11385,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11428,7 +11428,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11471,7 +11471,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11514,7 +11514,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11557,7 +11557,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11600,7 +11600,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11643,7 +11643,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -11686,7 +11686,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -11729,7 +11729,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11772,7 +11772,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -11815,7 +11815,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11858,7 +11858,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -11901,7 +11901,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11944,7 +11944,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -11987,7 +11987,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12030,7 +12030,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12073,7 +12073,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12116,7 +12116,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12159,7 +12159,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12202,7 +12202,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12245,7 +12245,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -12288,7 +12288,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -12331,7 +12331,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12374,7 +12374,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12417,7 +12417,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12460,7 +12460,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12503,7 +12503,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12546,7 +12546,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12589,7 +12589,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -12632,7 +12632,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -12675,7 +12675,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12718,7 +12718,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -12761,7 +12761,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12804,7 +12804,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -12847,7 +12847,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12890,7 +12890,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -12933,7 +12933,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -12976,7 +12976,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -13019,7 +13019,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13062,7 +13062,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13105,7 +13105,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13148,7 +13148,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13191,7 +13191,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13234,7 +13234,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13277,7 +13277,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -13320,7 +13320,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -13363,7 +13363,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13406,7 +13406,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13449,7 +13449,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13492,7 +13492,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13535,7 +13535,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13578,7 +13578,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13621,7 +13621,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -13664,7 +13664,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -13707,7 +13707,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13750,7 +13750,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -13793,7 +13793,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13836,7 +13836,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -13879,7 +13879,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13922,7 +13922,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -13965,7 +13965,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14008,7 +14008,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14051,7 +14051,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14094,7 +14094,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14137,7 +14137,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14180,7 +14180,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14223,7 +14223,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14266,7 +14266,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14309,7 +14309,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14352,7 +14352,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14395,7 +14395,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14438,7 +14438,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14481,7 +14481,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14524,7 +14524,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14567,7 +14567,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14610,7 +14610,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14653,7 +14653,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14696,7 +14696,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -14739,7 +14739,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14782,7 +14782,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -14825,7 +14825,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14868,7 +14868,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -14911,7 +14911,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14954,7 +14954,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -14997,7 +14997,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15040,7 +15040,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15083,7 +15083,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15126,7 +15126,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15169,7 +15169,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15212,7 +15212,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15255,7 +15255,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -15298,7 +15298,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -15341,7 +15341,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15384,7 +15384,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15427,7 +15427,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15470,7 +15470,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15513,7 +15513,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15556,7 +15556,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15599,7 +15599,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -15642,7 +15642,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -15685,7 +15685,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15728,7 +15728,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -15771,7 +15771,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15814,7 +15814,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -15857,7 +15857,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15900,7 +15900,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -15943,7 +15943,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -15986,7 +15986,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi
@@ -16029,7 +16029,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -16072,7 +16072,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.17
       resources:
         limits:
           memory: 2Gi
@@ -16115,7 +16115,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -16158,7 +16158,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18
       resources:
         limits:
           memory: 2Gi
@@ -16201,7 +16201,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -16244,7 +16244,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.19
       resources:
         limits:
           memory: 2Gi
@@ -16288,7 +16288,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201124-be2d6d8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
       resources:
         limits:
           memory: 2Gi

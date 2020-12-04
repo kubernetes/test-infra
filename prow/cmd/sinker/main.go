@@ -379,6 +379,7 @@ func (c *controller) clean() {
 			log.WithError(err).Error("Error listing pods.")
 			continue
 		}
+		log.WithField("pod-count", len(pods.Items)).Debug("Successfully listed pods.")
 		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		terminatedPodTTL := c.config().Sinker.TerminatedPodTTL.Duration

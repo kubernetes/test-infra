@@ -958,6 +958,12 @@ repos:
         target: issues
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
         target: both
@@ -1039,6 +1045,12 @@ repos:
   kubernetes/release:
     labels:
       - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
@@ -1047,6 +1059,12 @@ repos:
         addedBy: label
   kubernetes/sig-release:
     labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Enhancements subproject
         name: area/enhancements
@@ -1066,6 +1084,12 @@ repos:
         addedBy: label
   kubernetes/test-infra:
     labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to code in /robots
         name: area/robots
@@ -1578,6 +1602,12 @@ repos:
         addedBy: humans
   kubernetes-sigs/k8s-container-image-promoter:
     labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
