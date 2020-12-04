@@ -51688,4 +51688,48 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest
     testgrid-tab-name: kops-grid-scenario-public-jwks
 
-# 1202 jobs, total of 1928 runs per week
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": ["--override=cluster.spec.cloudControllerManager.cloudProvider=aws"], "feature_flags": ["EnableExternalCloudController,SpecOverrideFlag"], "k8s_version": null, "kops_version": null, "networking": null}
+- name: e2e-kops-grid-scenario-aws-cloud-controller-manager
+  cron: '28 22 * * 0'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-scenario-aw--8aec44b8ad.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --kops-ssh-user=ubuntu
+      - --env=KUBE_SSH_USER=ubuntu
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/latest
+      - --ginkgo-parallel
+      - --kops-args=--container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws
+      - --kops-feature-flags=EnableExternalCloudController,SpecOverrideFlag
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      resources:
+        limits:
+          memory: 2Gi
+        requests:
+          cpu: "2"
+          memory: 2Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest
+    testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
+
+# 1203 jobs, total of 1929 runs per week
