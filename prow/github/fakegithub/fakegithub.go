@@ -40,6 +40,7 @@ const (
 // FakeClient is like client, but fake.
 type FakeClient struct {
 	Issues              map[int]*github.Issue
+	IssueID             int
 	OrgMembers          map[string][]string
 	Collaborators       []string
 	IssueComments       map[int][]github.IssueComment
@@ -128,6 +129,46 @@ func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
 		candidate = strings.TrimSuffix(candidate, "[bot]")
 		return candidate == botName
 	}, nil
+}
+
+func NewFakeClient() *FakeClient {
+	return &FakeClient{
+		Issues:              make(map[int]*github.Issue),
+		OrgMembers:          make(map[string][]string),
+		IssueComments:       make(map[int][]github.IssueComment),
+		PullRequests:        make(map[int]*github.PullRequest),
+		PullRequestChanges:  make(map[int][]github.PullRequestChange),
+		PullRequestComments: make(map[int][]github.ReviewComment),
+		Reviews:             make(map[int][]github.Review),
+		CombinedStatuses:    make(map[string]*github.CombinedStatus),
+		CreatedStatuses:     make(map[string][]github.Status),
+		IssueEvents:         make(map[int][]github.ListedIssueEvent),
+		Commits:             make(map[string]github.RepositoryCommit),
+
+		RepoLabelsExisting:    make([]string, 0),
+		IssueLabelsAdded:      make([]string, 0),
+		IssueLabelsExisting:   make([]string, 0),
+		IssueLabelsRemoved:    make([]string, 0),
+		IssueCommentsAdded:    make([]string, 0),
+		IssueCommentsDeleted:  make([]string, 0),
+		IssueReactionsAdded:   make([]string, 0),
+		CommentReactionsAdded: make([]string, 0),
+		AssigneesAdded:        make([]string, 0),
+
+		MilestoneMap: make(map[string]int),
+		CommitMap:    make(map[string][]github.RepositoryCommit),
+		RemoteFiles:  make(map[string]map[string]string),
+
+		RefsDeleted:        make([]struct{ Org, Repo, Ref string }, 0),
+		RepoProjects:       make(map[string][]github.Project),
+		ProjectColumnsMap:  make(map[string][]github.ProjectColumn),
+		ColumnCardsMap:     make(map[int][]github.ProjectCard),
+		ColumnIDMap:        make(map[string]map[int]string),
+		OrgRepoIssueLabels: make(map[string][]github.Label),
+		OrgProjects:        make(map[string][]github.Project),
+		OrgHooks:           make(map[string][]github.Hook),
+		RepoHooks:          make(map[string][]github.Hook),
+	}
 }
 
 // IsMember returns true if user is in org.
@@ -273,6 +314,33 @@ func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue
 	}
 	f.Issues[number] = issue
 	return issue, nil
+}
+
+// CreateIssue creates the issue.
+func (f *FakeClient) CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error) {
+	if f.Issues == nil {
+		f.Issues = make(map[int]*github.Issue)
+	}
+	var ls []github.Label
+	for _, l := range labels {
+		ls = append(ls, github.Label{Name: l})
+	}
+	var as []github.User
+	for _, a := range assignees {
+		as = append(as, github.User{Name: a})
+	}
+	new := &github.Issue{
+		ID:        f.IssueID,
+		Title:     title,
+		Body:      body,
+		Milestone: github.Milestone{Number: milestone},
+		Labels:    ls,
+		Assignees: as,
+	}
+	f.Issues[f.IssueID] = new
+	f.IssueComments[f.IssueID] = make([]github.IssueComment, 0)
+	f.IssueID++
+	return new.ID, nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.

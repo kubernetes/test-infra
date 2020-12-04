@@ -37,6 +37,8 @@ kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
   --timeout=180s
 
 echo "Deploy prow components"
+# An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
+kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_DIR}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
 kubectl --context=${CONTEXT} apply -f ${CURRENT_DIR}/prow/cluster
 
