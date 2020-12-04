@@ -60,6 +60,9 @@ const (
 	// free (no API tokens used).
 	ModeCoalesced   CacheResponseMode = "COALESCED"   // coalesced request, this is a copied response
 	ModeRevalidated CacheResponseMode = "REVALIDATED" // cached value revalidated and returned
+
+	// cacheEntryCreationDateHeader contains the creation date of the cache entry
+	cacheEntryCreationDateHeader = "X-PROW-REQUEST-DATE"
 )
 
 func CacheModeIsFree(mode CacheResponseMode) bool {
@@ -177,6 +180,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("Cache-Control", "no-store")
 	} else {
 		resp.Header.Set("Cache-Control", "no-cache")
+		// Used for metrics about the age of cached requests
+		resp.Header.Set(cacheEntryCreationDateHeader, strconv.Itoa(int(time.Now().Unix())))
 	}
 	if etag != "" {
 		resp.Header.Set("X-Conditional-Request", etag)

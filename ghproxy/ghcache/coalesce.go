@@ -21,7 +21,9 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httputil"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -134,6 +136,14 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
+		if cacheMode == ModeRevalidated && resp.Header.Get(cacheEntryCreationDateHeader) != "" {
+			intVal, err := strconv.Atoi(resp.Header.Get(cacheEntryCreationDateHeader))
+			if err != nil {
+				logrus.WithError(err).WithField("header-value", resp.Header.Get(cacheEntryCreationDateHeader)).Warn("Failed to convert cacheEntryCreationDateHeader value to int")
+			} else {
+				ghmetrics.CollectCacheEntryAgeMetrics(float64(time.Now().Unix()-int64(intVal)), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
+			}
+		}
 	}
 	return resp, err
 }
