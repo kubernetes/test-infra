@@ -103,6 +103,12 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 
 		{name: "repo pulls", args: args{path: "/repos/testOwner/testRepo/pulls"}, want: "/repos/:owner/:repo/pulls"},
 		{name: "repo pulls by number", args: args{path: "/repos/testOwner/testRepo/pulls/421"}, want: "/repos/:owner/:repo/pulls/:pullId"},
+		{name: "repo pull commits", args: args{path: "/repos/testOwner/testRepo/pulls/421/commits"}, want: "/repos/:owner/:repo/pulls/:pullId/commits"},
+		{name: "repo pull files ", args: args{path: "/repos/testOwner/testRepo/pulls/421/files"}, want: "/repos/:owner/:repo/pulls/:pullId/files"},
+		{name: "repo pull comments", args: args{path: "/repos/testOwner/testRepo/pulls/421/comments"}, want: "/repos/:owner/:repo/pulls/:pullId/comments"},
+		{name: "repo pull reviews", args: args{path: "/repos/testOwner/testRepo/pulls/421/reviews"}, want: "/repos/:owner/:repo/pulls/:pullId/reviews"},
+		{name: "repo pull requested_reviewers", args: args{path: "/repos/testOwner/testRepo/pulls/421/requested_reviewers"}, want: "/repos/:owner/:repo/pulls/:pullId/requested_reviewers"},
+		{name: "repo pull merge", args: args{path: "/repos/testOwner/testRepo/pulls/421/merge"}, want: "/repos/:owner/:repo/pulls/:pullId/merge"},
 
 		{name: "repo releases", args: args{path: "/repos/testOwner/testRepo/releases"}, want: "/repos/:owner/:repo/releases"},
 		{name: "repo releases by number", args: args{path: "/repos/testOwner/testRepo/releases/421"}, want: "/repos/:owner/:repo/releases/:releaseId"},
@@ -156,6 +162,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		{name: "repo commits", args: args{path: "/repos/testOwner/testRepo/commits"}, want: "/repos/:owner/:repo/commits"},
 		{name: "repo commits by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha"}, want: "/repos/:owner/:repo/commits/:sha"},
 		{name: "repo commit status by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/status"}, want: "/repos/:owner/:repo/commits/:sha/status"},
+		{name: "repo commit check-runs by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/check-runs"}, want: "/repos/:owner/:repo/commits/:sha/check-runs"},
 		{name: "longer postfix is unmatched", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/status/else"}, want: "unmatched"},
 
 		// /compare/base...head
@@ -283,6 +290,7 @@ func Test_GetSimplifiedPathRepositories(t *testing.T) {
 
 		{name: "repo collaborators", args: args{path: "/repositories/testRepository/collaborators"}, want: "/repositories/:repoId/collaborators"},
 		{name: "repo collaborators by name", args: args{path: "/repositories/testRepository/collaborators/testCollaborator"}, want: "/repositories/:repoId/collaborators/:collaboratorId"},
+		{name: "repo collaborators by name permissions", args: args{path: "/repositories/testRepository/collaborators/testCollaborator/permission"}, want: "/repositories/:repoId/collaborators/:collaboratorId/permission"},
 
 		{name: "repo comments", args: args{path: "/repositories/testRepository/comments"}, want: "/repositories/:repoId/comments"},
 		{name: "repo comments by id", args: args{path: "/repositories/testRepository/comments/testComment"}, want: "/repositories/:repoId/comments/:commentId"},
