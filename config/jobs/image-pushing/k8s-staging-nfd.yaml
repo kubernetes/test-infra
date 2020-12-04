@@ -16,6 +16,7 @@ postsubmits:
       # probably does).
       branches:
         - ^master$
+        - ^release-
       spec:
         serviceAccountName: gcb-builder
         containers:
