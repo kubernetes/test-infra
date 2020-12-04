@@ -991,6 +991,14 @@ plugins:
   - require-matching-label
   - override
 
+  kubernetes-sigs/cluster-api-provider-gcp:
+  - milestone
+  - milestoneapplier
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - override
+
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
   - milestoneapplier
