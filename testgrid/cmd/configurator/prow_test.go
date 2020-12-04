@@ -32,7 +32,7 @@ const ProwJobName = "TestJob"
 const ExampleRepository = "test/repo"
 
 func Test_applySingleProwjobAnnotations(t *testing.T) {
-	tests := []struct {
+	tests := []*struct {
 		name           string
 		initialConfig  config.Configuration
 		prowJobType    prowapi.ProwJobType
@@ -348,7 +348,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 
-				if !reflect.DeepEqual(test.initialConfig, test.expectedConfig) {
+				if !reflect.DeepEqual(&test.initialConfig, &test.expectedConfig) {
 					t.Errorf("Configurations did not match; got %s, expected %s", test.initialConfig.String(), test.expectedConfig.String())
 				}
 			}
