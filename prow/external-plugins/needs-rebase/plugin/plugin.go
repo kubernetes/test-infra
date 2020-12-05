@@ -256,6 +256,7 @@ type pullRequest struct {
 	Mergeable githubql.MergeableState
 }
 
+// See: https://developer.github.com/v4/query/.
 type searchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int
