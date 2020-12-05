@@ -225,7 +225,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.18
-        - --aksengine-location=westus2
+        - --aksengine-location=eastus2
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_csi_proxy.json
