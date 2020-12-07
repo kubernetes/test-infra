@@ -241,7 +241,6 @@ branch-protection:
             - build-linux-amd64
             - build-macos-amd64
             - verify
-            - continuous-integration/travis-ci/pr
         kubelet:
           restrictions:
             users: []
