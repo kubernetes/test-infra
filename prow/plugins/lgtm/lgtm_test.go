@@ -995,12 +995,12 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 				},
-				Commits:          make(map[string]github.SingleCommit),
+				Commits:          make(map[string]github.RepositoryCommit),
 				Collaborators:    []string{"collab"},
 				IssueLabelsAdded: c.IssueLabelsAdded,
 			}
 			fakeGitHub.IssueLabelsAdded = append(fakeGitHub.IssueLabelsAdded, "kubernetes/kubernetes#101:lgtm")
-			commit := github.SingleCommit{}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fakeGitHub.Commits[SHA] = commit
 			pc := &plugins.Configuration{}
@@ -1095,7 +1095,7 @@ func TestAddTreeHashComment(t *testing.T) {
 				body:   "/lgtm",
 			}
 			fc := &fakegithub.FakeClient{
-				Commits:       make(map[string]github.SingleCommit),
+				Commits:       make(map[string]github.RepositoryCommit),
 				IssueComments: map[int][]github.IssueComment{},
 				PullRequests: map[int]*github.PullRequest{
 					101: {
@@ -1109,7 +1109,7 @@ func TestAddTreeHashComment(t *testing.T) {
 				},
 				Collaborators: []string{"collab1", "collab2"},
 			}
-			commit := github.SingleCommit{}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fc.Commits[SHA] = commit
 			handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})

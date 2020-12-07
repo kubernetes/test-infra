@@ -137,7 +137,7 @@ type PullRequestClient interface {
 type CommitClient interface {
 	CreateStatus(org, repo, SHA string, s Status) error
 	ListStatuses(org, repo, ref string) ([]Status, error)
-	GetSingleCommit(org, repo, SHA string) (SingleCommit, error)
+	GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error)
 	GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error)
 	ListCheckRuns(org, repo, ref string) (*CheckRunList, error)
 	GetRef(org, repo, ref string) (string, error)
@@ -2034,11 +2034,11 @@ func (c *client) GetRepos(org string, isUser bool) ([]Repo, error) {
 // GetSingleCommit returns a single commit.
 //
 // See https://developer.github.com/v3/repos/#get
-func (c *client) GetSingleCommit(org, repo, SHA string) (SingleCommit, error) {
+func (c *client) GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error) {
 	durationLogger := c.log("GetSingleCommit", org, repo, SHA)
 	defer durationLogger()
 
-	var commit SingleCommit
+	var commit RepositoryCommit
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/commits/%s", org, repo, SHA),
