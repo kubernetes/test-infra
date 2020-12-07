@@ -9,8 +9,6 @@ dashboard_groups:
   - knative-docs
   - knative-eventing
   - knative-eventing-contrib
-  - knative-kn-plugin-diag
-  - knative-kn-plugin-source-kafka
   - knative-operator
   - knative-pkg
   - knative-serving
@@ -33,6 +31,7 @@ dashboard_groups:
   - knative-sandbox-eventing-redis
   - knative-sandbox-kn-plugin-admin
   - knative-sandbox-kn-plugin-diag
+  - knative-sandbox-kn-plugin-source-kafka
   - knative-sandbox-kperf
   - knative-sandbox-net-certmanager
   - knative-sandbox-net-contour
@@ -640,38 +639,6 @@ dashboards:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-nightly-release
   name: knative-eventing-contrib
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/knative/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-kn-plugin-diag-continuous
-    name: knative-kn-plugin-diag-continuous
-    open_bug_template:
-      url: https://github.com/knative/kn-plugin-diag/issues/
-    test_group_name: ci-knative-kn-plugin-diag-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-kn-plugin-diag-continuous-beta-prow-tests
-    name: knative-kn-plugin-diag-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/kn-plugin-diag/issues/
-    test_group_name: ci-knative-kn-plugin-diag-continuous-beta-prow-tests
-  name: knative-kn-plugin-diag
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/knative/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-kn-plugin-source-kafka-continuous
-    name: knative-kn-plugin-source-kafka-continuous
-    open_bug_template:
-      url: https://github.com/knative/kn-plugin-source-kafka/issues/
-    test_group_name: ci-knative-kn-plugin-source-kafka-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-kn-plugin-source-kafka-continuous-beta-prow-tests
-    name: knative-kn-plugin-source-kafka-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/kn-plugin-source-kafka/issues/
-    test_group_name: ci-knative-kn-plugin-source-kafka-continuous-beta-prow-tests
-  name: knative-kn-plugin-source-kafka
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
@@ -1406,6 +1373,20 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-diag-continuous
+    name: knative-sandbox-kn-plugin-diag-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+    name: knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-kn-plugin-diag-go-coverage
     name: knative-sandbox-kn-plugin-diag-go-coverage
     open_bug_template:
@@ -1419,6 +1400,22 @@ dashboards:
       url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
   name: knative-sandbox-kn-plugin-diag
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-continuous
+    name: knative-sandbox-kn-plugin-source-kafka-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+    name: knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+  name: knative-sandbox-kn-plugin-source-kafka
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kperf/compare/<start-custom-0>...<end-custom-0>
@@ -2221,18 +2218,6 @@ test_groups:
   name: ci-knative-eventing-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-kn-plugin-diag-continuous
-  name: ci-knative-kn-plugin-diag-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-kn-plugin-diag-continuous-beta-prow-tests
-  name: ci-knative-kn-plugin-diag-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-kn-plugin-source-kafka-continuous
-  name: ci-knative-kn-plugin-source-kafka-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-kn-plugin-source-kafka-continuous-beta-prow-tests
-  name: ci-knative-kn-plugin-source-kafka-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-operator-0.16-continuous
   name: ci-knative-operator-0.16-continuous
 - alert_stale_results_hours: 3
@@ -2498,10 +2483,22 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous
+  name: ci-knative-sandbox-kn-plugin-diag-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage
   name: ci-knative-sandbox-kn-plugin-diag-go-coverage
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-continuous
+  name: ci-knative-sandbox-kn-plugin-source-kafka-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kperf-continuous
   name: ci-knative-sandbox-kperf-continuous
