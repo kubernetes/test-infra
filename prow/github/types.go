@@ -822,14 +822,6 @@ type Commit struct {
 	Modified []string `json:"modified"`
 }
 
-// SingleCommit is the commit part received when requesting a single commit
-// https://developer.github.com/v3/repos/commits/#get-a-single-commit
-type SingleCommit struct {
-	Commit struct {
-		Tree Tree `json:"tree"`
-	} `json:"commit"`
-}
-
 // Tree represents a GitHub tree.
 type Tree struct {
 	SHA string `json:"sha,omitempty"`
@@ -1092,6 +1084,7 @@ type Milestone struct {
 // RepositoryCommit represents a commit in a repo.
 // Note that it's wrapping a GitCommit, so author/committer information is in two places,
 // but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+// Get single commit also use it, see: https://developer.github.com/v3/repos/commits/#get-a-single-commit.
 type RepositoryCommit struct {
 	NodeID      string      `json:"node_id,omitempty"`
 	SHA         string      `json:"sha,omitempty"`

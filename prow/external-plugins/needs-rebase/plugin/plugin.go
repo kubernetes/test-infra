@@ -236,7 +236,7 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 	return ret, nil
 }
 
-// TODO(spxtr): Add useful information for frontend stuff such as links.
+// See: https://developer.github.com/v4/object/pullrequest/.
 type pullRequest struct {
 	Number githubql.Int
 	Author struct {
@@ -256,6 +256,7 @@ type pullRequest struct {
 	Mergeable githubql.MergeableState
 }
 
+// See: https://developer.github.com/v4/query/.
 type searchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int

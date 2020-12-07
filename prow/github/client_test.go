@@ -96,7 +96,7 @@ func TestRequestRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -117,7 +117,7 @@ func TestAbuseRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -137,7 +137,7 @@ func TestRetry404(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -152,7 +152,7 @@ func TestRetryBase(t *testing.T) {
 	c.initialDelay = time.Microsecond
 	// One good endpoint:
 	c.bases = []string{c.bases[0]}
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -160,7 +160,7 @@ func TestRetryBase(t *testing.T) {
 	}
 	// Bad endpoint followed by good endpoint:
 	c.bases = []string{"not-a-valid-base", c.bases[0]}
-	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err = c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -168,7 +168,7 @@ func TestRetryBase(t *testing.T) {
 	}
 	// One bad endpoint:
 	c.bases = []string{"not-a-valid-base"}
-	_, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	_, err = c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err == nil {
 		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
 	}
@@ -954,6 +954,7 @@ func TestReadPaginatedResults(t *testing.T) {
 		err := c.readPaginatedResults(
 			tc.initialPath,
 			"",
+			"",
 			func() interface{} {
 				return &[]Label{}
 			},
@@ -1372,7 +1373,7 @@ func TestFindIssues(t *testing.T) {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		}
 		if len(result) != 1 {
-			t.Errorf("%s: unexpected number of results: %v", tc.name, len(result))
+			t.Fatalf("%s: unexpected number of results: %v", tc.name, len(result))
 		}
 		if result[0].Number != issueNum {
 			t.Errorf("%s: expected issue number %+v, got %+v", tc.name, issueNum, result[0].Number)
@@ -2420,7 +2421,7 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 			fake := &fakeHttpClient{}
 			c := &client{delegate: &delegate{client: fake}, logger: logrus.NewEntry(logrus.New())}
 			tc.mod(c)
-			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
+			if _, err := c.doRequest("POST", "/hello", "", "", nil); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if tc.expectedHeader == nil {
@@ -2437,6 +2438,7 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 		})
 	}
 }
+
 func TestListTeamRepos(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/repos",
 		[]Repo{
@@ -2506,6 +2508,74 @@ func TestToCurl(t *testing.T) {
 			if result := toCurl(tc.request); result != tc.expected {
 				t.Errorf("result %s differs from expected %s", result, tc.expected)
 			}
+		})
+	}
+}
+
+type orgHeaderCheckingRoundTripper struct {
+	t *testing.T
+}
+
+func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	if !strings.HasPrefix(r.URL.Path, "/app") && r.Header.Get(githubOrgHeaderKey) != "org" {
+		rt.t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+	}
+	return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+}
+
+// TestAllMethodsThatDoRequestSetOrgHeader uses reflect to find all methods of the Client and
+// their arguments and calls them with an empty argument, then verifies via a RoundTripper that
+// all requests made had an org header set.
+func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
+	ghClient := NewClient(func() []byte { return nil }, func(in []byte) []byte { return in }, "", "")
+	clientType := reflect.TypeOf(ghClient)
+	stringType := reflect.TypeOf("")
+	stringValue := reflect.ValueOf("org")
+
+	toSkip := sets.NewString(
+		// Doesn't support github apps
+		"Query",
+		// They fetch the user, which doesn't exist in case of github app.
+		// TODO: Redirect these to /app when app auth is used
+		"BotName",
+		"BotUser",
+		// GitHub apps do not have an email
+		"Email",
+		// TODO: Split the search query by org when app auth is used
+		"FindIssues",
+	)
+
+	for i := 0; i < clientType.NumMethod(); i++ {
+		if toSkip.Has(clientType.Method(i).Name) {
+			continue
+		}
+		t.Run(clientType.Method(i).Name, func(t *testing.T) {
+
+			ghClient.(*client).client.(*http.Client).Transport = &orgHeaderCheckingRoundTripper{t}
+			clientValue := reflect.ValueOf(ghClient)
+
+			var args []reflect.Value
+			// First arg is self, so start with second arg
+			for j := 1; j < clientType.Method(i).Func.Type().NumIn(); j++ {
+				arg := reflect.New(clientType.Method(i).Func.Type().In(j)).Elem()
+				if arg.Kind() == reflect.Ptr && arg.IsNil() {
+					arg.Set(reflect.New(arg.Type().Elem()))
+				}
+
+				if arg.Type() == stringType {
+					arg.Set(stringValue)
+				}
+
+				// Just set all strings to a nonEmpty string, otherwise the header will not get set
+				args = append(args, arg)
+			}
+
+			if clientType.Method(i).Type.IsVariadic() {
+				args[len(args)-1] = reflect.New(args[len(args)-1].Type().Elem()).Elem()
+			}
+
+			// We don't care about the result at all, the verification happens via the roundTripper
+			_ = clientValue.Method(i).Call(args)
 		})
 	}
 }

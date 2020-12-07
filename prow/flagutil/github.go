@@ -18,12 +18,16 @@ package flagutil
 
 import (
 	"bytes"
+	"crypto/rsa"
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
 	"strings"
 
+	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -40,6 +44,8 @@ type GitHubOptions struct {
 	TokenPath         string
 	AllowAnonymous    bool
 	AllowDirectAccess bool
+	AppID             string
+	AppPrivateKeyPath string
 }
 
 const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
@@ -51,6 +57,8 @@ func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
+	fs.StringVar(&o.AppID, "app-id", "", "ID of the GitHub app. If set, requires --app-private-key path to be set and --github-token-path to be unset.")
+	fs.StringVar(&o.AppPrivateKeyPath, "app-private-key-path", "", "Path to the private key of the github app. If set, requires --app-id to bet set and --github-token-path to be unset")
 }
 
 // Validate validates GitHub options. Note that validate updates the GitHubOptions
@@ -63,6 +71,13 @@ func (o *GitHubOptions) Validate(bool) error {
 		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+
+	if o.TokenPath != "" && (o.AppID != "" || o.AppPrivateKeyPath != "") {
+		return fmt.Errorf("--token-path is mutually exclusive with --app-id and --app-private-key-path")
+	}
+	if o.AppID == "" != (o.AppPrivateKeyPath == "") {
+		return errors.New("--app-id and --app-private-key-path must be set together")
 	}
 
 	if o.TokenPath == "" && !o.AllowAnonymous {
@@ -85,7 +100,7 @@ func (o *GitHubOptions) Validate(bool) error {
 }
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
-func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client github.Client, err error) {
+func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (github.Client, error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		logrus.Warn("empty -github-token-path, will use anonymous github client")
@@ -101,14 +116,38 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 		generator = &generatorFunc
 	}
 
+	var appsGenerator func() *rsa.PrivateKey
+	if o.AppPrivateKeyPath != "" {
+		if secretAgent == nil {
+			return nil, fmt.Errorf("cannot store token from %q without a secret agent", o.AppPrivateKeyPath)
+		}
+		appsGenerator = func() *rsa.PrivateKey {
+			raw := secretAgent.GetTokenGenerator(o.AppPrivateKeyPath)()
+			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+			// TODO alvaroaleman: Add hooks to the SecretAgent
+			if err != nil {
+				panic(fmt.Sprintf("failed to parse private key: %v", err))
+			}
+			return privateKey
+		}
+
+	}
+
 	if dryRun {
+		if o.AppPrivateKeyPath != "" {
+			return github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+		}
 		return github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+	}
+	if o.AppPrivateKeyPath != "" {
+		return github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+
 	}
 	return github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 }
 
 // GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client github.Client, err error) {
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (github.Client, error) {
 	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
 }
 

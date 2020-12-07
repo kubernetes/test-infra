@@ -352,6 +352,10 @@ milestone_applier:
     master: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-gcp:
+    master: v0.4
+    release-0.4: v0.4
+    release-0.3: v0.3
   kubernetes/website:
     dev-1.20: 1.20
 
@@ -391,6 +395,10 @@ repo_milestone:
     maintainers_id: 3297612
     maintainers_team: cluster-api-provider-docker-maintainers
     maintainers_friendly_name: Cluster API Provider Docker Maintainers
+  kubernetes-sigs/cluster-api-provider-gcp:
+    maintainers_id: 2829767
+    maintainers_team: cluster-api-provider-gcp-maintainers
+    maintainers_friendly_name: Cluster API Provider GCP Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
@@ -976,6 +984,14 @@ plugins:
   - override
 
   kubernetes-sigs/cluster-api-provider-azure:
+  - milestone
+  - milestoneapplier
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - override
+
+  kubernetes-sigs/cluster-api-provider-gcp:
   - milestone
   - milestoneapplier
   - milestonestatus
