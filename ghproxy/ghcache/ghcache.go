@@ -180,8 +180,10 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("Cache-Control", "no-store")
 	} else {
 		resp.Header.Set("Cache-Control", "no-cache")
-		// Used for metrics about the age of cached requests
-		resp.Header.Set(cacheEntryCreationDateHeader, strconv.Itoa(int(time.Now().Unix())))
+		if resp.StatusCode != http.StatusNotModified {
+			// Used for metrics about the age of cached requests
+			resp.Header.Set(cacheEntryCreationDateHeader, strconv.Itoa(int(time.Now().Unix())))
+		}
 	}
 	if etag != "" {
 		resp.Header.Set("X-Conditional-Request", etag)

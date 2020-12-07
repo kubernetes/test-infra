@@ -85,7 +85,7 @@ var cacheEntryAge = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Name:    "ghcache_cache_entry_age_seconds",
 		Help:    "The age of cache entries by API path.",
-		Buckets: []float64{900, 1800, 3600, 7200, 14400},
+		Buckets: []float64{5, 900, 1800, 3600, 7200, 14400},
 	},
 	[]string{"token_hash", "path", "user_agent"},
 )
