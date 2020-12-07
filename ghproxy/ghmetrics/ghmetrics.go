@@ -167,7 +167,7 @@ func CollectCacheRequestMetrics(mode, path, userAgent, tokenHash string) {
 }
 
 func CollectCacheEntryAgeMetrics(age float64, path, userAgent, tokenHash string) {
-	cacheEntryAge.With(prometheus.Labels{"path": path, "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Observe(age)
+	cacheEntryAge.With(prometheus.Labels{"path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Observe(age)
 }
 
 // CollectRequestTimeoutMetrics publishes the duration of timed-out requests by
