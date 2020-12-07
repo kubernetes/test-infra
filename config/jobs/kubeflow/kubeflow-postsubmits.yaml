@@ -51,36 +51,10 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
-<<<<<<< HEAD
-<<<<<<< HEAD
       # TODO: use a public email group
       testgrid-alert-email: kubeflow-engineering@google.com
       testgrid-num-failures-to-alert: "3"
 
-=======
-      testgrid-alert-email: cloud-ml-pipeline-oncall@google.com
-      testgrid-num-failures-to-alert: "3"  
-=======
->>>>>>> 8e60a4f4a3 (Remove those not related to kubeflow-pipeline)
-  kubeflow/pytorch-operator:
-  - name: kubeflow-pytorch-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/pytorch-operator.
-<<<<<<< HEAD
-      testgrid-alert-email: cloud-ml-pipeline-oncall@google.com
-      testgrid-num-failures-to-alert: "3"  
->>>>>>> 07bbca6941 (Update kubeflow-postsubmits.yaml)
-=======
->>>>>>> 8e60a4f4a3 (Remove those not related to kubeflow-pipeline)
   kubeflow/reporting:
   - name: kubeflow-reporting-postsubmit
     cluster: kubeflow
@@ -288,13 +262,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit integration tests for kubeflow/pipeline.
-<<<<<<< HEAD
       testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"
-=======
-      testgrid-alert-email: cloud-ml-pipeline-oncall@google.com
-      testgrid-num-failures-to-alert: "3"  
->>>>>>> 3913393a26 (Update kubeflow-postsubmits.yaml)
   - name: kubeflow-pipeline-postsubmit-mkp-e2e-test
     cluster: kubeflow
     branches:
@@ -319,13 +288,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/pipeline.
-<<<<<<< HEAD
       testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"
-=======
-      testgrid-alert-email: cloud-ml-pipeline-oncall@google.com
-      testgrid-num-failures-to-alert: "3"  
->>>>>>> 3913393a26 (Update kubeflow-postsubmits.yaml)
   kubeflow/xgboost-operator:
   - name: kubeflow-xgboost-operator-postsubmit
     cluster: kubeflow
