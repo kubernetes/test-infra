@@ -95,6 +95,9 @@ approve:
   - kubernetes/cloud-provider-gcp
   require_self_approval: false
   ignore_review_state: false
+- repos:
+  - kubernetes-sigs/service-apis
+  lgtm_acts_as_approve: false
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
