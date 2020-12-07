@@ -163,15 +163,19 @@ class Database:
         Return a list of file data under the given path. Intended for JUnit artifacts.
         """
         results = []
-        for dataz, in self.db.execute(
-                'select data from file where path between ? and ?',
-                (path, path + '\x7F')):
-            try:
-                data = zlib.decompress(dataz).decode('utf-8')
-                if data:
-                    results.append(data)
-            except UnicodeDecodeError:
-                print(f'Failed to decode data for {path}')
+        try:
+            for dataz, in self.db.execute(
+                    'select data from file where path between ? and ?',
+                    (path, path + '\x7F')):
+                try:
+                    data = zlib.decompress(dataz).decode('utf-8', 'replace')
+                    if data:
+                        results.append(data)
+                except UnicodeDecodeError:
+                    print(f'Failed to decode data for {path}')
+                    break
+        except Exception as e:
+            print(f'Exception of type {type(e)}: {e} on path: {path}')
         return results
 
     def get_oldest_emitted(self, incremental_table):

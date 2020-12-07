@@ -137,7 +137,10 @@ class GCSClient:
         files = {}
         assert not build_dir.endswith('/')
         for junit_path in self._ls_junit_paths(build_dir + '/'):
-            files[junit_path] = self.get(junit_path)
+            junit = self.get(junit_path)
+            if junit == None:
+                continue
+            files[junit_path] = junit
         return files
 
     def _get_jobs(self):
