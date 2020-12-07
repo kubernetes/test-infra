@@ -8,6 +8,7 @@ go_library(
         "doc.go",
         "git.go",
         "github.go",
+        "github_enablement.go",
         "instrumentation.go",
         "jira.go",
         "k8s_client.go",
@@ -58,6 +59,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "github_enablement_test.go",
         "github_test.go",
         "kubernetes_cluster_clients_test.go",
     ],
