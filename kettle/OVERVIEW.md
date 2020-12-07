@@ -34,7 +34,7 @@ This stage gets run for each [BugQuery] table that Kettle is tasked with uploadi
     and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s-gubernator:build.<table> build_<table>.json.gz schema.json`
 
 ### Make Json
-`make_json.py` prepares an incremental table to track builds it has emited to BQ. This table is named `build_emitted_<days>` (if days flag passed) or `build_emitted` otherwise. *This is important because if you change the days AND NOT the table being uploaded to, you will get duplicate results. If the `--reset_emited` flag is passed, it will refresh the incremental table for fresh data. It then walks all of the builds to fetch within `<days>` or since epoch if unset, and dumps each as a json object to a build `tar.gz`.
+`make_json.py` prepares an incremental table to track builds it has emitted to BQ. This table is named `build_emitted_<days>` (if days flag passed) or `build_emitted` otherwise. *This is important because if you change the days AND NOT the table being uploaded to, you will get duplicate results. If the `--reset_emitted` flag is passed, it will refresh the incremental table for fresh data. It then walks all of the builds to fetch within `<days>` or since epoch if unset, and dumps each as a json object to a build `tar.gz`.
 
 ### BQ Load
 This step uploads all of the `tar.gz` data to BQ while conforming to the [Schema], this schema must match the defined fields within [BigQuery] (see README for details on adding fields).
