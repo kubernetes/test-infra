@@ -3,7 +3,7 @@ presubmits:
   - name: check_ibm-licensing-operator
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -21,7 +21,7 @@ presubmits:
   - name: test_ibm-licensing-operator-amd64
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -40,7 +40,7 @@ presubmits:
   - name: test_ibm-licensing-operator-ppc64le
     cluster: ppc64le
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -59,7 +59,7 @@ presubmits:
   - name: test_ibm-licensing-operator-s390x
     cluster: s390x
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -78,7 +78,7 @@ presubmits:
   - name: build_ibm-licensing-operator-amd64
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -97,7 +97,7 @@ presubmits:
   - name: build_ibm-licensing-operator-ppc64le
     cluster: ppc64le
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -116,7 +116,7 @@ presubmits:
   - name: build_ibm-licensing-operator-s390x
     cluster: s390x
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -136,7 +136,7 @@ postsubmits:
   IBM/ibm-licensing-operator:
   - name: coverage-ibm-licensing-operator-postsubmit
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -157,7 +157,7 @@ postsubmits:
   - name: build-ibm-licensing-operator-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -173,7 +173,7 @@ postsubmits:
   - name: build-ibm-licensing-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -189,7 +189,7 @@ postsubmits:
   - name: build-ibm-licensing-operator-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -205,7 +205,7 @@ postsubmits:
   - name: image-ibm-licensing-operator-amd64-postsubmit
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -223,7 +223,7 @@ postsubmits:
   - name: image-ibm-licensing-operator-ppc64le-postsubmit
     cluster: ppc64le
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -241,7 +241,7 @@ postsubmits:
   - name: image-ibm-licensing-operator-s390x-postsubmit
     cluster: s390x
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -259,7 +259,7 @@ postsubmits:
   - name: multiarch-image-ibm-licensing-postsubmit
     cluster: default
     branches:
-    - ^release-4.0$
+    - ^release-1.4$
     decorate: true
     labels:
       preset-service-account: "true"
