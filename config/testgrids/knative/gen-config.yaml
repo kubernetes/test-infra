@@ -1403,6 +1403,22 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+    name: knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-auto-release
+    name: knative-sandbox-kn-plugin-source-kafka-auto-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-auto-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-kn-plugin-source-kafka-continuous
     name: knative-sandbox-kn-plugin-source-kafka-continuous
     open_bug_template:
@@ -1415,6 +1431,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
+    name: knative-sandbox-kn-plugin-source-kafka-nightly-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
   name: knative-sandbox-kn-plugin-source-kafka
 - dashboard_tab:
   - code_search_url_template:
@@ -2494,11 +2519,20 @@ test_groups:
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
 - alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+  name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-auto-release
+  name: ci-knative-sandbox-kn-plugin-source-kafka-auto-release
+  num_failures_to_alert: 1
+- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-continuous
   name: ci-knative-sandbox-kn-plugin-source-kafka-continuous
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
+  name: ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
+  num_failures_to_alert: 1
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kperf-continuous
   name: ci-knative-sandbox-kperf-continuous
