@@ -133,7 +133,14 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}()
 
-	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
+	var tokenBudgetName string
+	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+		tokenBudgetName = val
+	} else {
+		tokenBudgetName = r.hasher.Hash(req)
+	}
+
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), tokenBudgetName)
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
 		if cacheMode == ModeRevalidated && resp.Header.Get(cacheEntryCreationDateHeader) != "" {
