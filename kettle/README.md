@@ -46,7 +46,7 @@ ACK "finished.json" 2
 Downloading JUnit artifacts.
 ```
 
-Alternatively, navigate to [Gubernator BigQuery page][Big Query All] (click on “Details”) and you can see a table showing last date/time the metrics were collected.
+Alternatively, navigate to [Gubernator BigQuery page][Big Query All] (click on Details) and you can see a table showing last date/time the metrics were collected.
 
 #### Replace pods
 

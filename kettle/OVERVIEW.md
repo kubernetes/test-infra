@@ -24,7 +24,7 @@ Flags:
 - --threads (int): Number of threads to run concurrently with
 - --buildlimit (int): **Used in staging*  colect only N builds on each job
 
-`make_db.py` does the work of determine all the builds to collect and store to the database. It aggrigates all the builds of two flavors: `pr` and `non-pr` builds. It searches gcs for build paths or generates build paths if they are "incremental builds" (monotomically increasing). It passes the work of collecting build information and results to threads that collect information. It then does a best-effort attempt to insert the build results to the DB, commiting the instert every 200 builds.
+`make_db.py` does the work of determine all the builds to collect and store to the database. It aggrigates all the builds of two flavors: `pr` and `non-pr` builds. It searches gcs for build paths or generates build paths if they are "incremental builds" (monotomically increasing). It passes the work of collecting build information and results to threads that collect information. It then does a best-effort attempt to insert the build results to the DB, committing the instert every 200 builds.
 
 # Create JSON Results and Upload
 This stage gets run for each [BugQuery] table that Kettle is tasked with uploading data to. Typically looking like either:
@@ -34,10 +34,10 @@ This stage gets run for each [BugQuery] table that Kettle is tasked with uploadi
     and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s-gubernator:build.<table> build_<table>.json.gz schema.json`
 
 ### Make Json
-`make_json.py` prepares an incremental table to track builds it has emmited to BQ. This table is named `build_emitted_<days>` (if days flag passed) or `build_emitted` otherwise. *This is important because if you change the days AND NOT the table being uploaded to, you will get duplicate results. If the `--reset_emmited` flag is passed, it will refresh the incremental table for fresh data. It then walks all of the builds to fetch within `<days>` or since epoch if unset, and dumps each as a json object to a build `tar.gz`.
+`make_json.py` prepares an incremental table to track builds it has emited to BQ. This table is named `build_emitted_<days>` (if days flag passed) or `build_emitted` otherwise. *This is important because if you change the days AND NOT the table being uploaded to, you will get duplicate results. If the `--reset_emited` flag is passed, it will refresh the incremental table for fresh data. It then walks all of the builds to fetch within `<days>` or since epoch if unset, and dumps each as a json object to a build `tar.gz`.
 
 ### BQ Load
-This step uploads all of the `tar.gz` data to BQ while conforming to the [Schema], this schema must match the defined fields within [BigQuery] (see README for detials on adding fields).
+This step uploads all of the `tar.gz` data to BQ while conforming to the [Schema], this schema must match the defined fields within [BigQuery] (see README for details on adding fields).
 
 # Stream Results
 After all historical data has been uploaded, Kettle enters a Streaming phase. It subscribes to pub-sub results from `kubernetes-jenkins/gcs-changes/kettle` (or the specified GCS subscription path) and listens for events (Jobs completing). When a job triggers an event, it:
