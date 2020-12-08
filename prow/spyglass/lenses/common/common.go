@@ -215,6 +215,7 @@ func FetchArtifacts(
 			if buildLogRegex.MatchString(name) {
 				logsNeeded = append(logsNeeded, name)
 			}
+			logrus.WithError(err).WithField("artifact", name).Error("Failed to fetch artifact")
 			continue
 		}
 		arts = append(arts, art)
