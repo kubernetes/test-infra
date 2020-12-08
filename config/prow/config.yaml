@@ -406,6 +406,10 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        aws-ebs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
