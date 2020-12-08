@@ -79,14 +79,12 @@ external-health-monitor
 csi-test
 csi-release-tools
 csi-lib-utils
-csi-driver-flex
 csi-driver-iscsi
 csi-driver-nfs
 csi-proxy
 "
 
 # No Prow support in them yet.
-# csi-driver-fibre-channel
 # csi-driver-image-populator
 # csi-lib-fc
 # csi-lib-iscsi
