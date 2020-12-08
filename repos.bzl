@@ -5198,8 +5198,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/andygrunwald/go-jira",
-        sum = "h1:JJi2cEDmDxVtTXxC8ruLDbtOU6pA4OLeL0niyfNcoWw=",
-        version = "v1.12.0",
+        sum = "h1:vvIImGgX32bHfoiyUwkNo+/YrPnRczNarvhLOncP6dE=",
+        version = "v1.13.0",
     )
     go_repository(
         name = "com_github_fatih_structs",
