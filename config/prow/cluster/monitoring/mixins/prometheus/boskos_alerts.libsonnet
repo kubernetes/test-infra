@@ -21,7 +21,7 @@
               'boskos_type': '{{ $labels.type }}',
             },
             annotations: {
-              message: 'The Boskos resource "{{ $labels.type }}" has been exhausted (currently 0% free). See the <https://monitoring.prow.k8s.io/d/wSrfvNxWz/boskos-resource-usage?orgId=1|Boskos resource usage dashboard>.',
+              message: 'The Boskos resource "{{ $labels.type }}" has been exhausted (currently 0%% free). See the %s.' % [$._config.instance.monitoringLink('/d/wSrfvNxWz/boskos-resource-usage?orgId=1', 'Boskos resource usage dashboard')],
             },
           },
         ],

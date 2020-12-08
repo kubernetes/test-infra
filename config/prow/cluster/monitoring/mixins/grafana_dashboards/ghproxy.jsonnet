@@ -1,10 +1,12 @@
-local config =  import 'config.libsonnet';
+local config =  (import 'config.libsonnet')._config;
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
 local prometheus = grafana.prometheus;
 local template = grafana.template;
 local singlestat = grafana.singlestat;
+
+local botName = config.instance.botName;
 
 local legendConfig = {
         legend+: {
@@ -13,7 +15,7 @@ local legendConfig = {
     };
 
 local dashboardConfig = {
-        uid: config._config.grafanaDashboardIDs['ghproxy.json'],
+        uid: config.grafanaDashboardIDs['ghproxy.json'],
     };
 
 local histogramQuantileTarget(phi) = prometheus.target(
@@ -43,7 +45,7 @@ dashboard.new(
 .addTemplate(template.new(
         'login',
         'prometheus',
-        'label_values(github_user_info{login="k8s-ci-robot"}, login)',
+        'label_values(github_user_info{login="%s"}, login)' % botName,
         label='login',
         refresh='time',
     ))
@@ -104,11 +106,11 @@ dashboard.new(
         legend_sortDesc=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (mode)',
+        'sum(increase(ghcache_responses[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (mode)' % botName,
         legendFormat='{{mode}}',
     ))
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login))',
+        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login))' % botName,
         legendFormat='(No Cost)',
     )), gridPos={
     h: 6,
@@ -133,7 +135,7 @@ dashboard.new(
         #y_axis_label='% Cacheable Request Fulfilled for Free',
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) \n/ sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED|MISS|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login))',
+        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) \n/ sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED|MISS|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login))' % [botName, botName],
         legendFormat='Efficiency',
     )), gridPos={
     h: 6,
@@ -173,7 +175,7 @@ dashboard.new(
         valueName='current',
     )
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login))',
+        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login))' % botName,
         instant=true,
     )), gridPos={
     h: 6,
@@ -190,7 +192,7 @@ dashboard.new(
         format='short',
     )
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[7d]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login))',
+        'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[7d]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login))' % botName,
         instant=true,
     )), gridPos={
     h: 6,
@@ -211,7 +213,7 @@ dashboard.new(
         max='5000',
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(github_token_usage * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (api_version, login)',
+        'sum(github_token_usage * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (api_version, login)' % botName,
          legendFormat='{{login}} : {{api_version}}',
     )), gridPos={
     h: 9,
@@ -229,7 +231,7 @@ dashboard.new(
         stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(rate(github_request_duration_count[${range}]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (status)',
+        'sum(rate(github_request_duration_count[${range}]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (status)' % botName,
          legendFormat='{{status}}',
     )), gridPos={
     h: 9,
@@ -247,7 +249,7 @@ dashboard.new(
         stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(rate(github_request_duration_count{status="${status}"}[${range}]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (path)',
+        'sum(rate(github_request_duration_count{status="${status}"}[${range}]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (path)' % botName,
          legendFormat='{{path}}',
     )), gridPos={
     h: 9,
@@ -333,7 +335,7 @@ dashboard.new(
         stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (user_agent)',
+        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (user_agent)' % botName,
          legendFormat='{{user_agent}}',
     )), gridPos={
     h: 9,
@@ -356,7 +358,7 @@ dashboard.new(
         stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (path)',
+        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (path)' % botName,
          legendFormat='{{path}}',
     )), gridPos={
     h: 9,
@@ -378,7 +380,7 @@ dashboard.new(
         legend_sortDesc=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED",path="${path}"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (user_agent)',
+        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED",path="${path}"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (user_agent)' % botName,
          legendFormat='{{user_agent}}',
     )), gridPos={
     h: 9,
@@ -400,7 +402,7 @@ dashboard.new(
         legend_sortDesc=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED",user_agent="${user_agent}"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="k8s-ci-robot"}) by (token_hash, login)) by (path)',
+        'sum(increase(ghcache_responses{mode=~"MISS|NO-STORE|CHANGED",user_agent="${user_agent}"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) by (path)' % botName,
          legendFormat='{{path}}',
     )), gridPos={
     h: 9,
