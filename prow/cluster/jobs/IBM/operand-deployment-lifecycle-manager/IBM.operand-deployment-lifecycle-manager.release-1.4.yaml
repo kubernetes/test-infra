@@ -1,0 +1,135 @@
+presubmits:
+  IBM/operand-deployment-lifecycle-manager:
+  - name: check-operand-deployment-lifecycle-manager
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test check-operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-operand-deployment-lifecycle-manager-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test test-operand-deployment-lifecycle-manager-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+postsubmits:
+  IBM/operand-deployment-lifecycle-manager:
+  - name: coverage-operand-deployment-lifecycle-manager-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: operand-deployment-lifecycle-manager-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: image-operand-deployment-lifecycle-manager-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-operand-deployment-lifecycle-manager-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-operand-deployment-lifecycle-manager-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-operand-deployment-lifecycle-manager-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
