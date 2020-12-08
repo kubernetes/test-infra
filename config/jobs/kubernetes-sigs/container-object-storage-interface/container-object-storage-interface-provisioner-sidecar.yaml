@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/container-object-storage-interface-provisioner-sidecar:
+  - name: pull-container-object-storage-interface-provisioner-sidecar-build
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/container-object-storage-interface-provisioner-sidecar
+    annotations:
+      testgrid-dashboards: sig-storage-container-object-storage-interface-provisioner-sidecar
+      testgrid-tab-name: build
+      description: Build test in container-object-storage-interface-provisioner-sidecar repo.
+    spec:
+      containers:
+      - image: golang:1.13.10
+        command:
+        # Plain make runs also verify
+        - make
+
+  - name: pull-container-object-storage-interface-provisioner-sidecar-unit
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/container-object-storage-interface-provisioner-sidecar
+    annotations:
+      testgrid-dashboards: sig-storage-container-object-storage-interface-provisioner-sidecar
+      testgrid-tab-name: unit
+      description: Unit tests in container-object-storage-interface-provisioner-sidecar repo.
+    spec:
+      containers:
+      - image: golang:1.13.10
+        command:
+        - make
+        args:
+        - test
