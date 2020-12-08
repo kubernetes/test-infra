@@ -35,7 +35,7 @@ const (
 
 var (
 	failedToAddProjectCard = "Failed to add project card for the issue/PR"
-	issueAlreadyInProject  = "The issue/PR %d already assigned to the project %s"
+	issueAlreadyInProject  = "The issue/PR %s already assigned to the project %s"
 
 	handleIssueActions = map[github.IssueEventAction]bool{
 		github.IssueActionOpened:    true,
@@ -66,7 +66,7 @@ org/repos:
                   area/sig-testing
 */
 // TODO Handle Label deletion, pr/issue should be removed from the project when label criteria does  not meet
-// TODO Pr/issue state change, pr/iisue is on project board only if its state is listed in the configuration
+// TODO Pr/issue state change, pr/issue is on project board only if its state is listed in the configuration
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssueOrPullRequest, helpProvider)
 }
@@ -168,7 +168,7 @@ func handleIssueOrPullRequest(pc plugins.Agent, ie github.IssueEvent) error {
 		repo:   ie.Repo.Name,
 		state:  ie.Issue.State,
 		labels: ie.Issue.Labels,
-		remove: (ie.Action == github.IssueActionUnlabeled),
+		remove: ie.Action == github.IssueActionUnlabeled,
 	}
 
 	return handle(pc.GitHubClient, pc.PluginConfig.ProjectManager, pc.Logger, eventData)
