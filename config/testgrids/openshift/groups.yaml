@@ -29,13 +29,5 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.6-informing
   - redhat-openshift-okd-release-4.7-blocking
   - redhat-openshift-presubmit-master-gcp
-  - redhat-osde2e-int-aws
-  - redhat-osde2e-int-gcp
-  - redhat-osde2e-int-moa
-  - redhat-osde2e-prod-aws
-  - redhat-osde2e-prod-gcp
-  - redhat-osde2e-prod-moa
-  - redhat-osde2e-stage-aws
-  - redhat-osde2e-stage-gcp
-  - redhat-osde2e-stage-moa
+  - redhat-osd
   name: redhat
