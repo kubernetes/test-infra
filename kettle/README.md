@@ -68,13 +68,12 @@ or access [log history](https://console.cloud.google.com/logs/query?project=k8s-
 It might take a couple of hours to be fully functional and start updating BigQuery. You can always go back to the [Gubernator BigQuery page][Big Query All] and check to see if data collection has resumed.  Backfill should happen automatically.
 
 #### Kettle Staging
-| :exclamation:  Not Fully Functional Yet |
-|-----------------------------------------|
 
-This is a work in progress. `Kettle Staging` uses a similar deployment to `Kettle` with the following differences
-- much less disk in its PVC
-- reduced list of buckets to pull from
-- writes to [build.staging][Big Query Staging] table only.
+`Kettle Staging` uses a similar deployment to `Kettle` with the following differences
+- [100G SSD](https://console.cloud.google.com/compute/disksDetail/zones/us-west1-b/disks/kettle-data-staging?folder=&organizationId=&project=k8s-gubernator) vs 1001G in production
+- Limit option for number of builds to pull from each job bucket (Default 1000 each). Set via BUILD_LIMIT env in [deployment-staging.yaml](./deployment-staging.yaml).
+- writes to [build.staging](https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator&redirect_from_classic=true) table only. This differs from production that writes to three tables `build.all`, `build.day`, and `build.week`.
+
 
 It can be deployed with `make -C kettle deploy-staging`. If already deployed, you may just run `make -C kettle update-staging`.
 
