@@ -1,0 +1,139 @@
+presubmits:
+  IBM/ibm-mongodb-operator:
+  - name: build_ibm-mongodb-operator
+    branches:
+    - ^release-1.2$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    rerun_command: /test build ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ibm-mongodb-operator
+    branches:
+    - ^release-1.2$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    rerun_command: /test check ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-mongodb-operator
+    branches:
+    - ^release-1.2$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    rerun_command: /test test ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/ibm-mongodb-operator:
+  - name: check_ibm-mongodb-operator_postsubmit
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_ibm-mongodb-operator_postsubmit
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_ibm-mongodb-operator_postsubmit
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-mongodb-operator-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build_ibm-mongodb-operator_postsubmit
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_ibm-mongodb-operator_postsubmit
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-mongodb-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
