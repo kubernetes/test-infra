@@ -1,15 +1,15 @@
 # sigs.k8s.io/descheduler presubmits
 presubmits:
   kubernetes-sigs/descheduler:
-  - name: pull-descheduler-verify-master
+  - name: pull-descheduler-verify-release-1-20
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-master
+      testgrid-tab-name: pull-descheduler-verify-release-1.20
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -18,15 +18,15 @@ presubmits:
         - make
         args:
         - verify
-  - name: pull-descheduler-verify-build-master
+  - name: pull-descheduler-verify-build-release-1-20
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-build-master
+      testgrid-tab-name: pull-descheduler-verify-build-release-1.20
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -35,15 +35,15 @@ presubmits:
         - make
         args:
         - build
-  - name: pull-descheduler-unit-test-master-master
+  - name: pull-descheduler-unit-test-release-1-20
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-unit-test-master
+      testgrid-tab-name: pull-descheduler-unit-test-release-1.20
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -52,10 +52,10 @@ presubmits:
         - make
         args:
         - test-unit
-  - name: pull-descheduler-test-e2e-k8s-master-1-20
+  - name: pull-descheduler-test-e2e-k8s-release-1-20-1-20
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.20
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-20-1.20
     decorate: true
     decoration_config:
       timeout: 20m
@@ -64,7 +64,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.20$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
@@ -82,10 +82,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-19
+  - name: pull-descheduler-test-e2e-k8s-release-1-20-1-19
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.19
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-20-1.19
     decorate: true
     decoration_config:
       timeout: 20m
@@ -94,7 +94,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.20$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
@@ -112,10 +112,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-18
+  - name: pull-descheduler-test-e2e-k8s-release-1-20-1-18
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.18
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-20-1.18
     decorate: true
     decoration_config:
       timeout: 20m
@@ -124,7 +124,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.20$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
