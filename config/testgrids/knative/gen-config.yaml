@@ -11,6 +11,7 @@ dashboard_groups:
   - knative-eventing-contrib
   - knative-operator
   - knative-pkg
+  - knative-prow-tests
   - knative-serving
   - knative-test-infra
   name: knative
@@ -52,13 +53,6 @@ dashboards:
     test_group_name: ci-google-knative-gcp-0.16-continuous
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-0.16-continuous-beta-prow-tests
-    name: google-knative-gcp-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-0.16-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: ci-google-knative-gcp-0.16-dot-release
     name: google-knative-gcp-0.16-dot-release
     open_bug_template:
@@ -71,13 +65,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/knative-gcp/issues/
     test_group_name: ci-google-knative-gcp-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
-    name: google-knative-gcp-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: ci-google-knative-gcp-0.17-dot-release
@@ -94,13 +81,6 @@ dashboards:
     test_group_name: ci-google-knative-gcp-0.18-continuous
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-0.18-continuous-beta-prow-tests
-    name: google-knative-gcp-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-0.18-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: ci-google-knative-gcp-0.18-dot-release
     name: google-knative-gcp-0.18-dot-release
     open_bug_template:
@@ -113,13 +93,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/knative-gcp/issues/
     test_group_name: ci-google-knative-gcp-0.19-continuous
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-0.19-continuous-beta-prow-tests
-    name: google-knative-gcp-0.19-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-0.19-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: ci-google-knative-gcp-0.19-dot-release
@@ -143,13 +116,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/knative-gcp/issues/
     test_group_name: ci-google-knative-gcp-continuous
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-continuous-beta-prow-tests
-    name: google-knative-gcp-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: ci-google-knative-gcp-go-coverage
@@ -182,13 +148,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/caching/issues/
     test_group_name: ci-knative-caching-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/caching/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-caching-continuous-beta-prow-tests
-    name: knative-caching-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/caching/issues/
-    test_group_name: ci-knative-caching-continuous-beta-prow-tests
   name: knative-caching
 - dashboard_tab:
   - code_search_url_template:
@@ -198,13 +157,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/client/issues/
     test_group_name: ci-knative-client-0.16-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-0.16-continuous-beta-prow-tests
-    name: knative-client-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-0.16-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-client-0.16-dot-release
@@ -221,13 +173,6 @@ dashboards:
     test_group_name: ci-knative-client-0.17-continuous
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-0.17-continuous-beta-prow-tests
-    name: knative-client-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-client-0.17-dot-release
     name: knative-client-0.17-dot-release
     open_bug_template:
@@ -242,13 +187,6 @@ dashboards:
     test_group_name: ci-knative-client-0.18-continuous
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-0.18-continuous-beta-prow-tests
-    name: knative-client-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-0.18-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-client-0.18-dot-release
     name: knative-client-0.18-dot-release
     open_bug_template:
@@ -261,13 +199,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/client/issues/
     test_group_name: ci-knative-client-0.19-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-0.19-continuous-beta-prow-tests
-    name: knative-client-0.19-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-0.19-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-client-0.19-dot-release
@@ -291,13 +222,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/client/issues/
     test_group_name: ci-knative-client-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-continuous-beta-prow-tests
-    name: knative-client-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-client-go-coverage
@@ -337,13 +261,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/client-contrib/issues/
     test_group_name: ci-knative-client-contrib-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/client-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-contrib-continuous-beta-prow-tests
-    name: knative-client-contrib-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client-contrib/issues/
-    test_group_name: ci-knative-client-contrib-continuous-beta-prow-tests
   name: knative-client-contrib
 - dashboard_tab:
   - code_search_url_template:
@@ -353,13 +270,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/docs/issues/
     test_group_name: ci-knative-docs-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-docs-continuous-beta-prow-tests
-    name: knative-docs-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/docs/issues/
-    test_group_name: ci-knative-docs-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-docs-go-coverage
@@ -385,13 +295,6 @@ dashboards:
     test_group_name: ci-knative-eventing-0.16-continuous
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-0.16-continuous-beta-prow-tests
-    name: knative-eventing-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-0.16-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-0.16-dot-release
     name: knative-eventing-0.16-dot-release
     open_bug_template:
@@ -404,13 +307,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing/issues/
     test_group_name: ci-knative-eventing-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-0.17-continuous-beta-prow-tests
-    name: knative-eventing-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-0.17-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-0.17-dot-release
@@ -427,13 +323,6 @@ dashboards:
     test_group_name: ci-knative-eventing-0.18-continuous
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-0.18-continuous-beta-prow-tests
-    name: knative-eventing-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-0.18-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-0.18-dot-release
     name: knative-eventing-0.18-dot-release
     open_bug_template:
@@ -446,13 +335,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing/issues/
     test_group_name: ci-knative-eventing-0.19-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-0.19-continuous-beta-prow-tests
-    name: knative-eventing-0.19-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-0.19-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-0.19-dot-release
@@ -476,13 +358,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing/issues/
     test_group_name: ci-knative-eventing-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-continuous-beta-prow-tests
-    name: knative-eventing-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-go-coverage
@@ -517,13 +392,6 @@ dashboards:
     test_group_name: ci-knative-eventing-contrib-0.15-continuous
   - code_search_url_template:
       url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-0.15-continuous-beta-prow-tests
-    name: knative-eventing-contrib-0.15-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-0.15-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-contrib-0.15-dot-release
     name: knative-eventing-contrib-0.15-dot-release
     open_bug_template:
@@ -536,13 +404,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-0.16-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-0.16-continuous-beta-prow-tests
-    name: knative-eventing-contrib-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-0.16-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-contrib-0.16-dot-release
@@ -559,13 +420,6 @@ dashboards:
     test_group_name: ci-knative-eventing-contrib-0.17-continuous
   - code_search_url_template:
       url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-0.17-continuous-beta-prow-tests
-    name: knative-eventing-contrib-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-contrib-0.17-dot-release
     name: knative-eventing-contrib-0.17-dot-release
     open_bug_template:
@@ -578,13 +432,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-0.18-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-0.18-continuous-beta-prow-tests
-    name: knative-eventing-contrib-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-0.18-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-contrib-0.18-dot-release
@@ -608,13 +455,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-continuous-beta-prow-tests
-    name: knative-eventing-contrib-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-contrib-go-coverage
@@ -649,13 +489,6 @@ dashboards:
     test_group_name: ci-knative-operator-0.16-continuous
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.16-continuous-beta-prow-tests
-    name: knative-operator-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.16-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.16-dot-release
     name: knative-operator-0.16-dot-release
     open_bug_template:
@@ -668,13 +501,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.17-continuous-beta-prow-tests
-    name: knative-operator-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.17-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.17-dot-release
@@ -691,13 +517,6 @@ dashboards:
     test_group_name: ci-knative-operator-0.18-continuous
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.18-continuous-beta-prow-tests
-    name: knative-operator-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.18-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.18-dot-release
     name: knative-operator-0.18-dot-release
     open_bug_template:
@@ -710,13 +529,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-0.19-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.19-continuous-beta-prow-tests
-    name: knative-operator-0.19-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.19-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.19-dot-release
@@ -740,13 +552,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-continuous-beta-prow-tests
-    name: knative-operator-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-go-coverage
@@ -779,6 +584,204 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/pkg/issues/
     test_group_name: ci-knative-pkg-continuous
+  name: knative-pkg
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-0.16-continuous-beta-prow-tests
+    name: google-knative-gcp-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
+    name: google-knative-gcp-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-0.18-continuous-beta-prow-tests
+    name: google-knative-gcp-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-0.19-continuous-beta-prow-tests
+    name: google-knative-gcp-0.19-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-continuous-beta-prow-tests
+    name: google-knative-gcp-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/caching/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-caching-continuous-beta-prow-tests
+    name: knative-caching-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/caching/issues/
+    test_group_name: ci-knative-caching-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-0.16-continuous-beta-prow-tests
+    name: knative-client-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-0.17-continuous-beta-prow-tests
+    name: knative-client-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-0.18-continuous-beta-prow-tests
+    name: knative-client-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-0.19-continuous-beta-prow-tests
+    name: knative-client-0.19-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-continuous-beta-prow-tests
+    name: knative-client-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-contrib-continuous-beta-prow-tests
+    name: knative-client-contrib-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client-contrib/issues/
+    test_group_name: ci-knative-client-contrib-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-docs-continuous-beta-prow-tests
+    name: knative-docs-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/docs/issues/
+    test_group_name: ci-knative-docs-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-0.16-continuous-beta-prow-tests
+    name: knative-eventing-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-0.17-continuous-beta-prow-tests
+    name: knative-eventing-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-0.18-continuous-beta-prow-tests
+    name: knative-eventing-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-0.19-continuous-beta-prow-tests
+    name: knative-eventing-0.19-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-continuous-beta-prow-tests
+    name: knative-eventing-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-0.15-continuous-beta-prow-tests
+    name: knative-eventing-contrib-0.15-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-0.15-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-0.16-continuous-beta-prow-tests
+    name: knative-eventing-contrib-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-0.17-continuous-beta-prow-tests
+    name: knative-eventing-contrib-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-0.18-continuous-beta-prow-tests
+    name: knative-eventing-contrib-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-continuous-beta-prow-tests
+    name: knative-eventing-contrib-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.16-continuous-beta-prow-tests
+    name: knative-operator-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.17-continuous-beta-prow-tests
+    name: knative-operator-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.18-continuous-beta-prow-tests
+    name: knative-operator-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.19-continuous-beta-prow-tests
+    name: knative-operator-0.19-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-continuous-beta-prow-tests
+    name: knative-operator-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/pkg/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-pkg-continuous-beta-prow-tests
@@ -786,7 +789,210 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/pkg/issues/
     test_group_name: ci-knative-pkg-continuous-beta-prow-tests
-  name: knative-pkg
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/async-component/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-async-component-continuous-beta-prow-tests
+    name: knative-sandbox-async-component-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/async-component/issues/
+    test_group_name: ci-knative-sandbox-async-component-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/discovery/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-discovery-continuous-beta-prow-tests
+    name: knative-sandbox-discovery-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/discovery/issues/
+    test_group_name: ci-knative-sandbox-discovery-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-awssqs/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-awssqs/issues/
+    test_group_name: ci-knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-camel/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-camel-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-camel-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-camel/issues/
+    test_group_name: ci-knative-sandbox-eventing-camel-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-ceph/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-ceph-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-ceph-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-ceph/issues/
+    test_group_name: ci-knative-sandbox-eventing-ceph-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-couchdb/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-couchdb/issues/
+    test_group_name: ci-knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-github/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-github-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-github-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-github/issues/
+    test_group_name: ci-knative-sandbox-eventing-github-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-gitlab/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-gitlab/issues/
+    test_group_name: ci-knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-kafka-broker/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
+    test_group_name: ci-knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-kafka-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-kafka/issues/
+    test_group_name: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-prometheus/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-prometheus/issues/
+    test_group_name: ci-knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-redis/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-redis-continuous-beta-prow-tests
+    name: knative-sandbox-eventing-redis-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-redis/issues/
+    test_group_name: ci-knative-sandbox-eventing-redis-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-admin/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
+    name: knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-admin/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+    name: knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+    name: knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kperf/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kperf-continuous-beta-prow-tests
+    name: knative-sandbox-kperf-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kperf/issues/
+    test_group_name: ci-knative-sandbox-kperf-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-certmanager/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-certmanager-continuous-beta-prow-tests
+    name: knative-sandbox-net-certmanager-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-certmanager/issues/
+    test_group_name: ci-knative-sandbox-net-certmanager-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-contour/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-contour-continuous-beta-prow-tests
+    name: knative-sandbox-net-contour-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-contour/issues/
+    test_group_name: ci-knative-sandbox-net-contour-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-http01/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
+    name: knative-sandbox-net-http01-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-http01/issues/
+    test_group_name: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
+    name: knative-sandbox-net-istio-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-istio/issues/
+    test_group_name: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-kourier/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
+    name: knative-sandbox-net-kourier-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-kourier/issues/
+    test_group_name: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/sample-controller/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-sample-controller-continuous-beta-prow-tests
+    name: knative-sandbox-sample-controller-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/sample-controller/issues/
+    test_group_name: ci-knative-sandbox-sample-controller-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/sample-source/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-sample-source-continuous-beta-prow-tests
+    name: knative-sandbox-sample-source-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/sample-source/issues/
+    test_group_name: ci-knative-sandbox-sample-source-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-0.16-continuous-beta-prow-tests
+    name: knative-serving-0.16-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-0.16-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-0.17-continuous-beta-prow-tests
+    name: knative-serving-0.17-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-0.17-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-0.18-continuous-beta-prow-tests
+    name: knative-serving-0.18-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-0.18-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-0.19-continuous-beta-prow-tests
+    name: knative-serving-0.19-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-continuous-beta-prow-tests
+    name: knative-serving-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-test-infra-continuous-beta-prow-tests
+    name: knative-test-infra-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/test-infra/issues/
+    test_group_name: ci-knative-test-infra-continuous-beta-prow-tests
+  name: knative-prow-tests
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
@@ -804,13 +1010,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/async-component/issues/
     test_group_name: ci-knative-sandbox-async-component-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/async-component/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-async-component-continuous-beta-prow-tests
-    name: knative-sandbox-async-component-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/async-component/issues/
-    test_group_name: ci-knative-sandbox-async-component-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -861,13 +1060,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/discovery/issues/
     test_group_name: ci-knative-sandbox-discovery-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/discovery/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-discovery-continuous-beta-prow-tests
-    name: knative-sandbox-discovery-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/discovery/issues/
-    test_group_name: ci-knative-sandbox-discovery-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -904,13 +1096,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-awssqs/issues/
     test_group_name: ci-knative-sandbox-eventing-awssqs-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-awssqs/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-awssqs/issues/
-    test_group_name: ci-knative-sandbox-eventing-awssqs-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -938,13 +1123,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-camel/issues/
     test_group_name: ci-knative-sandbox-eventing-camel-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-camel/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-camel-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-camel-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-camel/issues/
-    test_group_name: ci-knative-sandbox-eventing-camel-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -981,13 +1159,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-ceph/issues/
     test_group_name: ci-knative-sandbox-eventing-ceph-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-ceph/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-ceph-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-ceph-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-ceph/issues/
-    test_group_name: ci-knative-sandbox-eventing-ceph-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1015,13 +1186,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-couchdb/issues/
     test_group_name: ci-knative-sandbox-eventing-couchdb-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-couchdb/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-couchdb/issues/
-    test_group_name: ci-knative-sandbox-eventing-couchdb-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1049,13 +1213,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-github/issues/
     test_group_name: ci-knative-sandbox-eventing-github-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-github/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-github-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-github-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-github/issues/
-    test_group_name: ci-knative-sandbox-eventing-github-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1097,13 +1254,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-gitlab/issues/
     test_group_name: ci-knative-sandbox-eventing-gitlab-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-gitlab/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-gitlab/issues/
-    test_group_name: ci-knative-sandbox-eventing-gitlab-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1131,13 +1281,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-kafka/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-kafka/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-kafka-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-kafka/issues/
-    test_group_name: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1188,13 +1331,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-broker-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-kafka-broker/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
-    test_group_name: ci-knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1274,13 +1410,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-prometheus/issues/
     test_group_name: ci-knative-sandbox-eventing-prometheus-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-prometheus/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-prometheus/issues/
-    test_group_name: ci-knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1337,13 +1466,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-redis/issues/
     test_group_name: ci-knative-sandbox-eventing-redis-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-redis/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-redis-continuous-beta-prow-tests
-    name: knative-sandbox-eventing-redis-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-redis/issues/
-    test_group_name: ci-knative-sandbox-eventing-redis-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1362,13 +1484,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-admin/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-admin-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-admin/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
-    name: knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-admin/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-admin-continuous-beta-prow-tests
   name: knative-sandbox-kn-plugin-admin
 - dashboard_tab:
   - code_search_url_template:
@@ -1378,13 +1493,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
-    name: knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-kn-plugin-diag-go-coverage
@@ -1424,13 +1532,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
-    name: knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1449,13 +1550,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kperf/issues/
     test_group_name: ci-knative-sandbox-kperf-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kperf/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kperf-continuous-beta-prow-tests
-    name: knative-sandbox-kperf-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kperf/issues/
-    test_group_name: ci-knative-sandbox-kperf-continuous-beta-prow-tests
   name: knative-sandbox-kperf
 - dashboard_tab:
   - alert_options:
@@ -1474,13 +1568,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-certmanager/issues/
     test_group_name: ci-knative-sandbox-net-certmanager-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-certmanager/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-certmanager-continuous-beta-prow-tests
-    name: knative-sandbox-net-certmanager-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-certmanager/issues/
-    test_group_name: ci-knative-sandbox-net-certmanager-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1531,13 +1618,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-contour/issues/
     test_group_name: ci-knative-sandbox-net-contour-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-contour/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-contour-continuous-beta-prow-tests
-    name: knative-sandbox-net-contour-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-contour/issues/
-    test_group_name: ci-knative-sandbox-net-contour-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1574,13 +1654,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-http01/issues/
     test_group_name: ci-knative-sandbox-net-http01-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-http01/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
-    name: knative-sandbox-net-http01-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-http01/issues/
-    test_group_name: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1647,13 +1720,6 @@ dashboards:
     test_group_name: ci-knative-sandbox-net-istio-continuous
   - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
-    name: knative-sandbox-net-istio-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-istio/issues/
-    test_group_name: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-istio-go-coverage
     name: knative-sandbox-net-istio-go-coverage
     open_bug_template:
@@ -1700,13 +1766,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-kourier/issues/
     test_group_name: ci-knative-sandbox-net-kourier-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-kourier/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
-    name: knative-sandbox-net-kourier-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-kourier/issues/
-    test_group_name: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1748,13 +1807,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/sample-controller/issues/
     test_group_name: ci-knative-sandbox-sample-controller-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/sample-controller/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-sample-controller-continuous-beta-prow-tests
-    name: knative-sandbox-sample-controller-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/sample-controller/issues/
-    test_group_name: ci-knative-sandbox-sample-controller-continuous-beta-prow-tests
   name: knative-sandbox-sample-controller
 - dashboard_tab:
   - alert_options:
@@ -1773,13 +1825,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/sample-source/issues/
     test_group_name: ci-knative-sandbox-sample-source-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/sample-source/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-sample-source-continuous-beta-prow-tests
-    name: knative-sandbox-sample-source-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/sample-source/issues/
-    test_group_name: ci-knative-sandbox-sample-source-continuous-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1800,13 +1845,6 @@ dashboards:
     test_group_name: ci-knative-serving-0.16-continuous
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-serving-0.16-continuous-beta-prow-tests
-    name: knative-serving-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    test_group_name: ci-knative-serving-0.16-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-0.16-dot-release
     name: knative-serving-0.16-dot-release
     open_bug_template:
@@ -1819,13 +1857,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/serving/issues/
     test_group_name: ci-knative-serving-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-serving-0.17-continuous-beta-prow-tests
-    name: knative-serving-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    test_group_name: ci-knative-serving-0.17-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-0.17-dot-release
@@ -1842,13 +1873,6 @@ dashboards:
     test_group_name: ci-knative-serving-0.18-continuous
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-serving-0.18-continuous-beta-prow-tests
-    name: knative-serving-0.18-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    test_group_name: ci-knative-serving-0.18-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-0.18-dot-release
     name: knative-serving-0.18-dot-release
     open_bug_template:
@@ -1861,13 +1885,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/serving/issues/
     test_group_name: ci-knative-serving-0.19-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-serving-0.19-continuous-beta-prow-tests
-    name: knative-serving-0.19-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    test_group_name: ci-knative-serving-0.19-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-0.19-dot-release
@@ -1898,13 +1915,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/serving/issues/
     test_group_name: ci-knative-serving-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-serving-continuous-beta-prow-tests
-    name: knative-serving-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    test_group_name: ci-knative-serving-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-contour-latest
@@ -1986,13 +1996,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/test-infra/issues/
     test_group_name: ci-knative-test-infra-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-test-infra-continuous-beta-prow-tests
-    name: knative-test-infra-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/test-infra/issues/
-    test_group_name: ci-knative-test-infra-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-test-infra-go-coverage
