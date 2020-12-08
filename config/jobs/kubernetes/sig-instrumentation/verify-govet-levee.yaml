@@ -2,12 +2,12 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify-govet-levee
     cluster: k8s-infra-prow-build
-    always_run: false
+    always_run: true
     decorate: true
     skip_branches:
       - release-\d+.\d+ # per-release job
     optional: true
-    skip_report: false
+    skip_report: true
     path_alias: k8s.io/kubernetes
     annotations:
       testgrid-create-test-group: "true"
