@@ -1742,8 +1742,7 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-4.5
   name: release-openshift-ocp-installer-e2e-ovirt-4.5
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
   name: release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.5
@@ -1775,14 +1774,11 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3-to-4.4-to-4.5-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3-to-4.4-to-4.5-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-stable-to-4.5-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.5
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.5
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.4-to-4.5
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.5
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.5
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.5
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.5
@@ -1790,11 +1786,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.5
   name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.5
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.4-stable-to-4.5-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.4-stable-to-4.5-ci
   name: release-openshift-origin-installer-e2e-azure-upgrade-4.4-stable-to-4.5-ci
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.5
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.5
   name: release-openshift-origin-installer-e2e-azure-upgrade-4.5
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.5
@@ -1802,11 +1796,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.5
   name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.5
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.4-stable-to-4.5-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.4-stable-to-4.5-ci
   name: release-openshift-origin-installer-e2e-gcp-upgrade-4.4-stable-to-4.5-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.5
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.5
   name: release-openshift-origin-installer-e2e-gcp-upgrade-4.5
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-remote-libvirt-ppc64le-4.5
   name: release-openshift-origin-installer-e2e-remote-libvirt-ppc64le-4.5

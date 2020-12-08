@@ -839,20 +839,15 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.2
   name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.2
-- days_of_results: 17
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.2-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.2-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.2-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-stable-to-4.2-nightly
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-stable-to-4.2-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-stable-to-4.2-nightly
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1-to-4.2
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1-to-4.2
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1-to-4.2
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.2
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.2
   name: release-openshift-origin-installer-e2e-azure-upgrade-4.2
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-4.2
@@ -860,8 +855,7 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.2
   name: release-openshift-origin-installer-e2e-gcp-serial-4.2
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.2
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.2
   name: release-openshift-origin-installer-e2e-gcp-upgrade-4.2
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-old-rhcos-e2e-aws-4.2
   name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.2
