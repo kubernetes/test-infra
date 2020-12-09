@@ -46441,9 +46441,9 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19
     testgrid-tab-name: kops-grid-kopeio-u2004-k19-ko19-containerd
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": ["--zones=us-east-2b", "--node-size=m6g.large", "--master-size=m6g.large", "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201"], "k8s_version": null, "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": ["--zones=us-east-2b", "--node-size=m6g.large", "--master-size=m6g.large", "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201"], "k8s_version": null, "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-arm64
-  cron: '33 16 * * 0'
+  cron: '33 16 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -46466,7 +46466,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=docker --zones=us-east-2b --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201
+      - --kops-args=--container-runtime=docker --zones=us-east-2b --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -46572,4 +46572,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
-# 1083 jobs, total of 1809 runs per week
+# 1083 jobs, total of 1815 runs per week

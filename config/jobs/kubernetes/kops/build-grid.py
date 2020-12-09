@@ -67,6 +67,7 @@ run_hourly = [
 
 run_daily = [
     'kops-grid-scenario-public-jwks',
+    'kops-grid-scenario-arm64',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -388,7 +389,7 @@ def generate():
                extra_flags=['--zones=us-east-2b',
                             '--node-size=m6g.large',
                             '--master-size=m6g.large',
-                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201']) # pylint: disable=line-too-long
+                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201']) # pylint: disable=line-too-long
 
     # A special test for JWKS
     build_test(force_name="scenario-public-jwks",
