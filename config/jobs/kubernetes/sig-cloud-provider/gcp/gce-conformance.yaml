@@ -30,7 +30,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
       resources:
         limits:
           cpu: 1
