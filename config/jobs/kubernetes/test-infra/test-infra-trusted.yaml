@@ -875,7 +875,7 @@ periodics:
       - go
       - run
       - experiment/autobumper/main.go
-      - --config=config/jobs/kubernetes/test-infra/autobump-config.yaml
+      - --config=config/prow/autobump-config.yaml
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
