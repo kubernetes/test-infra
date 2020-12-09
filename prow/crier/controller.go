@@ -51,8 +51,9 @@ type ReportClient interface {
 // logging, client connectivity, informing (list and watching)
 // queueing, and handling of resource changes
 type reconciler struct {
-	pjclientset ctrlruntimeclient.Client
-	reporter    ReportClient
+	pjclientset       ctrlruntimeclient.Client
+	reporter          ReportClient
+	enablementChecker func(org, repo string) bool
 }
 
 // New constructs a new instance of the crier reconciler.
@@ -60,6 +61,7 @@ func New(
 	mgr manager.Manager,
 	reporter ReportClient,
 	numWorkers int,
+	enablementChecker func(org, repo string) bool,
 ) error {
 	if err := builder.
 		ControllerManagedBy(mgr).
@@ -68,8 +70,9 @@ func New(
 		For(&prowv1.ProwJob{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers}).
 		Complete(&reconciler{
-			pjclientset: mgr.GetClient(),
-			reporter:    reporter,
+			pjclientset:       mgr.GetClient(),
+			reporter:          reporter,
+			enablementChecker: enablementChecker,
 		}); err != nil {
 		return fmt.Errorf("failed to construct controller: %w", err)
 	}
@@ -164,6 +167,10 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 		return nil, fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
 	}
 
+	if !r.shouldHandle(&pj) {
+		return nil, nil
+	}
+
 	log = log.WithField("jobName", pj.Spec.Job)
 
 	if !pj.Spec.Report || !r.reporter.ShouldReport(log, &pj) {
@@ -201,4 +208,27 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	}
 
 	return nil, nil
+}
+
+func (r *reconciler) shouldHandle(pj *prowv1.ProwJob) bool {
+	refs := pj.Spec.ExtraRefs
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	if len(refs) == 0 {
+		return true
+	}
+
+	// It is possible to have conflicting settings here, we choose
+	// to report if in doubt because reporting multiple times is
+	// better than not reporting at all.
+	var enabled bool
+	for _, ref := range refs {
+		if r.enablementChecker(ref.Org, ref.Repo) {
+			enabled = true
+			break
+		}
+	}
+
+	return enabled
 }

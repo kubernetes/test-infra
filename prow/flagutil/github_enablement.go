@@ -42,7 +42,7 @@ func (o *GitHubEnablementOptions) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.disabledRepos, "github-disabled-repo", "Disabled github repo in org/repo format. Can be passed multiple times. Repos that are in this list will be ignored.")
 }
 
-func (o *GitHubEnablementOptions) Validate() error {
+func (o *GitHubEnablementOptions) Validate(_ bool) error {
 	var errs []error
 
 	for _, enabledRepo := range o.enabledRepos.vals {
