@@ -45,10 +45,11 @@ import (
 )
 
 type options struct {
-	client         prowflagutil.KubernetesOptions
-	cookiefilePath string
-	gerritProjects gerritclient.ProjectsFlag
-	github         prowflagutil.GitHubOptions
+	client           prowflagutil.KubernetesOptions
+	cookiefilePath   string
+	gerritProjects   gerritclient.ProjectsFlag
+	github           prowflagutil.GitHubOptions
+	githubEnablement prowflagutil.GitHubEnablementOptions
 
 	configPath    string
 	jobConfigPath string
@@ -135,8 +136,10 @@ func (o *options) validate() error {
 		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
 	}
 
-	if err := o.client.Validate(o.dryrun); err != nil {
-		return err
+	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement} {
+		if err := opt.Validate(o.dryrun); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -231,7 +234,7 @@ func main() {
 		}
 		hasReporter = true
 		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile))
-		if err := crier.New(mgr, slackReporter, o.slackWorkers); err != nil {
+		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
 		}
 	}
@@ -243,14 +246,14 @@ func main() {
 		}
 
 		hasReporter = true
-		if err := crier.New(mgr, gerritReporter, o.gerritWorkers); err != nil {
+		if err := crier.New(mgr, gerritReporter, o.gerritWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct gerrit reporter controller")
 		}
 	}
 
 	if o.pubsubWorkers > 0 {
 		hasReporter = true
-		if err := crier.New(mgr, pubsubreporter.NewReporter(cfg), o.pubsubWorkers); err != nil {
+		if err := crier.New(mgr, pubsubreporter.NewReporter(cfg), o.pubsubWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct pubsub reporter controller")
 		}
 	}
@@ -269,7 +272,7 @@ func main() {
 
 		hasReporter = true
 		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
-		if err := crier.New(mgr, githubReporter, o.githubWorkers); err != nil {
+		if err := crier.New(mgr, githubReporter, o.githubWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct github reporter controller")
 		}
 	}
@@ -281,7 +284,7 @@ func main() {
 		}
 
 		hasReporter = true
-		if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers); err != nil {
+		if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
 		}
 
@@ -292,7 +295,7 @@ func main() {
 			}
 
 			k8sGcsReporter := k8sgcsreporter.New(cfg, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
-			if err := crier.New(mgr, k8sGcsReporter, o.k8sBlobStorageWorkers); err != nil {
+			if err := crier.New(mgr, k8sGcsReporter, o.k8sBlobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 				logrus.WithError(err).Fatal("failed to construct k8sgcsreporter controller")
 			}
 		}

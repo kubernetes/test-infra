@@ -73,7 +73,7 @@ func TestGitHubEnablementValidation(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var actualErrMsg string
-			actualErr := tc.gitHubEnablementOptions.Validate()
+			actualErr := tc.gitHubEnablementOptions.Validate(false)
 			if actualErr != nil {
 				actualErrMsg = actualErr.Error()
 			}
