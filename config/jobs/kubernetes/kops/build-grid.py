@@ -68,6 +68,7 @@ run_hourly = [
 run_daily = [
     'kops-grid-scenario-public-jwks',
     'kops-grid-scenario-arm64',
+    'kops-grid-scenario-aws-cloud-controller-manager',
 ]
 
 # These are job tab names of unsupported grid combinations
