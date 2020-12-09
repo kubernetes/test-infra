@@ -24,7 +24,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-02-10-73984
+      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -60,7 +60,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=136693071363/debian-10-amd64-20200511-260
+      - --kops-image=136693071363/debian-10-amd64-20201207-477
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -71,42 +71,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-debian-10
-
-- interval: 8h
-  name: e2e-kops-aws-distro-imageubuntu1604
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-distro-ubuntu-1604.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
-    testgrid-tab-name: kops-aws-distro-ubuntu-16.04
 
 - interval: 8h
   name: e2e-kops-aws-distro-imageubuntu1804
@@ -132,7 +96,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -168,7 +132,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -204,7 +168,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
+      - --kops-image=125523088429/CentOS 7.9.2009 x86_64
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -215,6 +179,42 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-centos-7
+
+- interval: 8h
+  name: e2e-kops-aws-distro-imagecentos8
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-distro-centos-8.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --kops-ssh-user=centos
+      - --env=KUBE_SSH_USER=centos
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-image=125523088429/CentOS CentOS 8.3.2011 x86_64
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-tab-name: kops-aws-distro-centos-8
 
 - interval: 8h
   name: e2e-kops-aws-distro-imageamazonlinux2
@@ -240,7 +240,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20200406.0-x86_64-gp2
+      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -276,7 +276,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2
+      - --kops-image=309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -312,7 +312,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=309956199498/RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
+      - --kops-image=309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -348,7 +348,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=075585003325/Flatcar-stable-2605.6.0-hvm
+      - --kops-image=075585003325/Flatcar-stable-2605.9.0-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
