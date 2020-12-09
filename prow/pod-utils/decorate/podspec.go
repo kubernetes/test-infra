@@ -72,9 +72,9 @@ func VolumeMounts() sets.String {
 	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
 }
 
-// VolumeMountPaths returns a string set with *MountPath consts in it.
-func VolumeMountPaths() sets.String {
-	return sets.NewString(logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath)
+// VolumeMountPathsOnTestContainer returns a string set with *MountPath consts in it which are applied to the test container.
+func VolumeMountPathsOnTestContainer() sets.String {
+	return sets.NewString(logMountPath, codeMountPath, toolsMountPath)
 }
 
 // PodUtilsContainerNames returns a string set with pod utility container name consts in it.
