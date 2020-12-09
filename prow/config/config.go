@@ -2086,7 +2086,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 
 	for i := range spec.Containers {
 		for _, mount := range spec.Containers[i].VolumeMounts {
-			if !volumeNames.Has(mount.Name) {
+			if !volumeNames.Has(mount.Name) && !decorate.VolumeMounts().Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
 			if decorate.VolumeMounts().Has(mount.Name) {

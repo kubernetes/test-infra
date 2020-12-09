@@ -907,6 +907,15 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
+			name: "accept mount path that works only through decoration volume",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "foo",
+					MountPath: "/secrets/gcs",
+				})
+			},
+		},
+		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
 				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts().List()[0]})
