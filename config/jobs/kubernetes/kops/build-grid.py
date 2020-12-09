@@ -156,7 +156,10 @@ def build_test(cloud='aws',
         kops_image = '137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4" # pylint: disable=line-too-long
+        kops_image = "125523088429/CentOS 7.9.2009 x86_64"
+    elif distro == 'centos8':
+        kops_ssh_user = 'centos'
+        kops_image = "125523088429/CentOS 8.3.2011 x86_64"
     elif distro == 'deb9':
         kops_ssh_user = 'admin'
         kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842'
@@ -338,7 +341,6 @@ networking_options = [
 
 distro_options = [
     'amzn2',
-    'centos7',
     'deb9',
     'deb10',
     'flatcar',

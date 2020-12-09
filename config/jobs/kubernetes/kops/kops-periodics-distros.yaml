@@ -168,7 +168,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
-      - --kops-image=679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4
+      - --kops-image=125523088429/CentOS 7.9.2009 x86_64
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -179,6 +179,42 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
     testgrid-tab-name: kops-aws-distro-centos-7
+
+- interval: 8h
+  name: e2e-kops-aws-distro-imagecentos8
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-distro-centos-8.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --kops-ssh-user=centos
+      - --env=KUBE_SSH_USER=centos
+      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
+      - --extract=release/stable
+      - --ginkgo-parallel
+      - --kops-image=125523088429/CentOS CentOS 8.3.2011 x86_64
+      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-tab-name: kops-aws-distro-centos-8
 
 - interval: 8h
   name: e2e-kops-aws-distro-imageamazonlinux2
