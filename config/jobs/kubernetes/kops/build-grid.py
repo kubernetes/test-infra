@@ -15,7 +15,6 @@
 import hashlib
 import json
 import zlib
-
 import yaml
 
 template = """
@@ -89,12 +88,6 @@ skip_jobs = [
     'kops-grid-cilium-rhel7-k18',
     'kops-grid-cilium-rhel7-k18-ko19',
     'kops-grid-cilium-rhel7-ko19',
-    'kops-grid-cilium-u1604',
-    'kops-grid-cilium-u1604-k17',
-    'kops-grid-cilium-u1604-k17-ko19',
-    'kops-grid-cilium-u1604-k18',
-    'kops-grid-cilium-u1604-k18-ko19',
-    'kops-grid-cilium-u1604-ko19',
 ]
 
 def simple_hash(s):
@@ -172,9 +165,6 @@ def build_test(cloud='aws',
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
         kops_image = '075585003325/Flatcar-stable-2605.9.0-hvm'
-    elif distro == 'u1604':
-        kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
@@ -329,7 +319,7 @@ def build_test(cloud='aws',
         'testgrid-tab-name': tab,
     }
 
-    extra = yaml.dump({'annotations': annotations}, width=9999)
+    extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
     print("")
     print("# " + jsonspec)
@@ -353,7 +343,6 @@ distro_options = [
     'flatcar',
     'rhel7',
     'rhel8',
-    'u1604',
     'u1804',
     'u2004',
 ]

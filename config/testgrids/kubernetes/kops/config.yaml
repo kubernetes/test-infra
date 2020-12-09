@@ -15,7 +15,6 @@ dashboard_groups:
   - kops-distro-flatcar
   - kops-distro-rhel7
   - kops-distro-rhel8
-  - kops-distro-u1604
   - kops-distro-u1804
   - kops-distro-u2004
   - kops-k8s-1.17
@@ -39,7 +38,6 @@ dashboards:
 - name: kops-distro-flatcar
 - name: kops-distro-rhel7
 - name: kops-distro-rhel8
-- name: kops-distro-u1604
 - name: kops-distro-u1804
 - name: kops-distro-u2004
 - name: kops-k8s-1.17
