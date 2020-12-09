@@ -57,6 +57,67 @@ Open or create a Testgrid config file [(example)][configuration] in your favorit
 2. Add those testgroups to one or more tabs in one or more dashboards
 3. Consider using dashboard groups if multiple dashboards are needed.
 
+### Defaults
+
+#### Overall Default.yaml
+
+For testgrid.k8s.io there is a default.yaml file that contains configuration that will apply to all other testgroups and dashboard_tabs. 
+This will rarely need to be changed, but to override these defaults, or to have defaults for your own testgroups/dashboard tabs you can use
+a directory default. 
+
+#### Directory Default.yaml
+
+If you want to override the default.yaml for configs in a directory, you can add a file named "default.yaml" and instead of applying the overall default to 
+those config files, it will apply this default file instead.
+
+What this default will NOT apply to:
+- Configs in subdirectories
+- Groups or tabs only defined in prow job configuration
+
+
+Ex:
+
+Overall default:
+```yaml
+default_test_group:
+  days_of_results: 5
+default_dashboard_tab:
+  display_local_time: true
+```
+
+foo/default.yaml:
+```yaml
+default_test_group:
+  days_of_results: 10
+default_dashboard_tab:
+  display_local_time: false
+```
+
+foo/config.yaml:
+```yaml
+dashboards:
+- name: dash_1
+  dashboard_tab:
+  - name: tab_1
+test_groups:
+- name: testgroup_1
+```
+
+resulting config:
+```yaml
+dashboards:
+- name: dash_1
+  dashboard_tab:
+  - name: tab_1
+    display_local_time: false
+test_groups:
+- name: testgroup_1
+  days_of_results: 10
+```
+
+The overall default was overrided by foo/default.yaml for other config files in the foo directory
+
+
 ### Test groups
 
 Test groups contain a set of test results across time for the same job.

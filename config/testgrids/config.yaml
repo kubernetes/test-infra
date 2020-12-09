@@ -246,11 +246,6 @@ dashboards:
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
 - name: google-rules_k8s
-    
-- name: google-cel
-  dashboard_tab:
-  - name: cel-go
-    test_group_name: cel-go-conformance-tests
 
 #
 # Start dashboard groups
