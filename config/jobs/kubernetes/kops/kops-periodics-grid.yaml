@@ -41370,7 +41370,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": ["--override=cluster.spec.cloudControllerManager.cloudProvider=aws"], "feature_flags": ["EnableExternalCloudController,SpecOverrideFlag"], "k8s_version": null, "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager
-  cron: '28 22 * * 0'
+  cron: '28 22 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -41412,4 +41412,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
-# 963 jobs, total of 1695 runs per week
+# 963 jobs, total of 1701 runs per week
