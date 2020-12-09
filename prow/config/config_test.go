@@ -884,7 +884,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
-					MountPath: decorate.VolumeMountPaths().List()[0],
+					MountPath: decorate.VolumeMountPathsOnTestContainer().List()[0],
 				})
 			},
 		},
@@ -893,7 +893,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Dir(decorate.VolumeMountPaths().List()[0]),
+					MountPath: filepath.Dir(decorate.VolumeMountPathsOnTestContainer().List()[0]),
 				})
 			},
 		},
@@ -902,7 +902,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Join(decorate.VolumeMountPaths().List()[0], "extra"),
+					MountPath: filepath.Join(decorate.VolumeMountPathsOnTestContainer().List()[0], "extra"),
 				})
 			},
 		},

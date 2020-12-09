@@ -2092,7 +2092,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 			if decorate.VolumeMounts().Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount name %s is reserved for decoration", mount.Name))
 			}
-			if decorate.VolumeMountPaths().Has(mount.MountPath) {
+			if decorate.VolumeMountPathsOnTestContainer().Has(mount.MountPath) {
 				errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount", mount.Name, mount.MountPath))
 			}
 		}
