@@ -339,8 +339,6 @@ branch-protection:
           branches:
             master:
               protect: true
-            dev-1.18:
-              protect: true
             release-1.4:
               protect: true
             release-1.5:
@@ -368,6 +366,12 @@ branch-protection:
             release-1.16:
               protect: true
             release-1.17:
+              protect: true
+            release-1.18:
+              protect: true
+            release-1.19:
+              protect: true
+            release-1.20:
               protect: true
     kubernetes-client:
       protect: true
