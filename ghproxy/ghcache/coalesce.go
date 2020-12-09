@@ -148,7 +148,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 			if err != nil {
 				logrus.WithError(err).WithField("header-value", resp.Header.Get(cacheEntryCreationDateHeader)).Warn("Failed to convert cacheEntryCreationDateHeader value to int")
 			} else {
-				ghmetrics.CollectCacheEntryAgeMetrics(float64(time.Now().Unix()-int64(intVal)), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
+				ghmetrics.CollectCacheEntryAgeMetrics(float64(time.Now().Unix()-int64(intVal)), req.URL.Path, req.Header.Get("User-Agent"), tokenBudgetName)
 			}
 		}
 	}

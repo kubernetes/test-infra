@@ -33,6 +33,7 @@ go_library(
     importpath = "k8s.io/test-infra/ghproxy",
     visibility = ["//visibility:private"],
     deps = [
+        "//ghproxy/apptokenequalizer:go_default_library",
         "//ghproxy/ghcache:go_default_library",
         "//greenhouse/diskutil:go_default_library",
         "//prow/config:go_default_library",
@@ -58,6 +59,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//ghproxy/apptokenequalizer:all-srcs",
         "//ghproxy/ghcache:all-srcs",
         "//ghproxy/ghmetrics:all-srcs",
     ],
