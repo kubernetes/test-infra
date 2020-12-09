@@ -146,6 +146,9 @@ dashboards:
     - name: Periodic ppc64le conformance test on local cluster
       test_group_name: ppc64le-conformance
       description: Runs conformance tests against latest version of kubernetes on local ppc64le cluster"
+    - name: Periodic ppc64le conformance test on local cluster with containerd as runtime
+      test_group_name: ppc64le-conformance-containerd
+      description: Runs conformance tests against latest version of kubernetes with containerd as runtime on local ppc64le cluster"
 
 # Gardener Conformance Dashboard
 - name: conformance-gardener
@@ -309,6 +312,8 @@ test_groups:
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-conformance-test-ppc64le
+- name: ppc64le-conformance-containerd
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-containerd-conformance-test-ppc64le
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-bazel-test-ppc64le
 #Arm arm64 test results
