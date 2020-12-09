@@ -10,7 +10,7 @@ Kettle's main process is the execution of `runner.sh` which:
 - sets gcloud auth credentials
 - creates initial "`bq config`"
 - pulls most recent [Buckets]
-- executes `update.py` on loof
+- executes `update.py` on loop
 
 `update.py` governs the flow of Kettle's three main stages:
 - [make_db.py](#Make-Database): Collects every build from GCS in the given buckets and creates a database entry of results.
@@ -24,10 +24,10 @@ Flags:
 - --threads (int): Number of threads to run concurrently with
 - --buildlimit (int): **Used in staging*  colect only N builds on each job
 
-`make_db.py` does the work of determine all the builds to collect and store to the database. It aggrigates all the builds of two flavors: `pr` and `non-pr` builds. It searches gcs for build paths or generates build paths if they are "incremental builds" (monotomically increasing). It passes the work of collecting build information and results to threads that collect information. It then does a best-effort attempt to insert the build results to the DB, committing the instert every 200 builds.
+`make_db.py` does the work of determine all the builds to collect and store to the database. It aggregates all the builds of two flavors: `pr` and `non-pr` builds. It searches gcs for build paths or generates build paths if they are "incremental builds" (monotomically increasing). It passes the work of collecting build information and results to threads that collect information. It then does a best-effort attempt to insert the build results to the DB, committing the insert every 200 builds.
 
 # Create JSON Results and Upload
-This stage gets run for each [BugQuery] table that Kettle is tasked with uploading data to. Typically looking like either:
+This stage gets run for each [BigQuery] table that Kettle is tasked with uploading data to. Typically looking like either:
 - Fixed Time: `pypy3 make_json.py --days <num> | pv | gzip > build_<table>.json.gz`
     and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s-gubernator:build.<table> build_<table>.json.gz schema.json`
 - All Results: `pypy3 make_json.py | pv | gzip > build_<table>.json.gz`
