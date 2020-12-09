@@ -298,9 +298,9 @@ def build_test(cloud='aws',
         'container_runtime': container_runtime,
     }
     if feature_flags:
-        spec['feature_flags'] = feature_flags
+        spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
-        spec['extra_flags'] = extra_flags
+        spec['extra_flags'] = ' '.join(extra_flags)
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -323,6 +323,8 @@ def build_test(cloud='aws',
         'testgrid-dashboards': ', '.join(dashboards),
         'testgrid-tab-name': tab,
     }
+    for (k, v) in spec.items():
+        annotations['test.kops.k8s.io/' + k] = v if v else ""
 
     extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
