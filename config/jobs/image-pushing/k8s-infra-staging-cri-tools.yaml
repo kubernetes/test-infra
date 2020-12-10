@@ -5,7 +5,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-node-cri-tools
       decorate: true
-      run_if_changed: '^\/images\/image-user\/'
+      run_if_changed: '^images\/image-user\/'
       branches:
         - ^master$
       spec:
@@ -15,8 +15,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-infra-staging-cri-tools
-              - --scratch-bucket=gs://k8s-infra-staging-cri-tools-gcb
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
               - --env-passthrough=_IMAGE_TYPE=uid
               - images/image-user
@@ -28,7 +28,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-node-cri-tools
       decorate: true
-      run_if_changed: '^\/images\/image-user\/'
+      run_if_changed: '^images\/image-user\/'
       branches:
         - ^master$
       spec:
@@ -38,8 +38,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-infra-staging-cri-tools
-              - --scratch-bucket=gs://k8s-infra-staging-cri-tools-gcb
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
               - --env-passthrough=_IMAGE_TYPE=username
               - images/image-user
@@ -51,7 +51,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-node-cri-tools
       decorate: true
-      run_if_changed: '^\/images\/image-user\/'
+      run_if_changed: '^images\/image-user\/'
       branches:
         - ^master$
       spec:
@@ -61,8 +61,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-infra-staging-cri-tools
-              - --scratch-bucket=gs://k8s-infra-staging-cri-tools-gcb
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
               - --env-passthrough=_IMAGE_TYPE=uid-group
               - images/image-user
@@ -74,7 +74,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-node-cri-tools
       decorate: true
-      run_if_changed: '^\/images\/image-user\/'
+      run_if_changed: '^images\/image-user\/'
       branches:
         - ^master$
       spec:
@@ -84,8 +84,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-infra-staging-cri-tools
-              - --scratch-bucket=gs://k8s-infra-staging-cri-tools-gcb
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
               - --env-passthrough=_IMAGE_TYPE=username-group
               - images/image-user
@@ -97,7 +97,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-node-cri-tools
       decorate: true
-      run_if_changed: '^\/images\/image-user\/'
+      run_if_changed: '^images\/image-user\/'
       branches:
         - ^master$
       spec:
@@ -107,8 +107,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-infra-staging-cri-tools
-              - --scratch-bucket=gs://k8s-infra-staging-cri-tools-gcb
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-manifests.yaml
               - images/image-user
             env:
