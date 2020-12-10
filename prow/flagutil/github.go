@@ -46,6 +46,10 @@ type GitHubOptions struct {
 	AllowDirectAccess bool
 	AppID             string
 	AppPrivateKeyPath string
+
+	// These two will only be set after a github client was retrieved for the first time
+	client             github.Client
+	appsTokenGenerator github.GitHubAppTokenGenerator
 }
 
 const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
@@ -101,6 +105,9 @@ func (o *GitHubOptions) Validate(bool) error {
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
 func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (github.Client, error) {
+	if o.client != nil {
+		return o.client.WithFields(fields), nil
+	}
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		logrus.Warn("empty -github-token-path, will use anonymous github client")
@@ -138,15 +145,24 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 
 	if dryRun {
 		if o.AppPrivateKeyPath != "" {
-			return github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+			appsTokenGenerator, client := github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
+			o.client = client
+			o.appsTokenGenerator = appsTokenGenerator
+			return o.client, nil
 		}
-		return github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+		o.client = github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		return o.client, nil
 	}
 	if o.AppPrivateKeyPath != "" {
-		return github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
+		o.client = client
+		o.appsTokenGenerator = appsTokenGenerator
+		return o.client, nil
 
 	}
-	return github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+
+	o.client = github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+	return o.client, nil
 }
 
 // GitHubClient returns a GitHub client.
@@ -184,16 +200,35 @@ func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (clien
 		}
 	}(client)
 
-	// Get the bot's name in order to set credentials for the Git client.
-	githubClient, err := o.GitHubClient(secretAgent, dryRun)
+	user, generator, err := o.getGitAuthentication(secretAgent, dryRun)
 	if err != nil {
-		return nil, fmt.Errorf("error getting GitHub client: %v", err)
+		return nil, fmt.Errorf("failed to get git authentication: %w", err)
 	}
-	botName, err := githubClient.BotName()
-	if err != nil {
-		return nil, fmt.Errorf("error getting bot name: %v", err)
-	}
-	client.SetCredentials(botName, secretAgent.GetTokenGenerator(o.TokenPath))
+	client.SetCredentials(user, generator)
 
 	return client, nil
+}
+
+func (o *GitHubOptions) getGitAuthentication(secretAgent *secret.Agent, dryRun bool) (string, git.GitTokenGenerator, error) {
+	githubClient, err := o.GitHubClient(secretAgent, dryRun)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting GitHub client: %v", err)
+	}
+
+	// Use Personal Access token auth
+	if o.appsTokenGenerator == nil {
+		botName, err := githubClient.BotName()
+		if err != nil {
+			return "", nil, fmt.Errorf("error getting bot name: %v", err)
+		}
+		generator := func(_ string) (string, error) {
+			return string(secretAgent.GetTokenGenerator(o.TokenPath)()), nil
+		}
+
+		return botName, generator, nil
+	}
+
+	// Use github apps auth
+	// https://docs.github.com/en/free-pro-team@latest/developers/apps/authenticating-with-github-apps#http-based-git-access-by-an-installation
+	return "x-access-token", git.GitTokenGenerator(o.appsTokenGenerator), nil
 }

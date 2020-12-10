@@ -43,7 +43,7 @@ func TestGetOrg(t *testing.T) {
 		t.Fatalf("Failed to parse key: %v", err)
 	}
 
-	client := NewAppsAuthClientWithFields(
+	_, client := NewAppsAuthClientWithFields(
 		logrus.Fields{},
 		func(b []byte) []byte { return b },
 		appID,

@@ -2535,7 +2535,7 @@ func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Respon
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	clientType := reflect.TypeOf(ghClient)
 	stringType := reflect.TypeOf("")
 	stringValue := reflect.ValueOf("org")
