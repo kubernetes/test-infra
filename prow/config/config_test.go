@@ -895,7 +895,11 @@ func TestValidatePodSpec(t *testing.T) {
 					Name:      "foo",
 					MountPath: filepath.Dir(decorate.VolumeMountPathsOnTestContainer().List()[0]),
 				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
+				})
 			},
+			pass: true,
 		},
 		{
 			name: "accept conflicting mount path child",
@@ -904,16 +908,21 @@ func TestValidatePodSpec(t *testing.T) {
 					Name:      "foo",
 					MountPath: filepath.Join(decorate.VolumeMountPathsOnTestContainer().List()[0], "extra"),
 				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
+				})
 			},
+			pass: true,
 		},
 		{
 			name: "accept mount path that works only through decoration volume",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      "foo",
+					Name:      "gcs-credentials",
 					MountPath: "/secrets/gcs",
 				})
 			},
+			pass: true,
 		},
 		{
 			name: "reject reserved volume",
