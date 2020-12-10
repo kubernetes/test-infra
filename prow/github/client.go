@@ -188,7 +188,7 @@ type TeamClient interface {
 // UserClient interface for user related API actions
 type UserClient interface {
 	BotName() (string, error)
-	BotUser() (*User, error)
+	BotUser() (*UserData, error)
 	Email() (string, error)
 }
 
@@ -264,17 +264,24 @@ type delegate struct {
 	maxSleepTime  time.Duration
 	initialDelay  time.Duration
 
-	gqlc     gqlClient
-	client   httpClient
-	bases    []string
-	dry      bool
-	fake     bool
-	throttle throttler
-	getToken func() []byte
-	censor   func([]byte) []byte
+	gqlc         gqlClient
+	client       httpClient
+	bases        []string
+	dry          bool
+	fake         bool
+	usesAppsAuth bool
+	throttle     throttler
+	getToken     func() []byte
+	censor       func([]byte) []byte
 
 	mut      sync.Mutex // protects botName and email
-	userData *User
+	userData *UserData
+}
+
+type UserData struct {
+	Name  string
+	Login string
+	Email string
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -515,6 +522,7 @@ func newClient(fields logrus.Fields, getToken func() []byte, censor func([]byte)
 			getToken:      getToken,
 			censor:        censor,
 			dry:           dryRun,
+			usesAppsAuth:  appID != "",
 			maxRetries:    defaultMaxRetries,
 			max404Retries: defaultMax404Retries,
 			initialDelay:  defaultInitialDelay,
@@ -938,6 +946,18 @@ func init() {
 
 // Not thread-safe - callers need to hold c.mut.
 func (c *client) getUserData() error {
+	if c.delegate.usesAppsAuth {
+		resp, err := c.GetApp()
+		if err != nil {
+			return err
+		}
+		c.userData = &UserData{
+			Name:  resp.Name,
+			Login: resp.Slug,
+			Email: fmt.Sprintf("%s@users.noreply.github.com", resp.Slug),
+		}
+		return nil
+	}
 	c.log("User")
 	var u User
 	_, err := c.request(&request{
@@ -948,7 +968,11 @@ func (c *client) getUserData() error {
 	if err != nil {
 		return err
 	}
-	c.userData = &u
+	c.userData = &UserData{
+		Name:  u.Name,
+		Login: u.Login,
+		Email: u.Email,
+	}
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
@@ -976,7 +1000,7 @@ func (c *client) BotName() (string, error) {
 // BotUser returns the user data of the authenticated identity.
 //
 // See https://developer.github.com/v3/users/#get-the-authenticated-user
-func (c *client) BotUser() (*User, error) {
+func (c *client) BotUser() (*UserData, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.userData == nil {
