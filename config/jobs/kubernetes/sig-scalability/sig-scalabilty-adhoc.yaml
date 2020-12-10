@@ -81,7 +81,7 @@ presubmits:
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=120
+        - --timeout=360
         - --scenario=kubernetes_e2e
         - --
         - --cluster=
@@ -95,7 +95,7 @@ presubmits:
         - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=1000 --kube-api-burst=1000
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
-        - --timeout=100m
+        - --timeout=330m
         - --use-logexporter
         image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
         # The resources are set to support a 5k node CL2 test.
