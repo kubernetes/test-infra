@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
@@ -2518,8 +2519,14 @@ type orgHeaderCheckingRoundTripper struct {
 }
 
 func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if !strings.HasPrefix(r.URL.Path, "/app") && r.Header.Get(githubOrgHeaderKey) != "org" {
-		rt.t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+	if !strings.HasPrefix(r.URL.Path, "/app") {
+		var orgVal string
+		if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+			orgVal = v.(string)
+		}
+		if orgVal != "org" {
+			rt.t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+		}
 	}
 	return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
 }
@@ -2547,7 +2554,9 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		}
 		t.Run(clientType.Method(i).Name, func(t *testing.T) {
 
-			ghClient.(*client).client.(*http.Client).Transport = &orgHeaderCheckingRoundTripper{t}
+			checkingRoundTripper := &orgHeaderCheckingRoundTripper{t}
+			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
+			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
 			clientValue := reflect.ValueOf(ghClient)
 
 			var args []reflect.Value
@@ -2560,6 +2569,16 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 
 				if arg.Type() == stringType {
 					arg.Set(stringValue)
+				}
+
+				// We can not deal with interface types genererically, as there
+				// is no automatic way to figure out the concrete values they
+				// can or should be set to.
+				if arg.Type().String() == "context.Context" {
+					arg.Set(reflect.ValueOf(context.Background()))
+				}
+				if arg.Type().String() == "interface {}" {
+					arg.Set(reflect.ValueOf(map[string]interface{}{}))
 				}
 
 				// Just set all strings to a nonEmpty string, otherwise the header will not get set
