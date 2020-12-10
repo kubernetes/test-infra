@@ -93,8 +93,8 @@ type Help struct {
 	HelpGuidelinesURL string `json:"help_guidelines_url,omitempty"`
 }
 
-func (h *Help) SetDefaults() {
-	if len(h.HelpGuidelinesURL) == 0 {
+func (h *Help) setDefaults() {
+	if h.HelpGuidelinesURL == "" {
 		h.HelpGuidelinesURL = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
 	}
 }
@@ -854,7 +854,7 @@ func (cu *ConfigUpdater) SetDefaults() {
 }
 
 func (c *Configuration) setDefaults() {
-	c.Help.SetDefaults()
+	c.Help.setDefaults()
 
 	c.ConfigUpdater.SetDefaults()
 
