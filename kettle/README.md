@@ -2,7 +2,7 @@
 
 This collects test results scattered across a variety of GCS buckets,
 stores them in a local SQLite database, and outputs newline-delimited
-JSON files for import into BigQuery.
+JSON files for import into BigQuery. *See [overview](./overview.md) for more details.*
 
 Results are stored in the [k8s-gubernator:build BigQuery dataset][Big Query Tables],
 which is publicly accessible.
@@ -46,7 +46,7 @@ ACK "finished.json" 2
 Downloading JUnit artifacts.
 ```
 
-Alternatively, navigate to [Gubernator BigQuery page][Big Query All] (click on “Details”) and you can see a table showing last date/time the metrics were collected.
+Alternatively, navigate to [Gubernator BigQuery page][Big Query All] (click on Details) and you can see a table showing last date/time the metrics were collected.
 
 #### Replace pods
 
