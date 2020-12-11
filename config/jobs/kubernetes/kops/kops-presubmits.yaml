@@ -469,25 +469,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-govet
-  - name: pull-kops-verify-packages
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-experimental
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-packages"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-packages
   - name: pull-kops-verify-staticcheck
     branches:
       - master
