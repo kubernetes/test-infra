@@ -102,9 +102,9 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 }
 
 func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
-	org := r.Header.Get(githubOrgHeaderKey)
-	if org == "" {
-		return &appsAuthError{fmt.Errorf("request didn't have %s header set, can not infer org", githubOrgHeaderKey)}
+	var org string
+	if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+		org = v.(string)
 	}
 
 	installationID, err := arr.installationIDFor(org)
