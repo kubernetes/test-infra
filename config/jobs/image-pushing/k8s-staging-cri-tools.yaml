@@ -18,7 +18,7 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=_IMAGE_TYPE=uid
+              - --env-passthrough=IMAGE_TYPE=uid
               - images/image-user
             env:
               - name: LOG_TO_STDOUT
@@ -41,7 +41,7 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=_IMAGE_TYPE=username
+              - --env-passthrough=IMAGE_TYPE=username
               - images/image-user
             env:
               - name: LOG_TO_STDOUT
@@ -64,7 +64,7 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=_IMAGE_TYPE=uid-group
+              - --env-passthrough=IMAGE_TYPE=uid-group
               - images/image-user
             env:
               - name: LOG_TO_STDOUT
@@ -87,7 +87,7 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=_IMAGE_TYPE=username-group
+              - --env-passthrough=IMAGE_TYPE=username-group
               - images/image-user
             env:
               - name: LOG_TO_STDOUT
