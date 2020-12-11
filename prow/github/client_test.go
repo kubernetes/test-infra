@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/rsa"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -2527,7 +2528,7 @@ func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Respon
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	ghClient := NewClient(func() []byte { return nil }, func(in []byte) []byte { return in }, "", "")
+	ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	clientType := reflect.TypeOf(ghClient)
 	stringType := reflect.TypeOf("")
 	stringValue := reflect.ValueOf("org")
@@ -2536,11 +2537,6 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		// Doesn't support github apps
 		"Query",
 		// They fetch the user, which doesn't exist in case of github app.
-		// TODO: Redirect these to /app when app auth is used
-		"BotName",
-		"BotUser",
-		// GitHub apps do not have an email
-		"Email",
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
 	)
