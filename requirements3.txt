@@ -10,3 +10,4 @@ ruamel.yaml==0.16.5
 setuptools==44.0.0
 sh==1.12.14
 singledispatch==3.4.0.3
+google-cloud-secret-manager==2.1.0

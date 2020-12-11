@@ -83,7 +83,7 @@ load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 
 ts_setup_workspace()
 
-load("@rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_import", "pip3_import")
 
 pip_import(
     name = "py_deps",
@@ -95,11 +95,14 @@ load("@py_deps//:requirements.bzl", "pip_install")
 
 pip_install()
 
-pip_import(
+pip3_import(
     name = "py3_deps",
-    python_interpreter = "python3",
     requirements = "//:requirements3.txt",
 )
+
+load("@py3_deps//:requirements.bzl", py3_pip_install = "pip_install")
+
+py3_pip_install()
 
 load("//:py.bzl", "python_repos")
 

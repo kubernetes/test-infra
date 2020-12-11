@@ -1,3 +1,4 @@
+load("@py3_deps//:requirements.bzl", "requirement")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 filegroup(
@@ -33,4 +34,13 @@ go_binary(
     name = "gencred",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "merge_kubeconfig_secret",
+    srcs = ["merge_kubeconfig_secret.py"],
+    python_version = "PY3",
+    deps = [
+        requirement("google-cloud-secret-manager"),
+    ],
 )
