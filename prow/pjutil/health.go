@@ -34,11 +34,17 @@ type Health struct {
 }
 
 // NewHealth creates a new health request multiplexer and starts serving the liveness endpoint
-// on the given port
+// on the default port
 func NewHealth() *Health {
+	return NewHealthOnPort(healthPort)
+}
+
+// NewHealth creates a new health request multiplexer and starts serving the liveness endpoint
+// on the given port
+func NewHealthOnPort(port int) *Health {
 	healthMux := http.NewServeMux()
 	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
-	server := &http.Server{Addr: ":" + strconv.Itoa(healthPort), Handler: healthMux}
+	server := &http.Server{Addr: ":" + strconv.Itoa(port), Handler: healthMux}
 	interrupts.ListenAndServe(server, 5*time.Second)
 	return &Health{
 		healthMux: healthMux,

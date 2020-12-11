@@ -46,6 +46,7 @@ go_library(
     importpath = "k8s.io/test-infra/gcsweb/cmd/gcsweb",
     deps = [
         "//gcsweb/pkg/version:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",

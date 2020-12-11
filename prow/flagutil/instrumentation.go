@@ -23,6 +23,7 @@ import (
 const (
 	DefaultMetricsPort = 9090
 	DefaultPProfPort   = 6060
+	DefaultHealthPort  = 8081
 )
 
 // InstrumentationOptions holds common options which are used across Prow components
@@ -31,12 +32,15 @@ type InstrumentationOptions struct {
 	MetricsPort int
 	// PProfPort is the port which is used to serve pprof
 	PProfPort int
+	// HealthPort is the port which is used to serve liveness and readiness
+	HealthPort int
 }
 
 // AddFlags injects common options into the given FlagSet.
 func (o *InstrumentationOptions) AddFlags(fs *flag.FlagSet) {
 	fs.IntVar(&o.MetricsPort, "metrics-port", DefaultMetricsPort, "port to serve metrics")
 	fs.IntVar(&o.PProfPort, "pprof-port", DefaultPProfPort, "port to serve pprof")
+	fs.IntVar(&o.HealthPort, "health-port", DefaultHealthPort, "port to serve liveness and readiness")
 }
 
 func (o *InstrumentationOptions) Validate(_ bool) error {

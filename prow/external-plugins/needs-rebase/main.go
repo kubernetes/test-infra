@@ -43,9 +43,10 @@ import (
 type options struct {
 	port int
 
-	pluginConfig string
-	dryRun       bool
-	github       prowflagutil.GitHubOptions
+	pluginConfig           string
+	dryRun                 bool
+	github                 prowflagutil.GitHubOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	updatePeriod time.Duration
 
@@ -71,7 +72,7 @@ func gatherOptions() options {
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -121,7 +122,7 @@ func main() {
 		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
 	}, o.updatePeriod)
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	mux := http.NewServeMux()

@@ -38,6 +38,7 @@ import (
 	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
+	"k8s.io/test-infra/prow/flagutil"
 
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -80,6 +81,8 @@ type options struct {
 
 	// Only buckets in this list will be served.
 	allowedBuckets strslice
+
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 var flUpgradeProxiedHTTPtoHTTPS bool
@@ -99,7 +102,7 @@ func gatherOptions() options {
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
 
 	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
-
+	o.instrumentationOptions.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -207,7 +210,7 @@ func main() {
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	logrus.Infof("serving on port %d", o.flPort)

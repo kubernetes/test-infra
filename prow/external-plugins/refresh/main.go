@@ -41,10 +41,11 @@ import (
 type options struct {
 	port int
 
-	configPath string
-	dryRun     bool
-	github     prowflagutil.GitHubOptions
-	prowURL    string
+	configPath             string
+	dryRun                 bool
+	github                 prowflagutil.GitHubOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+	prowURL                string
 
 	webhookSecretFile string
 }
@@ -71,7 +72,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.prowURL, "prow-url", "", "Prow frontend URL.")
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -110,7 +111,7 @@ func main() {
 		log:            log,
 	}
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	mux := http.NewServeMux()

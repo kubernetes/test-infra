@@ -234,7 +234,7 @@ func main() {
 		}
 	})
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	// TODO remove this health endpoint when the migration to health endpoint is done
 	// Return 200 on / for health checks.

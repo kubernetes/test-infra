@@ -38,9 +38,10 @@ import (
 type options struct {
 	port int
 
-	dryRun bool
-	github prowflagutil.GitHubOptions
-	labels prowflagutil.Strings
+	dryRun                 bool
+	github                 prowflagutil.GitHubOptions
+	labels                 prowflagutil.Strings
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	webhookSecretFile string
 	prowAssignments   bool
@@ -70,7 +71,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
 	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
 	fs.StringVar(&o.labelPrefix, "label-prefix", defaultLabelPrefix, "Set a custom label prefix.")
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -142,7 +143,7 @@ func main() {
 		repos: repos,
 	}
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	mux := http.NewServeMux()
