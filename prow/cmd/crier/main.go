@@ -173,6 +173,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	o.client.AddFlags(fs)
 	o.storage.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
+	o.githubEnablement.AddFlags(fs)
 
 	fs.Parse(args)
 
