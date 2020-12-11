@@ -165,7 +165,7 @@ func main() {
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	interrupts.ListenAndServe(server, 30*time.Second)

@@ -37,6 +37,7 @@ func TestOptions(t *testing.T) {
 	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
 		MetricsPort: prowflagutil.DefaultMetricsPort,
 		PProfPort:   prowflagutil.DefaultPProfPort,
+		HealthPort:  prowflagutil.DefaultHealthPort,
 	}
 	cases := []struct {
 		name     string

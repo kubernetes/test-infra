@@ -811,6 +811,7 @@ func Test_gatherOptions(t *testing.T) {
 				instrumentation: flagutil.InstrumentationOptions{
 					MetricsPort: flagutil.DefaultMetricsPort,
 					PProfPort:   flagutil.DefaultPProfPort,
+					HealthPort:  flagutil.DefaultHealthPort,
 				},
 			}
 			if tc.expected != nil {

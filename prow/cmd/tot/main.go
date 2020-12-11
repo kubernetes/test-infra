@@ -282,7 +282,7 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	s, err := newStore(o.storagePath)
 	if err != nil {

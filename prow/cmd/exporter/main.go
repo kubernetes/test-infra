@@ -78,7 +78,7 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, ""); err != nil {
