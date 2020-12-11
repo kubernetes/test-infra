@@ -198,7 +198,7 @@ periodics:
       workdir: true
   spec:
     containers:
-      - image: gcr.io/ml-pipeline-test/kfp-functional-test-base@sha256:acd7a892584fd774a9ea6240ccb8a6e5186db6f16a0864709d0177b87e4b2816
+      - image: python:3.7-slim
         imagePullPolicy: Always
         command:
           - "./test/kfp-functional-test/kfp-functional-test.sh"
