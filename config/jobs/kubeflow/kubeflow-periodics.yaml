@@ -183,11 +183,11 @@ periodics:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow examples
   #******************************************************************************
-  # kubeflow/kfp-functional-test
+  # kubeflow/pipelines
   #******************************************************************************
 - name: kubeflow-pipelines-periodic-functional-test
   cluster: kubeflow
-  interval: 10m
+  interval: 20m
   decorate: true
   labels:
     preset-service-account: "true"
@@ -206,12 +206,14 @@ periodics:
           - name: REPO_OWNER
             value: kubeflow
           - name: REPO_NAME
-            value: kubeflow
+            value: pipelines
           - name: BRANCH_NAME
             value: master
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic job to run kfp functional test
+    testgrid-alert-email: kubeflow-pipelines+test@google.com
+    testgrid-num-failures-to-alert: "3"
 #******************************************************************************
 # kubeflow/kfctl
 #******************************************************************************
