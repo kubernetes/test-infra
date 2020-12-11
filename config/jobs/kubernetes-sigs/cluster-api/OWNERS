@@ -5,7 +5,6 @@ reviewers:
 - detiber
 - justinsb
 - luxas
-- ncdc
 - timothysc
 - vincepri
 approvers:
@@ -13,6 +12,9 @@ approvers:
 - detiber
 - justinsb
 - luxas
-- ncdc
 - timothysc
 - vincepri
+emeritus_reviewers:
+  - ncdc
+emeritus_approvers:
+  - ncdc
