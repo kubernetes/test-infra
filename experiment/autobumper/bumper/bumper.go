@@ -357,10 +357,10 @@ func UpdatePR(gc github.Client, org, repo string, images map[string]string, extr
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
 func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
-	return updatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
 }
 
-func updatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, labels)
 	if err != nil {
