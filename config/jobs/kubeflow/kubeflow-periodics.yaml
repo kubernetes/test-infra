@@ -187,7 +187,7 @@ periodics:
   #******************************************************************************
 - name: kubeflow-pipelines-periodic-functional-test
   cluster: kubeflow
-  interval: 20m
+  interval: 5m
   decorate: true
   labels:
     preset-service-account: "true"
@@ -198,22 +198,15 @@ periodics:
       workdir: true
   spec:
     containers:
-      - image: gcr.io/ml-pipeline-test/kfp-functional-test-base:latest
+      - image: gcr.io/ml-pipeline-test/kfp-functional-test-base@sha256:acd7a892584fd774a9ea6240ccb8a6e5186db6f16a0864709d0177b87e4b2816
         imagePullPolicy: Always
         command:
           - "./test/kfp-functional-test/kfp-functional-test.sh"
-        env:
-          - name: REPO_OWNER
-            value: kubeflow
-          - name: REPO_NAME
-            value: pipelines
-          - name: BRANCH_NAME
-            value: master
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic job to run kfp functional test
     testgrid-alert-email: kubeflow-pipelines+test@google.com
-    testgrid-num-failures-to-alert: "3"
+    testgrid-num-failures-to-alert: "5"
 #******************************************************************************
 # kubeflow/kfctl
 #******************************************************************************
