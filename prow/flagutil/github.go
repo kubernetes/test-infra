@@ -57,8 +57,8 @@ func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
-	fs.StringVar(&o.AppID, "app-id", "", "ID of the GitHub app. If set, requires --app-private-key path to be set and --github-token-path to be unset.")
-	fs.StringVar(&o.AppPrivateKeyPath, "app-private-key-path", "", "Path to the private key of the github app. If set, requires --app-id to bet set and --github-token-path to be unset")
+	fs.StringVar(&o.AppID, "github-app-id", "", "ID of the GitHub app. If set, requires --github-app-private-key-path to be set and --github-token-path to be unset.")
+	fs.StringVar(&o.AppPrivateKeyPath, "github-app-private-key-path", "", "Path to the private key of the github app. If set, requires --github-app-id to bet set and --github-token-path to be unset")
 }
 
 // Validate validates GitHub options. Note that validate updates the GitHubOptions
@@ -80,7 +80,7 @@ func (o *GitHubOptions) Validate(bool) error {
 		return errors.New("--app-id and --app-private-key-path must be set together")
 	}
 
-	if o.TokenPath == "" && !o.AllowAnonymous {
+	if o.TokenPath == "" && o.AppID == "" && !o.AllowAnonymous {
 		// TODO(fejta): just return error after May 2020
 		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
 		o.TokenPath = DefaultGitHubTokenPath
