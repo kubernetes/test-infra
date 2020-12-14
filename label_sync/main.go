@@ -336,6 +336,12 @@ func loadRepos(org string, gc client) ([]string, error) {
 		if r.Private && github.SecurityForkNameRE.MatchString(r.Name) {
 			continue
 		}
+		// IMPROBABLE - BEGIN
+		// Fixup as we do not want to try and fail synchronising repositories where we don't have admin access.
+		if !r.Permissions.Admin {
+			continue
+		}
+		// IMPROBABLE - END
 		rl = append(rl, r.Name)
 	}
 	return rl, nil
