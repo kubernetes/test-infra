@@ -150,7 +150,7 @@ presubmits:
       testgrid-tab-name: e2e-kubetest2
   - name: pull-kops-e2e-k8s-containerd
     skip_report: false
-    run_if_changed: '^nodeup\/pkg\/'
+    run_if_changed: '^(nodeup\/pkg|upup\/pkg\/fi\/cloudup)\/'
     branches:
     - master
     labels:
@@ -492,7 +492,7 @@ presubmits:
       testgrid-tab-name: verify-staticcheck
   - name: pull-kops-verify-hashes
     skip_report: false
-    run_if_changed: '^nodeup\/pkg\/'
+    run_if_changed: '^upup\/pkg\/fi\/cloudup\/(containerd|docker)'
     labels:
       preset-service-account: "true"
     decorate: true
