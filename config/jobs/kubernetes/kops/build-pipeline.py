@@ -86,11 +86,11 @@ def build_tests(branch, k8s_version):
 
     if branch == 'master':
         extract = "release/latest-" + master_k8s_version
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-1.19"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-1.19"
         e2e_image = e2e_image[:-4] + k8s_version
 
     tab = expand('kops-pipeline-updown-{branch}')
