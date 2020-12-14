@@ -33,7 +33,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-latest
@@ -66,7 +66,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.20
@@ -99,7 +99,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.19
@@ -132,7 +132,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.18
@@ -165,7 +165,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.17
@@ -199,7 +199,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.16
@@ -233,7 +233,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.15
@@ -267,7 +267,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.14
@@ -301,7 +301,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.13
@@ -335,7 +335,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.12
@@ -369,7 +369,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-versions
     testgrid-tab-name: kops-aws-k8s-1.11
