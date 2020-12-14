@@ -123,7 +123,7 @@ def insert_data(bq_client, table, rows_iter):
     # Insert rows with row_ids into table, retrying as necessary.
     errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
     if not errors:
-        print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
+        print('Loaded {} builds into {}'.format(len(rows), table.full_table_id))
     else:
         print('Errors:')
         pprint.pprint(errors)

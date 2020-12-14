@@ -167,19 +167,12 @@ class Database:
                 'select data from file where path between ? and ?',
                 (path, path + '\x7F')):
             try:
-<<<<<<< HEAD
                 data = zlib.decompress(dataz).decode('utf-8', 'replace')
-=======
-                data = zlib.decompress(dataz).decode('utf-8')
->>>>>>> d6e2dee58b (Skip data collection for malformed test results in db)
                 if data:
                     results.append(data)
             except UnicodeDecodeError:
                 print(f'Failed to decode data for {path}')
-<<<<<<< HEAD
                 break
-=======
->>>>>>> d6e2dee58b (Skip data collection for malformed test results in db)
         return results
 
     def get_oldest_emitted(self, incremental_table):
