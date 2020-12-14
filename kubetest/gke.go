@@ -622,19 +622,6 @@ func (g *gkeDeployer) ensureFirewall() error {
 	}
 	log.Printf("Couldn't describe firewall '%s', assuming it doesn't exist and creating it", firewall)
 
-	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
-		"--project="+g.project,
-		"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
-		"--limit=1",
-		"--format=get(tags.items)").Output()
-	if err != nil {
-		return fmt.Errorf("instances list failed: %s", util.ExecError(err))
-	}
-	tag := strings.TrimSpace(string(tagOut))
-	if tag == "" {
-		return fmt.Errorf("instances list returned no instances (or instance has no tags)")
-	}
-
 	allowPorts := e2eAllow
 	if g.nodePorts != "" {
 		allowPorts += "," + g.nodePorts
@@ -642,8 +629,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 	if err := control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "create", firewall,
 		"--project="+g.project,
 		"--network="+g.network,
-		"--allow="+allowPorts,
-		"--target-tags="+tag)); err != nil {
+		"--allow="+allowPorts)); err != nil {
 		return fmt.Errorf("error creating e2e firewall: %v", err)
 	}
 	return nil
