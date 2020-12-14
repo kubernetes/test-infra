@@ -64,7 +64,7 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 	DeleteComment(org, repo string, ID int) error
 	CreateComment(org, repo string, number int, comment string) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	ListIssueEvents(org, repo string, num int) ([]github.ListedIssueEvent, error)
@@ -167,13 +167,13 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 		return nil
 	}
 
-	botName, err := ghc.BotName()
+	botUserChecker, err := ghc.BotUserChecker()
 	if err != nil {
 		return err
 	}
 
 	opts := config.ApproveFor(ce.Repo.Owner.Login, ce.Repo.Name)
-	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
+	if !isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		log.Debug("Comment does not constitute approval, skipping event.")
 		return nil
 	}
@@ -232,7 +232,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		return nil
 	}
 
-	botName, err := ghc.BotName()
+	botUserChecker, err := ghc.BotUserChecker()
 	if err != nil {
 		return err
 	}
@@ -242,14 +242,14 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
 	// review state.
-	if isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+	if isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
 		log.Debug("Review constitutes approval, skipping event.")
 		return nil
 	}
 
 	// Check for an approval command via review state. If none exists, don't
 	// handle this event.
-	if !isApprovalState(botName, opts.ConsiderReviewState(), &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
+	if !isApprovalState(botUserChecker, opts.ConsiderReviewState(), &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
 		log.Debug("Review does not constitute approval, skipping event.")
 		return nil
 	}
@@ -303,12 +303,12 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, git
 		log.Debug("Pull request event action cannot constitute approval, skipping...")
 		return nil
 	}
-	botName, err := ghc.BotName()
+	botUserChecker, err := ghc.BotUserChecker()
 	if err != nil {
 		return err
 	}
 	if pre.Action == github.PullRequestActionLabeled &&
-		(pre.Label.Name != labels.Approved || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
+		(pre.Label.Name != labels.Approved || botUserChecker(pre.Sender.Login) || pre.PullRequest.State == "closed") {
 		log.Debug("Pull request label event does not constitute approval, skipping...")
 		return nil
 	}
@@ -400,7 +400,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 			break
 		}
 	}
-	botName, err := ghc.BotName()
+	botUserChecker, err := ghc.BotUserChecker()
 	if err != nil {
 		return fetchErr("bot name", err)
 	}
@@ -432,7 +432,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
 	}
 	approversHandler.RequireIssue = opts.IssueRequired
-	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName, hasApprovedLabel)
+	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botUserChecker, hasApprovedLabel)
 
 	// Author implicitly approves their own PR if config allows it
 	if opts.HasSelfApproval() {
@@ -450,7 +450,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
+	approveComments := filterComments(comments, approvalMatcher(botUserChecker, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
 	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
@@ -459,7 +459,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	}
 
 	start = time.Now()
-	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
+	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botUserChecker))
 	latestNotification := getLast(notifications)
 	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, opts.PrProcessLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
@@ -492,7 +492,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	return nil
 }
 
-func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, botName string, hasLabel bool) func() bool {
+func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, isBot func(string) bool, hasLabel bool) func() bool {
 	findOut := func() bool {
 		if !hasLabel {
 			return false
@@ -511,7 +511,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 			lastAdded = event
 		}
 
-		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName {
+		if lastAdded.Actor.Login == "" || isBot(lastAdded.Actor.Login) {
 			return false
 		}
 		return true
@@ -527,14 +527,14 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalMatcher(botName string, lgtmActsAsApprove, reviewActsAsApprove bool) func(*comment) bool {
+func approvalMatcher(isBot func(string) bool, lgtmActsAsApprove, reviewActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
-		return isApprovalCommand(botName, lgtmActsAsApprove, c) || isApprovalState(botName, reviewActsAsApprove, c)
+		return isApprovalCommand(isBot, lgtmActsAsApprove, c) || isApprovalState(isBot, reviewActsAsApprove, c)
 	}
 }
 
-func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool {
-	if c.Author == botName {
+func isApprovalCommand(isBot func(string) bool, lgtmActsAsApprove bool, c *comment) bool {
+	if isBot(c.Author) {
 		return false
 	}
 
@@ -547,8 +547,8 @@ func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool 
 	return false
 }
 
-func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool {
-	if c.Author == botName {
+func isApprovalState(isBot func(string) bool, reviewActsAsApprove bool, c *comment) bool {
+	if isBot(c.Author) {
 		return false
 	}
 
@@ -570,9 +570,9 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 	return false
 }
 
-func notificationMatcher(botName string) func(*comment) bool {
+func notificationMatcher(isBot func(string) bool) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author != botName {
+		if !isBot(c.Author) {
 			return false
 		}
 		match := notificationRegex.FindStringSubmatch(c.Body)

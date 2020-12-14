@@ -213,7 +213,7 @@ type dumpClient interface {
 	ListTeamRepos(org string, id int) ([]github.Repo, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
-	BotName() (string, error)
+	BotUser() (*github.UserData, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -235,7 +235,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
 
 	var runningAsAdmin bool
-	runningAs, err := client.BotName()
+	runningAs, err := client.BotUser()
 	if err != nil {
 		return nil, fmt.Errorf("failed to obtain username for this token")
 	}
@@ -247,7 +247,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	for _, m := range admins {
 		logrus.WithField("login", m.Login).Debug("Recording admin.")
 		out.Admins = append(out.Admins, m.Login)
-		if runningAs == m.Login {
+		if runningAs.Login == m.Login {
 			runningAsAdmin = true
 		}
 	}
@@ -383,7 +383,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 }
 
 type orgClient interface {
-	BotName() (string, error)
+	BotUser() (*github.UserData, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 	RemoveOrgMembership(org, user string) error
 	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
@@ -408,10 +408,10 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return fmt.Errorf("%s must specify %v as admins, missing %v", orgName, opt.requiredAdmins, missing)
 	}
 	if opt.requireSelf {
-		if me, err := client.BotName(); err != nil {
+		if me, err := client.BotUser(); err != nil {
 			return fmt.Errorf("cannot determine user making requests for %s: %v", opt.github.TokenPath, err)
-		} else if !wantAdmins.Has(me) {
-			return fmt.Errorf("authenticated user %s is not an admin of %s", me, orgName)
+		} else if !wantAdmins.Has(me.Login) {
+			return fmt.Errorf("authenticated user %s is not an admin of %s", me.Login, orgName)
 		}
 	}
 

@@ -938,11 +938,11 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to create github client")
 		}
-		who, err := client.BotName()
+		who, err := client.BotUser()
 		if err != nil {
 			logrus.WithError(err).Fatal("Cannot access github account name")
 		}
-		fmt.Println("Prow will act as", who, "on github")
+		fmt.Println("Prow will act as", who.Login, "on github")
 
 		// create github secrets
 		fmt.Print("Applying github token into oauth-token secret...")

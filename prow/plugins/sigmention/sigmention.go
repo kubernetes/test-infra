@@ -51,7 +51,7 @@ type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
@@ -86,11 +86,11 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := gc.BotName()
+	botUserChecker, err := gc.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if e.User.Login == botName {
+	if botUserChecker(e.User.Login) {
 		return nil
 	}
 	if e.Action != github.GenericCommentActionCreated {

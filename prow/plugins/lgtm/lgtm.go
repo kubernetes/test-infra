@@ -131,7 +131,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	DeleteComment(org, repo string, ID int) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	GetSingleCommit(org, repo, SHA string) (github.RepositoryCommit, error)
 	IsMember(org, user string) (bool, error)
 	ListTeams(org string) ([]github.Team, error)
@@ -428,7 +428,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	if opts.StoreTreeHash {
 		// Check if we have a tree-hash comment
 		var lastLgtmTreeHash string
-		botName, err := gc.BotName()
+		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
 			return err
 		}
@@ -441,7 +441,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		for i := len(comments) - 1; i >= 0; i-- {
 			comment := comments[i]
 			m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
-			if comment.User.Login == botName && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
+			if botUserChecker(comment.User.Login) && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
 				lastLgtmTreeHash = m[1]
 				break
 			}

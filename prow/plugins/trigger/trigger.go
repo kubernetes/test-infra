@@ -138,7 +138,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)

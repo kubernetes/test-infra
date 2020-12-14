@@ -486,13 +486,13 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
-		botName, err := fc.BotName()
+		botUser, err := fc.BotUser()
 		if err != nil {
 			t.Fatalf("For case %s, could not get Bot nam", tc.name)
 		}
 		ic := github.IssueComment{
 			User: github.User{
-				Login: botName,
+				Login: botUser.Login,
 			},
 			Body: removeLGTMLabelNoti,
 		}

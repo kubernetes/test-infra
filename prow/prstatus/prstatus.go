@@ -167,7 +167,7 @@ func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *se
 type GitHubClient interface {
 	githubQuerier
 	githubStatusFetcher
-	BotName() (string, error)
+	BotUser() (*github.UserData, error)
 }
 
 type githubClientCreator func(accessToken string) GitHubClient
@@ -204,12 +204,12 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		// not, we invalidate the sessions and continue as if not logged in.
 		token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
 		var user *github.User
-		var botName string
+		var botUser *github.UserData
 		if ok && token.Valid() {
 			githubClient := createClient(token.AccessToken)
 			var err error
-			botName, err = githubClient.BotName()
-			user = &github.User{Login: botName}
+			botUser, err = githubClient.BotUser()
+			user = &github.User{Login: botUser.Login}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")

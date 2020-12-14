@@ -81,7 +81,7 @@ func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte
-	botName        string
+	botUser        *github.UserData
 	email          string
 
 	gc git.ClientFactory
@@ -396,12 +396,12 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		return err
 	}
 
-	if err := r.Config("user.name", s.botName); err != nil {
+	if err := r.Config("user.name", s.botUser.Login); err != nil {
 		return err
 	}
 	email := s.email
 	if email == "" {
-		email = fmt.Sprintf("%s@localhost", s.botName)
+		email = s.botUser.Email
 	}
 	if err := r.Config("user.email", email); err != nil {
 		return err
@@ -418,7 +418,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 			return err
 		}
 		for _, pr := range prs {
-			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botName, newBranch) {
+			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botUser.Login, newBranch) {
 				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
 				logger.Info(resp)
 				return s.createComment(org, repo, num, comment, resp)
@@ -466,7 +466,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 	} else {
 		cherryPickBody = cherrypicker.CreateCherrypickBody(num, "", releaseNoteFromParentPR(body))
 	}
-	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
+	head := fmt.Sprintf("%s:%s", s.botUser.Login, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
 	if err != nil {
 		resp := fmt.Sprintf("new pull request could not be created: %v", err)
@@ -518,7 +518,7 @@ func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	defer s.repoLock.Unlock()
 
 	// Fork repo if it doesn't exist.
-	fork := s.botName + "/" + repo
+	fork := s.botUser.Login + "/" + repo
 	if !repoExists(fork, s.repos) {
 		if name, err := s.ghc.CreateFork(org, repo); err != nil {
 			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
@@ -526,7 +526,7 @@ func (s *Server) ensureForkExists(org, repo string) (string, error) {
 			// we got a fork but it may be named differently
 			repo = name
 		}
-		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
+		if err := waitForRepo(s.botUser.Login, repo, s.ghc); err != nil {
 			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
 		}
 		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})

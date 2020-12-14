@@ -113,18 +113,18 @@ func main() {
 		log.WithError(err).Fatal("Error getting bot e-mail.")
 	}
 
-	botName, err := githubClient.BotName()
+	botUser, err := githubClient.BotUser()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	repos, err := githubClient.GetRepos(botName, true)
+	repos, err := githubClient.GetRepos(botUser.Login, true)
 	if err != nil {
 		log.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
 	server := &Server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		botName:        botName,
+		botUser:        botUser,
 		email:          email,
 
 		gc:  git.ClientFactoryFrom(gitClient),
