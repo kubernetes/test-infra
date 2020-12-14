@@ -608,43 +608,53 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 	return container, nil
 }
 
+// LogMountAndVolume returns the canonical volume and mount used to persist container logs.
+func LogMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      logMountName,
+			MountPath: logMountPath,
+		}, coreapi.Volume{
+			Name: logMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// CodeMountAndVolume returns the canonical volume and mount used to share code under test
+func CodeMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      codeMountName,
+			MountPath: codeMountPath,
+		}, coreapi.Volume{
+			Name: codeMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// ToolsMountAndVolume returns the canonical volume and mount used to propagate the entrypoint
+func ToolsMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      toolsMountName,
+			MountPath: toolsMountPath,
+		}, coreapi.Volume{
+			Name: toolsMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
 func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]string, outputDir string) error {
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath
 	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
-	logMount := coreapi.VolumeMount{
-		Name:      logMountName,
-		MountPath: logMountPath,
-	}
-	logVolume := coreapi.Volume{
-		Name: logMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	codeMount := coreapi.VolumeMount{
-		Name:      codeMountName,
-		MountPath: codeMountPath,
-	}
-	codeVolume := coreapi.Volume{
-		Name: codeMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	toolsMount := coreapi.VolumeMount{
-		Name:      toolsMountName,
-		MountPath: toolsMountPath,
-	}
-	toolsVolume := coreapi.Volume{
-		Name: toolsMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
+	logMount, logVolume := LogMountAndVolume()
+	codeMount, codeVolume := CodeMountAndVolume()
+	toolsMount, toolsVolume := ToolsMountAndVolume()
 
 	// The output volume is only used if outputDir is specified, indicating the pod-utils should
 	// copy files instead of uploading to GCS.
