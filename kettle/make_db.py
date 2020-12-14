@@ -66,7 +66,8 @@ class GCSClient:
                     try:
                         return resp.json()
                     except json.decoder.JSONDecodeError:
-                        logging.exception('Failed to decode request for %s', path)
+                        logging.exception('Failed to decode request for %s',
+                                           urllib.parse.unquote(url))
                         return None
                 return resp.text
             except requests.exceptions.RequestException:
@@ -84,7 +85,7 @@ class GCSClient:
         """Get an object from GCS."""
         bucket, path = self._parse_uri(path)
         return self._request(f'{bucket}/o/{urllib.parse.quote(path, "")}',
-                             {'alt': 'media'}, as_json=as_json)
+                             {}, as_json=as_json)
 
     def ls(self,
            path,
