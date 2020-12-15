@@ -909,13 +909,6 @@ dashboards:
       url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-    name: knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-  - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
     name: knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
@@ -1528,13 +1521,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-diag-go-coverage
-    name: knative-sandbox-kn-plugin-diag-go-coverage
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-diag-go-coverage
   name: knative-sandbox-kn-plugin-diag
 - dashboard_tab:
   - code_search_url_template:
@@ -2517,10 +2503,6 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
-- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage
-  name: ci-knative-sandbox-kn-plugin-diag-go-coverage
-- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-  name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
