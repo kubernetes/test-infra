@@ -69,3 +69,14 @@ func CreateKubeConfig(clientset kubernetes.Interface, name string, caPEM []byte,
 
 	return configYaml, nil
 }
+
+// MergeKubeConfig merges two kube configs into a standard kube config.
+func MergeKubeConfig(a, b clientcmdapi.Config) clientcmdapi.Config {
+	var res clientcmdapi.Config
+	res = a
+	res.Clusters = append(res.Clusters, b.Clusters...)
+	res.AuthInfos = append(res.AuthInfos, b.AuthInfos...)
+	res.Contexts = append(res.Contexts, b.Contexts...)
+
+	return res
+}
