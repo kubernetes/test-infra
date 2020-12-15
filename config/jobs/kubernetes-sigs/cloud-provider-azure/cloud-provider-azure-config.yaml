@@ -218,6 +218,11 @@ presubmits:
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.20
+        path_alias: k8s.io/kubernetes
+        workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
