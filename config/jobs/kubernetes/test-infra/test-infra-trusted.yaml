@@ -123,7 +123,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20201214-bf2c9cfe28
+      - image: gcr.io/k8s-prow/hmac:v20201214-c478cbc7b4
         command:
         - /hmac
         args:
@@ -628,7 +628,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - make
         args:
@@ -868,7 +868,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
       command:
       - runner.sh
       args:
@@ -940,7 +940,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20201214-bf2c9cfe28
+      image: gcr.io/k8s-prow/branchprotector:v20201214-c478cbc7b4
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -974,7 +974,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20201214-bf2c9cfe28
+      image: gcr.io/k8s-prow/label_sync:v20201214-c478cbc7b4
       command:
       - /app/label_sync/app.binary
       args:
@@ -1020,7 +1020,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20201214-bf2c9cfe28
+    - image: gcr.io/k8s-prow/checkconfig:v20201214-c478cbc7b4
       command:
       - /checkconfig
       args:

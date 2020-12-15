@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         args:
@@ -104,7 +104,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         args:
@@ -133,7 +133,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         - kubetest
@@ -182,7 +182,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201214-7249878-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
         - runner.sh
         - kubetest

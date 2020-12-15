@@ -23,7 +23,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20201214-bf2c9cfe28
+        image: gcr.io/k8s-prow/sinker:v20201214-c478cbc7b4
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig
