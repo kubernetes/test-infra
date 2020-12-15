@@ -251,8 +251,6 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: AZURE_STORAGE_DRIVER
-              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
             - name: ENABLE_TOPOLOGY
               value: "true"
     annotations:
