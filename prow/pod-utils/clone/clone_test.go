@@ -354,6 +354,7 @@ func TestCommandsForRefs(t *testing.T) {
 				Repo:      "repo",
 				BaseRef:   "master",
 				PathAlias: "my/favorite/dir",
+				RepoLink:  "https://github.com/org/repo",
 			},
 			dir: "/go",
 			expectedBase: []runnable{
@@ -582,6 +583,35 @@ func TestCommandsForRefs(t *testing.T) {
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 2)},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
+			name: "refs with repo link",
+			refs: prowapi.Refs{
+				Org:      "org",
+				Repo:     "repo",
+				BaseRef:  "master",
+				BaseSHA:  "abcdef",
+				RepoLink: "https://github.enterprise.com/org/repo",
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
 	}
