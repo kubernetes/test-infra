@@ -67,7 +67,7 @@ class GCSClient:
                         return resp.json()
                     except json.decoder.JSONDecodeError:
                         logging.exception('Failed to decode request for %s',
-                                           urllib.parse.unquote(url))
+                                          urllib.parse.unquote(url))
                         return None
                 return resp.text
             except requests.exceptions.RequestException:
