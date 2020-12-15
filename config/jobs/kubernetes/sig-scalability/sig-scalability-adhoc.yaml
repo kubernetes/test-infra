@@ -56,3 +56,53 @@ presubmits:
           requests:
             cpu: 2
             memory: "6Gi"
+  # TODO(mm4tt): This test can be used only on 2020-12-15, it should be removed
+  #              after this date or the project reservation should be extended.
+  - name: pull-perf-tests-1000-adhoc
+    always_run: false # This test needs to be triggered manually via `/test pull-perf-tests-1000-adhoc`
+    max_concurrency: 1 # Keep at 1 until we figure out a proper reservation system.
+    skip_report: false # Report the status on github.
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-containerd: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-1000-adhoc
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=360
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-nodes=1000
+        - --gcp-project=k8s-scale-testing
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --tear-down-previous
+        - # TODO(pohly@): Custom overrides, clean up after finishing the tests.
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=1000 --kube-api-burst=1000
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
+        - --timeout=330m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201208-8b354d9-master
+        # The resources are set to support a 5k node CL2 test.
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
