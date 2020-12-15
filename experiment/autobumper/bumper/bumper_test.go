@@ -920,3 +920,98 @@ func TestMakeCommitSummary(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshallWithDefaults(t *testing.T) {
+	testCases := []struct {
+		name     string
+		data     string
+		expected Options
+		err      bool
+	}{
+		{
+			name: "One change to config overwritten",
+			data: "gitHubLogin: \"Test\"",
+			expected: Options{
+				GitHubLogin:         "Test",
+				GitHubToken:         "/etc/github-token/oauth",
+				GitName:             "Kubernetes Prow Robot",
+				GitEmail:            "k8s.ci.robot@gmail.com",
+				OncallAddress:       "https://storage.googleapis.com/kubernetes-jenkins/oncall.json",
+				SkipPullRequest:     false,
+				GitHubOrg:           "kubernetes",
+				GitHubRepo:          "test-infra",
+				RemoteName:          "test-infra",
+				UpstreamURLBase:     "https://raw.githubusercontent.com/kubernetes/test-infra/master",
+				IncludedConfigPaths: []string{"."},
+				ExcludedConfigPaths: []string{"config/prow-staging"},
+				ExtraFiles:          []string{"config/jobs/kubernetes/kops/build-grid.py", "config/jobs/kubernetes/kops/build-pipeline.py", "releng/generate_tests.py", "images/kubekins-e2e/Dockerfile"},
+				TargetVersion:       "latest",
+				Prefixes:            defaultPrefixes,
+			},
+			err: false,
+		},
+		{
+			name: "Unmarshall is strict",
+			data: "unknownField: \"Test\"",
+			err:  true,
+		},
+		{
+			name: "Empty Config returns default file",
+			data: "",
+			err:  false,
+			expected: Options{
+				GitHubLogin:         "k8s-ci-robot",
+				GitHubToken:         "/etc/github-token/oauth",
+				GitName:             "Kubernetes Prow Robot",
+				GitEmail:            "k8s.ci.robot@gmail.com",
+				OncallAddress:       "https://storage.googleapis.com/kubernetes-jenkins/oncall.json",
+				SkipPullRequest:     false,
+				GitHubOrg:           "kubernetes",
+				GitHubRepo:          "test-infra",
+				RemoteName:          "test-infra",
+				UpstreamURLBase:     "https://raw.githubusercontent.com/kubernetes/test-infra/master",
+				IncludedConfigPaths: []string{"."},
+				ExcludedConfigPaths: []string{"config/prow-staging"},
+				ExtraFiles:          []string{"config/jobs/kubernetes/kops/build-grid.py", "config/jobs/kubernetes/kops/build-pipeline.py", "releng/generate_tests.py", "images/kubekins-e2e/Dockerfile"},
+				TargetVersion:       "latest",
+				Prefixes:            defaultPrefixes,
+			},
+		},
+		{
+			name: "Empty field in config can overwrite Default",
+			data: "gitHubOrg: \"\"\ngitHubRepo: \"\"\nextraFiles:",
+			expected: Options{
+				GitHubLogin:         "k8s-ci-robot",
+				GitHubToken:         "/etc/github-token/oauth",
+				GitName:             "Kubernetes Prow Robot",
+				GitEmail:            "k8s.ci.robot@gmail.com",
+				OncallAddress:       "https://storage.googleapis.com/kubernetes-jenkins/oncall.json",
+				SkipPullRequest:     false,
+				GitHubOrg:           "",
+				GitHubRepo:          "",
+				RemoteName:          "test-infra",
+				UpstreamURLBase:     "https://raw.githubusercontent.com/kubernetes/test-infra/master",
+				IncludedConfigPaths: []string{"."},
+				ExcludedConfigPaths: []string{"config/prow-staging"},
+				ExtraFiles:          nil,
+				TargetVersion:       "latest",
+				Prefixes:            defaultPrefixes,
+			},
+			err: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res, err := UnmarshallWithDefaults([]byte(tc.data))
+			if !tc.err && err != nil {
+				t.Errorf("Did not expect an error, but received error: %v", err)
+			}
+			if tc.err && err == nil {
+				t.Errorf("expected error, but did not receive one")
+			}
+			if diff := cmp.Diff(tc.expected, res); !tc.err && diff != "" {
+				t.Errorf("Options struct returned unexpected value (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

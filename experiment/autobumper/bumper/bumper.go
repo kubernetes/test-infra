@@ -33,6 +33,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 
 	imagebumper "k8s.io/test-infra/experiment/image-bumper/bumper"
 	"k8s.io/test-infra/prow/config/secret"
@@ -58,6 +59,52 @@ const (
 var (
 	tagRegexp    = regexp.MustCompile("v[0-9]{8}-[a-f0-9]{6,9}")
 	imageMatcher = regexp.MustCompile(`(?s)^.+image:.+:(v[a-zA-Z0-9_.-]+)`)
+
+	defaultProwPrefix = Prefix{
+		Name:                 "Prow",
+		Prefix:               "gcr.io/k8s-prow/",
+		RefConfigFile:        "config/prow/cluster/deck_deployment.yaml",
+		StagingRefConfigFile: "config/prow-staging/cluster/deck_deployment.yaml",
+		Repo:                 "https://github.com/kubernetes/test-infra",
+		Summarise:            true,
+		ConsistentImages:     true,
+	}
+	defaultBoskosPrefix = Prefix{
+		Name:                 "Boskos",
+		Prefix:               "gcr.io/k8s-staging-boskos/",
+		RefConfigFile:        "config/prow/cluster/boskos.yaml",
+		StagingRefConfigFile: "config/prow-staging/cluster/boskos.yaml",
+		Repo:                 "https://github.com/kubernetes-sigs/boskos",
+		Summarise:            false,
+		ConsistentImages:     true,
+	}
+	defaultTestImagesPrefix = Prefix{
+		Name:             "Prow-Test-Images",
+		Prefix:           "gcr.io/k8s-testimages/",
+		Repo:             "https://github.com/kubernetes/test-infra",
+		Summarise:        false,
+		ConsistentImages: false,
+	}
+	defaultPrefixes = []Prefix{defaultProwPrefix, defaultBoskosPrefix, defaultTestImagesPrefix}
+
+	//DefaultOptions for autobumping k8s test-infra to latest version
+	DefaultOptions = Options{
+		GitHubLogin:         "k8s-ci-robot",
+		GitHubToken:         "/etc/github-token/oauth",
+		GitName:             "Kubernetes Prow Robot",
+		GitEmail:            "k8s.ci.robot@gmail.com",
+		OncallAddress:       "https://storage.googleapis.com/kubernetes-jenkins/oncall.json",
+		SkipPullRequest:     false,
+		GitHubOrg:           "kubernetes",
+		GitHubRepo:          "test-infra",
+		RemoteName:          "test-infra",
+		UpstreamURLBase:     "https://raw.githubusercontent.com/kubernetes/test-infra/master",
+		IncludedConfigPaths: []string{"."},
+		ExcludedConfigPaths: []string{"config/prow-staging"},
+		ExtraFiles:          []string{"config/jobs/kubernetes/kops/build-grid.py", "config/jobs/kubernetes/kops/build-pipeline.py", "releng/generate_tests.py", "images/kubekins-e2e/Dockerfile"},
+		TargetVersion:       "latest",
+		Prefixes:            defaultPrefixes,
+	}
 )
 
 type fileArrayFlag []string
@@ -137,6 +184,16 @@ type Prefix struct {
 type GitAuthorOptions struct {
 	GitName  string
 	GitEmail string
+}
+
+// UnmarshallWithDefaults unmarshalls yaml config file using default options for unspecified fields
+func UnmarshallWithDefaults(data []byte) (Options, error) {
+	o := DefaultOptions
+	err := yaml.UnmarshalStrict(data, &o)
+	if err != nil {
+		return o, fmt.Errorf("Failed to parse yaml file, %s", err)
+	}
+	return o, nil
 }
 
 // AddFlags will read the author info from the command line parameters

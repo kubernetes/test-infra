@@ -24,25 +24,29 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/experiment/autobumper/bumper"
-
-	"gopkg.in/yaml.v2"
 )
 
 func parseOptions() (*bumper.Options, error) {
 	var config string
+	var o bumper.Options
+	var data []byte
+	var err error
 
-	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
+	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber. If unspecifed, will use default values for k8s test-infra")
 	flag.Parse()
 
-	var o bumper.Options
-	data, err := ioutil.ReadFile(config)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read in config file, %s", config)
+	if config == "" {
+		data = []byte("")
+	} else {
+		data, err = ioutil.ReadFile(config)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read in config file, %s", config)
+		}
 	}
 
-	err = yaml.UnmarshalStrict(data, &o)
+	o, err = bumper.UnmarshallWithDefaults(data)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+		return nil, err
 	}
 
 	return &o, nil
