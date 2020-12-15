@@ -55,16 +55,17 @@ var (
 	gkeSubnetMode                  = flag.String("gke-subnet-mode", "auto", "(gke only) subnet creation mode of the GKE cluster network.")
 	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
+	gkeInstanceGroupPrefix         = flag.String("gke-instance-group-prefix", "gke", "(gke only) Use a different instance group prefix.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 
-	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
+	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
 	// m[1]: zone
 	// m[2]: pool name (passed to e2es)
 	// m[3]: unique hash (used as nonce for firewall rules)
-	poolRe = regexp.MustCompile(`zones/([^/]+)/instanceGroupManagers/(gke-.*-([0-9a-f]{8})-grp)$`)
+	poolReTemplate = `zones/([^/]+)/instanceGroupManagers/(%s-.*-([0-9a-f]{8})-grp)$`
 
 	urlRe = regexp.MustCompile(`https://.*/`)
 )
@@ -98,6 +99,7 @@ type gkeDeployer struct {
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
 	sshProxyInstanceName        string
+	poolRe                      *regexp.Regexp
 
 	setup          bool
 	kubecfg        string
@@ -152,6 +154,12 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 			return nil, fmt.Errorf("--image-family and --image-project must be set for GKE deployment if --gcp-node-image=CUSTOM")
 		}
 	}
+
+	poolRe, err := regexp.Compile(fmt.Sprintf(poolReTemplate, *gkeInstanceGroupPrefix))
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't compile regex %v. prefix: %s", err, *gkeInstanceGroupPrefix)
+	}
+	g.poolRe = poolRe
 	g.imageFamily = imageFamily
 	g.imageProject = imageProject
 	g.image = image
@@ -162,7 +170,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.createNat = *gkeCreateNat
 	g.natMinPortsPerVm = *gkeNatMinPortsPerVm
 
-	err := json.Unmarshal([]byte(*gkeShape), &g.shape)
+	err = json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
 		return nil, fmt.Errorf("--gke-shape must be valid JSON, unmarshal error: %v, JSON: %q", err, *gkeShape)
 	}
@@ -653,26 +661,45 @@ func (g *gkeDeployer) getInstanceGroups() error {
 	if len(g.instanceGroups) > 0 {
 		return nil
 	}
+	igs, err := g.getInstanceGroupsFromGcloud()
+	if err != nil {
+		return err
+	}
+
+	instanceGroups, err := g.parseInstanceGroupsFromGcloud(igs)
+	if err != nil {
+		return err
+	}
+	g.instanceGroups = instanceGroups
+	return nil
+}
+
+func (g *gkeDeployer) getInstanceGroupsFromGcloud() (string, error) {
 	igs, err := exec.Command("gcloud", g.containerArgs("clusters", "describe", g.cluster,
 		"--format=value(instanceGroupUrls)",
 		"--project="+g.project,
 		g.location)...).Output()
 	if err != nil {
-		return fmt.Errorf("instance group URL fetch failed: %s", util.ExecError(err))
+		return "", fmt.Errorf("instance group URL fetch failed: %s", util.ExecError(err))
 	}
-	igURLs := strings.Split(strings.TrimSpace(string(igs)), ";")
+	return string(igs), nil
+}
+
+func (g *gkeDeployer) parseInstanceGroupsFromGcloud(igs string) ([]*ig, error) {
+	igURLs := strings.Split(strings.TrimSpace(igs), ";")
 	if len(igURLs) == 0 {
-		return fmt.Errorf("no instance group URLs returned by gcloud, output %q", string(igs))
+		return nil, fmt.Errorf("no instance group URLs returned by gcloud, output %q", string(igs))
 	}
 	sort.Strings(igURLs)
+	var instanceGroups []*ig
 	for _, igURL := range igURLs {
-		m := poolRe.FindStringSubmatch(igURL)
+		m := g.poolRe.FindStringSubmatch(igURL)
 		if len(m) == 0 {
-			return fmt.Errorf("instanceGroupUrl %q did not match regex %v", igURL, poolRe)
+			return nil, fmt.Errorf("instanceGroupUrl %q did not match regex %v", igURL, g.poolRe)
 		}
-		g.instanceGroups = append(g.instanceGroups, &ig{path: m[0], zone: m[1], name: m[2], uniq: m[3]})
+		instanceGroups = append(instanceGroups, &ig{path: m[0], zone: m[1], name: m[2], uniq: m[3]})
 	}
-	return nil
+	return instanceGroups, nil
 }
 
 func (g *gkeDeployer) getClusterFirewall() (string, error) {

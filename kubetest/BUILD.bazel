@@ -63,6 +63,7 @@ go_test(
         "aksengine_test.go",
         "dump_test.go",
         "extract_test.go",
+        "gke_test.go",
         "kubernetes_test.go",
         "main_test.go",
         "util_test.go",
