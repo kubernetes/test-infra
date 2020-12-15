@@ -59,6 +59,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.20.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest-1.20
       - --ginkgo-parallel
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
