@@ -416,6 +416,7 @@ def generate():
     build_test(force_name="scenario-aws-cloud-controller-manager",
                cloud="aws",
                distro="u2004",
+               k8s_version="1.19",
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'])
 
