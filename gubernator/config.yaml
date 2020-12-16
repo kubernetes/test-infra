@@ -37,4 +37,5 @@ jobs:
   - pull-kubernetes-node-e2e
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify
+  - pull-kubernetes-verify-govet-levee
 recursive_artifacts: false

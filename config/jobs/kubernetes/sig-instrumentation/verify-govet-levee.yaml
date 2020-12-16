@@ -2,7 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify-govet-levee
     cluster: k8s-infra-prow-build
-    always_run: false
+    always_run: true
     decorate: true
     skip_branches:
       - release-\d+.\d+ # per-release job
