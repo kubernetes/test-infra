@@ -1,7 +1,25 @@
+// +build e2etest
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package e2e
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -38,6 +56,14 @@ func TestDeletePod(t *testing.T) {
 			t.Parallel()
 
 			clusterContext := getClusterContext()
+			t.Logf("Creating client for cluster: %s", clusterContext)
+
+			// defaultKubeconfig := os.Getenv("KUBECONFIG")
+			// stat, err := os.Lstat(defaultKubeconfig)
+			// if err != nil {
+			// 	t.Fatalf("Failed stat %q: %v", defaultKubeconfig, err)
+			// }
+			// t.Logf("Stat of %q: %v\n\n%v\n\n%v", defaultKubeconfig, stat.Mode(), stat.Sys(), stat)
 			kubeClient, prowjobClient, err := NewClients("", clusterContext)
 			if err != nil {
 				t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
@@ -48,7 +74,7 @@ func TestDeletePod(t *testing.T) {
 			t.Cleanup(func() {
 				prowjobClient.ProwV1().ProwJobs("default").
 					Delete(ctx, name, v1.DeleteOptions{})
-				kubeClient.CoreV1().Pods("test-pods").
+				kubeClient.CoreV1().Pods(testpodNamespace).
 					Delete(ctx, name, v1.DeleteOptions{})
 			})
 
@@ -68,7 +94,7 @@ func TestDeletePod(t *testing.T) {
 					},
 					Spec: prowjobv1.ProwJobSpec{
 						Type:      prowjobv1.PeriodicJob,
-						Namespace: "test-pods",
+						Namespace: testpodNamespace,
 						Job:       name,
 					},
 					Status: prowjobv1.ProwJobStatus{
@@ -104,7 +130,7 @@ func TestDeletePod(t *testing.T) {
 					},
 				},
 			}
-			if _, err := kubeClient.CoreV1().Pods("test-pods").Create(ctx, &pod, v1.CreateOptions{}); err != nil {
+			if _, err := kubeClient.CoreV1().Pods(testpodNamespace).Create(ctx, &pod, v1.CreateOptions{}); err != nil {
 				t.Fatalf("Failed creating pod: %v", err)
 			}
 			t.Logf("Finished creating pod: %s", name)
@@ -112,9 +138,9 @@ func TestDeletePod(t *testing.T) {
 			// Make sure pod is running
 			t.Logf("Make sure pod is running: %s", name)
 			if err = wait.Poll(time.Second, time.Minute, func() (bool, error) {
-				p, err := kubeClient.CoreV1().Pods("test-pods").Get(ctx, name, v1.GetOptions{})
+				p, err := kubeClient.CoreV1().Pods(testpodNamespace).Get(ctx, name, v1.GetOptions{})
 				if err != nil {
-					t.Fatalf("Failed listing pods: %v", err)
+					return false, fmt.Errorf("Failed listing pods: %v", err)
 				}
 				return (p.Status.Phase == corev1.PodRunning), nil
 			}); err != nil {
@@ -126,7 +152,7 @@ func TestDeletePod(t *testing.T) {
 			// Don't care about the outcome, will check later
 			t.Logf("Wait for sinker deleting pod or timeout in 2 minutes: %s", name)
 			wait.Poll(time.Second, 2*time.Minute, func() (bool, error) {
-				pods, err := kubeClient.CoreV1().Pods("test-pods").List(ctx, v1.ListOptions{})
+				pods, err := kubeClient.CoreV1().Pods(testpodNamespace).List(ctx, v1.ListOptions{})
 				if err != nil {
 					return false, err
 				}
@@ -138,7 +164,7 @@ func TestDeletePod(t *testing.T) {
 				}
 				return !exist, nil
 			})
-			pods, err := kubeClient.CoreV1().Pods("test-pods").List(ctx, v1.ListOptions{})
+			pods, err := kubeClient.CoreV1().Pods(testpodNamespace).List(ctx, v1.ListOptions{})
 			if err != nil {
 				t.Fatal(err)
 			}

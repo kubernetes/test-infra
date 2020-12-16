@@ -20,7 +20,7 @@ set -o errexit
 set -o pipefail
 
 code=0
-(set -o xtrace && bazel "$@") || code=$?
+(set -o xtrace && bazel "$@" --test_tag_filters=-e2e) || code=$?
 coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
 (set -o xtrace && "$coalesce") || true
 set -o xtrace

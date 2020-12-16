@@ -6,6 +6,10 @@ go_test(
     name = "go_default_test",
     srcs = ["sinker_test.go"],
     embed = [":go_default_library"],
+    tags = ["e2e"],
+    data = [
+        "//prow/test/integration/test:all-srcs",
+    ],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",

@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# Copyright 2020 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -o errexit
 
 # create registry container unless it already exists
@@ -44,6 +58,17 @@ EOF
 echo "Set up local registry for cluster"
 docker network connect "kind" "${reg_name}" || true
 
+# Ensure working on kind cluster
+CONTEXT="$(kubectl config current-context)"
+if [[ -z "${CONTEXT}" ]]; then
+  echo "Current kube context cannot be empty"
+  exit 1
+fi
+if [[ "${CONTEXT}" != "kind-kind" ]]; then
+  echo "Current kube context is '${CONTEXT}', has to be kind-kind"
+  exit 1
+fi
+
 # Document the local registry
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
 cat <<EOF | kubectl apply -f -
@@ -60,6 +85,6 @@ EOF
 
 # Install nginx and wait for it ready
 echo "Install nginx on kind cluster"
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+kubectl --context=${CONTEXT} apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 
 exit 0
