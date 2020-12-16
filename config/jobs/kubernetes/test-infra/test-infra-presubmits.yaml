@@ -97,3 +97,23 @@ presubmits:
         - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-integration
+    branches:
+    - master
+    always_run: false
+    decorate: true
+    skip_report: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
+        command:
+        - prow/test/integration/test.sh
+        args:
+        - --create-cluster
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration
