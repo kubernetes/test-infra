@@ -568,6 +568,31 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - pkg/benchmarkjunit/
+  - name: post-test-infra-push-generic-autobumper
+    cluster: test-infra-trusted
+    run_if_changed: '^(experiment/(image-bumper|autobumper)|robots/pr-creator|prow/(github|config/secret))/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "generic-autobump-push"
+      # TODO(mpherman): uncomment the testgrid alerts once we know this works as intended
+      #testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      #testgrid-num-failures-to-alert: '3'
+      description: builds and pushes the generic autobumper image
+    decorate: true
+    branches:
+    - ^master$
+    max_concurrency: 1
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - experiment/autobumper/
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
