@@ -47041,7 +47041,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19
     testgrid-tab-name: kops-grid-kopeio-u2004-k19-ko19-containerd
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=us-east-2b --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201", "k8s_version": null, "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201", "k8s_version": null, "kops_version": null, "kops_zones": "us-east-2b", "networking": null}
 - name: e2e-kops-grid-scenario-arm64
   cron: '33 16 * * *'
   labels:
@@ -47066,10 +47066,11 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=docker --zones=us-east-2b --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201
+      - --kops-args=--container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-zones=us-east-2b
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity
       - --timeout=60m
@@ -47084,9 +47085,10 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=us-east-2b --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201
     test.kops.k8s.io/k8s_version: ''
     test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_zones: us-east-2b
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest
     testgrid-tab-name: kops-grid-scenario-arm64
