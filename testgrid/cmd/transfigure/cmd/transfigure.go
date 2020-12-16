@@ -96,11 +96,11 @@ func init() {
 func createTempWorkingDir() {
 	tempDir, err := ioutil.TempDir(".", "transfigure_")
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	workingDir, err = filepath.Abs(tempDir)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	log.Printf("Created temp directory %v/", tempDir)
 }
@@ -132,7 +132,7 @@ func createRepoSubdirForTestgridYAML() {
 func generateTestgridYAML() {
 	yamlPath, err := filepath.Abs(testgridYaml)
 	if err != nil {
-		log.Fatal("Invalid testgrid yaml path: " + testgridYaml)
+		log.Panic("Invalid testgrid yaml path: " + testgridYaml)
 	}
 
 	runCmd(exec.Command(
@@ -170,11 +170,11 @@ func ensureGitUserAndEmail() {
 	runCmd(exec.Command("git", "config", "user.email", gitEmail))
 	output := runCmd(exec.Command("git", "config", "user.name"))
 	if diff := cmp.Diff(output, gitUser); diff != "" {
-		log.Fatal("Unexpected Git User: (-got +want)\n" + diff)
+		log.Panic("Unexpected Git User: (-got +want)\n" + diff)
 	}
 	output = runCmd(exec.Command("git", "config", "user.email"))
 	if diff := cmp.Diff(output, gitEmail); diff != "" {
-		log.Fatal("Unexpected Git Email: (-got +want)\n" + diff)
+		log.Panic("Unexpected Git Email: (-got +want)\n" + diff)
 	}
 }
 
@@ -204,7 +204,7 @@ func createPR() {
 
 func run() int {
 	if !dryRun && githubToken == "" {
-		log.Fatal("Run was not a dry run, and flag 'github_token' was not set.")
+		log.Panic("Run was not a dry run, and flag 'github_token' was not set.")
 	}
 
 	createTempWorkingDir()
@@ -241,7 +241,7 @@ func runCmd(cmd *exec.Cmd) string {
 	cmd.Dir = workingDir
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	return strings.TrimSpace(string(out)) // Remove trailing newline
 }
@@ -250,18 +250,18 @@ func populateGitUserAndEmail() {
 	// Create a new HTTP request.
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	// Append the token we just read from file, and send the request.
 	req.Header.Add("Authorization", "token "+githubTokenContents())
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	// Read in the desired fields from the response body.
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	githubData := struct {
 		Login string `json:"login"`
@@ -289,7 +289,7 @@ func githubTokenContents() string {
 	if tokenContents == "" {
 		token, err := ioutil.ReadFile(githubToken)
 		if err != nil {
-			log.Fatal(err)
+			log.Panic(err)
 		}
 		tokenContents = strings.TrimSpace(string(token))
 	}
