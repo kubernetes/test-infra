@@ -59,7 +59,6 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-
 	Approve              []Approve                    `json:"approve,omitempty"`
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
@@ -85,6 +84,19 @@ type Configuration struct {
 	Triggers             []Trigger                    `json:"triggers,omitempty"`
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
+	Help                 Help                         `json:"help,omitempty"`
+}
+
+type Help struct {
+	// HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
+	// The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
+	HelpGuidelinesURL string `json:"help_guidelines_url,omitempty"`
+}
+
+func (h *Help) setDefaults() {
+	if h.HelpGuidelinesURL == "" {
+		h.HelpGuidelinesURL = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+	}
 }
 
 // Golint holds configuration for the golint plugin
@@ -842,6 +854,8 @@ func (cu *ConfigUpdater) SetDefaults() {
 }
 
 func (c *Configuration) setDefaults() {
+	c.Help.setDefaults()
+
 	c.ConfigUpdater.SetDefaults()
 
 	for repo, plugins := range c.ExternalPlugins {
