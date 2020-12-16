@@ -105,15 +105,20 @@ presubmits:
     skip_report: true
     optional: true
     labels:
-      preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
         command:
-        - prow/test/integration/test.sh
+        - runner.sh
         args:
+        - prow/test/integration/test.sh
         - --create-cluster
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
