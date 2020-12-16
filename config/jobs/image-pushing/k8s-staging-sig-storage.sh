@@ -31,6 +31,7 @@ readonly REPOS=(
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
     kubernetes-sigs/sig-storage-local-static-provisioner
+    kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
 )
 
 # Repos which should eventually enable cloud image builds but currently
