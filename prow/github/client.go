@@ -189,6 +189,7 @@ type TeamClient interface {
 type UserClient interface {
 	BotName() (string, error)
 	BotUser() (*UserData, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	Email() (string, error)
 }
 
@@ -1023,6 +1024,24 @@ func (c *client) BotUser() (*UserData, error) {
 		}
 	}
 	return c.userData, nil
+}
+
+func (c *client) BotUserChecker() (func(candidate string) bool, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.userData == nil {
+		if err := c.getUserData(); err != nil {
+			return nil, fmt.Errorf("fetching userdata from GitHub: %v", err)
+		}
+	}
+
+	botUser := c.userData.Login
+	return func(candidate string) bool {
+		if c.usesAppsAuth {
+			candidate = strings.TrimSuffix(candidate, "[bot]")
+		}
+		return candidate == botUser
+	}, nil
 }
 
 // Email returns the user-configured email for the authenticated identity.
