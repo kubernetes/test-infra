@@ -50,18 +50,12 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mycmd",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+	Use:   "transfigure",
+	Short: "Generates a YAML Testgrid config from a Prow config and pushes it to testgrid.k8s.io.",
+	Long: `Transfigure is an image that generates a YAML Testgrid configuration
+		   from a Prow configuration and pushes it to be used on testgrid.k8s.io. It 
+	       is used specifically for Prow instances other than the k8s instance of Prow.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// exec.Command("touch", "example.txt").Run()
 		os.Exit(run())
 	},
 }
@@ -73,6 +67,41 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func run() int {
+	if !dryRun && githubToken == "" {
+		log.Panic("Run was not a dry run, and flag 'github_token' was not set.")
+	}
+
+	createTempWorkingDir()
+	defer removeTempWorkingDir()
+
+	cloneK8sTestInfraRepo()
+
+	if gitUser == "" || gitEmail == "" {
+		populateGitUserAndEmail()
+	} else {
+		log.Print("Using user from Flag: " + gitUser)
+		log.Print("Using email from Flag: " + gitEmail)
+	}
+	createAndCheckoutGitBranch()
+	createRepoSubdirForTestgridYAML()
+	generateTestgridYAML()
+	gitAddAll()
+	if !gitDiffExists() {
+		log.Print("Transfigure did not change anything. Aborting no-op bump.")
+		return 0
+	}
+	runBazelTests()
+
+	if dryRun {
+		log.Print("Dry-Run; skipping PR")
+	} else {
+		gitCommitAndPush()
+		createPR()
+	}
+	return 0
 }
 
 func init() {
@@ -200,41 +229,6 @@ func createPR() {
 		"--source=\""+gitUser+":"+Branch+"\"",
 		"--confirm"))
 	log.Print("PR created successfully!")
-}
-
-func run() int {
-	if !dryRun && githubToken == "" {
-		log.Panic("Run was not a dry run, and flag 'github_token' was not set.")
-	}
-
-	createTempWorkingDir()
-	defer removeTempWorkingDir()
-
-	cloneK8sTestInfraRepo()
-
-	if gitUser == "" || gitEmail == "" {
-		populateGitUserAndEmail()
-	} else {
-		log.Print("Using user from Flag: " + gitUser)
-		log.Print("Using email from Flag: " + gitEmail)
-	}
-	createAndCheckoutGitBranch()
-	createRepoSubdirForTestgridYAML()
-	// generateTestgridYAML()
-	gitAddAll()
-	if !gitDiffExists() {
-		log.Print("Transfigure did not change anything. Aborting no-op bump.")
-		return 0
-	}
-	// runBazelTests()
-
-	if dryRun {
-		log.Print("Dry-Run; skipping PR")
-	} else {
-		gitCommitAndPush()
-		createPR()
-	}
-	return 0
 }
 
 func runCmd(cmd *exec.Cmd) string {
