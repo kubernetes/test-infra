@@ -2594,3 +2594,50 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		})
 	}
 }
+
+func TestBotUserChecker(t *testing.T) {
+	const savedLogin = "botName"
+	testCases := []struct {
+		name         string
+		checkFor     string
+		usesAppsAuth bool
+		expectMatch  bool
+	}{
+		{
+			name:         "Bot suffix with apps auth is recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix with apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix without apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: false,
+			expectMatch:  true,
+		},
+		{
+			name:         "Suffix without apps auth is not recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: false,
+			expectMatch:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		c := &client{delegate: &delegate{usesAppsAuth: tc.usesAppsAuth, userData: &UserData{Login: savedLogin}}}
+
+		checker, err := c.BotUserChecker()
+		if err != nil {
+			t.Fatalf("failed to get user checker: %v", err)
+		}
+		if actualMatch := checker(tc.checkFor); actualMatch != tc.expectMatch {
+			t.Errorf("expect match: %t, got match: %t", tc.expectMatch, actualMatch)
+		}
+	}
+}
