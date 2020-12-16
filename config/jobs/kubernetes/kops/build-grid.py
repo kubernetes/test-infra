@@ -148,7 +148,8 @@ def build_test(cloud='aws',
                kops_zones=None,
                force_name=None,
                feature_flags=None,
-               extra_flags=None):
+               extra_flags=None,
+               extra_dashboards=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if distro is None:
@@ -328,6 +329,9 @@ def build_test(cloud='aws',
     else:
         dashboards.append('kops-k8s-latest')
 
+    if extra_dashboards:
+        dashboards.extend(extra_dashboards)
+
     annotations = {
         'testgrid-dashboards': ', '.join(dashboards),
         'testgrid-tab-name': tab,
@@ -418,7 +422,8 @@ def generate():
                distro="u2004",
                k8s_version="1.19",
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'])
+               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+               extra_dashboards=['sig-aws-cloud-provider-aws'])
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
