@@ -39,6 +39,6 @@
           ),
         },
     }
-    + default(config, 'prowImageStaleByDays', 7)
+    + default(config, 'prowImageStaleByDays', {daysStale: 7, hoursToTrigger: '24h'})
   ),
 }
