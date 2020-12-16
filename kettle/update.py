@@ -62,7 +62,8 @@ def main():
         call(f'{mj_cmd} {mj_ext} --days 7 | pv | gzip > build_week.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.week build_week.json.gz schema.json')
 
-        call(f'{mj_cmd} | pv | gzip > build_all.json.gz')
+        # TODO: (MushuEE) #20024, remove 30 day limit once issue with all uploads is found
+        call(f'{mj_cmd} --days 30 | pv | gzip > build_all.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
         call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
