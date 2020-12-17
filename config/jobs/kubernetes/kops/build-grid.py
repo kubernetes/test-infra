@@ -329,6 +329,11 @@ def build_test(cloud='aws',
     else:
         dashboards.append('kops-k8s-latest')
 
+    if kops_version:
+        dashboards.append('kops-' + kops_version)
+    else:
+        dashboards.append('kops-latest')
+
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
 
