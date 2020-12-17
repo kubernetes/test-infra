@@ -105,6 +105,7 @@ presubmits:
     skip_report: true
     optional: true
     labels:
+      preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -115,7 +116,7 @@ presubmits:
         - runner.sh
         args:
         - prow/test/integration/test.sh
-        - --create-cluster
+        - --config=ci
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
