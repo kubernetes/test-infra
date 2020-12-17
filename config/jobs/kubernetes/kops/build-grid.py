@@ -367,10 +367,11 @@ distro_options = [
 ]
 
 k8s_versions = [
-    None,
+    #None, # disabled until we're ready to test 1.21
     "1.17",
     "1.18",
-    "1.19"
+    "1.19",
+    "1.20"
 ]
 
 kops_versions = [
