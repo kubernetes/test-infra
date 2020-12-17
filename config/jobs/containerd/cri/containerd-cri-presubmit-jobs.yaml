@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
         command:
         - runner.sh
         args:
@@ -41,7 +41,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
         command:
         - sh
         - -c
@@ -90,7 +90,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -117,7 +117,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-windows-cri
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
         command:
         - runner.sh
         args:

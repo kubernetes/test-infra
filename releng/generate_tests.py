@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201215-73fe430-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
         resources:
           requests:
             cpu: 1000m
