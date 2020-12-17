@@ -47194,7 +47194,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.19'
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19, sig-aws-cloud-provider-aws
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
 # 963 jobs, total of 1701 runs per week
