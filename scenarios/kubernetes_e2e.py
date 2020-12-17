@@ -539,8 +539,7 @@ def main(args):
         print >>sys.stderr, 'Env:', k, v
 
     if args.use_logexporter:
-        # TODO(fejta): Take the below value through a flag instead of env var.
-        runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('LOG_DUMP_DIR', os.environ.get('GCS_ARTIFACTS_DIR', '')))
+        runner_args.append('--logexporter-gcs-path=%s' % args.logexporter_gcs_path)
 
     if args.aws:
         # Legacy - prefer passing --deployment=kops, --provider=aws,
@@ -627,6 +626,10 @@ def create_parser():
         '--use-logexporter',
         action='store_true',
         help='If we need to use logexporter tool to upload logs from nodes to GCS directly')
+    parser.add_argument(
+        '--logexporter-gcs-path',
+        default=os.environ.get('GCS_ARTIFACTS_DIR',''),
+        help='GCS path where logexporter tool will upload logs if enabled')
     parser.add_argument(
         '--kubetest_args',
         action='append',
