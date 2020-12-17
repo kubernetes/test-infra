@@ -47,6 +47,7 @@ template = """
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version={{kops_deploy_url}}
+      - --kops-zones={{kops_zones}}
       - --provider=aws
       - --test_args={{test_args}}
       - --timeout=60m
@@ -146,7 +147,8 @@ def build_test(cloud='aws',
                kops_version=None,
                force_name=None,
                feature_flags=None,
-               extra_flags=None):
+               extra_flags=None,
+               zones=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if distro is None:
@@ -289,6 +291,11 @@ def build_test(cloud='aws',
     else:
         y = remove_line_with_prefix(y, "- --kops-feature-flags=")
 
+    if zones:
+        y = y.replace('{{kops_zones}}', ','.join(zones))
+    else:
+        y = remove_line_with_prefix(y, "- --kops-zones=")
+
     spec = {
         'cloud': cloud,
         'networking': networking,
@@ -301,6 +308,8 @@ def build_test(cloud='aws',
         spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
         spec['extra_flags'] = ' '.join(extra_flags)
+    if zones:
+        spec['zones'] = ','.join(zones)
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -391,8 +400,8 @@ def generate():
     build_test(force_name="scenario-arm64",
                cloud="aws",
                distro="u2004",
-               extra_flags=['--zones=us-east-2b',
-                            '--node-size=m6g.large',
+               zones=['us-east-2b'],
+               extra_flags=['--node-size=m6g.large',
                             '--master-size=m6g.large',
                             '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201']) # pylint: disable=line-too-long
 
