@@ -22,7 +22,6 @@ import (
 	"net/url"
 	"os/exec"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -111,8 +110,9 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	if refs.PathAlias != "" {
 		clonePath = refs.PathAlias
 	} else if refs.RepoLink != "" {
-		re := regexp.MustCompile(`^https?://`)
-		clonePath = re.ReplaceAllString(refs.RepoLink, "")
+		// Drop the protocol from the RepoLink
+		parts := strings.Split(refs.RepoLink, "://")
+		clonePath = parts[len(parts)-1]
 	} else {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
