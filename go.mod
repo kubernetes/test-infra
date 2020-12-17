@@ -25,7 +25,7 @@ replace (
 
 require (
 	cloud.google.com/go/pubsub v1.4.0
-	cloud.google.com/go/storage v1.12.0
+	cloud.google.com/go/storage v1.10.0
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.10.2
@@ -50,7 +50,7 @@ require (
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.4.3
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.5.2
 	github.com/google/go-github v17.0.0+incompatible
@@ -83,12 +83,13 @@ require (
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
-	golang.org/x/tools v0.0.0-20200918232735-d647fc253266
-	google.golang.org/api v0.32.0
+	golang.org/x/tools v0.0.0-20200709181711-e327e1019dfe
+	google.golang.org/api v0.29.0
+	google.golang.org/genproto v0.0.0-20200709005830-7a2ca40e9dc3 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.3.0
