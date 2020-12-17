@@ -232,6 +232,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+      - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--networking=kube-router
