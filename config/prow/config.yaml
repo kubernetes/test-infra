@@ -276,6 +276,14 @@ branch-protection:
             - ci-validate-docs
             - ci-validate-go-modules
             - ci-validate-manifests
+          branches:
+            gh-pages:
+              restrictions:
+                users:
+                - k8s-ci-robot
+                teams:
+                - kube-state-metrics-admins
+                - kube-state-metrics-maintainers
         kube-scheduler:
           restrictions:
             users: []
