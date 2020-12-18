@@ -22,11 +22,17 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
+	"sync"
 
+	"github.com/sirupsen/logrus"
+	"gopkg.in/fsnotify.v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -51,6 +57,79 @@ type KubernetesOptions struct {
 	clusterConfigs              map[string]rest.Config
 	kubernetesClientsByContext  map[string]kubernetes.Interface
 	infrastructureClusterConfig *rest.Config
+	kubeconfigWach              *sync.Once
+	kubeconfigWatchEvents       <-chan fsnotify.Event
+}
+
+const inCluderTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+// AddKubeconfigChangeCallback adds a callback that gets called whenever the kubeconfig changes.
+// The main usecase for this is to exit components that can not reload a kubeconfig at runtime
+// so the kubelet restarts them
+func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
+	if err := o.resolve(o.dryRun); err != nil {
+		return fmt.Errorf("resolving failed: %w", err)
+	}
+
+	var err error
+	o.kubeconfigWach.Do(func() {
+		var watcher *fsnotify.Watcher
+		watcher, err = fsnotify.NewWatcher()
+		if err != nil {
+			err = fmt.Errorf("failed to create watcher: %w", err)
+			return
+		}
+		if o.kubeconfig != "" {
+			err = watcher.Add(o.kubeconfig)
+			if err != nil {
+				err = fmt.Errorf("failed to watch %s: %w", o.kubeconfig, err)
+				return
+			}
+		}
+		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+			for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
+				err = watcher.Add(element)
+				if err != nil {
+					err = fmt.Errorf("failed to watch %s: %w", element, err)
+					return
+				}
+			}
+		}
+
+		if _, statErr := os.Stat(inCluderTokenPath); statErr == nil {
+			err = watcher.Add(inCluderTokenPath)
+			if err != nil {
+				err = fmt.Errorf("faild to watch %s: %w", inCluderTokenPath, err)
+				return
+			}
+		}
+		o.kubeconfigWatchEvents = watcher.Events
+
+		go func() {
+			for watchErr := range watcher.Errors {
+				logrus.WithError(watchErr).Error("Kubeconfig watcher errored")
+			}
+			if err := watcher.Close(); err != nil {
+				logrus.WithError(err).Error("Failed to close watcher")
+			}
+		}()
+	})
+	if err != nil {
+		return fmt.Errorf("failed to set up watches: %w", err)
+	}
+
+	go func() {
+		for e := range o.kubeconfigWatchEvents {
+			if e.Op == fsnotify.Chmod {
+				// For some reason we get frequent chmod events
+				continue
+			}
+			logrus.WithField("event", e.String()).Info("Kubeconfig changed")
+			callback()
+		}
+	}()
+
+	return nil
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
@@ -85,6 +164,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	if o.resolved {
 		return nil
 	}
+
+	o.kubeconfigWach = &sync.Once{}
 
 	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig)
 	if err != nil {
