@@ -40,6 +40,7 @@ tide:
     IBM/ibm-helm-api-operator: squash
     IBM/ibm-helm-repo-operator: squash
     IBM/ibm-iam-operator: squash
+    IBM/ibm-iam-policy-operator: squash
     IBM/ibm-ingress-nginx-operator: squash
     IBM/ibm-licensing-hub-operator: squash
     IBM/ibm-licensing-operator: squash
@@ -101,6 +102,7 @@ tide:
     - IBM/ibm-helm-api-operator
     - IBM/ibm-helm-repo-operator
     - IBM/ibm-iam-operator
+    - IBM/ibm-iam-policy-operator
     - IBM/ibm-ingress-nginx-operator
     - IBM/ibm-licensing-hub-operator
     - IBM/ibm-licensing-operator
