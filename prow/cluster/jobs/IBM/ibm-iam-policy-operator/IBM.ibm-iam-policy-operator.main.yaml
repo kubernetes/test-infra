@@ -2,7 +2,7 @@ presubmits:
   IBM/ibm-iam-policy-operator:
   - name: build_ibm-iam-policy-operator
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -20,7 +20,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: check_ibm-iam-policy-operator
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -37,7 +37,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - name: test_ibm-iam-policy-operator
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -58,7 +58,7 @@ postsubmits:
   IBM/ibm-iam-policy-operator:
   - name: check_ibm-iam-policy-operator_postsubmit
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -72,7 +72,7 @@ postsubmits:
           privileged: true
   - name: test_ibm-iam-policy-operator_postsubmit
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -87,7 +87,7 @@ postsubmits:
           privileged: true
   - name: coverage_ibm-iam-policy-operator_postsubmit
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -108,7 +108,7 @@ postsubmits:
           privileged: true
   - name: build_ibm-iam-policy-operator_postsubmit
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -123,7 +123,7 @@ postsubmits:
           privileged: true
   - name: images_ibm-iam-policy-operator_postsubmit
     branches:
-    - ^master$
+    - ^main$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     labels:
