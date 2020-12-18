@@ -324,7 +324,7 @@ func TestAppsAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+			_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
 
 			if _, ok := ghClient.(*client); !ok {
 				t.Fatal("ghclient is not a *client")
@@ -372,7 +372,7 @@ func TestAppsRoundTripperThreadSafety(t *testing.T) {
 		t.Fatalf("Failed to generate RSA key: %v", err)
 	}
 
-	ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
 
 	if _, ok := ghClient.(*client); !ok {
 		t.Fatal("ghclient is not a *client")

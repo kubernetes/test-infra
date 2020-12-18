@@ -488,6 +488,8 @@ func (c *client) SetMax404Retries(max int) {
 	c.max404Retries = max
 }
 
+type GitHubAppTokenGenerator func(org string) (string, error)
+
 // NewClientWithFields creates a new fully operational GitHub client. With
 // added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
@@ -496,17 +498,21 @@ func (c *client) SetMax404Retries(max int) {
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, getToken, censor, "", nil, graphqlEndpoint, false, bases)
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, false, bases)
+	return client
 }
 
-func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) Client {
+func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
 	return newClient(fields, nil, censor, appID, appPrivateKey, graphqlEndpoint, false, bases)
 }
 
-func newClient(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, dryRun bool, bases []string) Client {
+func newClient(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, dryRun bool, bases []string) (GitHubAppTokenGenerator, Client) {
 	// Will be nil if github app authentication is used
 	if getToken == nil {
 		getToken = func() []byte { return nil }
+	}
+	appsTokenGenerator := func(_ string) (string, error) {
+		return "", errors.New("BUG: GitHub apps authentication is not enabled, you shouldn't see this. Please report this in https://github.com/kubernetes/test-infra")
 	}
 	httpClient := &http.Client{Timeout: maxRequestTime}
 	graphQLTransport := newAddHeaderTransport()
@@ -544,9 +550,10 @@ func newClient(fields logrus.Fields, getToken func() []byte, censor func([]byte)
 		}
 		httpClient.Transport = appsTransport
 		graphQLTransport.upstream = appsTransport
+		appsTokenGenerator = appsTransport.installationTokenFor
 	}
 
-	return c
+	return appsTokenGenerator, c
 }
 
 type graphQLGitHubAppsAuthClientWrapper struct {
@@ -594,13 +601,14 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, getToken, censor, "", nil, graphqlEndpoint, true, bases)
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, true, bases)
+	return client
 }
 
 // NewAppsAuthDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
-func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) Client {
+func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
 	return newClient(fields, nil, censor, appId, appPrivateKey, graphqlEndpoint, true, bases)
 }
 
