@@ -152,6 +152,9 @@ def build_test(cloud='aws',
                extra_dashboards=None):
     # pylint: disable=too-many-statements,too-many-branches
 
+    if kops_version == "1.18" and container_runtime == "containerd":
+        return
+
     if distro is None:
         kops_ssh_user = 'ubuntu'
         kops_image = None
