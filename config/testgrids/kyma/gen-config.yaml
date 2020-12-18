@@ -107,6 +107,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
     test_group_name: post-master-kyma-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration job on k3s.
+    name: post-master-kyma-integration-k3s
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-master-kyma-integration-k3s
   name: kyma_integration
 - dashboard_tab:
   - code_search_url_template:
@@ -241,6 +248,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration
   name: post-master-kyma-integration
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration-k3s
+  name: post-master-kyma-integration-k3s
 - days_of_results: 90
   gcs_prefix: kyma-prow-logs/logs/post-rel116-kyma-github-release
   name: post-rel116-kyma-github-release
