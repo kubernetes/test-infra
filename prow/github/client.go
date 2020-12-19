@@ -132,6 +132,7 @@ type PullRequestClient interface {
 	Merge(org, repo string, pr int, details MergeDetails) error
 	IsMergeable(org, repo string, number int, SHA string) (bool, error)
 	ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error)
+	UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error
 }
 
 // CommitClient interface for commit related API actions
@@ -3708,6 +3709,42 @@ func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit
 		return nil, err
 	}
 	return commits, nil
+}
+
+// UpdatePullRequestBranch updates the pull request branch with the latest upstream changes by merging HEAD from the base branch into the pull request branch.
+//
+// GitHub API docs: https://developer.github.com/v3/pulls#update-a-pull-request-branch
+func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error {
+	durationLogger := c.log("UpdatePullRequestBranch", org, repo, *expectedHeadSha)
+	defer durationLogger()
+
+	data := struct {
+		// The expected SHA of the pull request's HEAD ref. This is the most recent commit on the pull request's branch.
+		// If the expected SHA does not match the pull request's HEAD, you will receive a 422 Unprocessable Entity status.
+		// You can use the "List commits" endpoint to find the most recent commit SHA. Default: SHA of the pull request's current HEAD ref.
+		ExpectedHeadSha *string `json:"expected_head_sha,omitempty"`
+	}{
+		ExpectedHeadSha: expectedHeadSha,
+	}
+
+	ge := githubError{}
+	code, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/update-branch", org, repo, number),
+		accept:      "application/vnd.github.lydian-preview+json",
+		org:         org,
+		requestBody: &data,
+		exitCodes:   []int{202, 422},
+	}, &ge)
+	if err != nil {
+		return err
+	}
+
+	if code == http.StatusUnprocessableEntity {
+		return fmt.Errorf("mismatch expected head sha: %s", *expectedHeadSha)
+	}
+
+	return nil
 }
 
 // newReloadingTokenSource creates a reloadingTokenSource.
