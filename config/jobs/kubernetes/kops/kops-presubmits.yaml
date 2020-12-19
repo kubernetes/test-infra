@@ -149,10 +149,9 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-kubetest2
   - name: pull-kops-e2e-k8s-containerd
-    skip_report: false
-    run_if_changed: '^(nodeup\/pkg|upup\/pkg\/fi\/cloudup)\/'
     branches:
     - master
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
