@@ -1,0 +1,18 @@
+steps:
+  - name: golang:$_GO_VERSION
+    args:
+     - go
+    - build
+    - -mod=readonly
+    - -a
+    - -o=./experiment/autobumper/generic_autobumper
+    - ./experiment/autobumper/main.go
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - build
+    - --tag=gcr.io/$PROJECT_ID/generic_autobump:$_GIT_TAG
+    - --tag=gcr.io/$PROJECT_ID/generic_autobump:latest
+    - ./experiment/autobumper
+images:
+  - 'gcr.io/$PROJECT_ID/generic_autobump:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/generic_autobump:latest'
