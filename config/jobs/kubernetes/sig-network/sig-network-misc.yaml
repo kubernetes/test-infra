@@ -1,5 +1,56 @@
 presubmits:
   kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
+    always_run: false
+    run_if_changed: '^test/e2e/network/'
+    optional: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --timeout=70
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --env=ALLOW_PRIVILEGED=true
+        - --env=NETWORK_POLICY_PROVIDER=calico
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+        - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --ginkgo-parallel=30
+        - --gcp-master-image=ubuntu
+        - --gcp-node-image=ubuntu
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack
+        - --ginkgo-parallel=30
+        - --extract=ci/latest
+        - --timeout=50m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-policies, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+      description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+
   - name: pull-kubernetes-e2e-gci-gce-ipvs
     always_run: false
     run_if_changed: '^pkg/.*/ipvs/'
@@ -533,3 +584,47 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
+
+- interval: 12h
+  name: ci-kubernetes-e2e-ubuntu-gce-network-policies
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ALLOW_PRIVILEGED=true
+      - --env=NETWORK_POLICY_PROVIDER=calico
+      - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+      - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+      - --ginkgo-parallel=30
+      - --gcp-master-image=ubuntu
+      - --gcp-node-image=ubuntu
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack
+      - --ginkgo-parallel=30
+      - --extract=ci/latest
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    testgrid-tab-name: network-policies, google-gce
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
