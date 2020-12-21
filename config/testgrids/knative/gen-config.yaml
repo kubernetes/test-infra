@@ -37,6 +37,7 @@ dashboard_groups:
   - knative-sandbox-net-certmanager
   - knative-sandbox-net-contour
   - knative-sandbox-net-http01
+  - knative-sandbox-net-ingressv2
   - knative-sandbox-net-istio
   - knative-sandbox-net-kourier
   - knative-sandbox-sample-controller
@@ -951,6 +952,20 @@ dashboards:
       url: https://github.com/knative-sandbox/net-http01/issues/
     test_group_name: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+    name: knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+    name: knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
     name: knative-sandbox-net-istio-continuous-beta-prow-tests
@@ -1680,6 +1695,49 @@ dashboards:
       url: https://github.com/knative-sandbox/net-http01/issues/
     test_group_name: ci-knative-sandbox-net-http01-nightly-release
   name: knative-sandbox-net-http01
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-auto-release
+    name: knative-sandbox-net-ingressv2-auto-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-auto-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-continuous
+    name: knative-sandbox-net-ingressv2-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-continuous
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-dot-release
+    name: knative-sandbox-net-ingressv2-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-go-coverage
+    name: knative-sandbox-net-ingressv2-go-coverage
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-go-coverage
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-nightly-release
+    name: knative-sandbox-net-ingressv2-nightly-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-nightly-release
+  name: knative-sandbox-net-ingressv2
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
@@ -2575,6 +2633,26 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-http01-nightly-release
   name: ci-knative-sandbox-net-http01-nightly-release
+  num_failures_to_alert: 1
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-auto-release
+  name: ci-knative-sandbox-net-ingressv2-auto-release
+  num_failures_to_alert: 1
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-continuous
+  name: ci-knative-sandbox-net-ingressv2-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+  name: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+- alert_stale_results_hours: 170
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-dot-release
+  name: ci-knative-sandbox-net-ingressv2-dot-release
+  num_failures_to_alert: 1
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-go-coverage
+  name: ci-knative-sandbox-net-ingressv2-go-coverage
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+  name: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-nightly-release
+  name: ci-knative-sandbox-net-ingressv2-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.16-dot-release
