@@ -535,9 +535,12 @@ def main(args):
     runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
 
+    for (k, v) in os.environ.items():
+        print >>sys.stderr, 'Env:', k, v
+
     if args.use_logexporter:
         # TODO(fejta): Take the below value through a flag instead of env var.
-        runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('GCS_ARTIFACTS_DIR', ''))
+        runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('LOG_DUMP_DIR', os.environ.get('GCS_ARTIFACTS_DIR', '')))
 
     if args.aws:
         # Legacy - prefer passing --deployment=kops, --provider=aws,
