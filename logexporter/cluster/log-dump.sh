@@ -878,24 +878,30 @@ function main() {
   if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
     echo "Uploading '${report_dir}' to '${gcs_artifacts_dir}'"
 
-    # Normally, result of gsutil uploading data will be different when
-    # target directory exists and when it's missing. 
-    # Simple `gsutil cp -r /tmp/dir/logs gs://a/b/c` call:
-    # 1. files in 'logs' will go to `gs://a/b/c/logs`, if 'c' existed.
-    # 2. files in 'logs' will go to `gs://a/b/c`, if 'c' hasn't exited.
-    #
-    # We do the following trick to consistently get the '2.' result:
-    # * We rename 'logs' to 'c'
-    # * Call `gsutil cp -r /tmp/dir/c gs://a/b/`
-    # This way in both cases (remote exists or not) we get consistent
-    # behavior.
-    #
-    # Similar pattern is used in bootstrap.py#L409-L416.
-    remote_dir=$(dirname ${gcs_artifacts_dir})
-    remote_basename=$(basename ${gcs_artifacts_dir})
-    mv ${report_dir} "${KUBE_TEMP}/${remote_basename}"
-    gsutil -m cp -r -c -z log,txt,xml "${KUBE_TEMP}/${remote_basename}" "${remote_dir}"
-    rm -rf "${KUBE_TEMP}/${remote_basename}"
+    if gsutil ls "${gcs_artifacts_dir}" > /dev/null; then
+      # If "${gcs_artifacts_dir}" exists, the simple call:
+      # `gsutil cp -r /tmp/dir/logs ${gcs_artifacts_dir}` will
+      #  create subdirectory 'logs' in ${gcs_artifacts_dir}
+      #
+      # If "${gcs_artifacts_dir}" exists, we want to merge its content
+      # with local logs. To do that we do the following trick:
+      # * Let's say that ${gcs_artifacts_dir} == 'gs://a/b/c'.
+      # * We rename 'logs' to 'c'
+      # * Call `gsutil cp -r /tmp/dir/c gs://a/b/`
+      #
+      # Similar pattern is used in bootstrap.py#L409-L416.
+      # It is a known issue that gsutil cp behavior is that complex.
+      # For more information on this, see:
+      # https://cloud.google.com/storage/docs/gsutil/commands/cp#how-names-are-constructed
+      remote_dir=$(dirname ${gcs_artifacts_dir})
+      remote_basename=$(basename ${gcs_artifacts_dir})
+      mv ${report_dir} "${KUBE_TEMP}/${remote_basename}"
+      gsutil -m cp -r -c -z log,txt,xml "${KUBE_TEMP}/${remote_basename}" "${remote_dir}"
+      rm -rf "${KUBE_TEMP}/${remote_basename}"
+    else  # ${gcs_artifacts_dir} doesn't exist.
+      gsutil -m cp -r -c -z log,txt,xml "${report_dir}" "${gcs_artifacts_dir}"
+      rm -rf "${report_dir}"
+    fi
   fi
 
   detect_node_failures
