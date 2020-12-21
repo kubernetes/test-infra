@@ -21,7 +21,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly report_dir="${1:-_artifacts}"
+readonly local_report_dir="${1:-_artifacts}"
+report_dir=""
 readonly gcs_artifacts_dir="${2:-}"
 readonly logexporter_namespace="${3:-logexporter}"
 
@@ -834,9 +835,7 @@ function detect_node_failures() {
   done
 }
 
-function main() {
-  setup
-  kube::util::ensure-temp-dir
+function dump_logs() {
   # Copy master logs to artifacts dir locally (through SSH).
   echo "Dumping logs from master locally to '${report_dir}'"
   dump_masters
@@ -852,6 +851,51 @@ function main() {
   else
     echo "Dumping logs from nodes locally to '${report_dir}'"
     dump_nodes
+  fi
+}
+
+# Without ${DUMP_TO_GCS_ONLY} == true:
+# * only logs exported by logexporter will be uploaded to
+#   ${gcs_artifacts_dir}
+# * other logs (master logs, nodes where logexporter failed) will be
+#   fetched locally to ${report_dir}.
+# If $DUMP_TO_GCS_ONLY == 'true', all logs will be uploaded directly to
+# ${gcs_artifacts_dir}.
+function main() {
+  setup
+  kube::util::ensure-temp-dir
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
+    report_dir="${KUBE_TEMP}/logs"
+    mkdir -p "${report_dir}"
+    echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.txt"
+    echo "Dumping logs temporarily to '${report_dir}'. Will upload to '${gcs_artifacts_dir}' later."
+  else
+    report_dir="${local_report_dir}"
+  fi
+
+  dump_logs
+
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
+    echo "Uploading '${report_dir}' to '${gcs_artifacts_dir}'"
+
+    # Normally, result of gsutil uploading data will be different when
+    # target directory exists and when it's missing. 
+    # Simple `gsutil cp -r /tmp/dir/logs gs://a/b/c` call:
+    # 1. files in 'logs' will go to `gs://a/b/c/logs`, if 'c' existed.
+    # 2. files in 'logs' will go to `gs://a/b/c`, if 'c' hasn't exited.
+    #
+    # We do the following trick to consistently get the '2.' result:
+    # * We rename 'logs' to 'c'
+    # * Call `gsutil cp -r /tmp/dir/c gs://a/b/`
+    # This way in both cases (remote exists or not) we get consistent
+    # behavior.
+    #
+    # Similar pattern is used in bootstrap.py#L409-L416.
+    remote_dir=$(dirname ${gcs_artifacts_dir})
+    remote_basename=$(basename ${gcs_artifacts_dir})
+    mv ${report_dir} "${KUBE_TEMP}/${remote_basename}"
+    gsutil -m cp -r -c -z log,txt,xml "${KUBE_TEMP}/${remote_basename}" "${remote_dir}"
+    rm -rf "${KUBE_TEMP}/${remote_basename}"
   fi
 
   detect_node_failures
