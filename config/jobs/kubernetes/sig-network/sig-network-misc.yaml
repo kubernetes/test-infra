@@ -617,7 +617,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|L7|Slow      
       - --ginkgo-parallel=30
       - --extract=ci/latest
       - --timeout=50m
@@ -627,4 +627,4 @@ periodics:
     testgrid-tab-name: network-policies, google-gce
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-    description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+    description: Uses kubetest to run Network Policy tests (in parallel with other consistent E2Es) against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
