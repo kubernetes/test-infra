@@ -278,6 +278,8 @@ branch-protection:
             - ci-validate-manifests
           branches:
             gh-pages:
+              required_status_checks:
+                contexts: []
               restrictions:
                 users:
                 - k8s-ci-robot
