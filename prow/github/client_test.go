@@ -176,32 +176,6 @@ func TestRetryBase(t *testing.T) {
 	}
 }
 
-func TestBotName(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/user" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, "{\"login\": \"wowza\"}")
-	}))
-	c := getClient(ts.URL)
-	botName, err := c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
-	}
-	ts.Close()
-	botName, err = c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
-	}
-}
-
 func TestIsMember(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

@@ -217,7 +217,7 @@ func (o *GitHubOptions) getGitAuthentication(secretAgent *secret.Agent, dryRun b
 
 	// Use Personal Access token auth
 	if o.appsTokenGenerator == nil {
-		botName, err := githubClient.BotName()
+		botUser, err := githubClient.BotUser()
 		if err != nil {
 			return "", nil, fmt.Errorf("error getting bot name: %v", err)
 		}
@@ -225,7 +225,7 @@ func (o *GitHubOptions) getGitAuthentication(secretAgent *secret.Agent, dryRun b
 			return string(secretAgent.GetTokenGenerator(o.TokenPath)()), nil
 		}
 
-		return botName, generator, nil
+		return botUser.Login, generator, nil
 	}
 
 	// Use github apps auth

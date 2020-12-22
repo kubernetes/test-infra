@@ -205,8 +205,8 @@ type fakeClient struct {
 	newMembers sets.String
 }
 
-func (c *fakeClient) BotName() (string, error) {
-	return "me", nil
+func (c *fakeClient) BotUser() (*github.UserData, error) {
+	return &github.UserData{Login: "me"}, nil
 }
 
 func (c fakeClient) makeMembers(people sets.String) []github.TeamMember {
@@ -2174,8 +2174,8 @@ func (c fakeDumpClient) GetRepo(owner, repo string) (github.FullRepo, error) {
 	return github.FullRepo{}, fmt.Errorf("not found")
 }
 
-func (c fakeDumpClient) BotName() (string, error) {
-	return "admin", nil
+func (c fakeDumpClient) BotUser() (*github.UserData, error) {
+	return &github.UserData{Login: "admin"}, nil
 }
 
 func fixup(ret *org.Config) {

@@ -72,11 +72,11 @@ func (c fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) 
 	return &github.CheckRunList{}, nil
 }
 
-func (c fgc) BotName() (string, error) {
+func (c fgc) BotUser() (*github.UserData, error) {
 	if c.botName == "error" {
-		return "", errors.New("injected BotName() error")
+		return nil, errors.New("injected BotUser() error")
 	}
-	return c.botName, nil
+	return &github.UserData{Login: c.botName}, nil
 }
 
 func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {

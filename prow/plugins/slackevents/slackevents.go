@@ -41,7 +41,7 @@ type slackClient interface {
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type client struct {
@@ -190,11 +190,11 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) 
 
 func echoToSlack(pc client, e github.GenericCommentEvent) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := pc.GitHubClient.BotName()
+	botUserChecker, err := pc.GitHubClient.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if e.User.Login == botName {
+	if botUserChecker(e.User.Login) {
 		return nil
 	}
 	if e.Action != github.GenericCommentActionCreated {

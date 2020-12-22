@@ -63,11 +63,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	// Skip bot comments.
-	botName, err := c.GitHubClient.BotName()
+	botUserChecker, err := c.GitHubClient.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if commentAuthor == botName {
+
+	if botUserChecker(commentAuthor) {
 		c.Logger.Debug("Comment is made by the bot, skipping.")
 		return nil
 	}

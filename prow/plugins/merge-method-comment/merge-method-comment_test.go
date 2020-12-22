@@ -25,6 +25,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const fakeBotName = "k8s-bot"
+
 type ghc struct {
 	*testing.T
 	comments         map[string][]github.IssueComment
@@ -40,15 +42,11 @@ func (c *ghc) CreateComment(org, repo string, num int, comment string) error {
 	if len(c.comments) == 0 {
 		c.comments = make(map[string][]github.IssueComment)
 	}
-	botName, err := c.BotName()
-	if err != nil {
-		return err
-	}
 	orgRepoNum := fmt.Sprintf("%s/%s#%d", org, repo, num)
 	c.comments[orgRepoNum] = append(c.comments[orgRepoNum],
 		github.IssueComment{
 			Body: comment,
-			User: github.User{Login: botName},
+			User: github.User{Login: fakeBotName},
 		},
 	)
 	return nil
@@ -62,8 +60,8 @@ func (c *ghc) ListIssueComments(org, repo string, num int) ([]github.IssueCommen
 	return c.comments[fmt.Sprintf("%s/%s#%d", org, repo, num)], nil
 }
 
-func (c *ghc) BotName() (string, error) {
-	return "k8s-bot", nil
+func (c *ghc) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool { return candidate == fakeBotName }, nil
 }
 
 func TestHandlePR(t *testing.T) {

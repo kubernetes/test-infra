@@ -188,8 +188,11 @@ type TeamClient interface {
 
 // UserClient interface for user related API actions
 type UserClient interface {
-	BotName() (string, error)
+	// BotUser will return details about the user the client runs as. Use BotUserChecker()
+	// instead when checking for comment authorship, as the Username in comments might have
+	// a [bot] suffix when using github apps authentication.
 	BotUser() (*UserData, error)
+	// BotUserChecker can be used to check if a comment was authored by the bot user.
 	BotUserChecker() (func(candidate string) bool, error)
 	Email() (string, error)
 }
@@ -1005,20 +1008,6 @@ func (c *client) getUserData() error {
 	authHeaderHash := fmt.Sprintf("%x", sha256.Sum256([]byte(c.authHeader()))) // use %x to make this a utf-8 string for use as a label
 	userInfo.With(prometheus.Labels{"token_hash": authHeaderHash, "login": c.userData.Login, "email": c.userData.Email}).Set(1)
 	return nil
-}
-
-// BotName returns the login of the authenticated identity.
-//
-// See https://developer.github.com/v3/users/#get-the-authenticated-user
-func (c *client) BotName() (string, error) {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-	if c.userData == nil {
-		if err := c.getUserData(); err != nil {
-			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
-		}
-	}
-	return c.userData.Login, nil
 }
 
 // BotUser returns the user data of the authenticated identity.

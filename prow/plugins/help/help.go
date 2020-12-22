@@ -81,7 +81,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
@@ -125,18 +125,18 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.Help)
 		}
 
-		botName, err := gc.BotName()
+		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get bot name.")
 		}
-		cp.PruneComments(shouldPrune(log, botName, helpMsgPruneMatch))
+		cp.PruneComments(shouldPrune(log, botUserChecker, helpMsgPruneMatch))
 
 		// if it has the good-first-issue label, remove it too
 		if hasGoodFirstIssue {
 			if err := gc.RemoveLabel(org, repo, e.Number, labels.GoodFirstIssue); err != nil {
 				log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.GoodFirstIssue)
 			}
-			cp.PruneComments(shouldPrune(log, botName, goodFirstIssueMsgPruneMatch))
+			cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 		}
 
 		return nil
@@ -182,11 +182,11 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.GoodFirstIssue)
 		}
 
-		botName, err := gc.BotName()
+		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get bot name.")
 		}
-		cp.PruneComments(shouldPrune(log, botName, goodFirstIssueMsgPruneMatch))
+		cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 
 		return nil
 	}
@@ -195,9 +195,9 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 }
 
 // shouldPrune finds comments left by this plugin.
-func shouldPrune(log *logrus.Entry, botName, msgPruneMatch string) func(github.IssueComment) bool {
+func shouldPrune(log *logrus.Entry, isBot func(string) bool, msgPruneMatch string) func(github.IssueComment) bool {
 	return func(comment github.IssueComment) bool {
-		if comment.User.Login != botName {
+		if !isBot(comment.User.Login) {
 			return false
 		}
 		return strings.Contains(comment.Body, msgPruneMatch)
