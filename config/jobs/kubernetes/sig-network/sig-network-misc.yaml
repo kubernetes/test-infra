@@ -44,7 +44,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
         - --ginkgo-parallel=30
-        - --extract=ci/latest
+        - --extract=local
         - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
     annotations:
