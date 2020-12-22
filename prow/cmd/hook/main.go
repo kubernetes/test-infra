@@ -57,6 +57,7 @@ type options struct {
 	gracePeriod            time.Duration
 	kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions
+	githubEnablement       prowflagutil.GitHubEnablementOptions
 	bugzilla               prowflagutil.BugzillaOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	jira                   prowflagutil.JiraOptions
@@ -66,7 +67,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -85,7 +86,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement} {
 		group.AddFlags(fs)
 	}
 
@@ -111,7 +112,12 @@ func main() {
 	var tokens []string
 
 	// Append the path of hmac and github secrets.
-	tokens = append(tokens, o.github.TokenPath)
+	if o.github.TokenPath != "" {
+		tokens = append(tokens, o.github.TokenPath)
+	}
+	if o.github.AppPrivateKeyPath != "" {
+		tokens = append(tokens, o.github.AppPrivateKeyPath)
+	}
 	tokens = append(tokens, o.webhookSecretFile)
 
 	// This is necessary since slack token is optional.
@@ -225,6 +231,7 @@ func main() {
 		ConfigAgent:    configAgent,
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
+		RepoEnabled:    o.githubEnablement.EnablementChecker(),
 		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
 	interrupts.OnInterrupt(func() {
