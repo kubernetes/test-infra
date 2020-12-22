@@ -45,6 +45,7 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
+        # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321 
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
         - --ginkgo-parallel=30
