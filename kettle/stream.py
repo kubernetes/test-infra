@@ -40,7 +40,7 @@ import model
 import make_db
 import make_json
 
-MAX_ROW_UPLOAD=25
+MAX_ROW_UPLOAD = 25
 
 def process_changes(results):
     """Split GCS change events into trivial ack_ids and builds to further process."""
@@ -113,10 +113,10 @@ def insert_data(bq_client, table, rows_iter):
         rows_iter: row_id, dict representing a make_json.Build
     Returns the row_ids that were inserted.
     """
-    def divide_chunks(l, n=MAX_ROW_UPLOAD):
+    def divide_chunks(l, bin_size=MAX_ROW_UPLOAD):
         # break up rows to not hit data limits
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
+        for i in range(0, len(l), bin_size):
+            yield l[i:i + bin_size]
 
     emitted, rows = [], []
 
