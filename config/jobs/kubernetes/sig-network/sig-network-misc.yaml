@@ -1,8 +1,10 @@
 presubmits:
+  # Note, these jobs need to generally stage reults to a GCE bucket.
+  # We currently have two, network-policies , and ipvs...
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
     always_run: false
-    run_if_changed: '^test/e2e/network/'
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
     skip_report: false
     labels:
@@ -16,10 +18,14 @@ presubmits:
       containers:
       - args:
         - --timeout=70
-        - --bare
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --scenario=kubernetes_e2e
         - --
-        - --check-leaked-resources
+        - --build=bazel
+        - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
         - --env=KUBE_CONTAINER_RUNTIME=containerd
@@ -39,11 +45,14 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack
+        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
         - --ginkgo-parallel=30
-        - --extract=ci/latest
         - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-master
+        resources:
+          requests:
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-network-gce
       testgrid-tab-name: presubmit-network-policies, google-gce
@@ -617,8 +626,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack
-      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive
       - --extract=ci/latest
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
