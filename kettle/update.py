@@ -67,7 +67,7 @@ def main():
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
         call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
-            ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
+            ' --dataset k8s-gubernator:build --tables all:30 day:1 week:7 --stop_at=1')
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
