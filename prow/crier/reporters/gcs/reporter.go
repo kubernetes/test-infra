@@ -44,7 +44,7 @@ type gcsReporter struct {
 }
 
 func (gr *gcsReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second) // TODO: pass through a global context?
 	defer cancel()
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
