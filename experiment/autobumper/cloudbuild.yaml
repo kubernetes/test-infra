@@ -5,8 +5,13 @@ steps:
     - build
     - -mod=readonly
     - -a
+    - -installsuffix=cgo
     - -o=./experiment/autobumper/generic_autobumper
     - ./experiment/autobumper/main.go
+    env:
+    - CGO_ENABLED=0
+    - GOOS=linux
+    - GOARCH=amd64
   - name: gcr.io/cloud-builders/docker
     args:
     - build
