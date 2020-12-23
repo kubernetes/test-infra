@@ -32,7 +32,7 @@ periodics:
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -67,7 +67,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -101,7 +101,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -135,7 +135,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -169,7 +169,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -204,7 +204,7 @@ periodics:
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
