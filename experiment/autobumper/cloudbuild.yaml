@@ -6,7 +6,7 @@ steps:
     - -mod=readonly
     - -a
     - -installsuffix=cgo
-    - -o=./experiment/autobumper/generic_autobumper
+    - -o=./experiment/autobumper/generic_autobump
     - ./experiment/autobumper/main.go
     env:
     - CGO_ENABLED=0
