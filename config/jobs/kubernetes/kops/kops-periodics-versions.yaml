@@ -27,12 +27,12 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -63,11 +63,11 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest-1.20
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -97,11 +97,11 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/latest-1.19
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -131,11 +131,11 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.18
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -165,11 +165,11 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.17
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -199,12 +199,12 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.16
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeHandler
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
   annotations:
@@ -268,7 +268,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.14
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -303,7 +303,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.13
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -338,7 +338,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.12
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
@@ -373,7 +373,7 @@ periodics:
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --extract=release/stable-1.11
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd
+      - --kops-args=--container-runtime=containerd --networking=calico
       - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-07-20-58035
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
