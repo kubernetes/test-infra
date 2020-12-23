@@ -17,6 +17,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -129,7 +130,7 @@ type testResourceGetter struct {
 	patchType types.PatchType
 }
 
-func (rg testResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, error) {
+func (rg testResourceGetter) GetPod(_ context.Context, cluster, namespace, name string) (*v1.Pod, error) {
 	if rg.cluster != cluster {
 		return nil, fmt.Errorf("expected cluster %q but got cluster %q", rg.cluster, cluster)
 	}
@@ -161,8 +162,8 @@ func (rg testResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) (
 	return rg.events, nil
 }
 
-func (rg testResourceGetter) PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error {
-	if _, err := rg.GetPod(cluster, namespace, name); err != nil {
+func (rg testResourceGetter) PatchPod(ctx context.Context, cluster, namespace, name string, pt types.PatchType, data []byte) error {
+	if _, err := rg.GetPod(ctx, cluster, namespace, name); err != nil {
 		return err
 	}
 	if rg.patchType != pt {
