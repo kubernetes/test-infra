@@ -4941,29 +4941,11 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: istio-boutique-rollback-1.8-1.7
-    name: istio-boutique-rollback-1.8-1.7
-    open_bug_template:
-      url: https://github.com/istio/tools/issues/
-    test_group_name: istio-boutique-rollback-1.8-1.7
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
     description: istio-boutique-rollback-master-1.8
     name: istio-boutique-rollback-master-1.8
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     test_group_name: istio-boutique-rollback-master-1.8
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: istio-boutique-upgrade-1.7-1.8
-    name: istio-boutique-upgrade-1.7-1.8
-    open_bug_template:
-      url: https://github.com/istio/tools/issues/
-    test_group_name: istio-boutique-upgrade-1.7-1.8
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -5320,14 +5302,8 @@ test_groups:
 - gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.8
   name: daily-nighthawk-performance-benchmark-release-1.8
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-boutique-rollback-1.8-1.7
-  name: istio-boutique-rollback-1.8-1.7
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-boutique-rollback-master-1.8
   name: istio-boutique-rollback-master-1.8
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-boutique-upgrade-1.7-1.8
-  name: istio-boutique-upgrade-1.7-1.8
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-boutique-upgrade-master-1.8
   name: istio-boutique-upgrade-master-1.8
