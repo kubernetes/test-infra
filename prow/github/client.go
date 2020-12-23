@@ -442,8 +442,6 @@ func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]in
 
 func (t *throttler) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	t.Wait()
-	t.lock.Lock()
-	defer t.lock.Unlock()
 	return t.graph.QueryWithGitHubAppsSupport(ctx, q, vars, org)
 }
 
