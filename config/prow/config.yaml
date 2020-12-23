@@ -180,6 +180,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cloud-provider-aws:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
