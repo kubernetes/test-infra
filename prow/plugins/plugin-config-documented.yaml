@@ -533,11 +533,7 @@ slack:
     mentionchannels:
       - ""
     mergewarnings:
-      - # Deprecated: Use ExemptBranches instead.
-        branch_whitelist:
-            "": null
-
-        # List of channels on which a event is published.
+      - # List of channels on which a event is published.
         channels:
           - ""
 
@@ -551,10 +547,6 @@ slack:
 
         # Repos is either of the form org/repos or just org.
         repos:
-          - ""
-
-        # Deprecated: Use ExemptUsers instead.
-        whitelist:
           - ""
 triggers:
   - # JoinOrgURL is a link that redirects users to a location where they
