@@ -546,12 +546,8 @@ type MergeWarning struct {
 	Repos []string `json:"repos,omitempty"`
 	// List of channels on which a event is published.
 	Channels []string `json:"channels,omitempty"`
-	// Deprecated: Use ExemptUsers instead.
-	WhiteList []string `json:"whitelist,omitempty"`
 	// A slack event is published if the user is not part of the ExemptUsers.
 	ExemptUsers []string `json:"exempt_users,omitempty"`
-	// Deprecated: Use ExemptBranches instead.
-	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
 	// A slack event is published if the user is not on the exempt branches.
 	ExemptBranches map[string][]string `json:"exempt_branches,omitempty"`
 }
@@ -1082,34 +1078,6 @@ func validateTrigger(triggers []Trigger) error {
 	return nil
 }
 
-var (
-	warnSlackMergeWarningWhiteList       time.Time
-	warnSlackMergeWarningBranchWhiteList time.Time
-)
-
-func validateSlack(slack Slack) error {
-	for i := range slack.MergeWarnings {
-		if len(slack.MergeWarnings[i].WhiteList) > 0 {
-			if len(slack.MergeWarnings[i].ExemptUsers) > 0 {
-				return errors.New("invalid Slack merge warning configuration: both whitelist (deprecated) and exempt_users are set.")
-			}
-
-			logrusutil.ThrottledWarnf(&warnSlackMergeWarningWhiteList, 5*time.Minute, "whitelist field in Slack merge warning is deprecated and has been renamed to exempt_users. Please update your configuration.")
-			slack.MergeWarnings[i].ExemptUsers = slack.MergeWarnings[i].WhiteList
-		}
-
-		if len(slack.MergeWarnings[i].BranchWhiteList) > 0 {
-			if len(slack.MergeWarnings[i].ExemptBranches) > 0 {
-				return errors.New("invalid Slack merge warning configuration: both branch_whitelist (deprecated) and exempt_branches are set.")
-			}
-
-			logrusutil.ThrottledWarnf(&warnSlackMergeWarningBranchWhiteList, 5*time.Minute, "branch_whitelist field in Slack merge warning is deprecated and has been renamed to exempt_branches. Please update your configuration.")
-			slack.MergeWarnings[i].ExemptBranches = slack.MergeWarnings[i].BranchWhiteList
-		}
-	}
-	return nil
-}
-
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1181,9 +1149,6 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 	if err := validateTrigger(c.Triggers); err != nil {
-		return err
-	}
-	if err := validateSlack(c.Slack); err != nil {
 		return err
 	}
 
