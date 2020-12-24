@@ -193,6 +193,7 @@ type MasterProfile struct {
 	OSDiskSizeGB        int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	AvailabilityProfile string              `json:"availabilityProfile,omitempty"`
 	AvailabilityZones   []string            `json:"availabilityZones,omitempty"`
+	UltraSSDEnabled     bool                `json:"ultraSSDEnabled,omitempty"`
 }
 
 type AgentPoolProfile struct {
@@ -209,6 +210,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB           int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	EnableVMSSNodePublicIP bool                `json:"enableVMSSNodePublicIP,omitempty"`
 	StorageProfile         string              `json:"storageProfile,omitempty"`
+	UltraSSDEnabled        bool                `json:"ultraSSDEnabled,omitempty"`
 }
 
 type AzureClient struct {
