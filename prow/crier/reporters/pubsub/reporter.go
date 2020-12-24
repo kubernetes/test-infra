@@ -98,12 +98,18 @@ func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJo
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
+	// TODO: Consider caching the pubsub client.
 	client, err := pubsub.NewClient(ctx, message.Project)
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
+	defer func() {
+		logrus.WithError(client.Close()).Debug("Closed pubsub client.")
+	}()
+
 	topic := client.Topic(message.Topic)
+	defer topic.Stop() // Sends remaining messages then stops goroutines.
 
 	d, err := json.Marshal(message)
 	if err != nil {
