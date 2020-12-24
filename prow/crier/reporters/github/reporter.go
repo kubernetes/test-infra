@@ -53,16 +53,32 @@ type simplePull struct {
 }
 
 type shardedLock struct {
-	mapLock *sync.Mutex
+	mapLock *sync.RWMutex
 	locks   map[simplePull]*sync.Mutex
 }
 
 func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
-	s.mapLock.Lock()
-	defer s.mapLock.Unlock()
-	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = &sync.Mutex{}
+	s.mapLock.RLock()
+	defer s.mapLock.RUnlock()
+
+	_, exists := s.locks[key]
+	for !exists {
+		// The key is not in the map, we need to switch to the write lock, add the
+		// new key (if still needed) and then switch back to the read lock.
+		// The key might have been deleted while we switched back to the read lock
+		// though so we do this in a loop until we hold the read lock and the key
+		// exists.
+		s.mapLock.RUnlock()
+		s.mapLock.Lock()
+		if _, exists = s.locks[key]; !exists {
+			s.locks[key] = &sync.Mutex{}
+		}
+		s.mapLock.Unlock()
+		s.mapLock.RLock()
+
+		_, exists = s.locks[key]
 	}
+	s.locks[key].Lock()
 	return s.locks[key]
 }
 
@@ -104,7 +120,7 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		config:      cfg,
 		reportAgent: reportAgent,
 		prLocks: &shardedLock{
-			mapLock: &sync.Mutex{},
+			mapLock: &sync.RWMutex{},
 			locks:   map[simplePull]*sync.Mutex{},
 		},
 	}
@@ -144,7 +160,6 @@ func (c *Client) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reco
 			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
 		}
 		lock := c.prLocks.getLock(*key)
-		lock.Lock()
 		defer lock.Unlock()
 	}
 

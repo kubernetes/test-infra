@@ -163,7 +163,7 @@ func TestPresumitReportingLocks(t *testing.T) {
 
 func TestShardedLockCleanup(t *testing.T) {
 	t.Parallel()
-	sl := &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*sync.Mutex{}}
+	sl := &shardedLock{mapLock: &sync.RWMutex{}, locks: map[simplePull]*sync.Mutex{}}
 	key := simplePull{"org", "repo", 1}
 	sl.locks[key] = &sync.Mutex{}
 	sl.cleanup()
