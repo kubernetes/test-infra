@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/sirupsen/logrus"
@@ -95,12 +96,12 @@ func (c *Client) ShouldReport(_ *logrus.Entry, pj *prowapi.ProwJob) bool {
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
 func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
-	message := c.generateMessageFromPJ(pj)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	ctx := context.Background()
+	message := c.generateMessageFromPJ(pj)
 	// TODO: Consider caching the pubsub client.
 	client, err := pubsub.NewClient(ctx, message.Project)
-
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
