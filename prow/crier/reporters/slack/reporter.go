@@ -18,6 +18,7 @@ package slack
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"text/template"
 
@@ -71,7 +72,7 @@ func reportTemplate(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig
 	return prowCfg.ReportTemplate
 }
 
-func (sr *slackReporter) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+func (sr *slackReporter) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 	return []*v1.ProwJob{pj}, nil, sr.report(log, pj)
 }
 
@@ -105,7 +106,7 @@ func (sr *slackReporter) GetName() string {
 	return reporterName
 }
 
-func (sr *slackReporter) ShouldReport(logger *logrus.Entry, pj *v1.ProwJob) bool {
+func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, pj *v1.ProwJob) bool {
 	jobCfg := jobConfig(pj)
 	prowCfg := sr.getConfig(pj)
 

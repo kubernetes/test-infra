@@ -40,11 +40,11 @@ type ReportClient interface {
 	// Report reports a Prowjob. The provided logger is already populated with the
 	// prowjob name and the reporter name.
 	// If a reporter wants to defer reporting, it can return a reconcile.Result with a RequeueAfter
-	Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error)
+	Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error)
 	GetName() string
 	// ShouldReport determines if a ProwJob should be reported. The provided logger
 	// is already populated with the prowjob name and the reporter name.
-	ShouldReport(log *logrus.Entry, pj *prowv1.ProwJob) bool
+	ShouldReport(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) bool
 }
 
 // reconciler struct defines how a controller should encapsulate
@@ -182,7 +182,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 
 	log = log.WithField("jobName", pj.Spec.Job)
 
-	if !pj.Spec.Report || !r.reporter.ShouldReport(log, &pj) {
+	if !pj.Spec.Report || !r.reporter.ShouldReport(ctx, log, &pj) {
 		return nil, nil
 	}
 
@@ -199,7 +199,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 
 	log = log.WithField("jobStatus", pj.Status.State)
 	log.Info("Will report state")
-	pjs, requeue, err := r.reporter.Report(log, &pj)
+	pjs, requeue, err := r.reporter.Report(ctx, log, &pj)
 	if err != nil {
 		log.WithError(err).Error("failed to report job")
 		return nil, fmt.Errorf("failed to report job: %w", err)

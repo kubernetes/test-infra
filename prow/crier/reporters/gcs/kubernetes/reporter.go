@@ -93,13 +93,13 @@ func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([
 	return events.Items, nil
 }
 
-func (gr *gcsK8sReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
-	result, err := gr.report(log, pj)
+func (gr *gcsK8sReporter) Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+	result, err := gr.report(ctx, log, pj)
 	return []*prowv1.ProwJob{pj}, result, err
 }
 
-func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+func (gr *gcsK8sReporter) report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	// Check if we have a destination before adding a finalizer so we don't add
@@ -245,7 +245,7 @@ func (gr *gcsK8sReporter) GetName() string {
 	return kubernetesreporterapi.ReporterName
 }
 
-func (gr *gcsK8sReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
+func (gr *gcsK8sReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	// This reporting only makes sense for the Kubernetes agent (otherwise we don't
 	// have a pod to look up). It is only particularly useful for us to look at
 	// complete jobs that have a build ID.

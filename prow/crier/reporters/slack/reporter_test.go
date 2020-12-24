@@ -17,6 +17,7 @@ limitations under the License.
 package slack
 
 import (
+	"context"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -202,7 +203,7 @@ func TestShouldReport(t *testing.T) {
 				config: cfgGetter,
 			}
 
-			if result := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), tc.pj); result != tc.expected {
+			if result := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj); result != tc.expected {
 				t.Errorf("expected result to be %t but was %t", tc.expected, result)
 			}
 		})
@@ -228,14 +229,14 @@ func TestReloadsConfig(t *testing.T) {
 		config: cfgGetter,
 	}
 
-	if shouldReport := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj); shouldReport {
+	if shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); shouldReport {
 		t.Error("Did expect shouldReport to be false")
 	}
 
 	cfg.JobStatesToReport = []v1.ProwJobState{v1.FailureState}
 	cfg.JobTypesToReport = []v1.ProwJobType{v1.PostsubmitJob}
 
-	if shouldReport := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj); !shouldReport {
+	if shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); !shouldReport {
 		t.Error("Did expect shouldReport to be true after config change")
 	}
 }
@@ -469,7 +470,7 @@ func TestShouldReportDefaultsToExtraRefs(t *testing.T) {
 		},
 	}
 
-	if !sr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), job) {
+	if !sr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job) {
 		t.Fatal("expected job to report but did not")
 	}
 }
@@ -513,7 +514,7 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 		client: &fakeSlackClient{},
 	}
 
-	if _, _, err := sr.Report(logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
+	if _, _, err := sr.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
 		t.Fatalf("reporting failed: %v", err)
 	}
 	if sr.client.(*fakeSlackClient).messages["emercengy"] != "there you go" {

@@ -113,7 +113,7 @@ func TestShouldReport(t *testing.T) {
 			}
 
 			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
-			shouldReport := kgr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj)
+			shouldReport := kgr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if shouldReport != tc.shouldReport {
 				t.Errorf("Expected ShouldReport() to return %v, but got %v", tc.shouldReport, shouldReport)
 			}
@@ -375,7 +375,7 @@ func TestReportPodInfo(t *testing.T) {
 			}
 			author := &testutil.TestAuthor{}
 			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
-			reconcileResult, err := reporter.report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			reconcileResult, err := reporter.report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 
 			if tc.expectErr {
 				if err == nil {

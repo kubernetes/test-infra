@@ -47,7 +47,7 @@ type fakeReporter struct {
 	err              error
 }
 
-func (f *fakeReporter) Report(_ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+func (f *fakeReporter) Report(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
 	f.reported = append(f.reported, pj.Spec.Job)
 	return []*prowv1.ProwJob{pj}, f.res, f.err
 }
@@ -56,7 +56,7 @@ func (f *fakeReporter) GetName() string {
 	return reporterName
 }
 
-func (f *fakeReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
+func (f *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	return f.shouldReportFunc(pj)
 }
 
