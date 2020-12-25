@@ -23,7 +23,7 @@ THREADS = 32
 MAX_BAD_RECORDS = 1000
 DAYS_OLD = 1.9
 DAY = 1
-WEEK = 2
+WEEK = 7
 MONTH = 30
 
 def print_dump(file):
