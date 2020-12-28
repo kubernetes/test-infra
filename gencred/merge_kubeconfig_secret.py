@@ -52,6 +52,9 @@ def call(cmd, **kwargs):
 def main(args):
     print(args)
     validateArgs(args)
+    print('Ensuring the kubeconfig current-context is not set.')
+    call('kubectl config unset current-context')
+
     if args.auto:
         # We need to determine the dest key automatically.
         args.dest_key = time.strftime('config-%Y%m%d')
