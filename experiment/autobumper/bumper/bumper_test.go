@@ -876,9 +876,9 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 }
 
 func TestMakeCommitSummary(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
-	inconsistentPrefix := Prefix{Prefix: "gcr.io/inconsistent/", ConsistentImages: false}
+	prowPrefix := Prefix{Name: "Prow", Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	boskosPrefix := Prefix{Name: "Boskos", Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
+	inconsistentPrefix := Prefix{Name: "Inconsistent", Prefix: "gcr.io/inconsistent/", ConsistentImages: false}
 	testCases := []struct {
 		name           string
 		prefixes       []Prefix
@@ -890,25 +890,25 @@ func TestMakeCommitSummary(t *testing.T) {
 			name:           "Two prefixes, but only one bumped",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
-			expectedResult: "Update gcr.io/k8s-prow/ to tag1,",
+			expectedResult: "Update Prow to tag1",
 		},
 		{
 			name:           "Two prefixes, both bumped",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
-			expectedResult: "Update gcr.io/k8s-prow/ to tag1, gcr.io/k8s-boskos/ to tag2,",
+			expectedResult: "Update Prow to tag1, Boskos to tag2",
 		},
 		{
 			name:           "Empty versions",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{},
-			expectedResult: "Update gcr.io/k8s-prow/, gcr.io/k8s-boskos/ images as necessary",
+			expectedResult: "Update Prow, Boskos images as necessary",
 		},
 		{
 			name:           "One bumped inconsistently",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}, "tag3": {"gcr.io/inconsistnet/test:tag2"}},
-			expectedResult: "Update gcr.io/k8s-prow/ to tag1, gcr.io/k8s-boskos/ to tag2, and gcr.io/inconsistent/,  as needed",
+			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
 		},
 	}
 	for _, tc := range testCases {

@@ -51,6 +51,7 @@ We need to fulfil those requirements to use this tool:
 	* extraFiles: The extra non-yaml file to be considered in this bump.
 	* targetVersion: The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
 	* remoteName: The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
+	* headBranchName: The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
 	* prefixes: List of prefixes that the autobumped is looking for, and other information needed to bump them. The Fields for the Prefix are as follows:
         * name: Name of the tool being bumped
 	    * prefix: The image prefix that the autobumper should look for

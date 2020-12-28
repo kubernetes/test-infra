@@ -43,18 +43,14 @@ type ensureClient interface {
 	GetIssue(org, repo string, number int) (*github.Issue, error)
 }
 
-func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int, error) {
-	if matchTitle == "" {
-		return nil, nil
-	}
-
+func UpdatePR(org, repo, title, body, headBranch string, gc updateClient) (*int, error) {
 	logrus.Info("Looking for a PR to reuse...")
 	me, err := gc.BotUser()
 	if err != nil {
 		return nil, fmt.Errorf("bot name: %v", err)
 	}
 
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title repo:"+org+"/"+repo+" author:"+me.Login+" "+matchTitle, "updated", false)
+	issues, err := gc.FindIssues("is:open is:pr archived:false repo:"+org+"/"+repo+" author:"+me.Login+" head:"+headBranch, "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %v", err)
 	} else if len(issues) == 0 {
@@ -73,17 +69,17 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 	return &n, nil
 }
 
-func EnsurePR(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient) (*int, error) {
-	return EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, nil)
+func EnsurePR(org, repo, title, body, source, branch, headBranch string, allowMods bool, gc ensureClient) (*int, error) {
+	return EnsurePRWithLabels(org, repo, title, body, source, branch, headBranch, allowMods, gc, nil)
 }
 
-func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
-	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
+func EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
+	n, err := UpdatePR(org, repo, title, body, headBranch, gc)
 	if err != nil {
 		return nil, fmt.Errorf("update error: %v", err)
 	}
 	if n == nil {
-		pr, err := gc.CreatePullRequest(org, repo, title, body, source, branch, allowMods)
+		pr, err := gc.CreatePullRequest(org, repo, title, body, source, baseBranch, allowMods)
 		if err != nil {
 			return nil, fmt.Errorf("create error: %v", err)
 		}
