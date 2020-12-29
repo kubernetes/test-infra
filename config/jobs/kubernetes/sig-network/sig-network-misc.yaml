@@ -634,6 +634,9 @@ periodics:
       - --extract=ci/latest
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      resources:
+        requests:
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: network-policies, google-gce
