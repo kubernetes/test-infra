@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
       args:
       - --repo=github.com/kubernetes-sigs/application=master
       - --upload=gs://kubernetes-jenkins/logs/
@@ -57,7 +57,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
 
 
   annotations:
@@ -81,7 +81,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201217-addcacd806-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-statefulset
