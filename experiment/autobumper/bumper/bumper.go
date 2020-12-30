@@ -599,6 +599,12 @@ func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, 
 // GitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
+	return GitCommitSignoffAndPush(remote, remoteBranch, name, email, message, stdout, stderr, false)
+}
+
+// GitCommitSignoffAndPush runs a sequence of git commands to commit with optional signoff for the commit.
+// The "name", "email", and "message" are used for git-commit command
+func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	logrus.Info("Making git commit...")
 
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
@@ -607,6 +613,9 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
 		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
+	}
+	if signoff {
+		commitArgs = append(commitArgs, "--signoff")
 	}
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
