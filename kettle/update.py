@@ -74,7 +74,7 @@ def main():
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
-        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
+        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle-staging ' \
             '--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
 
 if __name__ == '__main__':
