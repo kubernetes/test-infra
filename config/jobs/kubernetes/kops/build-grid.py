@@ -139,6 +139,13 @@ def remove_line_with_prefix(s, prefix):
         raise Exception("line not found with prefix: " + prefix)
     return '\n'.join(keep)
 
+def should_skip_newer_k8s(k8s_version, kops_version):
+    if kops_version is None:
+        return False
+    if k8s_version is None:
+        return True
+    return float(k8s_version) > float(kops_version)
+
 def build_test(cloud='aws',
                distro=None,
                networking=None,
@@ -153,6 +160,8 @@ def build_test(cloud='aws',
     # pylint: disable=too-many-statements,too-many-branches
 
     if kops_version == "1.18" and container_runtime == "containerd":
+        return
+    if should_skip_newer_k8s(k8s_version, kops_version):
         return
 
     if distro is None:
