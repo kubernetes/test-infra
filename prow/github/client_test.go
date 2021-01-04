@@ -43,6 +43,7 @@ import (
 	"k8s.io/utils/diff"
 
 	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/version"
 )
 
 type testTime struct {
@@ -68,6 +69,7 @@ func getClient(url string) *client {
 		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
+			throttle: throttler{throttlerDelegate: &throttlerDelegate{}},
 			getToken: getToken,
 			censor: func(content []byte) []byte {
 				return content
@@ -2488,21 +2490,12 @@ func TestToCurl(t *testing.T) {
 	}
 }
 
-type orgHeaderCheckingRoundTripper struct {
-	t *testing.T
+type testRoundTripper struct {
+	rt func(*http.Request) (*http.Response, error)
 }
 
-func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if !strings.HasPrefix(r.URL.Path, "/app") {
-		var orgVal string
-		if v := r.Context().Value(githubOrgHeaderKey); v != nil {
-			orgVal = v.(string)
-		}
-		if orgVal != "org" {
-			rt.t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
-		}
-	}
-	return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	return rt.rt(r)
 }
 
 // TestAllMethodsThatDoRequestSetOrgHeader uses reflect to find all methods of the Client and
@@ -2528,7 +2521,19 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		}
 		t.Run(clientType.Method(i).Name, func(t *testing.T) {
 
-			checkingRoundTripper := &orgHeaderCheckingRoundTripper{t}
+			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+				if !strings.HasPrefix(r.URL.Path, "/app") {
+					var orgVal string
+					if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+						orgVal = v.(string)
+					}
+					if orgVal != "org" {
+						t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+					}
+				}
+				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+			}}
+
 			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
 			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
 			clientValue := reflect.ValueOf(ghClient)
@@ -2614,4 +2619,65 @@ func TestBotUserChecker(t *testing.T) {
 			t.Errorf("expect match: %t, got match: %t", tc.expectMatch, actualMatch)
 		}
 	}
+}
+
+func TestV4ClientSetsUserAgent(t *testing.T) {
+	// Make sure this is deterministic in tests
+	version.Version = "0"
+	var expectedUserAgent string
+	roundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+		if got := r.Header.Get("User-Agent"); got != expectedUserAgent {
+			return nil, fmt.Errorf("expected User-Agent %q, got %q", expectedUserAgent, got)
+		}
+		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
+	}}
+
+	_, client := newClient(
+		logrus.Fields{},
+		func() []byte { return nil },
+		func(b []byte) []byte { return b },
+		"",
+		nil,
+		"",
+		false,
+		nil,
+		roundTripper,
+	)
+
+	t.Run("User agent gets set initially", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForPlugin changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForPlugin("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForPlugin call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForSubcomponent changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForSubcomponent("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForSubcomponent call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
 }
