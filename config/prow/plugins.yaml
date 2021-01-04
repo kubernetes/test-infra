@@ -172,19 +172,11 @@ blockades:
   blockregexps:
   - ^keps/NEXT_KEP_NUMBER$
   explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
-### DO NOT REMOVE ###
-# This blockade is intended to restrict the approval of changes to existing release tooling to k/release repo admins.
-# We should only consider removing it after all tools mentioned in the regex have been removed/replaced.
-# ref:
-# - Go refactor umbrella: https://github.com/kubernetes/release/issues/918
-# - deb/rpm refactor umbrella: https://github.com/kubernetes/release/issues/1027
-# - Initial k/release blockade PR: https://github.com/kubernetes/test-infra/pull/13328
-# - Issue on mitigating CI failures caused by k/release changes: https://github.com/kubernetes/release/issues/816
 - repos:
   - kubernetes/release
   blockregexps:
-  - ^(anago|compile-release-tools|gcb\/|lib\/|prin|push-build.sh)
-  explanation: "Changes to certain release tools can affect our ability to test, build, and release Kubernetes. This PR must be explicitly approved by SIG Release repo admins."
+  - ^push-build.sh
+  explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
 
 blunderbuss:
   max_request_count: 2
