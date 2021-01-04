@@ -1,12 +1,11 @@
 presubmits:
   kubernetes-sigs/controller-runtime:
-  - name: pull-controller-runtime-test-master
+  - name: pull-controller-runtime-test-release-0-7
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/controller-runtime
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.7$
     spec:
       containers:
       - image: golang:1.15
@@ -17,14 +16,14 @@ presubmits:
             cpu: "7000m"
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-master
-  - name: pull-controller-runtime-apidiff-master
+      testgrid-tab-name: controller-runtime-release-0.7
+  - name: pull-controller-runtime-apidiff-release-0-7
     decorate: true
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/controller-runtime
     branches:
-    - ^master$
+    - ^release-0.7$
     spec:
       containers:
       - image: golang:1.15
@@ -32,4 +31,4 @@ presubmits:
         - ./hack/apidiff.sh
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-master-apidiff
+      testgrid-tab-name: controller-runtime-release-0.7-apidiff
