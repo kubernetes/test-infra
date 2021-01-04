@@ -229,7 +229,7 @@ periodics:
   decorate: true
   annotations:
     testgrid-dashboards: sig-testing-fejtabot
-    description: Adds lifecycle/stale to issues after 30d of inactivity
+    description: Adds lifecycle/stale to issues after 90d of inactivity
     testgrid-tab-name: stale
   spec:
     containers:
