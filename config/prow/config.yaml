@@ -424,6 +424,14 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        aws-efs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-fsx-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
