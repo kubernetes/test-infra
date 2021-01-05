@@ -20,11 +20,16 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/v2"
@@ -294,7 +299,7 @@ func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJob
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.ProwJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
+		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")
 			errors = append(errors, err)
 		}
@@ -321,4 +326,34 @@ func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config,
 		postsubmits = cfg.PostsubmitsStatic[orgRepo]
 	}
 	return postsubmits
+}
+
+// createWithRetry will retry the cration of a ProwJob. The Name must be set, otherwise we might end up creating it multiple times
+// if one Create request errors but succeeds under the hood.
+func createWithRetry(ctx context.Context, client prowJobClient, pj *prowapi.ProwJob, millisecondOverride ...time.Duration) error {
+	millisecond := time.Millisecond
+	if len(millisecondOverride) == 1 {
+		millisecond = millisecondOverride[0]
+	}
+
+	var errs []error
+	if err := wait.ExponentialBackoff(wait.Backoff{Duration: 250 * millisecond, Factor: 2.0, Jitter: 0.1, Steps: 8}, func() (bool, error) {
+		if _, err := client.Create(ctx, pj, metav1.CreateOptions{}); err != nil {
+			// Can happen if a previous request was successful but returned an error
+			if apierrors.IsAlreadyExists(err) {
+				return true, nil
+			}
+			// Store and swallow errors, if we end up timing out we will return all of them
+			errs = append(errs, err)
+			return false, nil
+		}
+		return true, nil
+	}); err != nil {
+		if err != wait.ErrWaitTimeout {
+			return err
+		}
+		return utilerrors.NewAggregate(errs)
+	}
+
+	return nil
 }
