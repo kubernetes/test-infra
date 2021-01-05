@@ -17,7 +17,7 @@ presubmits:
     spec:
       containers:
       - args:
-        - --timeout=70
+        - --timeout=170
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -39,7 +39,7 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-        - --ginkgo-parallel=30
+        - --ginkgo-parallel=15
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
@@ -49,8 +49,7 @@ presubmits:
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
-        - --ginkgo-parallel=30
-        - --timeout=50m
+        - --timeout=150m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         resources:
           requests:
@@ -596,7 +595,7 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
 
-- interval: 12h
+- interval: 4h
   name: ci-kubernetes-e2e-ubuntu-gce-network-policies
   labels:
     preset-service-account: "true"
@@ -604,7 +603,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=70
+      - --timeout=170
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -622,7 +621,7 @@ periodics:
       - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=15
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --gcp-nodes=4
@@ -632,7 +631,7 @@ periodics:
       # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
       - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
       - --extract=ci/latest
-      - --timeout=50m
+      - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
       resources:
         requests:
