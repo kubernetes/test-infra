@@ -48,9 +48,6 @@ def process_changes(results):
     todo = []  # (id, job, build) of builds to grab
     # process results, find finished builds to process
     for rec_message in results:
-        if rec_message.message.attributes['eventType'] != 'OBJECT_FINALIZE':
-            ack_ids.append(rec_message.ack_id)
-            continue
         obj = rec_message.message.attributes['objectId']
         if not obj.endswith('/finished.json'):
             ack_ids.append(rec_message.ack_id)
