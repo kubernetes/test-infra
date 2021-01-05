@@ -84,6 +84,7 @@ aliases:
     - derekwaynecarr
   sig-release-leads:
     - alejandrox1
+    - hasheddan
     - justaugustus
     - saschagrunert
   sig-scalability-leads:
