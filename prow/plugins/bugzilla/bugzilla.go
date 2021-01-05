@@ -1140,10 +1140,35 @@ Once a valid bug is referenced in the title of this pull request, request a bug 
 }
 
 func formatError(action, endpoint string, bugId int, err error) string {
-	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s:
-> %v
+	knownErrors := map[string]string{
+		"There was an error reported for a GitHub REST call": "The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.",
+	}
+	applicable := []string{}
+	for key, value := range knownErrors {
+		if strings.Contains(key, err.Error()) {
+			applicable = append(applicable, value)
+
+		}
+	}
+	digest := "No known errors were detected, please see the full error message for details."
+	if len(applicable) > 0 {
+		digest = "We were able to detect the following conditions from the error:\n\n"
+		for _, item := range applicable {
+			digest = fmt.Sprintf("%s- %s\n", digest, item)
+		}
+	}
+	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s 
+
+<details><summary>Full error message.</summary>
+
+<code>
+%v
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
-		action, bugId, endpoint, err)
+		action, bugId, endpoint, digest, err)
 }
 
 func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
