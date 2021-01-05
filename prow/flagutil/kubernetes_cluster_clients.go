@@ -25,8 +25,10 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/fsnotify.v1"
+
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
@@ -40,6 +42,10 @@ import (
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 )
+
+func init() {
+	prometheus.MustRegister(clientCreationFailures)
+}
 
 // KubernetesOptions holds options for interacting with Kubernetes.
 // These options are both useful for clients interacting with ProwJobs
@@ -292,6 +298,11 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 	return clients, nil
 }
 
+var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "kubernetes_failed_client_creations",
+	Help: "The number of clusters for which we failed to create a client",
+}, []string{"cluster"})
+
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
@@ -316,6 +327,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 		cfg := buildClusterConfig
 		mgr, err := manager.New(&cfg, options)
 		if err != nil {
+			clientCreationFailures.WithLabelValues(buildCluserName).Add(1)
 			errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", buildCluserName, err))
 			continue
 		}
@@ -337,6 +349,7 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		cfg := o.clusterConfigs[name]
 		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 		if err != nil {
+			clientCreationFailures.WithLabelValues(name).Add(1)
 			errs = append(errs, fmt.Errorf("failed to construct client for cluster %q: %w", name, err))
 			continue
 		}
