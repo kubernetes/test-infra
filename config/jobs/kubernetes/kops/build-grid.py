@@ -425,14 +425,16 @@ def generate():
                kops_zones=['us-east-2b'],
                extra_flags=['--node-size=m6g.large',
                             '--master-size=m6g.large',
-                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201']) # pylint: disable=line-too-long
+                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201'], # pylint: disable=line-too-long
+               extra_dashboards=['kops-misc'])
 
     # A special test for JWKS
     build_test(force_name="scenario-public-jwks",
                cloud="aws",
                distro="u2004",
                feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
-               extra_flags=['--api-loadbalancer-type=public'])
+               extra_flags=['--api-loadbalancer-type=public'],
+               extra_dashboards=['kops-misc'])
 
     # A special test for AWS Cloud-Controller-Manager
     build_test(force_name="scenario-aws-cloud-controller-manager",
@@ -441,7 +443,7 @@ def generate():
                k8s_version="1.19",
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-               extra_dashboards=['sig-aws-cloud-provider-aws'])
+               extra_dashboards=['sig-aws-cloud-provider-aws', 'kops-misc'])
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))

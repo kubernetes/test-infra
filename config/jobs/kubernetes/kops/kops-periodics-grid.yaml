@@ -31410,7 +31410,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/kops_zones: us-east-2b
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest, kops-latest
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc
     testgrid-tab-name: kops-grid-scenario-arm64
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM,PublicJWKS", "k8s_version": null, "kops_version": null, "networking": null}
@@ -31462,7 +31462,7 @@ periodics:
     test.kops.k8s.io/k8s_version: ''
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest, kops-latest
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc
     testgrid-tab-name: kops-grid-scenario-public-jwks
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_version": null, "networking": null}
@@ -31514,7 +31514,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.19'
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19, kops-latest, sig-aws-cloud-provider-aws
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-grid, kops-distro-u2004, kops-k8s-1.19, kops-latest, sig-aws-cloud-provider-aws, kops-misc
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
 # 643 jobs, total of 1141 runs per week
