@@ -49,7 +49,7 @@ func TestGetOrg(t *testing.T) {
 		appID,
 		func() *rsa.PrivateKey { return key },
 		"https://api.github.com/graphql",
-		"https://api.github.com",
+		"http://localhost:8888",
 	)
 
 	if _, err := client.GetOrg(org); err != nil {
