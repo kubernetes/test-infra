@@ -28,6 +28,7 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.6-blocking
   - redhat-openshift-okd-release-4.6-informing
   - redhat-openshift-okd-release-4.7-blocking
+  - redhat-openshift-okd-release-4.7-informing
   - redhat-openshift-presubmit-master-gcp
   - redhat-osd
   name: redhat
