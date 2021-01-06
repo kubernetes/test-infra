@@ -93,9 +93,10 @@ presubmits:
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-windows
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    optional: true
+    optional: false
     decorate: true
-    always_run: false
+    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
+    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
