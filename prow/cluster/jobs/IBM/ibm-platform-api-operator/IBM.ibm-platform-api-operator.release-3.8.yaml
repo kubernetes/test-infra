@@ -2,7 +2,7 @@ presubmits:
   IBM/ibm-platform-api-operator:
   - name: build_ibm-platform-api-operator
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -15,14 +15,14 @@ presubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: check_ibm-platform-api-operator
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -32,14 +32,14 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - name: test_ibm-platform-api-operator
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -47,9 +47,10 @@ presubmits:
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
@@ -59,7 +60,7 @@ postsubmits:
   IBM/ibm-platform-api-operator:
   - name: check_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
@@ -67,27 +68,28 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
   - name: test_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
   - name: build_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -98,13 +100,13 @@ postsubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
   - name: images_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.6$
+    - ^release-3.8$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
@@ -115,7 +117,7 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
         name: ""
         securityContext:
           privileged: true
