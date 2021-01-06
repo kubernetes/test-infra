@@ -25,7 +25,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -48,7 +49,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -72,7 +74,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -471,7 +474,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
