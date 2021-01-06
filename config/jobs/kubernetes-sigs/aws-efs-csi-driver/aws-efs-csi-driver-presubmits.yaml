@@ -3,6 +3,8 @@ presubmits:
   - name: pull-aws-efs-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
@@ -21,6 +23,8 @@ presubmits:
   - name: pull-aws-efs-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
@@ -39,6 +43,8 @@ presubmits:
   - name: pull-aws-efs-csi-driver-e2e
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
