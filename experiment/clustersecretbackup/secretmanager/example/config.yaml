@@ -1,0 +1,6 @@
+secrets:
+- name: oauth-token
+  namespace: default
+  description: something
+  secret_name: local-prow-oauthtoken
+  project: chao-dont-have-permission

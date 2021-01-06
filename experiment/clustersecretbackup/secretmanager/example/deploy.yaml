@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "clustersecretbackup"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "clustersecretbackup"
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - secrets
+    verbs:
+    - list
+    - watch
+    - get
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "clustersecretbackup"
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - secrets
+    verbs:
+    - list
+    - watch
+    - get
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "clustersecretbackup"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "clustersecretbackup"
+subjects:
+- kind: ServiceAccount
+  name: "clustersecretbackup"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: "clustersecretbackup"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "clustersecretbackup"
+subjects:
+- kind: ServiceAccount
+  name: "clustersecretbackup"
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: clustersecretbackup
+  namespace: default
+  name: clustersecretbackup
+spec:
+  ports:
+    - name: metrics
+      port: 9090
+  selector:
+    app: clustersecretbackup
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: clustersecretbackup
+  labels:
+    app: clustersecretbackup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clustersecretbackup
+  template:
+    metadata:
+      labels:
+        app: clustersecretbackup
+    spec:
+      serviceAccountName: clustersecretbackup
+      containers:
+      - name: clustersecretbackup
+        image: localhost:5000/clustersecretbackup
+        imagePullPolicy: Always
+        args:
+        - --config-path=/etc/config/config
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: clustersecretbackup-config

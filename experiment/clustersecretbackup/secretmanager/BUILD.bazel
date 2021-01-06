@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["secretmanager.go"],
+    importpath = "k8s.io/test-infra/experiment/clustersecretbackup/secretmanager",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
+        "@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto",
+        "@org_golang_google_api//iterator:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
