@@ -122,9 +122,9 @@ class StreamTest(unittest.TestCase):
             make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
         # uncomment if the trace changes
-        import pprint; pprint.pprint(fake_sub.trace)
-        import pprint; pprint.pprint(fake_client.trace)
-        self.maxDiff = 3000
+        # import pprint; pprint.pprint(fake_sub.trace)
+        # import pprint; pprint.pprint(fake_client.trace)
+        # self.maxDiff = 3000
 
         now = make_db_test.MockedClient.NOW
 
