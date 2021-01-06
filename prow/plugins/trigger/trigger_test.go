@@ -18,10 +18,12 @@ package trigger
 
 import (
 	"context"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -520,6 +522,65 @@ func TestGetPostsubmits(t *testing.T) {
 
 			if !tc.expectedPostsubmits.Equal(actualPostsubmits) {
 				t.Errorf("got a different set of postsubmits than expected, diff: %v", tc.expectedPostsubmits.Difference(actualPostsubmits))
+			}
+		})
+	}
+}
+
+func TestCreateWithRetry(t *testing.T) {
+	testCases := []struct {
+		name            string
+		numFailedCreate int
+		expectedErrMsg  string
+	}{
+		{
+			name: "Initial success",
+		},
+		{
+			name:            "Success after retry",
+			numFailedCreate: 7,
+		},
+		{
+			name:            "Failure",
+			numFailedCreate: 8,
+			expectedErrMsg:  "need retrying",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			fakeProwJobClient := fake.NewSimpleClientset()
+			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+				if _, ok := action.(clienttesting.CreateActionImpl); ok && tc.numFailedCreate > 0 {
+					tc.numFailedCreate--
+					return true, nil, errors.New("need retrying")
+				}
+				return false, nil, nil
+			})
+
+			pj := &prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: "foo"}}
+
+			var errMsg string
+			err := createWithRetry(context.TODO(), fakeProwJobClient.ProwV1().ProwJobs(""), pj, time.Nanosecond)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedErrMsg {
+				t.Fatalf("expected error %s, got error %v", tc.expectedErrMsg, err)
+			}
+			if err != nil {
+				return
+			}
+
+			result, err := fakeProwJobClient.ProwV1().ProwJobs("").List(context.Background(), metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("faile to list prowjobs: %v", err)
+			}
+
+			if len(result.Items) != 1 {
+				t.Errorf("expected to find exactly one prowjob, got %+v", result.Items)
 			}
 		})
 	}
