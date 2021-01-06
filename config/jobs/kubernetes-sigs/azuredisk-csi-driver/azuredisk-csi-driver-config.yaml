@@ -96,7 +96,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -146,7 +147,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -196,7 +198,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -248,7 +251,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-windows
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -304,7 +308,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
