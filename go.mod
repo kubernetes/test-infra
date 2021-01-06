@@ -24,6 +24,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go v0.66.0
 	cloud.google.com/go/pubsub v1.4.0
 	cloud.google.com/go/storage v1.12.0
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
@@ -89,6 +90,7 @@ require (
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	golang.org/x/tools v0.0.0-20200918232735-d647fc253266
 	google.golang.org/api v0.32.0
+	google.golang.org/genproto v0.0.0-20200921151605-7abf4a1a14d5
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.3.0
