@@ -81,14 +81,6 @@ class StreamTest(unittest.TestCase):
             [
                 FakePullResponse(
                     [FakeReceivedMessage(
-                        'a',
-                        FakePubSubMessage(
-                            'no_data',
-                            {'eventType': 'OBJECT_DELETE'})
-                    )]
-                ),
-                FakePullResponse(
-                    [FakeReceivedMessage(
                         'b',
                         FakePubSubMessage(
                             'no_data', {
@@ -130,9 +122,9 @@ class StreamTest(unittest.TestCase):
             make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
         # uncomment if the trace changes
-        # import pprint; pprint.pprint(fake_sub.trace)
-        # import pprint; pprint.pprint(fake_client.trace)
-        # self.maxDiff = 3000
+        import pprint; pprint.pprint(fake_sub.trace)
+        import pprint; pprint.pprint(fake_client.trace)
+        self.maxDiff = 3000
 
         now = make_db_test.MockedClient.NOW
 
@@ -140,8 +132,6 @@ class StreamTest(unittest.TestCase):
             fake_sub.trace,
             [['pull', fake_sub_path, False],
              ['pull', fake_sub_path, True],
-             ['pull', fake_sub_path, True],
-             ['ack', fake_sub_path, ['a']],
              ['modify-ack', fake_sub_path, ['b'], 180],
              ['ack', fake_sub_path, ['b']],
              ['pull', fake_sub_path, False],
