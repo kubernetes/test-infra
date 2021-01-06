@@ -24,6 +24,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go v0.66.0
 	cloud.google.com/go/pubsub v1.4.0
 	cloud.google.com/go/storage v1.12.0
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
