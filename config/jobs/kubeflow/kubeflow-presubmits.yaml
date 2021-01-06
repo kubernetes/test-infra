@@ -353,17 +353,6 @@ presubmits:
         command:
         - ./test/presubmit-component-yaml.sh
 
-  - name: kubeflow-pipelines-components-gcp-python27
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    run_if_changed: "components/gcp/container/.*"
-    spec:
-      containers:
-      - image: python:2.7
-        command:
-        - ./test/presubmit-components-gcp.sh
-
   - name: kubeflow-pipelines-components-gcp-python37
     decorate: true
     labels:
