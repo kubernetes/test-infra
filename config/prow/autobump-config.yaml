@@ -34,7 +34,7 @@ prefixes:
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false
     consistentImages: true
-  - name: "Prow-Test-Images"
+  - name: "K8s-Test-Images"
     prefix: "gcr.io/k8s-testimages/"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false

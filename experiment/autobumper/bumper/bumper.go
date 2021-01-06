@@ -48,6 +48,7 @@ const (
 	upstreamStagingVersion = "upstream-staging"
 	tagVersion             = "vYYYYMMDD-deadbeef"
 	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	defaultHeadBranchName  = "autobump"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -111,6 +112,8 @@ type Options struct {
 	TargetVersion string `yaml:"targetVersion"`
 	//The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
 	RemoteName string `yaml:"remoteName"`
+	//The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
+	HeadBranchName string `yaml:"headBranchName"`
 	//List of prefixes that the autobumped is looking for, and other information needed to bump them
 	Prefixes []Prefix `yaml:"prefixes"`
 }
@@ -220,6 +223,9 @@ func validateOptions(o *Options) error {
 		o.UpstreamURLBase = defaultUpstreamURLBase
 		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
 	}
+	if !o.SkipPullRequest && o.HeadBranchName == "" {
+		o.HeadBranchName = defaultHeadBranchName
+	}
 
 	return nil
 }
@@ -280,14 +286,13 @@ func Run(o *Options) error {
 			}
 		}
 
-		remoteBranch := "autobump"
 		stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 		stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
-		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), remoteBranch, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
+		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), "Update prow to", o.GitHubLogin+":"+remoteBranch, "master", updater.PreventMods, o.Prefixes, versions); err != nil {
+		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}
@@ -346,28 +351,28 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 }
 
 // UpdatePR updates with github client "gc" the PR of github repo org/repo
-// with "matchTitle" from "source" to "branch"
+// with headBranch from "source" to "baseBranch"
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, matchTitle, source, branch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
+func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
 	summary := makeCommitSummary(prefixes, versions)
-	return UpdatePullRequest(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), matchTitle, source, branch, allowMods)
+	return UpdatePullRequest(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), login+":"+headBranch, baseBranch, headBranch, allowMods)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
-// with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
-func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool) error {
-	return UpdatePullRequestWithLabels(gc, org, repo, title, body, matchTitle, source, branch, allowMods, nil)
+// with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch"
+func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil)
 }
 
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, matchTitle, source, branch string, allowMods bool, labels []string) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
-	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, labels)
+	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %w", err)
 	}
 
-	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, branch, title)
+	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, baseBranch, title)
 	return nil
 }
 
@@ -557,32 +562,36 @@ func HasChanges() (bool, error) {
 }
 
 func getPrefixesString(prefixes []Prefix) string {
-	return strings.Join(getAllPrefixes(prefixes), ", ")
+	var res []string
+	for _, prefix := range prefixes {
+		res = append(res, prefix.Name)
+	}
+	return strings.Join(res, ", ")
 }
 
 func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 	if len(versions) == 0 {
 		return fmt.Sprintf("Update %s images as necessary", getPrefixesString(prefixes))
 	}
-	inconsistentBumps := ""
-	consistentBumps := "Update"
+	var inconsistentBumps []string
+	var consistentBumps []string
 	for _, prefix := range prefixes {
 		if !prefix.ConsistentImages {
-			inconsistentBumps = fmt.Sprintf("%s, %s", prefix.Prefix, inconsistentBumps)
+			inconsistentBumps = append(inconsistentBumps, prefix.Name)
 		} else {
 			for tag, imageList := range versions {
 				//Should not be possible for tag to be in map with empty imageList
 				if strings.HasPrefix(imageList[0], prefix.Prefix) {
-					consistentBumps = fmt.Sprintf("%s %s to %s,", consistentBumps, prefix.Prefix, tag)
+					consistentBumps = append(consistentBumps, fmt.Sprintf("%s to %s", prefix.Name, tag))
 					break
 				}
 			}
 		}
 	}
-	if inconsistentBumps != "" {
-		return fmt.Sprintf("%s and %s as needed", consistentBumps, inconsistentBumps)
+	if len(inconsistentBumps) != 0 {
+		return fmt.Sprintf("Update %s and %s as needed", strings.Join(consistentBumps, ", "), strings.Join(inconsistentBumps, ", "))
 	}
-	return consistentBumps
+	return "Update " + strings.Join(consistentBumps, ", ")
 
 }
 
