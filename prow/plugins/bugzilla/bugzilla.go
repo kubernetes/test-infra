@@ -1143,9 +1143,9 @@ func formatError(action, endpoint string, bugId int, err error) string {
 	knownErrors := map[string]string{
 		"There was an error reported for a GitHub REST call": "The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.",
 	}
-	applicable := []string{}
+	var applicable []string
 	for key, value := range knownErrors {
-		if strings.Contains(key, err.Error()) {
+		if strings.Contains(err.Error(), key) {
 			applicable = append(applicable, value)
 
 		}
@@ -1157,7 +1157,7 @@ func formatError(action, endpoint string, bugId int, err error) string {
 			digest = fmt.Sprintf("%s- %s\n", digest, item)
 		}
 	}
-	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s 
+	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s
 
 <details><summary>Full error message.</summary>
 
