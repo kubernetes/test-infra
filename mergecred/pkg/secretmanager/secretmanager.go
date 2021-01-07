@@ -16,6 +16,7 @@ type Client struct {
 }
 
 type ClientInterface interface {
+	Project() string
 	CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error)
 	AddSecretVersion(ctx context.Context, secretName string, payload []byte) error
 	ListSecrets(ctx context.Context) ([]*secretmanagerpb.Secret, error)
@@ -31,6 +32,10 @@ func NewClient(projectID string) (*Client, error) {
 		return nil, fmt.Errorf("failed to setup client: %v", err)
 	}
 	return &Client{ProjectID: projectID, client: client}, nil
+}
+
+func (c *Client) Project() string {
+	return c.ProjectID
 }
 
 func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error) {

@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mergecred
+package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -36,9 +37,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // Enable all auth provider plugins
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api/latest"
-	"k8s.io/test-infra/gencred/pkg/kubeconfig"
-	"k8s.io/test-infra/gencred/pkg/secretmanager"
 	"k8s.io/test-infra/gencred/pkg/util"
+	"k8s.io/test-infra/mergecred/pkg/kubeconfig"
+	"k8s.io/test-infra/mergecred/pkg/secretmanager"
 	"sigs.k8s.io/yaml"
 )
 
@@ -52,7 +53,7 @@ const (
 	defaultSecretID       = "prow-kubeconfig-backup"
 )
 
-var reAutoKey = regexp.MustCompile(`^config-(\\d{8})$`)
+var reAutoKey = regexp.MustCompile(`^config\-[0-9]{8}$`)
 
 // options are the available command-line flags.
 type options struct {
@@ -89,30 +90,30 @@ func (o *options) validateFlags() error {
 	var err error
 
 	if len(o.project) == 0 {
-		return &util.ExitError{Message: "--project option is required.", Code: 1}
+		return errors.New("--project option is required")
 	}
 
 	if len(o.context) == 0 {
-		return &util.ExitError{Message: "--context option is required.", Code: 1}
+		return errors.New("--context option is required")
 	}
 
 	if o.auto {
 		if len(o.dstKey) > 0 {
-			return &util.ExitError{Message: "--dest-key must be omitted when --auto is used.", Code: 1}
+			return errors.New("--dest-key must be omitted when --auto is used")
 		}
 	} else {
 		if len(o.srcKey) == 0 || len(o.dstKey) == 0 {
-			return &util.ExitError{Message: "--src-key and --dest-key are required unless --auto is used.", Code: 1}
+			return errors.New("--src-key and --dest-key are required unless --auto is used")
 		}
 	}
 
 	o.kubeconfigToMerge, err = filepath.Abs(o.kubeconfigToMerge)
 	if err != nil {
-		return &util.ExitError{Message: fmt.Sprintf("--kubeconfig-to-merge option invalid: %v.", o.kubeconfigToMerge), Code: 1}
+		return fmt.Errorf("--kubeconfig-to-merge option invalid: %v", o.kubeconfigToMerge)
 	}
 
 	if !util.FileExists(o.kubeconfigToMerge) {
-		return &util.ExitError{Message: fmt.Sprintf("--kubeconfig-to-merge not exists: %v.", o.kubeconfigToMerge), Code: 1}
+		return fmt.Errorf("--kubeconfig-to-merge not exists: %q", o.kubeconfigToMerge)
 	}
 
 	return nil
@@ -122,13 +123,13 @@ func (o *options) validateFlags() error {
 func mergeConfigs(kubeconfig []byte, newFile string) ([]byte, error) {
 	tmpFile, err := ioutil.TempFile("", "")
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 	defer os.Remove(tmpFile.Name())
 
 	err = ioutil.WriteFile(tmpFile.Name(), kubeconfig, 0644)
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 
 	loadingRules := clientcmd.ClientConfigLoadingRules{
@@ -137,17 +138,17 @@ func mergeConfigs(kubeconfig []byte, newFile string) ([]byte, error) {
 
 	mergedConfig, err := loadingRules.Load()
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 
 	json, err := runtime.Encode(latest.Codec, mergedConfig)
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 
 	kubeconfig, err = yaml.JSONToYAML(json)
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 
 	return kubeconfig, nil
@@ -156,20 +157,20 @@ func mergeConfigs(kubeconfig []byte, newFile string) ([]byte, error) {
 func getKeys(secretMap map[string][]byte, o options) (string, string, bool, error) {
 	srcKey, dstKey, prune := o.srcKey, o.dstKey, o.prune
 	if o.auto {
-		dstKey = fmt.Sprintf("config-%s", time.Now().Format("200601012"))
+		dstKey = fmt.Sprintf("config-%s", time.Now().Format("20060102"))
 		if len(o.srcKey) == 0 {
 			var keys []string
 			var validKeys []string
 			for key := range secretMap {
 				keys = append(keys, key)
-				if matches := reAutoKey.FindStringSubmatch(key); len(matches) > 1 {
-					validKeys = append(validKeys, matches[1])
+				if matches := reAutoKey.FindStringSubmatch(key); len(matches) > 0 {
+					validKeys = append(validKeys, matches[0])
 				}
 			}
 			sort.Strings(validKeys)
 			if len(validKeys) == 0 {
 				return "", "", false,
-					&util.ExitError{Message: fmt.Sprintf("The secret does not contain any keys matching the 'config-20200730' format: '%v'. Please try again with --src-key set to the most recent key.", keys), Code: 1}
+					fmt.Errorf("The secret does not contain any keys matching the 'config-20200730' format: '%v'. Please try again with --src-key set to the most recent key", keys)
 			}
 			srcKey = validKeys[len(validKeys)-1]
 			// Only enable pruning if we won't overwrite the source key.
@@ -213,7 +214,7 @@ func process(ctx context.Context, o options, clientset kubernetes.Interface, sec
 
 	srcKey, dstKey, prune, err := getKeys(orig.Data, o)
 	if err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 	srcKubeconfig = orig.Data[srcKey]
 
@@ -222,8 +223,9 @@ func process(ctx context.Context, o options, clientset kubernetes.Interface, sec
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Secret backed up at %s of project %s", defaultSecretID, secretmanagerClient.Project())
 	if err = backupSecret(ctx, secretmanagerClient, defaultSecretID, body); err != nil {
-		return nil, &util.ExitError{Message: err.Error(), Code: 1}
+		return nil, err
 	}
 
 	dstKubeconfig, err := mergeConfigs(srcKubeconfig, o.kubeconfigToMerge)
@@ -248,27 +250,27 @@ func Main() {
 
 	o.parseFlags()
 	if err := o.validateFlags(); err != nil {
-		util.PrintErrAndExit(err)
+		log.Fatal(err)
 	}
 
 	ctx := context.Background()
 
 	clientset, err := kubeconfig.NewKubeClient(o.context)
 	if err != nil {
-		util.PrintErrAndExit(err)
+		log.Fatal(err)
 	}
 
 	secretmanagerClient, err := secretmanager.NewClient(o.project)
 	if err != nil {
-		util.PrintErrAndExit(err)
+		log.Fatal(err)
 	}
 
 	merged, err := process(ctx, o, clientset, secretmanagerClient)
 	if err != nil {
-		util.PrintErrAndExit(err)
+		log.Fatal(err)
 	}
 
 	if _, err := clientset.CoreV1().Secrets(defaultNamespace).Update(ctx, merged, v1.UpdateOptions{}); err != nil {
-		util.PrintErrAndExit(err)
+		log.Fatal(err)
 	}
 }

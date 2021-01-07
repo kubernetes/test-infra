@@ -3,12 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["kubeconfig.go"],
-    importpath = "k8s.io/test-infra/gencred/pkg/kubeconfig",
+    importpath = "k8s.io/test-infra/mergecred/pkg/kubeconfig",
     visibility = ["//visibility:public"],
     deps = [
         "@io_k8s_client_go//kubernetes:go_default_library",
-        "@io_k8s_client_go//tools/clientcmd/api/v1:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
+        "@io_k8s_client_go//tools/clientcmd:go_default_library",
     ],
 )
 
