@@ -215,7 +215,7 @@ periodics:
       - --allow-dup
       - --extra-version-markers=k8s-stable3
       - --registry=gcr.io/k8s-staging-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20201217-27f76e20d2
+      image: gcr.io/k8s-testimages/bootstrap:v20210107-d5c67a7c21
       name: ""
       resources:
         limits:
@@ -248,7 +248,7 @@ periodics:
       - --allow-dup
       - --extra-version-markers=k8s-stable3
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20201217-27f76e20d2
+      image: gcr.io/k8s-testimages/bootstrap:v20210107-d5c67a7c21
       name: ""
       resources:
         limits:
