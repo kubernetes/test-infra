@@ -35,6 +35,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-debian-9
 
 - interval: 8h
@@ -72,6 +73,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-debian-10
 
 - interval: 8h
@@ -109,6 +111,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-ubuntu-18.04
 
 - interval: 8h
@@ -146,6 +149,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-ubuntu-20.04
 
 - interval: 8h
@@ -183,6 +187,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-centos-7
 
 - interval: 8h
@@ -220,6 +225,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "90"
     testgrid-tab-name: kops-aws-distro-centos-8
 
 - interval: 8h
@@ -257,6 +263,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-distro-amazonlinux-2
 
 - interval: 8h
@@ -294,6 +301,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-distro-rhel-7
 
 - interval: 8h
@@ -331,6 +339,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-distro-rhel-8
 
 - interval: 8h
@@ -368,4 +377,5 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-distros
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-distro-flatcar

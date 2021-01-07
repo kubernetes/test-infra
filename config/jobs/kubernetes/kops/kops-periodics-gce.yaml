@@ -35,6 +35,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-gce-stable
 
 # Runs e2e on the cluster built with latest released kops and k/k master branch
@@ -72,6 +73,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-gce-latest
 
 # - interval: 30m

@@ -111,6 +111,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-latest
 
 - interval: 8h
@@ -147,6 +148,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-ci
 
 - interval: 8h
@@ -183,6 +185,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-conformance
 
 - interval: 4h
@@ -292,6 +295,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-launchconfigurations
 
 - interval: 4h
@@ -330,6 +334,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-legacy-etcd
 
 - interval: 1h

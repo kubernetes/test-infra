@@ -33,6 +33,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
 - interval: 8h
@@ -68,6 +69,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-calico
 
 - interval: 8h
@@ -103,6 +105,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-canal
 
 - interval: 8h
@@ -139,6 +142,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-cilium
 
 - interval: 8h
@@ -174,6 +178,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-flannel
 
 - interval: 8h
@@ -209,6 +214,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-kopeio
 
 - interval: 8h
@@ -244,6 +250,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-kuberouter
 
 - interval: 8h
@@ -279,4 +286,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-cni-weave
