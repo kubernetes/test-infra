@@ -34,6 +34,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-channelalpha
 
 - interval: 1h
@@ -72,6 +73,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-ha-euwest1
 
 - interval: 8h
