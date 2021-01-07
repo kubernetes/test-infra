@@ -13,7 +13,7 @@
 
 ## Deployment
 
-Run `gcloud functions deploy <Name of method> --runtime=go113 --trigger-topic=gcs-changes`
+Run `./deploy.sh`
 
 *This can only be run from the project in which the topic exists*
 
