@@ -45,7 +45,7 @@ def call(cmd):
 
 
 def main():
-    if SUB_PATH == None:
+    if SUB_PATH is None:
         raise Exception('Env var "SUBSCRIPTION_PATH" must be set, see deployment*.yaml')
     call(f'time python3 make_db.py --buckets buckets.yaml --junit --threads {THREADS}')
 
