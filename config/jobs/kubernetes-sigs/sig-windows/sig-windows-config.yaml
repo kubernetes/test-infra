@@ -66,7 +66,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -120,7 +120,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
