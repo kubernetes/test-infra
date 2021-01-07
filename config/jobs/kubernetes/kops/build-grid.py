@@ -351,6 +351,7 @@ def build_test(cloud='aws',
 
     annotations = {
         'testgrid-dashboards': ', '.join(dashboards),
+        'testgrid-days-of-results': '90',
         'testgrid-tab-name': tab,
     }
     for (k, v) in spec.items():
