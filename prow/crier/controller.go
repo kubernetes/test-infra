@@ -145,12 +145,6 @@ func (r *reconciler) updateReportStateWithRetries(ctx context.Context, pj *prowv
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := logrus.WithField("reporter", r.reporter.GetName()).WithField("key", req.String()).WithField("prowjob", req.Name)
 	log.Debug("processing next key")
-	// Limit reconciliation time to 15 minutes. This should more than enough time
-	// for any reasonable reporter. Most reporters should set a stricter timeout
-	// themselves. This mainly helps avoid leaking reconciliation threads that
-	// will never complete.
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Minute)
-	defer cancel()
 	result, err := r.reconcile(ctx, log, req)
 	if err != nil {
 		log.WithError(err).Error("Reconciliation failed")
@@ -162,11 +156,14 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 }
 
 func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req reconcile.Request) (*reconcile.Result, error) {
-
-	pjContext, pjCancel := context.WithTimeout(ctx, 30*time.Second)
-	defer pjCancel()
+	// Limit reconciliation time to 30 minutes. This should more than enough time
+	// for any reasonable reporter. Most reporters should set a stricter timeout
+	// themselves. This mainly helps avoid leaking reconciliation threads that
+	// will never complete.
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
 	var pj prowv1.ProwJob
-	if err := r.pjclientset.Get(pjContext, req.NamespacedName, &pj); err != nil {
+	if err := r.pjclientset.Get(ctx, req.NamespacedName, &pj); err != nil {
 		if errors.IsNotFound(err) {
 			log.Debug("object no longer exist")
 			return nil, nil
@@ -174,7 +171,6 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 
 		return nil, fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
 	}
-	pjCancel()
 
 	if !r.shouldHandle(&pj) {
 		return nil, nil
@@ -208,14 +204,9 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 		return requeue, nil
 	}
 
-	log.Infof("Reported job(s), now will update %d pj(s)", len(pjs))
-	// Spend up to 10 mins attempting to update report state since the behavior
-	// is poor if we fail. This long of a delay is needed for when the API
-	// server is temporarily unavailable.
-	updateContext, updateCancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer updateCancel()
+	log.WithField("job-count", len(pjs)).Info("Reported job(s), now will update pj(s).")
 	for _, pjob := range pjs {
-		if err := r.updateReportStateWithRetries(updateContext, pjob, log); err != nil {
+		if err := r.updateReportStateWithRetries(ctx, pjob, log); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
 			return nil, err
 		}
