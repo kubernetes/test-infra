@@ -5,6 +5,7 @@ presubmits:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
         preset-cluster-api-provider-vsphere-e2e-config: "true"
+        preset-cloud-provider-vsphere-e2e-config: "true"
       always_run: false
       optional: true
       decorate: true
