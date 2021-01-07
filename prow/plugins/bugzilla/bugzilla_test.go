@@ -740,6 +740,7 @@ func TestHandle(t *testing.T) {
 		bugs                  []bugzilla.Bug
 		bugComments           map[int][]bugzilla.Comment
 		bugErrors             []int
+		bugErrorMessages      map[int]string
 		bugCreateErrors       []string
 		subComponents         map[int]map[string][]string
 		options               plugins.BugzillaBranchOptions
@@ -767,12 +768,41 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:      "error fetching bug leaves a comment",
 			bugErrors: []int{123},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
 <code>
 injected error getting bug
+</code>
+
+</details>
+
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:             "github 403 gets explained",
+			bugErrors:        []int{123},
+			bugErrorMessages: map[int]string{123: "There was an error reported for a GitHub REST call"},
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. We were able to detect the following conditions from the error:
+
+- The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.
+
+
+<details><summary>Full error message.</summary>
+
+<code>
+There was an error reported for a GitHub REST call
 </code>
 
 </details>
@@ -963,7 +993,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
 			bugErrors: []int{124},
 			options:   plugins.BugzillaBranchOptions{DependentBugStates: &verified},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1184,7 +1214,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1396,7 +1426,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1428,7 +1458,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1462,7 +1492,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1676,13 +1706,14 @@ Instructions for interacting with me using PR comments are available [here](http
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
-				EndpointString:  "www.bugzilla",
-				Bugs:            map[int]bugzilla.Bug{},
-				SubComponents:   map[int]map[string][]string{},
-				BugComments:     testCase.bugComments,
-				BugErrors:       sets.NewInt(),
-				BugCreateErrors: sets.NewString(),
-				ExternalBugs:    map[int][]bugzilla.ExternalBug{},
+				EndpointString:   "www.bugzilla",
+				Bugs:             map[int]bugzilla.Bug{},
+				SubComponents:    map[int]map[string][]string{},
+				BugComments:      testCase.bugComments,
+				BugErrors:        sets.NewInt(),
+				BugErrorMessages: testCase.bugErrorMessages,
+				BugCreateErrors:  sets.NewString(),
+				ExternalBugs:     map[int][]bugzilla.ExternalBug{},
 			}
 			for _, bug := range testCase.bugs {
 				bc.Bugs[bug.ID] = bug

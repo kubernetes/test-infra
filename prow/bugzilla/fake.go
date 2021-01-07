@@ -26,13 +26,14 @@ import (
 
 // Fake is a fake Bugzilla client with injectable fields
 type Fake struct {
-	EndpointString  string
-	Bugs            map[int]Bug
-	BugComments     map[int][]Comment
-	BugErrors       sets.Int
-	BugCreateErrors sets.String
-	ExternalBugs    map[int][]ExternalBug
-	SubComponents   map[int]map[string][]string
+	EndpointString   string
+	Bugs             map[int]Bug
+	BugComments      map[int][]Comment
+	BugErrors        sets.Int
+	BugErrorMessages map[int]string
+	BugCreateErrors  sets.String
+	ExternalBugs     map[int][]ExternalBug
+	SubComponents    map[int]map[string][]string
 }
 
 // Endpoint returns the endpoint for this fake
@@ -40,11 +41,18 @@ func (c *Fake) Endpoint() string {
 	return c.EndpointString
 }
 
+func (c *Fake) bugErrorMsg(bug int, def string) error {
+	if c.BugErrorMessages[bug] != "" {
+		return errors.New(c.BugErrorMessages[bug])
+	}
+	return errors.New(def)
+}
+
 // GetBug retrieves the bug, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetBug(id int) (*Bug, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error getting bug")
+		return nil, c.bugErrorMsg(id, "injected error getting bug")
 	}
 	if bug, exists := c.Bugs[id]; exists {
 		return &bug, nil
@@ -57,7 +65,7 @@ func (c *Fake) GetBug(id int) (*Bug, error) {
 // error that matches IsNotFound
 func (c *Fake) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error adding external bug to bug")
+		return nil, c.bugErrorMsg(id, "injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
 		return c.ExternalBugs[id], nil
@@ -69,7 +77,7 @@ func (c *Fake) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 // or responds with an error that matches IsNotFound
 func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if c.BugErrors.Has(id) {
-		return errors.New("injected error updating bug")
+		return c.bugErrorMsg(id, "injected error updating bug")
 	}
 	if bug, exists := c.Bugs[id]; exists {
 		bug.Status = update.Status
@@ -103,7 +111,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 // matches IsNotFound
 func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	if c.BugErrors.Has(id) {
-		return false, errors.New("injected error adding external bug to bug")
+		return false, c.bugErrorMsg(id, "injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
 		pullIdentifier := IdentifierForPull(org, repo, num)
@@ -126,7 +134,7 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 // matches IsNotFound
 func (c *Fake) RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	if c.BugErrors.Has(id) {
-		return false, errors.New("injected error removing external bug from bug")
+		return false, c.bugErrorMsg(id, "injected error removing external bug from bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
 		pullIdentifier := IdentifierForPull(org, repo, num)
@@ -210,7 +218,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error getting bug comments")
+		return nil, c.bugErrorMsg(id, "injected error getting bug comments")
 	}
 	if comments, exists := c.BugComments[id]; exists {
 		return comments, nil
