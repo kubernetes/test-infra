@@ -15,5 +15,7 @@
 FROM golang:1.13-alpine
 
 COPY generic_autobump /generic_autobump
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+RUN apk add --no-cache git openssh
 
 ENTRYPOINT ["/generic_autobump"]
