@@ -108,7 +108,10 @@ func annotateOwners(data *jsonOutput, builds map[string]build, owners map[string
 	}
 
 	jobPaths := data.Builds.JobPaths
-	yesterday := utils.Max(data.Builds.Cols.Started...) - (60 * 60 * 24)
+	yesterday := 0
+	if len(data.Builds.Cols.Started) > 0 {
+		yesterday = utils.Max(data.Builds.Cols.Started...) - (60 * 60 * 24)
+	}
 
 	// Determine the owner for each cluster
 	for i := range data.Clustered {
