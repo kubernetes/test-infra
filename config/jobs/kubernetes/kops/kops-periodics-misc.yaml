@@ -111,6 +111,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-latest
 
 - interval: 8h
@@ -147,6 +148,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-ci
 
 - interval: 8h
@@ -183,79 +185,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-conformance
-
-- interval: 4h
-  name: e2e-kops-aws-misc-containerd
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd --networking=calico
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
-    testgrid-tab-name: kops-aws-containerd
-
-- interval: 4h
-  name: e2e-kops-aws-misc-coredns
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-    preset-e2e-platform-aws: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-coredns.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
-    testgrid-tab-name: kops-aws-coredns
 
 - interval: 4h
   name: e2e-kops-aws-misc-launchconfigurations
@@ -292,6 +223,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-launchconfigurations
 
 - interval: 4h
@@ -330,6 +262,7 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-legacy-etcd
 
 - interval: 1h
