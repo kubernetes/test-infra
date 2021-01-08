@@ -451,13 +451,14 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
+        - --env=ENABLE_APISERVER_TRACING=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(ServiceAccountIssuerDiscovery|StorageVersionAPI|Audit|PodPreset|RunAsGroup|TTLAfterFinished|NodeLease|CSIServiceAccountToken|CSIStorageCapacity|GenericEphemeralVolume|DaemonSetUpdateSurge)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(APIServerTracing|SServiceAccountIssuerDiscovery|StorageVersionAPI|Audit|PodPreset|RunAsGroup|TTLAfterFinished|NodeLease|CSIServiceAccountToken|CSIStorageCapacity|GenericEphemeralVolume|DaemonSetUpdateSurge)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
         resources:
