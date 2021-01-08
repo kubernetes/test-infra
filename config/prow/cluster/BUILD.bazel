@@ -1,5 +1,3 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_test")
-
 package(default_visibility = ["//prow:__subpackages__"])
 
 load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
@@ -111,11 +109,4 @@ filegroup(
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["boskos_test.go"],
-    data = [":boskos-resources.yaml"],
-    deps = ["@io_k8s_sigs_boskos//common:go_default_library"],
 )
