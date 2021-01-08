@@ -426,7 +426,7 @@ def generate():
                kops_zones=['us-east-2b'],
                extra_flags=['--node-size=m6g.large',
                             '--master-size=m6g.large',
-                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201'], # pylint: disable=line-too-long
+                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106'], # pylint: disable=line-too-long
                extra_dashboards=['kops-misc'])
 
     # A special test for JWKS

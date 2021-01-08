@@ -101,7 +101,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210105
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a
@@ -138,7 +138,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210105
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a
@@ -175,7 +175,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel=10
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210105
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a
