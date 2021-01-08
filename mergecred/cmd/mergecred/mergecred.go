@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package mergecred
 
 import (
 	"context"
@@ -29,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,13 +45,10 @@ import (
 )
 
 const (
-	// defaultContextName is the default context name.
-	defaultContextName = "build"
 	// defaultNamespace is the default namespace for the secret.
 	defaultNamespace = "default"
-	// defaultConfigFileName is the default kubeconfig filename.
-	defaultConfigFileName = "/dev/stdout"
-	defaultSecretID       = "prow-kubeconfig-backup"
+	// defaultSecretID is the default GCP secret name for backing up kubeconfig.
+	defaultSecretID = "prow-kubeconfig-backup"
 )
 
 var reAutoKey = regexp.MustCompile(`^config\-[0-9]{8}$`)
@@ -204,7 +202,6 @@ func backupSecret(ctx context.Context, secretmanagerClient secretmanager.ClientI
 
 // process merges secret into a new secret for write.
 func process(ctx context.Context, o options, clientset kubernetes.Interface, secretmanagerClient secretmanager.ClientInterface) (*corev1.Secret, error) {
-	// kubeconfig is a kubernetes config.
 	var srcKubeconfig []byte
 
 	orig, err := clientset.CoreV1().Secrets(o.namespace).Get(context.Background(), o.name, v1.GetOptions{})
@@ -218,12 +215,12 @@ func process(ctx context.Context, o options, clientset kubernetes.Interface, sec
 	}
 	srcKubeconfig = orig.Data[srcKey]
 
-	// TODO: save secret to GCP secret manager.
+	logrus.Infof("Backing up current kubeconfig at %s of project %s",
+		defaultSecretID, secretmanagerClient.GetProject())
 	body, err := orig.Marshal()
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Secret backed up at %s of project %s", defaultSecretID, secretmanagerClient.Project())
 	if err = backupSecret(ctx, secretmanagerClient, defaultSecretID, body); err != nil {
 		return nil, err
 	}

@@ -1,8 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = ["mergecred.go"],
     importpath = "k8s.io/test-infra/mergecred/cmd/mergecred",
     visibility = ["//visibility:public"],
     deps = [
@@ -33,4 +33,17 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["mergecred_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//mergecred/pkg/secretmanager/fake:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_spf13_pflag//:go_default_library",
+        "@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto",
+        "@io_k8s_client_go//plugin/pkg/client/auth:go_default_library",
+    ],
 )

@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["fakesecretmanager.go"],
+    importpath = "k8s.io/test-infra/mergecred/pkg/secretmanager/fake",
+    visibility = ["//visibility:public"],
+    deps = ["@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto"],
+)
