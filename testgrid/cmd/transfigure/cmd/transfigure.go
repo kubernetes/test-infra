@@ -17,6 +17,7 @@ package transfigure
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -56,7 +57,10 @@ var rootCmd = &cobra.Command{
 		   from a Prow configuration and pushes it to be used on testgrid.k8s.io. It 
 	       is used specifically for Prow instances other than the k8s instance of Prow.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		os.Exit(run())
+		err := run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
@@ -69,39 +73,79 @@ func Execute() {
 	}
 }
 
-func run() int {
+func run() error {
 	if !dryRun && githubToken == "" {
-		log.Panic("Run was not a dry run, and flag 'github_token' was not set.")
+		return errors.New("Run was not a dry run, and flag 'github_token' was not set.")
 	}
 
-	createTempWorkingDir()
+	err := createTempWorkingDir()
+	if err != nil {
+		return err
+	}
+
 	defer removeTempWorkingDir()
 
-	cloneK8sTestInfraRepo()
+	err = cloneK8sTestInfraRepo()
+	if err != nil {
+		return err
+	}
+
+	if githubToken != "" {
+		err = readGitHubToken()
+		if err != nil {
+			return err
+		}
+	}
 
 	if gitUser == "" || gitEmail == "" {
-		populateGitUserAndEmail()
+		err = populateGitUserAndEmail()
+		if err != nil {
+			return err
+		}
 	} else {
 		log.Print("Using user from Flag: " + gitUser)
 		log.Print("Using email from Flag: " + gitEmail)
 	}
-	createAndCheckoutGitBranch()
+
+	err = createAndCheckoutGitBranch()
+	if err != nil {
+		return err
+	}
+
 	createRepoSubdirForTestgridYAML()
-	generateTestgridYAML()
-	gitAddAll()
+
+	err = generateTestgridYAML()
+	if err != nil {
+		return err
+	}
+
+	err = gitAddAll()
+	if err != nil {
+		return err
+	}
+
 	if !gitDiffExists() {
 		log.Print("Transfigure did not change anything. Aborting no-op bump.")
-		return 0
+		return nil
 	}
-	runBazelTests()
+
+	err = runBazelTests()
+	if err != nil {
+		return err
+	}
 
 	if dryRun {
 		log.Print("Dry-Run; skipping PR")
-	} else {
-		gitCommitAndPush()
-		createPR()
+		return nil
 	}
-	return 0
+
+	err = gitCommitAndPush()
+	if err != nil {
+		return err
+	}
+
+	err = createPR()
+	return err
 }
 
 func init() {
@@ -109,7 +153,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&prowConfig, "prow_config", "", "Config path for your non-k8s Prow instance.")
 	rootCmd.PersistentFlags().StringVar(&prowJobConfig, "prow_job_config", "", "Job Config path for your non-k8s Prow instance.")
 	rootCmd.PersistentFlags().StringVar(&testgridYaml, "testgrid_yaml", "", "TestGrid configuration directory or default file.")
-	rootCmd.PersistentFlags().StringVar(&prowJobConfig, "repo_subdir", "", "The subdirectory in /config/testgrids/... to push to. Usually <github_org> or <github_org>/<github_repository>.")
+	rootCmd.PersistentFlags().StringVar(&repoSubdir, "repo_subdir", "", "The subdirectory in /config/testgrids/... to push to. Usually <github_org> or <github_org>/<github_repository>.")
 	for _, flag := range []string{"prow_config", "prow_job_config", "testgrid_yaml", "repo_subdir"} {
 		rootCmd.MarkPersistentFlagRequired(flag)
 	}
@@ -122,16 +166,17 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry_run", false, "If true, no PR will be created.")
 }
 
-func createTempWorkingDir() {
+func createTempWorkingDir() error {
 	tempDir, err := ioutil.TempDir(".", "transfigure_")
 	if err != nil {
-		log.Panic(err)
+		return wrapErrorOrNil("Error creating temp dir", err)
 	}
 	workingDir, err = filepath.Abs(tempDir)
 	if err != nil {
-		log.Panic(err)
+		return wrapErrorOrNil("Error getting abs path for working dir", err)
 	}
 	log.Printf("Created temp directory %v/", tempDir)
+	return nil
 }
 
 func removeTempWorkingDir() {
@@ -139,15 +184,17 @@ func removeTempWorkingDir() {
 	log.Printf("Removed temp directory %v/", workingDir)
 }
 
-func cloneK8sTestInfraRepo() {
+func cloneK8sTestInfraRepo() error {
 	log.Printf("Cloning kubernetes/test-infra into temp directory")
 	cmd := exec.Command("git", "clone", "https://github.com/kubernetes/test-infra.git")
-	runCmd(cmd)
+	_, err := runCmd(cmd)
+	return wrapErrorOrNil("Error on git clone", err)
 }
 
-func createAndCheckoutGitBranch() {
+func createAndCheckoutGitBranch() error {
 	log.Print("Checking out branch " + Branch)
-	runCmd(exec.Command("git", "checkout", "-B", Branch))
+	_, err := runCmd(exec.Command("git", "checkout", "-B", Branch))
+	return wrapErrorOrNil("Error on git checkout -B "+Branch, err)
 }
 
 func createRepoSubdirForTestgridYAML() {
@@ -158,25 +205,28 @@ func createRepoSubdirForTestgridYAML() {
 	}
 }
 
-func generateTestgridYAML() {
+func generateTestgridYAML() error {
 	yamlPath, err := filepath.Abs(testgridYaml)
 	if err != nil {
-		log.Panic("Invalid testgrid yaml path: " + testgridYaml)
+		return wrapErrorOrNil("Invalid testgrid yaml path "+testgridYaml, err)
 	}
 
-	runCmd(exec.Command(
-		"/configurator",
-		fmt.Sprintf("--prow-config \"%s\"", prowConfig),
-		fmt.Sprintf("--prow-job-config \"%s\"", prowJobConfig),
+	cmd := exec.Command(
+		"/Users/joshuabone/go/src/k8s.io/test-infra/testgrid/cmd/transfigure/configurator",
+		fmt.Sprintf("--prow-config=%s", prowConfig),
+		fmt.Sprintf("--prow-job-config=%s", prowJobConfig),
 		"--output-yaml",
-		fmt.Sprintf("--yaml \"%s\"", yamlPath),
+		fmt.Sprintf("--yaml=%s", yamlPath),
 		"--oneshot",
-		fmt.Sprintf("--output \"%s/gen-config.yaml\"", testgridDir),
-	))
+		fmt.Sprintf("--output=%s/gen-config.yaml", testgridDir),
+	)
+	_, err = runCmd(cmd)
+	return wrapErrorOrNil("Error running configurator", err)
 }
 
-func gitAddAll() {
-	runCmd(exec.Command("git", "add", "--all"))
+func gitAddAll() error {
+	_, err := runCmd(exec.Command("git", "add", "--all"))
+	return wrapErrorOrNil("Error on git add", err)
 }
 
 func gitDiffExists() bool {
@@ -186,39 +236,57 @@ func gitDiffExists() bool {
 	return err != nil
 }
 
-func runBazelTests() {
+func runBazelTests() error {
 	log.Print("Running kubernetes/test-infra tests...")
-	cmd := exec.Command("bazel", "test", "//config/tests...", "//hack:verify-spelling")
-	runCmd(cmd)
-	log.Print("Tests successful!")
+	cmd := exec.Command("bazel", "test", "test-infra/config/tests/...", "test-infra/hack:verify-spelling")
+	out, err := runCmd(cmd)
+	if err != nil {
+		return wrapErrorOrNil("Error running bazel test: "+out, err)
+	} else {
+		log.Print("Tests successful!")
+		return nil
+	}
 }
 
-func ensureGitUserAndEmail() {
+func ensureGitUserAndEmail() error {
 	log.Print("Checking Git Config user and email")
 	runCmd(exec.Command("git", "config", "user.name", gitUser))
 	runCmd(exec.Command("git", "config", "user.email", gitEmail))
-	output := runCmd(exec.Command("git", "config", "user.name"))
+
+	output, err := runCmd(exec.Command("git", "config", "user.name"))
+	if err != nil {
+		return wrapErrorOrNil("Error on git config user.name", err)
+	}
 	if diff := cmp.Diff(output, gitUser); diff != "" {
-		log.Panic("Unexpected Git User: (-got +want)\n" + diff)
+		return errors.New("Unexpected Git User: (-got +want)\n" + diff)
 	}
-	output = runCmd(exec.Command("git", "config", "user.email"))
+
+	output, err = runCmd(exec.Command("git", "config", "user.email"))
+	if err != nil {
+		return wrapErrorOrNil("Error on git config user.email", err)
+	}
 	if diff := cmp.Diff(output, gitEmail); diff != "" {
-		log.Panic("Unexpected Git Email: (-got +want)\n" + diff)
+		return errors.New("Unexpected Git Email: (-got +want)\n" + diff)
 	}
+	return nil
 }
 
-func gitCommitAndPush() {
+func gitCommitAndPush() error {
 	prTitle = "Update TestGrid for " + repoSubdir
-	runCmd(exec.Command("git", "commit", "-m", prTitle))
+	_, err := runCmd(exec.Command("git", "commit", "-m", prTitle))
+	if err != nil {
+		return wrapErrorOrNil("Error on git commit", err)
+	}
 
 	log.Print(fmt.Sprintf("Pushing commit to %s/%s:%s...", gitUser, remoteForkRepo, Branch))
-	pushTarget := fmt.Sprintf("https://%s:%s@github.com/%s/%s", gitUser, githubTokenContents(), gitUser, remoteForkRepo)
-	runCmd(exec.Command("git", "push", "-f", pushTarget, "HEAD:"+Branch))
+	pushTarget := fmt.Sprintf("https://%s:%s@github.com/%s/%s", gitUser, tokenContents, gitUser, remoteForkRepo)
+	_, err = runCmd(exec.Command("git", "push", "-f", pushTarget, "HEAD:"+Branch))
+	return wrapErrorOrNil("Error on git push", err)
 }
 
-func createPR() {
+func createPR() error {
 	log.Printf("Creating PR to merge %s:%s into k8s/test-infra:master...", gitUser, Branch)
-	runCmd(exec.Command("/pr-creator",
+	_, err := runCmd(exec.Command("/pr-creator",
 		"--github-token-path="+githubToken,
 		"--org=\"kubernetes\"",
 		"--repo=\"test-infra\"",
@@ -228,34 +296,35 @@ func createPR() {
 		"--body=\"Generated by transfigure cmd\"",
 		"--source=\""+gitUser+":"+Branch+"\"",
 		"--confirm"))
-	log.Print("PR created successfully!")
-}
-
-func runCmd(cmd *exec.Cmd) string {
-	cmd.Dir = workingDir
-	out, err := cmd.Output()
-	if err != nil {
-		log.Panic(err)
+	if err == nil {
+		log.Print("PR created successfully!")
 	}
-	return strings.TrimSpace(string(out)) // Remove trailing newline
+	return wrapErrorOrNil("Error creating PR", err)
 }
 
-func populateGitUserAndEmail() {
+func runCmd(cmd *exec.Cmd) (string, error) {
+	cmd.Dir = workingDir
+	log.Printf("Running command: \n%v", cmd)
+	out, err := cmd.CombinedOutput()
+	return strings.TrimSpace(string(out)), err // Remove trailing newline
+}
+
+func populateGitUserAndEmail() error {
 	// Create a new HTTP request.
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 	// Append the token we just read from file, and send the request.
-	req.Header.Add("Authorization", "token "+githubTokenContents())
+	req.Header.Add("Authorization", "token "+tokenContents)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Panic(err)
+		return wrapErrorOrNil("Error sending request", err)
 	}
 	// Read in the desired fields from the response body.
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Panic(err)
+		return wrapErrorOrNil("Error reading from response", err)
 	}
 	githubData := struct {
 		Login string `json:"login"`
@@ -277,15 +346,18 @@ func populateGitUserAndEmail() {
 		gitEmail = githubData.Email
 		log.Print("Using email from GitHub: " + gitEmail)
 	}
+	return nil
 }
 
-func githubTokenContents() string {
-	if tokenContents == "" {
-		token, err := ioutil.ReadFile(githubToken)
-		if err != nil {
-			log.Panic(err)
-		}
-		tokenContents = strings.TrimSpace(string(token))
+func readGitHubToken() error {
+	token, err := ioutil.ReadFile(githubToken)
+	tokenContents = strings.TrimSpace(string(token))
+	return wrapErrorOrNil("Error reading github token "+githubToken, err)
+}
+
+func wrapErrorOrNil(msg string, err error) error {
+	if err == nil {
+		return nil
 	}
-	return tokenContents
+	return fmt.Errorf("%v (Caused by: %v)", msg, err)
 }
