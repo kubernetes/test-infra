@@ -233,6 +233,10 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        ingress-nginx:
+          branches:
+            gh-pages:
+              protect: false
         kompose:
           required_status_checks:
             contexts:
