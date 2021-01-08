@@ -1,0 +1,96 @@
+dashboard_groups:
+- dashboard_names:
+  - kubevirt-presubmits
+  name: kubevirt
+dashboards:
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-1.20
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-1.20
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-1.19
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-1.19
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-1.17
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-1.17
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-cnao-1.19
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-cnao-1.19
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-windows2016
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-windows2016
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-kind-1.17-sriov
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-kind-1.17-sriov
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-check-tests-for-flakes
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-check-tests-for-flakes
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-gosec
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-gosec
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-unit-test
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-unit-test
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-goveralls
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-goveralls
+  name: kubevirt-presubmits
+test_groups:
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20
+  name: pull-kubevirt-e2e-k8s-1.20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19
+  name: pull-kubevirt-e2e-k8s-1.19
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17
+  name: pull-kubevirt-e2e-k8s-1.17
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-cnao-1.19
+  name: pull-kubevirt-e2e-k8s-cnao-1.19
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-windows2016
+  name: pull-kubevirt-e2e-windows2016
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-kind-1.17-sriov
+  name: pull-kubevirt-e2e-kind-1.17-sriov
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-check-tests-for-flakes
+  name: pull-kubevirt-check-tests-for-flakes
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17-rook-ceph
+  name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-gosec
+  name: pull-kubevirt-gosec
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-unit-test
+  name: pull-kubevirt-unit-test
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-goveralls
+  name: pull-kubevirt-goveralls
