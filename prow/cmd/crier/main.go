@@ -222,6 +222,15 @@ func main() {
 		logrus.WithError(err).Fatal("failed to create manager")
 	}
 
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.client.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	var hasReporter bool
 	if o.slackWorkers > 0 {
 		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {

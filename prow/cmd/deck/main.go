@@ -375,6 +375,15 @@ func main() {
 			logrus.Fatal("Timed out waiting for cachesync")
 		}
 
+		// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+		// to make the kubelet restart us.
+		if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+			logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+			interrupts.Terminate()
+		}); err != nil {
+			logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+		}
+
 		pjListingClient = &pjListingClientWrapper{mgr.GetClient()}
 
 		// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.

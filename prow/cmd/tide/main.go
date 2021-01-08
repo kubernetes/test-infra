@@ -184,6 +184,16 @@ func main() {
 			logrus.WithError(err).Error("Could not clean up git client cache.")
 		}
 	})
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
