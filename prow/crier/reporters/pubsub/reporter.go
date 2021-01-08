@@ -146,7 +146,7 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		// * pj.Status.URL: https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
 		// * prefix: https://prow.k8s.io/view/
 		// * storageURLPath: gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
-		prefix := c.config().Plank.GetJobURLPrefix(pj.Spec.Refs)
+		prefix := c.config().Plank.GetJobURLPrefix(pj)
 
 		storageURLPath := strings.TrimPrefix(pj.Status.URL, prefix)
 		if strings.HasPrefix(storageURLPath, api.GCSKeyType) {

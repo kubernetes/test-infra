@@ -253,7 +253,7 @@ func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (st
 	}
 
 	url := job.Status.URL
-	prefix := config().Plank.GetJobURLPrefix(job.Spec.Refs)
+	prefix := config().Plank.GetJobURLPrefix(&job)
 	if !strings.HasPrefix(url, prefix) {
 		return "", "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}

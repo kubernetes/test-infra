@@ -2920,7 +2920,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		plank                Plank
-		refs                 *prowapi.Refs
+		prowjob              *prowapi.ProwJob
 		expectedJobURLPrefix string
 	}{
 		{
@@ -2936,7 +2936,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-org": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -2948,8 +2948,23 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"}}},
 			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "JobURLPrefix in decoration config overrides job_url_prefix_config",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob: &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{
+				DecorationConfig: &prowjobv1.DecorationConfig{GCSConfiguration: &prowjobv1.GCSConfiguration{JobURLPrefix: "https://overriden"}},
+				Refs:             &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			}},
+			expectedJobURLPrefix: "https://overriden",
 		},
 		{
 			name: "Matching org and not matching repo returns JobURLPrefix from org",
@@ -2960,7 +2975,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -2971,7 +2986,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -2983,7 +2998,10 @@ func TestPlankJobURLPrefix(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if prefix := tc.plank.GetJobURLPrefix(tc.refs); prefix != tc.expectedJobURLPrefix {
+			if tc.prowjob == nil {
+				tc.prowjob = &prowjobv1.ProwJob{}
+			}
+			if prefix := tc.plank.GetJobURLPrefix(tc.prowjob); prefix != tc.expectedJobURLPrefix {
 				t.Errorf("expected JobURLPrefix to be %q but was %q", tc.expectedJobURLPrefix, prefix)
 			}
 		})
