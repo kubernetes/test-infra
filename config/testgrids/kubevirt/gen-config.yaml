@@ -18,6 +18,12 @@ dashboards:
     test_group_name: pull-kubevirt-e2e-k8s-1.19
   - code_search_url_template:
       url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: pull-kubevirt-e2e-k8s-1.18
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: pull-kubevirt-e2e-k8s-1.18
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
     name: pull-kubevirt-e2e-k8s-1.17
     open_bug_template:
       url: https://github.com/kubevirt/project-infra/issues/
@@ -76,6 +82,8 @@ test_groups:
   name: pull-kubevirt-e2e-k8s-1.20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19
   name: pull-kubevirt-e2e-k8s-1.19
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.18
+  name: pull-kubevirt-e2e-k8s-1.18
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17
   name: pull-kubevirt-e2e-k8s-1.17
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-cnao-1.19
