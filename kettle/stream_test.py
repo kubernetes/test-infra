@@ -61,7 +61,7 @@ class FakeClient:
 
 class FakeTable:
     def __init__(self, name, schema):
-        self.friendly_name = name
+        self.full_table_id = f'bq.table.{name}'
         self.schema = schema
 
 class FakeSchemaField:

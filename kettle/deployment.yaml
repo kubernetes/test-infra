@@ -18,6 +18,8 @@ spec:
           value: /etc/service-account/service-account.json
         - name: DEPLOYMENT
           value: prod
+        - name: SUBSCRIPTION_PATH
+          value: kubernetes-jenkins/gcs-changes/kettle
         volumeMounts:
         - name: service
           mountPath: /etc/service-account

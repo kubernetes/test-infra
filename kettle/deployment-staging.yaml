@@ -20,6 +20,8 @@ spec:
           value: "1000"
         - name: DEPLOYMENT
           value: staging
+        - name: SUBSCRIPTION_PATH
+          value: kubernetes-jenkins/gcs-changes/kettle-staging
         volumeMounts:
         - name: service
           mountPath: /etc/service-account

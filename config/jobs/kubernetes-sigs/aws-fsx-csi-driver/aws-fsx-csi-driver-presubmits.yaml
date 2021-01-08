@@ -3,11 +3,13 @@ presubmits:
   - name: pull-aws-fsx-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -21,11 +23,13 @@ presubmits:
   - name: pull-aws-fsx-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -39,13 +43,15 @@ presubmits:
   - name: pull-aws-fsx-csi-driver-e2e
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:

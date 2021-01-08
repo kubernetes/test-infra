@@ -37,6 +37,7 @@ dashboard_groups:
   - knative-sandbox-net-certmanager
   - knative-sandbox-net-contour
   - knative-sandbox-net-http01
+  - knative-sandbox-net-ingressv2
   - knative-sandbox-net-istio
   - knative-sandbox-net-kourier
   - knative-sandbox-sample-controller
@@ -123,13 +124,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/google/knative-gcp/issues/
     test_group_name: ci-google-knative-gcp-go-coverage
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: ci-google-knative-gcp-go-coverage-beta-prow-tests
-    name: google-knative-gcp-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    test_group_name: ci-google-knative-gcp-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -229,13 +223,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/client/issues/
     test_group_name: ci-knative-client-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-client-go-coverage-beta-prow-tests
-    name: knative-client-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    test_group_name: ci-knative-client-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -277,13 +264,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/docs/issues/
     test_group_name: ci-knative-docs-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-docs-go-coverage-beta-prow-tests
-    name: knative-docs-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/docs/issues/
-    test_group_name: ci-knative-docs-go-coverage-beta-prow-tests
   name: knative-docs
 - dashboard_tab:
   - code_search_url_template:
@@ -365,13 +345,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing/issues/
     test_group_name: ci-knative-eventing-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-go-coverage-beta-prow-tests
-    name: knative-eventing-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    test_group_name: ci-knative-eventing-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -462,13 +435,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-eventing-contrib-go-coverage-beta-prow-tests
-    name: knative-eventing-contrib-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing-contrib/issues/
-    test_group_name: ci-knative-eventing-contrib-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -559,13 +525,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-go-coverage-beta-prow-tests
-    name: knative-operator-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -622,6 +581,13 @@ dashboards:
       url: https://github.com/google/knative-gcp/issues/
     test_group_name: ci-google-knative-gcp-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: ci-google-knative-gcp-go-coverage-beta-prow-tests
+    name: google-knative-gcp-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    test_group_name: ci-google-knative-gcp-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative/caching/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-caching-continuous-beta-prow-tests
     name: knative-caching-continuous-beta-prow-tests
@@ -671,12 +637,26 @@ dashboards:
       url: https://github.com/knative/client-contrib/issues/
     test_group_name: ci-knative-client-contrib-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-client-go-coverage-beta-prow-tests
+    name: knative-client-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    test_group_name: ci-knative-client-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-docs-continuous-beta-prow-tests
     name: knative-docs-continuous-beta-prow-tests
     open_bug_template:
       url: https://github.com/knative/docs/issues/
     test_group_name: ci-knative-docs-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/docs/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-docs-go-coverage-beta-prow-tests
+    name: knative-docs-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/docs/issues/
+    test_group_name: ci-knative-docs-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-eventing-0.16-continuous-beta-prow-tests
@@ -748,6 +728,20 @@ dashboards:
       url: https://github.com/knative/eventing-contrib/issues/
     test_group_name: ci-knative-eventing-contrib-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative/eventing-contrib/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-contrib-go-coverage-beta-prow-tests
+    name: knative-eventing-contrib-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing-contrib/issues/
+    test_group_name: ci-knative-eventing-contrib-go-coverage-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-eventing-go-coverage-beta-prow-tests
+    name: knative-eventing-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    test_group_name: ci-knative-eventing-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.16-continuous-beta-prow-tests
     name: knative-operator-0.16-continuous-beta-prow-tests
@@ -783,6 +777,13 @@ dashboards:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-go-coverage-beta-prow-tests
+    name: knative-operator-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative/pkg/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-pkg-continuous-beta-prow-tests
     name: knative-pkg-continuous-beta-prow-tests
@@ -796,6 +797,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/async-component/issues/
     test_group_name: ci-knative-sandbox-async-component-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/async-component/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-async-component-go-coverage-beta-prow-tests
+    name: knative-sandbox-async-component-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/async-component/issues/
+    test_group_name: ci-knative-sandbox-async-component-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/discovery/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-discovery-continuous-beta-prow-tests
@@ -853,12 +861,26 @@ dashboards:
       url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-broker-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-kafka-broker/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
+    name: knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
+    test_group_name: ci-knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/eventing-kafka/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
     name: knative-sandbox-eventing-kafka-continuous-beta-prow-tests
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-kafka/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
+    name: knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-kafka/issues/
+    test_group_name: ci-knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/eventing-prometheus/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-eventing-prometheus-continuous-beta-prow-tests
@@ -909,6 +931,13 @@ dashboards:
       url: https://github.com/knative-sandbox/net-certmanager/issues/
     test_group_name: ci-knative-sandbox-net-certmanager-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-certmanager/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
+    name: knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-certmanager/issues/
+    test_group_name: ci-knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/net-contour/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-contour-continuous-beta-prow-tests
     name: knative-sandbox-net-contour-continuous-beta-prow-tests
@@ -923,6 +952,20 @@ dashboards:
       url: https://github.com/knative-sandbox/net-http01/issues/
     test_group_name: ci-knative-sandbox-net-http01-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+    name: knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+    name: knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
     name: knative-sandbox-net-istio-continuous-beta-prow-tests
@@ -930,12 +973,26 @@ dashboards:
       url: https://github.com/knative-sandbox/net-istio/issues/
     test_group_name: ci-knative-sandbox-net-istio-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-istio-go-coverage-beta-prow-tests
+    name: knative-sandbox-net-istio-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-istio/issues/
+    test_group_name: ci-knative-sandbox-net-istio-go-coverage-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/net-kourier/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
     name: knative-sandbox-net-kourier-continuous-beta-prow-tests
     open_bug_template:
       url: https://github.com/knative-sandbox/net-kourier/issues/
     test_group_name: ci-knative-sandbox-net-kourier-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-kourier/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-kourier-go-coverage-beta-prow-tests
+    name: knative-sandbox-net-kourier-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-kourier/issues/
+    test_group_name: ci-knative-sandbox-net-kourier-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/sample-controller/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-sample-controller-continuous-beta-prow-tests
@@ -992,6 +1049,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/test-infra/issues/
     test_group_name: ci-knative-test-infra-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-test-infra-go-coverage-beta-prow-tests
+    name: knative-test-infra-go-coverage-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/test-infra/issues/
+    test_group_name: ci-knative-test-infra-go-coverage-beta-prow-tests
   name: knative-prow-tests
 - dashboard_tab:
   - alert_options:
@@ -1026,13 +1090,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/async-component/issues/
     test_group_name: ci-knative-sandbox-async-component-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/async-component/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-async-component-go-coverage-beta-prow-tests
-    name: knative-sandbox-async-component-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/async-component/issues/
-    test_group_name: ci-knative-sandbox-async-component-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1297,13 +1354,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-kafka/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-kafka/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
-    name: knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-kafka/issues/
-    test_group_name: ci-knative-sandbox-eventing-kafka-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1347,13 +1397,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
     test_group_name: ci-knative-sandbox-eventing-kafka-broker-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-kafka-broker/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
-    name: knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-kafka-broker/issues/
-    test_group_name: ci-knative-sandbox-eventing-kafka-broker-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1493,20 +1536,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-diag-go-coverage
-    name: knative-sandbox-kn-plugin-diag-go-coverage
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-diag-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-    name: knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/kn-plugin-diag/issues/
-    test_group_name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
   name: knative-sandbox-kn-plugin-diag
 - dashboard_tab:
   - code_search_url_template:
@@ -1584,13 +1613,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-certmanager/issues/
     test_group_name: ci-knative-sandbox-net-certmanager-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-certmanager/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
-    name: knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-certmanager/issues/
-    test_group_name: ci-knative-sandbox-net-certmanager-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1674,6 +1696,49 @@ dashboards:
     test_group_name: ci-knative-sandbox-net-http01-nightly-release
   name: knative-sandbox-net-http01
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-auto-release
+    name: knative-sandbox-net-ingressv2-auto-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-auto-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-continuous
+    name: knative-sandbox-net-ingressv2-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-continuous
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-dot-release
+    name: knative-sandbox-net-ingressv2-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-go-coverage
+    name: knative-sandbox-net-ingressv2-go-coverage
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-go-coverage
+  - alert_options:
+      alert_mail_to_addresses: serverless-engprod-sea@google.com
+    code_search_url_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-net-ingressv2-nightly-release
+    name: knative-sandbox-net-ingressv2-nightly-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-ingressv2/issues/
+    test_group_name: ci-knative-sandbox-net-ingressv2-nightly-release
+  name: knative-sandbox-net-ingressv2
+- dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-istio-0.16-dot-release
@@ -1727,13 +1792,6 @@ dashboards:
     test_group_name: ci-knative-sandbox-net-istio-go-coverage
   - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-istio-go-coverage-beta-prow-tests
-    name: knative-sandbox-net-istio-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-istio/issues/
-    test_group_name: ci-knative-sandbox-net-istio-go-coverage-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-sandbox-net-istio-latest
     name: knative-sandbox-net-istio-latest
     open_bug_template:
@@ -1782,13 +1840,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/net-kourier/issues/
     test_group_name: ci-knative-sandbox-net-kourier-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-kourier/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-net-kourier-go-coverage-beta-prow-tests
-    name: knative-sandbox-net-kourier-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-kourier/issues/
-    test_group_name: ci-knative-sandbox-net-kourier-go-coverage-beta-prow-tests
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -2003,13 +2054,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/test-infra/issues/
     test_group_name: ci-knative-test-infra-go-coverage
-  - code_search_url_template:
-      url: https://github.com/knative/test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-test-infra-go-coverage-beta-prow-tests
-    name: knative-test-infra-go-coverage-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/test-infra/issues/
-    test_group_name: ci-knative-test-infra-go-coverage-beta-prow-tests
   name: knative-test-infra
 test_groups:
 - alert_stale_results_hours: 3
@@ -2517,10 +2561,6 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
-- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage
-  name: ci-knative-sandbox-kn-plugin-diag-go-coverage
-- gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
-  name: ci-knative-sandbox-kn-plugin-diag-go-coverage-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
@@ -2593,6 +2633,26 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-http01-nightly-release
   name: ci-knative-sandbox-net-http01-nightly-release
+  num_failures_to_alert: 1
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-auto-release
+  name: ci-knative-sandbox-net-ingressv2-auto-release
+  num_failures_to_alert: 1
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-continuous
+  name: ci-knative-sandbox-net-ingressv2-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+  name: ci-knative-sandbox-net-ingressv2-continuous-beta-prow-tests
+- alert_stale_results_hours: 170
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-dot-release
+  name: ci-knative-sandbox-net-ingressv2-dot-release
+  num_failures_to_alert: 1
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-go-coverage
+  name: ci-knative-sandbox-net-ingressv2-go-coverage
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+  name: ci-knative-sandbox-net-ingressv2-go-coverage-beta-prow-tests
+- gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-ingressv2-nightly-release
+  name: ci-knative-sandbox-net-ingressv2-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.16-dot-release

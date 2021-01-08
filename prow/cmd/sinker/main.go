@@ -123,12 +123,23 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting config for infastructure cluster")
 	}
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	opts := manager.Options{
-		MetricsBindAddress:      "0",
-		Namespace:               cfg().ProwJobNamespace,
-		LeaderElection:          true,
-		LeaderElectionNamespace: configAgent.Config().ProwJobNamespace,
-		LeaderElectionID:        "prow-sinker-leaderlock",
+		MetricsBindAddress:            "0",
+		Namespace:                     cfg().ProwJobNamespace,
+		LeaderElection:                true,
+		LeaderElectionNamespace:       configAgent.Config().ProwJobNamespace,
+		LeaderElectionID:              "prow-sinker-leaderlock",
+		LeaderElectionReleaseOnCancel: true,
 	}
 	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
@@ -166,6 +177,7 @@ func main() {
 	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
+	logrus.Info("Manager ended gracefully")
 }
 
 type controller struct {

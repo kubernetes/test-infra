@@ -1,3 +1,4 @@
+# Built-in plugins specific configuration.
 approve:
   - # CommandHelpLink is the link to the help page which shows the available commands for each repo.
     # The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
@@ -381,6 +382,10 @@ heart:
     # any comments.
     # Compiles into CommentRe during config load.
     commentregexp: ' '
+help:
+    # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
+    # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
+    help_guidelines_url: ' '
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
@@ -528,11 +533,7 @@ slack:
     mentionchannels:
       - ""
     mergewarnings:
-      - # Deprecated: Use ExemptBranches instead.
-        branch_whitelist:
-            "": null
-
-        # List of channels on which a event is published.
+      - # List of channels on which a event is published.
         channels:
           - ""
 
@@ -546,10 +547,6 @@ slack:
 
         # Repos is either of the form org/repos or just org.
         repos:
-          - ""
-
-        # Deprecated: Use ExemptUsers instead.
-        whitelist:
           - ""
 triggers:
   - # JoinOrgURL is a link that redirects users to a location where they

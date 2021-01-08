@@ -277,11 +277,11 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 	expectedTitle := "[stage] This is a fix for X"
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
-	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
+	expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, expectedBase)
 	expectedLabels := []string{}
 	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
@@ -290,7 +290,7 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
 		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
@@ -302,7 +302,7 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 	got := prToString(ghc.prs[0])
 	if got != expected {
@@ -428,14 +428,14 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
 		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
@@ -447,13 +447,13 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var expectedFn = func(branch string) string {
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 		expectedBody := "This is an automated cherry-pick of #2"
-		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
 		expectedLabels := s.labels
 		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
@@ -541,7 +541,7 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 
 	events := []github.PullRequestEventAction{github.PullRequestActionClosed, github.PullRequestActionLabeled}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
@@ -613,7 +613,7 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 				}
 
 				s := &Server{
-					botName:        botName,
+					botUser:        botUser,
 					gc:             c,
 					push:           func(newBranch string, force bool) error { return nil },
 					ghc:            ghc,
@@ -633,7 +633,7 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 				var expectedFn = func(branch string) string {
 					expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 					expectedBody := "This is an automated cherry-pick of #2"
-					expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+					expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
 					expectedLabels := s.labels
 					return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 				}

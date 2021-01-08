@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
@@ -35,6 +37,7 @@ func TestOptions(t *testing.T) {
 	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
 		MetricsPort: prowflagutil.DefaultMetricsPort,
 		PProfPort:   prowflagutil.DefaultPProfPort,
+		HealthPort:  prowflagutil.DefaultHealthPort,
 	}
 	cases := []struct {
 		name     string
@@ -175,17 +178,25 @@ func TestOptions(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		var actual options
-		err := actual.parseArgs(flags, tc.args)
-		switch {
-		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to return an error", tc.name)
-		case err != nil && tc.expected != nil:
-			t.Errorf("%s: unexpected error: %v", tc.name, err)
-		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actual options
+			err := actual.parseArgs(flags, tc.args)
+			switch {
+			case err == nil && tc.expected == nil:
+				t.Fatalf("%s: failed to return an error", tc.name)
+			case err != nil && tc.expected != nil:
+				t.Fatalf("%s: unexpected error: %v", tc.name, err)
+			}
+
+			if tc.expected == nil {
+				return
+			}
+			if diff := cmp.Diff(actual, *tc.expected, cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
+				t.Errorf("Result differs from expected: %s", diff)
+			}
+
+		})
 	}
 }
 

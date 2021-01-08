@@ -48,7 +48,7 @@ type Client struct {
 	user string
 
 	// needed to generate the token.
-	tokenGenerator func() []byte
+	tokenGenerator GitTokenGenerator
 
 	// dir is the location of the git cache.
 	dir string
@@ -93,7 +93,7 @@ func NewClientWithHost(host string) (*Client, error) {
 	}
 	return &Client{
 		logger:         logrus.WithField("client", "git"),
-		tokenGenerator: func() []byte { return nil },
+		tokenGenerator: func(_ string) (string, error) { return "", nil },
 		dir:            t,
 		git:            g,
 		base:           fmt.Sprintf("https://%s", host),
@@ -110,19 +110,22 @@ func (c *Client) SetRemote(remote string) {
 	c.base = remote
 }
 
+type GitTokenGenerator func(org string) (string, error)
+
 // SetCredentials sets credentials in the client to be used for pushing to
 // or pulling from remote repositories.
-func (c *Client) SetCredentials(user string, tokenGenerator func() []byte) {
+func (c *Client) SetCredentials(user string, tokenGenerator GitTokenGenerator) {
 	c.credLock.Lock()
 	defer c.credLock.Unlock()
 	c.user = user
 	c.tokenGenerator = tokenGenerator
 }
 
-func (c *Client) getCredentials() (string, string) {
+func (c *Client) getCredentials(org string) (string, string, error) {
 	c.credLock.RLock()
 	defer c.credLock.RUnlock()
-	return c.user, string(c.tokenGenerator())
+	token, err := c.tokenGenerator(org)
+	return c.user, token, err
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -153,7 +156,10 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	defer c.unlockRepo(repo)
 
 	base := c.base
-	user, pass := c.getCredentials()
+	user, pass, err := c.getCredentials(organization)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
 	if user != "" && pass != "" {
 		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
 	}

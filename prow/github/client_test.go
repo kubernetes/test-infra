@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/rsa"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -36,11 +37,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
 
 	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/version"
 )
 
 type testTime struct {
@@ -66,6 +69,7 @@ func getClient(url string) *client {
 		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
+			throttle: throttler{throttlerDelegate: &throttlerDelegate{}},
 			getToken: getToken,
 			censor: func(content []byte) []byte {
 				return content
@@ -171,32 +175,6 @@ func TestRetryBase(t *testing.T) {
 	_, err = c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err == nil {
 		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
-	}
-}
-
-func TestBotName(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/user" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, "{\"login\": \"wowza\"}")
-	}))
-	c := getClient(ts.URL)
-	botName, err := c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
-	}
-	ts.Close()
-	botName, err = c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
 	}
 }
 
@@ -2512,22 +2490,19 @@ func TestToCurl(t *testing.T) {
 	}
 }
 
-type orgHeaderCheckingRoundTripper struct {
-	t *testing.T
+type testRoundTripper struct {
+	rt func(*http.Request) (*http.Response, error)
 }
 
-func (rt orgHeaderCheckingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if !strings.HasPrefix(r.URL.Path, "/app") && r.Header.Get(githubOrgHeaderKey) != "org" {
-		rt.t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
-	}
-	return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	return rt.rt(r)
 }
 
 // TestAllMethodsThatDoRequestSetOrgHeader uses reflect to find all methods of the Client and
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	ghClient := NewClient(func() []byte { return nil }, func(in []byte) []byte { return in }, "", "")
+	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	clientType := reflect.TypeOf(ghClient)
 	stringType := reflect.TypeOf("")
 	stringValue := reflect.ValueOf("org")
@@ -2536,11 +2511,6 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		// Doesn't support github apps
 		"Query",
 		// They fetch the user, which doesn't exist in case of github app.
-		// TODO: Redirect these to /app when app auth is used
-		"BotName",
-		"BotUser",
-		// GitHub apps do not have an email
-		"Email",
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
 	)
@@ -2551,7 +2521,21 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		}
 		t.Run(clientType.Method(i).Name, func(t *testing.T) {
 
-			ghClient.(*client).client.(*http.Client).Transport = &orgHeaderCheckingRoundTripper{t}
+			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+				if !strings.HasPrefix(r.URL.Path, "/app") {
+					var orgVal string
+					if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+						orgVal = v.(string)
+					}
+					if orgVal != "org" {
+						t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+					}
+				}
+				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+			}}
+
+			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
+			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
 			clientValue := reflect.ValueOf(ghClient)
 
 			var args []reflect.Value
@@ -2566,6 +2550,16 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 					arg.Set(stringValue)
 				}
 
+				// We can not deal with interface types genererically, as there
+				// is no automatic way to figure out the concrete values they
+				// can or should be set to.
+				if arg.Type().String() == "context.Context" {
+					arg.Set(reflect.ValueOf(context.Background()))
+				}
+				if arg.Type().String() == "interface {}" {
+					arg.Set(reflect.ValueOf(map[string]interface{}{}))
+				}
+
 				// Just set all strings to a nonEmpty string, otherwise the header will not get set
 				args = append(args, arg)
 			}
@@ -2578,4 +2572,112 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 			_ = clientValue.Method(i).Call(args)
 		})
 	}
+}
+
+func TestBotUserChecker(t *testing.T) {
+	const savedLogin = "botName"
+	testCases := []struct {
+		name         string
+		checkFor     string
+		usesAppsAuth bool
+		expectMatch  bool
+	}{
+		{
+			name:         "Bot suffix with apps auth is recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix with apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix without apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: false,
+			expectMatch:  true,
+		},
+		{
+			name:         "Suffix without apps auth is not recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: false,
+			expectMatch:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		c := &client{delegate: &delegate{usesAppsAuth: tc.usesAppsAuth, userData: &UserData{Login: savedLogin}}}
+
+		checker, err := c.BotUserChecker()
+		if err != nil {
+			t.Fatalf("failed to get user checker: %v", err)
+		}
+		if actualMatch := checker(tc.checkFor); actualMatch != tc.expectMatch {
+			t.Errorf("expect match: %t, got match: %t", tc.expectMatch, actualMatch)
+		}
+	}
+}
+
+func TestV4ClientSetsUserAgent(t *testing.T) {
+	// Make sure this is deterministic in tests
+	version.Version = "0"
+	var expectedUserAgent string
+	roundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+		if got := r.Header.Get("User-Agent"); got != expectedUserAgent {
+			return nil, fmt.Errorf("expected User-Agent %q, got %q", expectedUserAgent, got)
+		}
+		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
+	}}
+
+	_, client := newClient(
+		logrus.Fields{},
+		func() []byte { return nil },
+		func(b []byte) []byte { return b },
+		"",
+		nil,
+		"",
+		false,
+		nil,
+		roundTripper,
+	)
+
+	t.Run("User agent gets set initially", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForPlugin changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForPlugin("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForPlugin call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForSubcomponent changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForSubcomponent("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForSubcomponent call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
 }

@@ -81,8 +81,8 @@ func (f *fghc) CreateComment(org, repo string, number int, comment string) error
 	return nil
 }
 
-func (f *fghc) BotName() (string, error) {
-	return "k8s-ci-robot", nil
+func (f *fghc) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool { return candidate == "k8s-ci-robot" }, nil
 }
 
 func (f *fghc) AddLabel(org, repo string, number int, label string) error {

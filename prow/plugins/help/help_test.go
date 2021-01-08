@@ -172,6 +172,8 @@ func TestLabel(t *testing.T) {
 		},
 	}
 
+	helpGuidelinesURL := "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
@@ -202,7 +204,7 @@ func TestLabel(t *testing.T) {
 			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:       github.User{Login: "Alice"},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e)
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, helpGuidelinesURL)
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue

@@ -146,6 +146,9 @@ dashboards:
     - name: Periodic ppc64le conformance test on local cluster
       test_group_name: ppc64le-conformance
       description: Runs conformance tests against latest version of kubernetes on local ppc64le cluster"
+    - name: Periodic ppc64le conformance test on local cluster with containerd as runtime
+      test_group_name: ppc64le-conformance-containerd
+      description: Runs conformance tests against latest version of kubernetes with containerd as runtime on local ppc64le cluster"
 
 # Gardener Conformance Dashboard
 - name: conformance-gardener
@@ -257,12 +260,27 @@ dashboards:
     - name: Periodic s390x conformance test on local cluster
       test_group_name: s390x-conformance
       description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.20
+      test_group_name: s390x-conformance-v1.20
+      description: Runs conformance tests by using kubetest against latest v1.20 branch HEAD of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.19
       test_group_name: s390x-conformance-v1.19
       description: Runs conformance tests by using kubetest against latest v1.19 branch HEAD of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.18
       test_group_name: s390x-conformance-v1.18
       description: Runs conformance tests by using kubetest against latest v1.18 branch HEAD of kubernetes on local s390x cluster
+
+# CEL Conformance Tests
+- name: google-cel
+  dashboard_tab:
+  - name: cel-go
+    test_group_name: cel-go-conformance-tests
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/google/cel-go/issues/new
+    results_text: # Text to show in the about menu as a link to another view of the results
+    code_search_path: github.com/google/cel-go/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 test_groups:
 # cloud-provider-openstack e2e conformance tests
@@ -293,20 +311,18 @@ test_groups:
 # CEL Conformance Tests
 - name: cel-go-conformance-tests
   gcs_prefix: cel-conformance/test-logs
-  open_test_template: # The URL template to visit after clicking on a cell
-    url:
-  file_bug_template: # The URL template to visit when filing a bug
-    url: https://github.com/google/cel-go/issues/new
-  results_text: # Text to show in the about menu as a link to another view of the results
-  results_url_template: # The URL template to visit after clicking
-    url:
-  code_search_path: github.com/google/cel-go/search # URL for regression search links.
-  code_search_url_template: # The URL template to visit when searching for changelists
-    url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-conformance-test-ppc64le
+  days_of_results: 7
+  column_header:
+  - configuration_value: k8s-build-version
+- name: ppc64le-conformance-containerd
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-containerd-conformance-test-ppc64le
+  days_of_results: 7
+  column_header:
+  - configuration_value: k8s-build-version
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-bazel-test-ppc64le
 #Arm arm64 test results
@@ -357,6 +373,8 @@ test_groups:
 #IBM s390x test results
 - name: s390x-conformance
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
+- name: s390x-conformance-v1.20
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.20
 - name: s390x-conformance-v1.19
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.19
 - name: s390x-conformance-v1.18

@@ -1,0 +1,29 @@
+presubmits:
+  kubernetes-sigs/image-builder:
+    - name: pull-ova-all
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cluster-api-provider-vsphere-e2e-config: "true"
+        preset-cloud-provider-vsphere-e2e-config: "true"
+      always_run: false
+      optional: true
+      decorate: true
+      path_alias: sigs.k8s.io/image-builder
+      max_concurrency: 5
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+            args:
+              - runner.sh
+              - "./images/capi/packer/ova/scripts/ci-ova.sh"
+            resources:
+              requests:
+                cpu: "1000m"
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["NET_ADMIN"]
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-image-builder
+        testgrid-tab-name: pr-ova-all

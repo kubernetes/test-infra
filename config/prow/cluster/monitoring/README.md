@@ -102,6 +102,13 @@ cp BUILD.bazel vendor/grafonnet
 * For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
 Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
 
+If the Prow instance does not publicly expose `grafana` it can still be accessed by cluster admins via [port-forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/). Run
+
+```
+kubectl -n prow-monitoring port-forward service/grafana 8080:80
+```
+then visit [localhost:8080](http://127.0.0.1:8080).
+
 * For `prometheus` and `alertmanager`, there is no public domain configured based on the security
 concerns (no authorization out of the box).
 Cluster admins can use [k8s port-forward](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to

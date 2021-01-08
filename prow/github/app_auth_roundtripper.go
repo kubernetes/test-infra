@@ -102,19 +102,14 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 }
 
 func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
-	org := r.Header.Get(githubOrgHeaderKey)
-	if org == "" {
-		return &appsAuthError{fmt.Errorf("request didn't have %s header set, can not infer org", githubOrgHeaderKey)}
+	var org string
+	if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+		org = v.(string)
 	}
 
-	installationID, err := arr.installationIDFor(org)
+	token, err := arr.installationTokenFor(org)
 	if err != nil {
-		return &appsAuthError{fmt.Errorf("failed to get installation id for org %s: %w", org, err)}
-	}
-
-	token, err := arr.getTokenForInstallation(installationID)
-	if err != nil {
-		return &appsAuthError{fmt.Errorf("failed to get an installation token for org %s: %w", org, err)}
+		return &appsAuthError{err}
 	}
 
 	r.Header.Set("Authorization", "Bearer "+token)
@@ -128,6 +123,20 @@ func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthEr
 	r.Header.Set(ghcache.TokenBudgetIdentifierHeader, slug+" - "+org)
 
 	return nil
+}
+
+func (arr *appsRoundTripper) installationTokenFor(org string) (string, error) {
+	installationID, err := arr.installationIDFor(org)
+	if err != nil {
+		return "", fmt.Errorf("failed to get installation id for org %s: %w", org, err)
+	}
+
+	token, err := arr.getTokenForInstallation(installationID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get an installation token for org %s: %w", org, err)
+	}
+
+	return token, nil
 }
 
 // installationIDFor returns the installation id for the given org. Unfortunately,

@@ -110,7 +110,7 @@ func TestProjectCommand(t *testing.T) {
 		ColumnIDMap:       columnIDMap,
 		IssueComments:     make(map[int][]github.IssueComment),
 	}
-	botName, err := fakeClient.BotName()
+	botUser, err := fakeClient.BotUser()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -288,7 +288,7 @@ func TestProjectCommand(t *testing.T) {
 			body:            "/project 0.0.0 To do",
 			repo:            "kubernetes",
 			org:             "kubernetes",
-			commenter:       botName,
+			commenter:       botUser.Login,
 			previousProject: "",
 			previousColumn:  "",
 			expectedProject: "",

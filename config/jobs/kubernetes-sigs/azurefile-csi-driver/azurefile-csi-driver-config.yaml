@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -25,7 +25,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-unit
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -33,7 +34,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -48,7 +49,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-sanity
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -57,7 +59,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -72,7 +74,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-integration
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -81,7 +84,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:
@@ -96,7 +99,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -112,7 +116,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         - kubetest
@@ -143,7 +147,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-vmss
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -159,7 +164,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         - kubetest
@@ -190,7 +195,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-windows
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -208,7 +214,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         - kubetest
@@ -245,6 +251,7 @@ presubmits:
   - name: pull-azurefile-csi-driver-e2e-migration
     decorate: true
     always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -260,7 +267,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         - kubetest
@@ -296,7 +303,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-windows-build
     decorate: true
-    always_run: true
+    always_run: false
+    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -304,7 +312,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
         command:
         - runner.sh
         args:

@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20201207-d793dc26ae"
-        initupload: "gcr.io/k8s-prow/initupload:v20201207-d793dc26ae"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20201207-d793dc26ae"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20201207-d793dc26ae"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210107-0880e50620"
+        initupload: "gcr.io/k8s-prow/initupload:v20210107-0880e50620"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210107-0880e50620"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210107-0880e50620"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -180,6 +180,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cloud-provider-aws:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
@@ -276,6 +280,16 @@ branch-protection:
             - ci-validate-docs
             - ci-validate-go-modules
             - ci-validate-manifests
+          branches:
+            gh-pages:
+              required_status_checks:
+                contexts: []
+              restrictions:
+                users:
+                - k8s-ci-robot
+                teams:
+                - kube-state-metrics-admins
+                - kube-state-metrics-maintainers
         kube-scheduler:
           restrictions:
             users: []
@@ -339,8 +353,6 @@ branch-protection:
           branches:
             master:
               protect: true
-            dev-1.18:
-              protect: true
             release-1.4:
               protect: true
             release-1.5:
@@ -368,6 +380,12 @@ branch-protection:
             release-1.16:
               protect: true
             release-1.17:
+              protect: true
+            release-1.18:
+              protect: true
+            release-1.19:
+              protect: true
+            release-1.20:
               protect: true
     kubernetes-client:
       protect: true
@@ -406,6 +424,18 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        aws-ebs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-efs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-fsx-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
@@ -496,31 +526,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/contains-merge-commits
-    - do-not-merge/hold
-    - do-not-merge/invalid-commit-message
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/needs-kind
-    - do-not-merge/needs-sig
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.20
-    includedBranches:
-    - master
-    - release-1.20
     labels:
     - lgtm
     - approved

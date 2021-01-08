@@ -15,7 +15,6 @@
 import hashlib
 import json
 import zlib
-
 import yaml
 
 template = """
@@ -48,6 +47,7 @@ template = """
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version={{kops_deploy_url}}
+      - --kops-zones={{kops_zones}}
       - --provider=aws
       - --test_args={{test_args}}
       - --timeout=60m
@@ -68,6 +68,8 @@ run_hourly = [
 
 run_daily = [
     'kops-grid-scenario-public-jwks',
+    'kops-grid-scenario-arm64',
+    'kops-grid-scenario-aws-cloud-controller-manager',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -89,12 +91,6 @@ skip_jobs = [
     'kops-grid-cilium-rhel7-k18',
     'kops-grid-cilium-rhel7-k18-ko19',
     'kops-grid-cilium-rhel7-ko19',
-    'kops-grid-cilium-u1604',
-    'kops-grid-cilium-u1604-k17',
-    'kops-grid-cilium-u1604-k17-ko19',
-    'kops-grid-cilium-u1604-k18',
-    'kops-grid-cilium-u1604-k18-ko19',
-    'kops-grid-cilium-u1604-ko19',
 ]
 
 def simple_hash(s):
@@ -143,50 +139,64 @@ def remove_line_with_prefix(s, prefix):
         raise Exception("line not found with prefix: " + prefix)
     return '\n'.join(keep)
 
+def should_skip_newer_k8s(k8s_version, kops_version):
+    if kops_version is None:
+        return False
+    if k8s_version is None:
+        return True
+    return float(k8s_version) > float(kops_version)
+
 def build_test(cloud='aws',
                distro=None,
                networking=None,
                container_runtime=None,
                k8s_version=None,
                kops_version=None,
+               kops_zones=None,
                force_name=None,
                feature_flags=None,
-               extra_flags=None):
+               extra_flags=None,
+               extra_dashboards=None):
     # pylint: disable=too-many-statements,too-many-branches
+
+    if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
+        return
+    if should_skip_newer_k8s(k8s_version, kops_version):
+        return
 
     if distro is None:
         kops_ssh_user = 'ubuntu'
         kops_image = None
     elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
-        kops_image = '137112412989/amzn2-ami-hvm-2.0.20200406.0-x86_64-gp2'
+        kops_image = '137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2'
     elif distro == 'centos7':
         kops_ssh_user = 'centos'
-        kops_image = "679593333241/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4" # pylint: disable=line-too-long
+        kops_image = "125523088429/CentOS 7.9.2009 x86_64"
+    elif distro == 'centos8':
+        kops_ssh_user = 'centos'
+        kops_image = "125523088429/CentOS 8.3.2011 x86_64"
     elif distro == 'deb9':
         kops_ssh_user = 'admin'
-        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-02-10-73984'
+        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842'
     elif distro == 'deb10':
         kops_ssh_user = 'admin'
-        kops_image = '136693071363/debian-10-amd64-20200511-260'
+        kops_image = '136693071363/debian-10-amd64-20201207-477'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2605.6.0-hvm'
-    elif distro == 'u1604':
-        kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200429'
+        kops_image = '075585003325/Flatcar-stable-2605.10.0-hvm'
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20200430'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
     elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201'
     elif distro == 'rhel7':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-7.8_HVM_GA-20200225-x86_64-1-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2'
     elif distro == 'rhel8':
         kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2'
+        kops_image = '309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2'
     else:
         raise Exception('unknown distro ' + distro)
 
@@ -210,12 +220,12 @@ def build_test(cloud='aws',
     if k8s_version is None:
         extract = "release/latest"
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201203-4778e22-1.18"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
 
     kops_args = ""
@@ -231,7 +241,7 @@ def build_test(cloud='aws',
 
     kops_args = kops_args.strip()
 
-    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -289,6 +299,11 @@ def build_test(cloud='aws',
     else:
         y = remove_line_with_prefix(y, "- --kops-image=")
 
+    if kops_zones:
+        y = y.replace('{{kops_zones}}', ','.join(kops_zones))
+    else:
+        y = remove_line_with_prefix(y, "- --kops-zones=")
+
     if feature_flags:
         y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
     else:
@@ -303,9 +318,11 @@ def build_test(cloud='aws',
         'container_runtime': container_runtime,
     }
     if feature_flags:
-        spec['feature_flags'] = feature_flags
+        spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
-        spec['extra_flags'] = extra_flags
+        spec['extra_flags'] = ' '.join(extra_flags)
+    if kops_zones:
+        spec['kops_zones'] = ','.join(kops_zones)
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -324,12 +341,23 @@ def build_test(cloud='aws',
     else:
         dashboards.append('kops-k8s-latest')
 
+    if kops_version:
+        dashboards.append('kops-' + kops_version)
+    else:
+        dashboards.append('kops-latest')
+
+    if extra_dashboards:
+        dashboards.extend(extra_dashboards)
+
     annotations = {
         'testgrid-dashboards': ', '.join(dashboards),
+        'testgrid-days-of-results': '90',
         'testgrid-tab-name': tab,
     }
+    for (k, v) in spec.items():
+        annotations['test.kops.k8s.io/' + k] = v if v else ""
 
-    extra = yaml.dump({'annotations': annotations}, width=9999)
+    extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
     print("")
     print("# " + jsonspec)
@@ -347,22 +375,21 @@ networking_options = [
 
 distro_options = [
     'amzn2',
-    'centos7',
     'deb9',
     'deb10',
     'flatcar',
     'rhel7',
     'rhel8',
-    'u1604',
     'u1804',
     'u2004',
 ]
 
 k8s_versions = [
-    None,
+    #None, # disabled until we're ready to test 1.21
     "1.17",
     "1.18",
-    "1.19"
+    "1.19",
+    "1.20"
 ]
 
 kops_versions = [
@@ -396,24 +423,28 @@ def generate():
     build_test(force_name="scenario-arm64",
                cloud="aws",
                distro="u2004",
-               extra_flags=['--zones=us-east-2b',
-                            '--node-size=m6g.large',
+               kops_zones=['us-east-2b'],
+               extra_flags=['--node-size=m6g.large',
                             '--master-size=m6g.large',
-                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201026']) # pylint: disable=line-too-long
+                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20201201'], # pylint: disable=line-too-long
+               extra_dashboards=['kops-misc'])
 
     # A special test for JWKS
     build_test(force_name="scenario-public-jwks",
                cloud="aws",
                distro="u2004",
                feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
-               extra_flags=['--api-loadbalancer-type=public'])
+               extra_flags=['--api-loadbalancer-type=public'],
+               extra_dashboards=['kops-misc'])
 
     # A special test for AWS Cloud-Controller-Manager
     build_test(force_name="scenario-aws-cloud-controller-manager",
                cloud="aws",
                distro="u2004",
+               k8s_version="1.19",
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'])
+               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+               extra_dashboards=['sig-aws-cloud-provider-aws', 'kops-misc'])
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))

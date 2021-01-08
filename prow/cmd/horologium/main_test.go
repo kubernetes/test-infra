@@ -304,6 +304,7 @@ func TestFlags(t *testing.T) {
 				instrumentationOptions: flagutil.InstrumentationOptions{
 					MetricsPort: flagutil.DefaultMetricsPort,
 					PProfPort:   flagutil.DefaultPProfPort,
+					HealthPort:  flagutil.DefaultHealthPort,
 				},
 			}
 			expected.kubernetes.DeckURI = "http://whatever"

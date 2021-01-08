@@ -519,7 +519,7 @@ func logDumpPath(provider string) string {
 	// Use the log dumping script outside of kubernetes/kubernetes repo.
 	// Guarding against K8s provider as the script is tested only for gce
 	// and gke cases at the moment.
-	if os.Getenv("USE_KUBEKINS_LOG_DUMPING") != "" && (provider == "gce" || provider == "gke") {
+	if os.Getenv("USE_TEST_INFRA_LOG_DUMPING") == "true" && (provider == "gce" || provider == "gke") {
 		if logDumpPath := os.Getenv("LOG_DUMP_SCRIPT_PATH"); logDumpPath != "" {
 			return logDumpPath
 		}

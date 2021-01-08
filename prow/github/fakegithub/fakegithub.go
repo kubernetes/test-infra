@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -114,9 +115,15 @@ type FakeClient struct {
 	Error error
 }
 
-// BotName returns authenticated login.
-func (f *FakeClient) BotName() (string, error) {
-	return botName, nil
+func (f *FakeClient) BotUser() (*github.UserData, error) {
+	return &github.UserData{Login: botName}, nil
+}
+
+func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool {
+		candidate = strings.TrimSuffix(candidate, "[bot]")
+		return candidate == botName
+	}, nil
 }
 
 // IsMember returns true if user is in org.

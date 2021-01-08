@@ -22,11 +22,19 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
+	"sync"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/fsnotify.v1"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -34,6 +42,10 @@ import (
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 )
+
+func init() {
+	prometheus.MustRegister(clientCreationFailures)
+}
 
 // KubernetesOptions holds options for interacting with Kubernetes.
 // These options are both useful for clients interacting with ProwJobs
@@ -51,6 +63,79 @@ type KubernetesOptions struct {
 	clusterConfigs              map[string]rest.Config
 	kubernetesClientsByContext  map[string]kubernetes.Interface
 	infrastructureClusterConfig *rest.Config
+	kubeconfigWach              *sync.Once
+	kubeconfigWatchEvents       <-chan fsnotify.Event
+}
+
+const inCluderTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+// AddKubeconfigChangeCallback adds a callback that gets called whenever the kubeconfig changes.
+// The main usecase for this is to exit components that can not reload a kubeconfig at runtime
+// so the kubelet restarts them
+func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
+	if err := o.resolve(o.dryRun); err != nil {
+		return fmt.Errorf("resolving failed: %w", err)
+	}
+
+	var err error
+	o.kubeconfigWach.Do(func() {
+		var watcher *fsnotify.Watcher
+		watcher, err = fsnotify.NewWatcher()
+		if err != nil {
+			err = fmt.Errorf("failed to create watcher: %w", err)
+			return
+		}
+		if o.kubeconfig != "" {
+			err = watcher.Add(o.kubeconfig)
+			if err != nil {
+				err = fmt.Errorf("failed to watch %s: %w", o.kubeconfig, err)
+				return
+			}
+		}
+		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+			for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
+				err = watcher.Add(element)
+				if err != nil {
+					err = fmt.Errorf("failed to watch %s: %w", element, err)
+					return
+				}
+			}
+		}
+
+		if _, statErr := os.Stat(inCluderTokenPath); statErr == nil {
+			err = watcher.Add(inCluderTokenPath)
+			if err != nil {
+				err = fmt.Errorf("faild to watch %s: %w", inCluderTokenPath, err)
+				return
+			}
+		}
+		o.kubeconfigWatchEvents = watcher.Events
+
+		go func() {
+			for watchErr := range watcher.Errors {
+				logrus.WithError(watchErr).Error("Kubeconfig watcher errored")
+			}
+			if err := watcher.Close(); err != nil {
+				logrus.WithError(err).Error("Failed to close watcher")
+			}
+		}()
+	})
+	if err != nil {
+		return fmt.Errorf("failed to set up watches: %w", err)
+	}
+
+	go func() {
+		for e := range o.kubeconfigWatchEvents {
+			if e.Op == fsnotify.Chmod {
+				// For some reason we get frequent chmod events
+				continue
+			}
+			logrus.WithField("event", e.String()).Info("Kubeconfig changed")
+			callback()
+		}
+	}()
+
+	return nil
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
@@ -85,6 +170,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	if o.resolved {
 		return nil
 	}
+
+	o.kubeconfigWach = &sync.Once{}
 
 	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig)
 	if err != nil {
@@ -211,6 +298,11 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 	return clients, nil
 }
 
+var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "kubernetes_failed_client_creations",
+	Help: "The number of clusters for which we failed to create a client",
+}, []string{"cluster"})
+
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
@@ -235,6 +327,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 		cfg := buildClusterConfig
 		mgr, err := manager.New(&cfg, options)
 		if err != nil {
+			clientCreationFailures.WithLabelValues(buildCluserName).Add(1)
 			errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", buildCluserName, err))
 			continue
 		}
@@ -256,6 +349,7 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 		cfg := o.clusterConfigs[name]
 		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 		if err != nil {
+			clientCreationFailures.WithLabelValues(name).Add(1)
 			errs = append(errs, fmt.Errorf("failed to construct client for cluster %q: %w", name, err))
 			continue
 		}

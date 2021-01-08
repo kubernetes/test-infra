@@ -66,7 +66,8 @@ class GCSClient:
                     try:
                         return resp.json()
                     except json.decoder.JSONDecodeError:
-                        logging.exception('Failed to decode request for %s', path)
+                        logging.error('Failed to decode request for %s',
+                                      urllib.parse.unquote(url))
                         return None
                 return resp.text
             except requests.exceptions.RequestException:
@@ -82,8 +83,8 @@ class GCSClient:
 
     def get(self, path, as_json=False):
         """Get an object from GCS."""
-        bucket, path = self._parse_uri(path)
-        return self._request(f'{bucket}/o/{urllib.parse.quote(path, "")}',
+        bucket, prefix = self._parse_uri(path)
+        return self._request(f'{bucket}/o/{urllib.parse.quote(prefix, "")}',
                              {'alt': 'media'}, as_json=as_json)
 
     def ls(self,
@@ -96,8 +97,8 @@ class GCSClient:
         """Lists objects under a path on gcs."""
         # pylint: disable=invalid-name
 
-        bucket, path = self._parse_uri(path)
-        params = {'prefix': path, 'fields': 'nextPageToken'}
+        bucket, prefix = self._parse_uri(path)
+        params = {'prefix': prefix, 'fields': 'nextPageToken'}
         if delim:
             params['delimiter'] = '/'
             if dirs:
@@ -137,7 +138,10 @@ class GCSClient:
         files = {}
         assert not build_dir.endswith('/')
         for junit_path in self._ls_junit_paths(build_dir + '/'):
-            files[junit_path] = self.get(junit_path)
+            junit = self.get(junit_path)
+            if junit is None:
+                continue
+            files[junit_path] = junit
         return files
 
     def _get_jobs(self):

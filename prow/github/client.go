@@ -132,6 +132,7 @@ type PullRequestClient interface {
 	Merge(org, repo string, pr int, details MergeDetails) error
 	IsMergeable(org, repo string, number int, SHA string) (bool, error)
 	ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error)
+	UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error
 }
 
 // CommitClient interface for commit related API actions
@@ -187,8 +188,12 @@ type TeamClient interface {
 
 // UserClient interface for user related API actions
 type UserClient interface {
-	BotName() (string, error)
-	BotUser() (*User, error)
+	// BotUser will return details about the user the client runs as. Use BotUserChecker()
+	// instead when checking for comment authorship, as the Username in comments might have
+	// a [bot] suffix when using github apps authentication.
+	BotUser() (*UserData, error)
+	// BotUserChecker can be used to check if a comment was authored by the bot user.
+	BotUserChecker() (func(candidate string) bool, error)
 	Email() (string, error)
 }
 
@@ -238,6 +243,7 @@ type Client interface {
 
 	Throttle(hourlyTokens, burst int)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 
 	SetMax404Retries(int)
 
@@ -246,12 +252,15 @@ type Client interface {
 	ForSubcomponent(subcomponent string) Client
 }
 
-// client interacts with the github api.
+// client interacts with the github api. It is reconstructed whenever
+// ForPlugin/ForSubcomment is called to change the Logger and User-Agent
+// header, whereas delegate will stay the same.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
 	// identifier is used to add more identification to the user-agent header
 	identifier string
+	gqlc       gqlClient
 	*delegate
 }
 
@@ -264,17 +273,23 @@ type delegate struct {
 	maxSleepTime  time.Duration
 	initialDelay  time.Duration
 
-	gqlc     gqlClient
-	client   httpClient
-	bases    []string
-	dry      bool
-	fake     bool
-	throttle throttler
-	getToken func() []byte
-	censor   func([]byte) []byte
+	client       httpClient
+	bases        []string
+	dry          bool
+	fake         bool
+	usesAppsAuth bool
+	throttle     throttler
+	getToken     func() []byte
+	censor       func([]byte) []byte
 
 	mut      sync.Mutex // protects botName and email
-	userData *User
+	userData *UserData
+}
+
+type UserData struct {
+	Name  string
+	Login string
+	Email string
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -290,11 +305,13 @@ func (c *client) ForSubcomponent(subcomponent string) Client {
 }
 
 func (c *client) forKeyValue(key, value string) Client {
-	return &client{
+	newClient := &client{
 		identifier: value,
 		logger:     c.logger.WithField(key, value),
 		delegate:   c.delegate,
 	}
+	newClient.gqlc = c.gqlc.forUserAgent(newClient.userAgent())
+	return newClient
 }
 
 func (c *client) userAgent() string {
@@ -308,8 +325,10 @@ func (c *client) userAgent() string {
 // fields to the logging context
 func (c *client) WithFields(fields logrus.Fields) Client {
 	return &client{
-		logger:   c.logger.WithFields(fields),
-		delegate: c.delegate,
+		logger:     c.logger.WithFields(fields),
+		identifier: c.identifier,
+		gqlc:       c.gqlc,
+		delegate:   c.delegate,
 	}
 }
 
@@ -345,16 +364,23 @@ type httpClient interface {
 
 // Interface for how prow interacts with the graphql client, which we may throttle.
 type gqlClient interface {
-	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
+	forUserAgent(userAgent string) gqlClient
 }
 
 // throttler sets a ceiling on the rate of GitHub requests.
-// Configure with Client.Throttle()
+// Configure with Client.Throttle().
+// It gets reconstructed whenever forUserAgent() is called,
+// whereas its *throttlerDelegate remains.
 type throttler struct {
+	graph gqlClient
+	*throttlerDelegate
+}
+
+type throttlerDelegate struct {
 	ticker   *time.Ticker
 	throttle chan time.Time
 	http     httpClient
-	graph    gqlClient
 	slow     int32 // Helps log once when requests start/stop being throttled
 	lock     sync.RWMutex
 }
@@ -423,11 +449,16 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+func (t *throttler) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	t.Wait()
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	return t.graph.Query(ctx, q, vars)
+	return t.graph.QueryWithGitHubAppsSupport(ctx, q, vars, org)
+}
+
+func (t *throttler) forUserAgent(userAgent string) gqlClient {
+	return &throttler{
+		graph:             t.graph.forUserAgent(userAgent),
+		throttlerDelegate: t.throttlerDelegate,
+	}
 }
 
 // Throttle client to a rate of at most hourlyTokens requests per hour,
@@ -475,6 +506,8 @@ func (c *client) SetMax404Retries(max int) {
 	c.max404Retries = max
 }
 
+type GitHubAppTokenGenerator func(org string) (string, error)
+
 // NewClientWithFields creates a new fully operational GitHub client. With
 // added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
@@ -483,63 +516,108 @@ func (c *client) SetMax404Retries(max int) {
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, getToken, censor, "", nil, graphqlEndpoint, false, bases)
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, false, bases, nil)
+	return client
 }
 
-func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, nil, censor, appID, appPrivateKey, graphqlEndpoint, false, bases)
+func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
+	return newClient(fields, nil, censor, appID, appPrivateKey, graphqlEndpoint, false, bases, nil)
 }
 
-func newClient(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, dryRun bool, bases []string) Client {
+func newClient(
+	fields logrus.Fields,
+	getToken func() []byte,
+	censor func([]byte) []byte,
+	appID string,
+	appPrivateKey func() *rsa.PrivateKey,
+	graphqlEndpoint string,
+	dryRun bool,
+	bases []string,
+	baseRoundTripper http.RoundTripper, // baseRoundTripper is the last RoundTripper to be called. Used for testing, gets defaulted to http.DefaultTransport
+) (GitHubAppTokenGenerator, Client) {
 	// Will be nil if github app authentication is used
 	if getToken == nil {
 		getToken = func() []byte { return nil }
 	}
-	httpClient := &http.Client{Timeout: maxRequestTime}
-	graphQLTransport := newAddHeaderTransport()
+	appsTokenGenerator := func(_ string) (string, error) {
+		return "", errors.New("BUG: GitHub apps authentication is not enabled, you shouldn't see this. Please report this in https://github.com/kubernetes/test-infra")
+	}
+	if baseRoundTripper == nil {
+		baseRoundTripper = http.DefaultTransport
+	}
+
+	httpClient := &http.Client{
+		Transport: baseRoundTripper,
+		Timeout:   maxRequestTime,
+	}
+	graphQLTransport := newAddHeaderTransport(baseRoundTripper)
 	c := &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
+		gqlc: &graphQLGitHubAppsAuthClientWrapper{Client: githubql.NewEnterpriseClient(
+			graphqlEndpoint,
+			&http.Client{
+				Timeout: maxRequestTime,
+				Transport: &oauth2.Transport{
+					Source: newReloadingTokenSource(getToken),
+					Base:   graphQLTransport,
+				},
+			})},
 		delegate: &delegate{
-			time: &standardTime{},
-			gqlc: githubql.NewEnterpriseClient(
-				graphqlEndpoint,
-				&http.Client{
-					Timeout: maxRequestTime,
-					Transport: &oauth2.Transport{
-						Source: newReloadingTokenSource(getToken),
-						Base:   graphQLTransport,
-					},
-				}),
+			time:          &standardTime{},
 			client:        httpClient,
 			bases:         bases,
+			throttle:      throttler{throttlerDelegate: &throttlerDelegate{}},
 			getToken:      getToken,
 			censor:        censor,
 			dry:           dryRun,
+			usesAppsAuth:  appID != "",
 			maxRetries:    defaultMaxRetries,
 			max404Retries: defaultMax404Retries,
 			initialDelay:  defaultInitialDelay,
 			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
+	c.gqlc = c.gqlc.forUserAgent(c.userAgent())
 	if appID != "" {
 		appsTransport := &appsRoundTripper{
 			appID:        appID,
 			privateKey:   appPrivateKey,
-			upstream:     http.DefaultTransport,
+			upstream:     baseRoundTripper,
 			githubClient: c,
 		}
 		httpClient.Transport = appsTransport
 		graphQLTransport.upstream = appsTransport
+		appsTokenGenerator = appsTransport.installationTokenFor
 	}
 
-	return c
+	return appsTokenGenerator, c
+}
+
+type graphQLGitHubAppsAuthClientWrapper struct {
+	*githubql.Client
+	userAgent string
+}
+
+var userAgentContextKey = &struct{}{}
+
+func (c *graphQLGitHubAppsAuthClientWrapper) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
+	ctx = context.WithValue(ctx, githubOrgHeaderKey, org)
+	ctx = context.WithValue(ctx, userAgentContextKey, c.userAgent)
+	return c.Client.Query(ctx, q, vars)
+}
+
+func (c *graphQLGitHubAppsAuthClientWrapper) forUserAgent(userAgent string) gqlClient {
+	return &graphQLGitHubAppsAuthClientWrapper{
+		Client:    c.Client,
+		userAgent: userAgent,
+	}
 }
 
 // addHeaderTransport implements http.RoundTripper
 var _ http.RoundTripper = &addHeaderTransport{}
 
-func newAddHeaderTransport() *addHeaderTransport {
-	return &addHeaderTransport{}
+func newAddHeaderTransport(upstream http.RoundTripper) *addHeaderTransport {
+	return &addHeaderTransport{upstream}
 }
 
 type addHeaderTransport struct {
@@ -551,10 +629,13 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	// https://docs.github.com/en/enterprise-server@2.22/graphql/overview/schema-previews
 	// Any GHE version after 2.22 will enable the Checks types per default
 	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
-	if s.upstream != nil {
-		return s.upstream.RoundTrip(r)
+
+	// We use the context to pass the UserAgent through the V4 client we depend on
+	if v := r.Context().Value(userAgentContextKey); v != nil {
+		r.Header.Add("User-Agent", v.(string))
 	}
-	return http.DefaultTransport.RoundTrip(r)
+
+	return s.upstream.RoundTrip(r)
 }
 
 // NewClient creates a new fully operational GitHub client.
@@ -571,14 +652,15 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, getToken, censor, "", nil, graphqlEndpoint, true, bases)
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, true, bases, nil)
+	return client
 }
 
 // NewAppsAuthDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
-func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) Client {
-	return newClient(fields, nil, censor, appId, appPrivateKey, graphqlEndpoint, true, bases)
+func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
+	return newClient(fields, nil, censor, appId, appPrivateKey, graphqlEndpoint, true, bases, nil)
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions
@@ -597,6 +679,7 @@ func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphql
 func NewFakeClient() Client {
 	return &client{
 		logger: logrus.WithField("client", "github"),
+		gqlc:   &graphQLGitHubAppsAuthClientWrapper{},
 		delegate: &delegate{
 			time: &standardTime{},
 			fake: true,
@@ -859,7 +942,7 @@ func (c *client) doRequest(method, path, accept, org string, body interface{}) (
 		req.Header.Add("User-Agent", userAgent)
 	}
 	if org != "" {
-		req.Header.Set(githubOrgHeaderKey, org)
+		req = req.WithContext(context.WithValue(req.Context(), githubOrgHeaderKey, org))
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
@@ -938,6 +1021,18 @@ func init() {
 
 // Not thread-safe - callers need to hold c.mut.
 func (c *client) getUserData() error {
+	if c.delegate.usesAppsAuth {
+		resp, err := c.GetApp()
+		if err != nil {
+			return err
+		}
+		c.userData = &UserData{
+			Name:  resp.Name,
+			Login: resp.Slug,
+			Email: fmt.Sprintf("%s@users.noreply.github.com", resp.Slug),
+		}
+		return nil
+	}
 	c.log("User")
 	var u User
 	_, err := c.request(&request{
@@ -948,7 +1043,11 @@ func (c *client) getUserData() error {
 	if err != nil {
 		return err
 	}
-	c.userData = &u
+	c.userData = &UserData{
+		Name:  u.Name,
+		Login: u.Login,
+		Email: u.Email,
+	}
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
@@ -959,24 +1058,10 @@ func (c *client) getUserData() error {
 	return nil
 }
 
-// BotName returns the login of the authenticated identity.
-//
-// See https://developer.github.com/v3/users/#get-the-authenticated-user
-func (c *client) BotName() (string, error) {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-	if c.userData == nil {
-		if err := c.getUserData(); err != nil {
-			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
-		}
-	}
-	return c.userData.Login, nil
-}
-
 // BotUser returns the user data of the authenticated identity.
 //
 // See https://developer.github.com/v3/users/#get-the-authenticated-user
-func (c *client) BotUser() (*User, error) {
+func (c *client) BotUser() (*UserData, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.userData == nil {
@@ -985,6 +1070,24 @@ func (c *client) BotUser() (*User, error) {
 		}
 	}
 	return c.userData, nil
+}
+
+func (c *client) BotUserChecker() (func(candidate string) bool, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.userData == nil {
+		if err := c.getUserData(); err != nil {
+			return nil, fmt.Errorf("fetching userdata from GitHub: %v", err)
+		}
+	}
+
+	botUser := c.userData.Login
+	return func(candidate string) bool {
+		if c.usesAppsAuth {
+			candidate = strings.TrimSuffix(candidate, "[bot]")
+		}
+		return candidate == botUser
+	}, nil
 }
 
 // Email returns the user-configured email for the authenticated identity.
@@ -2935,11 +3038,15 @@ func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	return decoded, nil
 }
 
-// Query runs a GraphQL query using shurcooL/githubql's client.
 func (c *client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	return c.QueryWithGitHubAppsSupport(ctx, q, vars, "")
+}
+
+// QueryWithGitHubAppsSupport runs a GraphQL query using shurcooL/githubql's client.
+func (c *client) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	// Don't log query here because Query is typically called multiple times to get all pages.
 	// Instead log once per search and include total search cost.
-	return c.gqlc.Query(ctx, q, vars)
+	return c.gqlc.QueryWithGitHubAppsSupport(ctx, q, vars, org)
 }
 
 // CreateTeam adds a team with name to the org, returning a struct with the new ID.
@@ -3639,6 +3746,42 @@ func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit
 		return nil, err
 	}
 	return commits, nil
+}
+
+// UpdatePullRequestBranch updates the pull request branch with the latest upstream changes by merging HEAD from the base branch into the pull request branch.
+//
+// GitHub API docs: https://developer.github.com/v3/pulls#update-a-pull-request-branch
+func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error {
+	durationLogger := c.log("UpdatePullRequestBranch", org, repo, *expectedHeadSha)
+	defer durationLogger()
+
+	data := struct {
+		// The expected SHA of the pull request's HEAD ref. This is the most recent commit on the pull request's branch.
+		// If the expected SHA does not match the pull request's HEAD, you will receive a 422 Unprocessable Entity status.
+		// You can use the "List commits" endpoint to find the most recent commit SHA. Default: SHA of the pull request's current HEAD ref.
+		ExpectedHeadSha *string `json:"expected_head_sha,omitempty"`
+	}{
+		ExpectedHeadSha: expectedHeadSha,
+	}
+
+	ge := githubError{}
+	code, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/update-branch", org, repo, number),
+		accept:      "application/vnd.github.lydian-preview+json",
+		org:         org,
+		requestBody: &data,
+		exitCodes:   []int{202, 422},
+	}, &ge)
+	if err != nil {
+		return err
+	}
+
+	if code == http.StatusUnprocessableEntity {
+		return fmt.Errorf("mismatch expected head sha: %s", *expectedHeadSha)
+	}
+
+	return nil
 }
 
 // newReloadingTokenSource creates a reloadingTokenSource.

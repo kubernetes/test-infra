@@ -167,6 +167,7 @@ func TestHook(t *testing.T) {
 			Plugins:        pa,
 			ConfigAgent:    ca,
 			Metrics:        metrics,
+			RepoEnabled:    func(org, repo string) bool { return true },
 			TokenGenerator: tc.tokenGenerator,
 		})
 		defer s.Close()

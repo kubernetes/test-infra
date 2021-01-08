@@ -22,6 +22,10 @@ DUMP = 'dump.txt'
 THREADS = 32
 MAX_BAD_RECORDS = 1000
 DAYS_OLD = 1.9
+DAY = 1
+WEEK = 7
+MONTH = 30
+SUB_PATH = os.environ.get('SUBSCRIPTION_PATH')
 
 def print_dump(file):
     if os.path.exists(file):
@@ -41,6 +45,8 @@ def call(cmd):
 
 
 def main():
+    if SUB_PATH is None:
+        raise Exception('Env var "SUBSCRIPTION_PATH" must be set, see deployment*.yaml')
     call(f'time python3 make_db.py --buckets buckets.yaml --junit --threads {THREADS}')
 
     bq_cmd = f'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS}'
@@ -56,22 +62,23 @@ def main():
         mj_ext = ' --reset-emitted'
 
     if os.getenv('DEPLOYMENT', 'staging') == "prod":
-        call(f'{mj_cmd} {mj_ext} --days 1 | pv | gzip > build_day.json.gz')
+        call(f'{mj_cmd} {mj_ext} --days {DAY} | pv | gzip > build_day.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.day build_day.json.gz schema.json')
 
-        call(f'{mj_cmd} {mj_ext} --days 7 | pv | gzip > build_week.json.gz')
+        call(f'{mj_cmd} {mj_ext} --days {WEEK} | pv | gzip > build_week.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.week build_week.json.gz schema.json')
 
-        call(f'{mj_cmd} | pv | gzip > build_all.json.gz')
+        # TODO: (MushuEE) #20024, remove 30 day limit once issue with all uploads is found
+        call(f'{mj_cmd} --days {MONTH} | pv | gzip > build_all.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
-        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
-            ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
+        call(f'python3 stream.py --poll {SUB_PATH} ' \
+            '--dataset k8s-gubernator:build --tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
-        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
-            ' --dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
+        call(f'python3 stream.py --poll {SUB_PATH} ' \
+            '--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))

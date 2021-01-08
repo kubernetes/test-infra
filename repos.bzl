@@ -1727,8 +1727,8 @@ def go_repositories():
         build_file_generation = "off",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/GoogleCloudPlatform/testgrid",
-        sum = "h1:g7DP1uKfb3byfYetXoH1BsTeBlRzuQTO5o4i9pyGqv8=",
-        version = "v0.0.13",
+        sum = "h1:Os7plKvCWxu37kdaqaHC+pvCva1nvsRuhVvMSPyhEqA=",
+        version = "v0.0.30",
     )
     go_repository(
         name = "com_github_munnerz_goautoneg",
@@ -5198,8 +5198,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/andygrunwald/go-jira",
-        sum = "h1:JJi2cEDmDxVtTXxC8ruLDbtOU6pA4OLeL0niyfNcoWw=",
-        version = "v1.12.0",
+        sum = "h1:vvIImGgX32bHfoiyUwkNo+/YrPnRczNarvhLOncP6dE=",
+        version = "v1.13.0",
     )
     go_repository(
         name = "com_github_fatih_structs",
@@ -5265,4 +5265,12 @@ def go_repositories():
         importpath = "github.com/dgrijalva/jwt-go/v4",
         sum = "h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=",
         version = "v4.0.0-preview1",
+    )
+    go_repository(
+        name = "com_github_fvbommel_sortorder",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/fvbommel/sortorder",
+        sum = "h1:dSnXLt4mJYH25uDDGa3biZNQsozaUWDSWeKJ0qqFfzE=",
+        version = "v1.0.1",
     )

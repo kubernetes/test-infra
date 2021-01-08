@@ -1,4 +1,4 @@
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/git:0.1
+FROM golang:1.13-alpine
 
-COPY cherrypicker /cherrypicker
-ENTRYPOINT ["/cherrypicker"]
+COPY generic_autobump /generic_autobump
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+RUN apk add --no-cache git openssh
+
+ENTRYPOINT ["/generic_autobump"]

@@ -276,9 +276,9 @@ aliases:
 
   controller-runtime-approvers:
   - gerred
+  - alvaroaleman
 
   controller-runtime-reviewers:
-  - alvaroaleman
   - alenkacz
   - vincepri
   - alexeldeib

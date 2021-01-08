@@ -59,7 +59,6 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-
 	Approve              []Approve                    `json:"approve,omitempty"`
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
@@ -85,6 +84,19 @@ type Configuration struct {
 	Triggers             []Trigger                    `json:"triggers,omitempty"`
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
+	Help                 Help                         `json:"help,omitempty"`
+}
+
+type Help struct {
+	// HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
+	// The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
+	HelpGuidelinesURL string `json:"help_guidelines_url,omitempty"`
+}
+
+func (h *Help) setDefaults() {
+	if h.HelpGuidelinesURL == "" {
+		h.HelpGuidelinesURL = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+	}
 }
 
 // Golint holds configuration for the golint plugin
@@ -534,12 +546,8 @@ type MergeWarning struct {
 	Repos []string `json:"repos,omitempty"`
 	// List of channels on which a event is published.
 	Channels []string `json:"channels,omitempty"`
-	// Deprecated: Use ExemptUsers instead.
-	WhiteList []string `json:"whitelist,omitempty"`
 	// A slack event is published if the user is not part of the ExemptUsers.
 	ExemptUsers []string `json:"exempt_users,omitempty"`
-	// Deprecated: Use ExemptBranches instead.
-	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
 	// A slack event is published if the user is not on the exempt branches.
 	ExemptBranches map[string][]string `json:"exempt_branches,omitempty"`
 }
@@ -842,6 +850,8 @@ func (cu *ConfigUpdater) SetDefaults() {
 }
 
 func (c *Configuration) setDefaults() {
+	c.Help.setDefaults()
+
 	c.ConfigUpdater.SetDefaults()
 
 	for repo, plugins := range c.ExternalPlugins {
@@ -1068,34 +1078,6 @@ func validateTrigger(triggers []Trigger) error {
 	return nil
 }
 
-var (
-	warnSlackMergeWarningWhiteList       time.Time
-	warnSlackMergeWarningBranchWhiteList time.Time
-)
-
-func validateSlack(slack Slack) error {
-	for i := range slack.MergeWarnings {
-		if len(slack.MergeWarnings[i].WhiteList) > 0 {
-			if len(slack.MergeWarnings[i].ExemptUsers) > 0 {
-				return errors.New("invalid Slack merge warning configuration: both whitelist (deprecated) and exempt_users are set.")
-			}
-
-			logrusutil.ThrottledWarnf(&warnSlackMergeWarningWhiteList, 5*time.Minute, "whitelist field in Slack merge warning is deprecated and has been renamed to exempt_users. Please update your configuration.")
-			slack.MergeWarnings[i].ExemptUsers = slack.MergeWarnings[i].WhiteList
-		}
-
-		if len(slack.MergeWarnings[i].BranchWhiteList) > 0 {
-			if len(slack.MergeWarnings[i].ExemptBranches) > 0 {
-				return errors.New("invalid Slack merge warning configuration: both branch_whitelist (deprecated) and exempt_branches are set.")
-			}
-
-			logrusutil.ThrottledWarnf(&warnSlackMergeWarningBranchWhiteList, 5*time.Minute, "branch_whitelist field in Slack merge warning is deprecated and has been renamed to exempt_branches. Please update your configuration.")
-			slack.MergeWarnings[i].ExemptBranches = slack.MergeWarnings[i].BranchWhiteList
-		}
-	}
-	return nil
-}
-
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1167,9 +1149,6 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 	if err := validateTrigger(c.Triggers); err != nil {
-		return err
-	}
-	if err := validateSlack(c.Slack); err != nil {
 		return err
 	}
 

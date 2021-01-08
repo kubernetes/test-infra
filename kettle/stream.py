@@ -40,6 +40,7 @@ import model
 import make_db
 import make_json
 
+MAX_ROW_UPLOAD = 25
 
 def process_changes(results):
     """Split GCS change events into trivial ack_ids and builds to further process."""
@@ -112,7 +113,13 @@ def insert_data(bq_client, table, rows_iter):
         rows_iter: row_id, dict representing a make_json.Build
     Returns the row_ids that were inserted.
     """
+    def divide_chunks(l, bin_size=MAX_ROW_UPLOAD):
+        # break up rows to not hit data limits
+        for i in range(0, len(l), bin_size):
+            yield l[i:i + bin_size]
+
     emitted, rows = [], []
+
     for row_id, build in rows_iter:
         emitted.append(row_id)
         rows.append(build)
@@ -120,14 +127,15 @@ def insert_data(bq_client, table, rows_iter):
     if not rows:  # nothing to do
         return []
 
-    # Insert rows with row_ids into table, retrying as necessary.
-    errors = retry(bq_client.insert_rows, table, rows, skip_invalid_rows=True)
-    if not errors:
-        print('Loaded {} builds into {}'.format(len(rows), table.friendly_name))
-    else:
-        print('Errors:')
-        pprint.pprint(errors)
-        pprint.pprint(table.schema)
+    for chunk in divide_chunks(rows):
+        # Insert rows with row_ids into table, retrying as necessary.
+        errors = retry(bq_client.insert_rows, table, chunk, skip_invalid_rows=True)
+        if not errors:
+            print('Loaded {} builds into {}'.format(len(chunk), table.full_table_id))
+        else:
+            print('Errors:')
+            pprint.pprint(errors)
+            pprint.pprint(table.schema)
 
     return emitted
 

@@ -212,6 +212,11 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			continue
 		}
 		parts := strings.SplitN(orgrepo, "/", 2)
+		if n := len(parts); n != 2 {
+			triggerErrors = append(triggerErrors, fmt.Errorf("string %q can not be interpreted as org/repo", orgrepo))
+			continue
+		}
+
 		org, repo := parts[0], parts[1]
 		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) {
 			continue
@@ -282,6 +287,10 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 	var retireErrors []error
 	for orgrepo, presubmits := range retiredPresubmits {
 		parts := strings.SplitN(orgrepo, "/", 2)
+		if n := len(parts); n != 2 {
+			retireErrors = append(retireErrors, fmt.Errorf("string %q can not be interpreted as org/repo", orgrepo))
+			continue
+		}
 		org, repo := parts[0], parts[1]
 		for _, presubmit := range presubmits {
 			logrus.WithFields(logrus.Fields{
@@ -305,6 +314,10 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 	var migrateErrors []error
 	for orgrepo, migrations := range migrations {
 		parts := strings.SplitN(orgrepo, "/", 2)
+		if n := len(parts); n != 2 {
+			migrateErrors = append(migrateErrors, fmt.Errorf("string %q can not be interpreted as org/repo", orgrepo))
+			continue
+		}
 		org, repo := parts[0], parts[1]
 		for _, migration := range migrations {
 			logrus.WithFields(logrus.Fields{

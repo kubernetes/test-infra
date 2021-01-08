@@ -275,6 +275,40 @@ func TestSetApproveDefaults(t *testing.T) {
 	}
 }
 
+func TestSetHelpDefaults(t *testing.T) {
+	tests := []struct {
+		name              string
+		helpGuidelinesURL string
+
+		expectedHelpGuidelinesURL string
+	}{
+		{
+			name:                      "default",
+			helpGuidelinesURL:         "",
+			expectedHelpGuidelinesURL: "https://git.k8s.io/community/contributors/guide/help-wanted.md",
+		},
+		{
+			name:                      "overwrite",
+			helpGuidelinesURL:         "https://github.com/kubernetes/community/blob/master/contributors/guide/help-wanted.md",
+			expectedHelpGuidelinesURL: "https://github.com/kubernetes/community/blob/master/contributors/guide/help-wanted.md",
+		},
+	}
+
+	for _, test := range tests {
+		c := &Configuration{
+			Help: Help{
+				HelpGuidelinesURL: test.helpGuidelinesURL,
+			},
+		}
+
+		c.setDefaults()
+
+		if c.Help.HelpGuidelinesURL != test.expectedHelpGuidelinesURL {
+			t.Errorf("unexpected help_guidelines_url: %s, expected: %s", c.Help.HelpGuidelinesURL, test.expectedHelpGuidelinesURL)
+		}
+	}
+}
+
 func TestSetTriggerDefaults(t *testing.T) {
 	tests := []struct {
 		name string
