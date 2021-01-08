@@ -25,8 +25,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-unit
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -49,8 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-sanity
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -74,8 +72,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-integration
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -99,8 +96,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -149,8 +145,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-vmss
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master

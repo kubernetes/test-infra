@@ -25,8 +25,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-unit
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -49,8 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-sanity
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -75,7 +73,6 @@ presubmits:
   - name: pull-csi-driver-smb-integration
     decorate: true
     always_run: false
-    run_if_changed: '.*[^m][^d]$'
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -99,8 +96,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-windows-build
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -121,8 +117,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -169,8 +164,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
