@@ -11,7 +11,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -36,7 +36,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         resources:
           requests:
             cpu: 7300m
@@ -58,7 +58,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-apidiff-main
@@ -72,7 +72,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         command:
         - "runner.sh"
         - "make"
@@ -94,7 +94,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -116,7 +116,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -145,7 +145,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -176,7 +176,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.19
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

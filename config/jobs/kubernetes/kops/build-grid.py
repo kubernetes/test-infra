@@ -220,12 +220,12 @@ def build_test(cloud='aws',
     if k8s_version is None:
         extract = "release/latest"
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
 
     kops_args = ""
