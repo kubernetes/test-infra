@@ -1,0 +1,18 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- jimangel
+- kbarnard10
+- kbhawkey
+- onlydole
+- sftim
+- tengqm
+- zacharysarah
+reviewers:
+- jimangel
+- kbarnard10
+- kbhawkey
+- onlydole
+- sftim
+- tengqm
+- zacharysarah

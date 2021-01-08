@@ -1,0 +1,31 @@
+presubmits:
+  kubernetes-sigs/reference-docs:
+  - name: pull-referencedocs-build
+    decorate: true
+    always_run: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - mkdir -p ${BUILD_PATH}/src/k8s.io
+        - wget https://github.com/kubernetes/kubernetes/archive/v${KUBE_VERSION}.0.tar.gz -O ${BUILD_PATH}/src/k8s.io/kubernetes-src.tar.gz
+        - pushd ${BUILD_PATH}/src/k8s.io && tar xzf kubernetes-src.tar.gz && mv kubernetes-${KUBE_VERSION}.0 kubernetes && popd
+        - pushd ${BUILD_PATH}/src/k8s.io/kubernetes && make generated_files && popd
+        - make comp
+        - make gen-resourcesdocs
+        env:
+        - name: KUBE_VERSION
+          value: 1.20  # this should be configurable or read from another env variable
+        - name: BUILD_PATH
+          value: ./tmp # temporary location for installation
+        args:
+        - prow-presubmit-check
+        resources:
+          requests:
+            cpu: 4000m # what value is needed
+    annotations:
+      testgrid-dashboards: reference-docs
+      testgrid-tab-name: referencedocs-presubmit-master
+      description: kubernetes-sigs-reference-docs presubmit tests on master branch
