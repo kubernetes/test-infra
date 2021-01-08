@@ -4,8 +4,7 @@ presubmits:
   kubernetes-csi/csi-driver-nfs:
   - name: pull-csi-driver-nfs-sanity
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-nfs
     branches:
     - master
@@ -15,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
         command:
         - runner.sh
         args:
@@ -30,8 +29,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-unit
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-nfs
     branches:
     - master
@@ -39,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
         command:
         - runner.sh
         args:
@@ -54,8 +52,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-integration
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-nfs
     branches:
     - master
@@ -64,7 +61,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
         command:
         - runner.sh
         args:
@@ -79,8 +76,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-e2e
     decorate: true
-    always_run: false
-    run_if_changed: '.*[^m][^d]$'
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-nfs
     branches:
     - master
@@ -96,7 +92,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
         command:
         - runner.sh
         - kubetest

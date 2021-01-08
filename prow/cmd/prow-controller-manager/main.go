@@ -164,6 +164,15 @@ func main() {
 		}
 	}
 
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
 
 	if enabledControllersSet.Has(plank.ControllerName) {
