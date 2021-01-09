@@ -197,6 +197,71 @@ func TestGetJvd(t *testing.T) {
 				Flaky: nil,
 			},
 		}, {
+			"Failed and Skipped",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					<testcase classname="fake_class_0" name="fake_test_0">
+							<skipped/>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[0],
+								},
+							},
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+									Skipped:   &emptyFailureMsg,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[0],
+								},
+							},
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+									Skipped:   &emptyFailureMsg,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Flaky: nil,
+			},
+		}, {
 			"Multiple tests in same file",
 			[][]byte{
 				[]byte(`
