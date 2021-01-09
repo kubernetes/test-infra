@@ -55,6 +55,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
@@ -79,6 +80,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
