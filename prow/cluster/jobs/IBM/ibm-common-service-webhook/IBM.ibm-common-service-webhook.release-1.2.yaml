@@ -1,0 +1,277 @@
+presubmits:
+  IBM/ibm-common-service-webhook:
+  - name: check-ibm-common-service-webhook
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test check-ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-ibm-common-service-webhook-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test test-ibm-common-service-webhook-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-common-service-webhook-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test test-ibm-common-service-webhook-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-common-service-webhook-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test test-ibm-common-service-webhook-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-ibm-common-service-webhook-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test build-ibm-common-service-webhook-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-common-service-webhook-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test build-ibm-common-service-webhook-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-common-service-webhook-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    rerun_command: /test build-ibm-common-service-webhook-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+postsubmits:
+  IBM/ibm-common-service-webhook:
+  - name: coverage-ibm-common-service-webhook-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/check-tool:v20200817-b1f2b4c05
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-common-service-webhook-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build-ibm-common-service-webhook-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-common-service-webhook-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build-ibm-common-service-webhook-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^release-1.2$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-common-service-webhook-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.2$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-common-service-webhook-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^release-1.2$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-common-service-webhook-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^release-1.2$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-common-service-webhook-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.2$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-webhook
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20200817-b1f2b4c05
+        name: ""
+        securityContext:
+          privileged: true
