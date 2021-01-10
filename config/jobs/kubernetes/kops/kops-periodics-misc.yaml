@@ -98,7 +98,7 @@ periodics:
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/latest
+      - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
@@ -172,7 +172,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=ci/latest
+      - --extract=release/stable
       - --ginkgo-parallel=10
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
