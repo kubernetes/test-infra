@@ -286,14 +286,7 @@ branch-protection:
             - ci-validate-manifests
           branches:
             gh-pages:
-              required_status_checks:
-                contexts: []
-              restrictions:
-                users:
-                - k8s-ci-robot
-                teams:
-                - kube-state-metrics-admins
-                - kube-state-metrics-maintainers
+              protect: false
         kube-scheduler:
           restrictions:
             users: []
