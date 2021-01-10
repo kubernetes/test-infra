@@ -146,3 +146,34 @@ periodics:
           - --test-cmd-name=ClusterLoaderV2
           - --timeout=120m
           - --use-logexporter
+
+- name: ci-kubernetes-kubeadm-scalability
+  interval: 60m # TODO: adjust
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m # TODO: adjust
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
+      env:
+      - name: NUM_WORKERS
+        value: "10" # TODO: adjust
+      command:
+      - "runner.sh"
+      - "./kubeadm/ci-e2e.sh"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: kubeadm
+    description: "Periodic job that runs scalability tests on a cluster created with kubeadm"
+    testgrid-num-columns-recent: '30'
