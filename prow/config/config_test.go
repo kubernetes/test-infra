@@ -2952,6 +2952,18 @@ func TestPlankJobURLPrefix(t *testing.T) {
 			expectedJobURLPrefix: "https://my-alternate-prow",
 		},
 		{
+			name: "Matching repo in extraRefs returns JobURLPrefix from repo",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
+			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
 			name: "JobURLPrefix in decoration config overrides job_url_prefix_config",
 			plank: Plank{
 				JobURLPrefixConfig: map[string]string{
@@ -2976,6 +2988,18 @@ func TestPlankJobURLPrefix(t *testing.T) {
 				},
 			},
 			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			expectedJobURLPrefix: "https://my-third-prow",
+		},
+		{
+			name: "Matching org in extraRefs and not matching repo returns JobURLPrefix from org",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
