@@ -164,11 +164,11 @@ func init() {
 func createTempWorkingDir() error {
 	tempDir, err := ioutil.TempDir(".", "transfigure_")
 	if err != nil {
-		return wrapErrorOrNil("Error creating temp dir", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error creating temp directory", err)
 	}
 	o.workingDir, err = filepath.Abs(tempDir)
 	if err != nil {
-		return wrapErrorOrNil("Error getting abs path for working dir", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error getting abs path for working dir", err)
 	}
 	log.Printf("Created temp directory %v/", tempDir)
 	return nil
@@ -205,11 +205,11 @@ func createRepoSubdirForTestgridYAML() {
 func generateTestgridYAML() error {
 	yamlPath, err := filepath.Abs(o.testgridYaml)
 	if err != nil {
-		return wrapErrorOrNil("Invalid testgrid yaml path "+o.testgridYaml, err)
+		return fmt.Errorf("%v (Caused by: %v)", "Invalid testgrid yaml path "+o.testgridYaml, err)
 	}
 
 	cmd := exec.Command(
-		"/Users/joshuabone/go/src/k8s.io/test-infra/testgrid/cmd/transfigure/configurator",
+		"/configurator",
 		fmt.Sprintf("--prow-config=%s", o.prowConfig),
 		fmt.Sprintf("--prow-job-config=%s", o.prowJobConfig),
 		"--output-yaml",
@@ -245,10 +245,10 @@ func runBazelTests() error {
 func ensureGitUserAndEmail() error {
 	log.Print("Checking Git Config user and email")
 	if _, err := runCmd(exec.Command("git", "config", "user.name", o.gitUser)); err != nil {
-		return wrapErrorOrNil("Error setting git user name", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error setting git user name", err)
 	}
 	if _, err := runCmd(exec.Command("git", "config", "user.email", o.gitEmail)); err != nil {
-		return wrapErrorOrNil("Error setting git user email", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error setting git user email", err)
 	}
 	return nil
 }
@@ -257,7 +257,7 @@ func gitCommitAndPush() error {
 	o.prTitle = PrTitlePrefix + o.repoSubdir
 	_, err := runCmd(exec.Command("git", "commit", "-m", o.prTitle))
 	if err != nil {
-		return wrapErrorOrNil("Error on git commit", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error on git commit", err)
 	}
 
 	log.Print(fmt.Sprintf("Pushing commit to %s/%s:%s...", o.gitUser, o.remoteForkRepo, Branch))
@@ -301,12 +301,12 @@ func populateGitUserAndEmail() error {
 	req.Header.Add("Authorization", "token "+o.tokenContents)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return wrapErrorOrNil("Error sending request", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error sending request", err)
 	}
 	// Read in the desired fields from the response body.
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return wrapErrorOrNil("Error reading from response", err)
+		return fmt.Errorf("%v (Caused by: %v)", "Error reading from response", err)
 	}
 	githubData := struct {
 		Login string `json:"login"`
