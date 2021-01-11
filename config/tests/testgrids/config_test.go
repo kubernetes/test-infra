@@ -53,6 +53,7 @@ var (
 		"gardener",
 		"jetstack",
 		"kyma",
+		"kubevirt",
 	}
 	orgs = []string{
 		"conformance",

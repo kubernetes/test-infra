@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-1.18
       command:
       - runner.sh
       - kubetest
@@ -40,7 +40,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.18
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_master.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_1_18.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
@@ -73,7 +73,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
       command:
       - runner.sh
       - kubetest
@@ -129,7 +129,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
       command:
       - runner.sh
       - kubetest
@@ -185,7 +185,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
       command:
       - runner.sh
       - kubetest
@@ -240,7 +240,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210107-e4af2d6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
       command:
       - runner.sh
       - kubetest

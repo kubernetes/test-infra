@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,7 +67,6 @@ type gerritClient interface {
 
 // Client is a gerrit reporter client
 type Client struct {
-	ctx    context.Context
 	gc     gerritClient
 	lister ctrlruntimeclient.Reader
 }
@@ -96,7 +96,6 @@ func NewReporter(cookiefilePath string, projects map[string][]string, lister ctr
 	}
 	gc.Authenticate(cookiefilePath, "")
 	return &Client{
-		ctx:    context.Background(),
 		gc:     gc,
 		lister: lister,
 	}, nil
@@ -108,7 +107,9 @@ func (c *Client) GetName() string {
 }
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
-func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
+func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) bool {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 		// not done yet
@@ -143,7 +144,7 @@ func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
 	}
 
 	var pjs v1.ProwJobList
-	if err := c.lister.List(c.ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+	if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 		log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return false
 	}
@@ -160,7 +161,9 @@ func (c *Client) ShouldReport(log *logrus.Entry, pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
@@ -182,7 +185,7 @@ func (c *Client) Report(logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *r
 		}
 
 		var pjsOnRevisionWithSameLabel v1.ProwJobList
-		if err := c.lister.List(c.ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		if err := c.lister.List(ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, nil, err
 		}

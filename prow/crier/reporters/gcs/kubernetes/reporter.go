@@ -57,28 +57,28 @@ type PodReport struct {
 }
 
 type resourceGetter interface {
-	GetPod(cluster, namespace, name string) (*v1.Pod, error)
+	GetPod(ctx context.Context, cluster, namespace, name string) (*v1.Pod, error)
 	GetEvents(cluster, namespace string, pod *v1.Pod) ([]v1.Event, error)
-	PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error
+	PatchPod(ctx context.Context, cluster, namespace, name string, pt types.PatchType, data []byte) error
 }
 
 type k8sResourceGetter struct {
 	podClientSets map[string]corev1.CoreV1Interface
 }
 
-func (rg k8sResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, error) {
+func (rg k8sResourceGetter) GetPod(ctx context.Context, cluster, namespace, name string) (*v1.Pod, error) {
 	if _, ok := rg.podClientSets[cluster]; !ok {
 		return nil, fmt.Errorf("couldn't find cluster %q", cluster)
 	}
-	return rg.podClientSets[cluster].Pods(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	return rg.podClientSets[cluster].Pods(namespace).Get(ctx, name, metav1.GetOptions{})
 }
 
-func (rg k8sResourceGetter) PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error {
+func (rg k8sResourceGetter) PatchPod(ctx context.Context, cluster, namespace, name string, pt types.PatchType, data []byte) error {
 	if _, ok := rg.podClientSets[cluster]; !ok {
 		return fmt.Errorf("couldn't find cluster %q", cluster)
 	}
 
-	_, err := rg.podClientSets[cluster].Pods(namespace).Patch(context.TODO(), name, pt, data, metav1.PatchOptions{})
+	_, err := rg.podClientSets[cluster].Pods(namespace).Patch(ctx, name, pt, data, metav1.PatchOptions{})
 	return err
 }
 
@@ -93,17 +93,25 @@ func (rg k8sResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) ([
 	return events.Items, nil
 }
 
-func (gr *gcsK8sReporter) Report(log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
-	result, err := gr.report(log, pj)
+func (gr *gcsK8sReporter) Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+	result, err := gr.report(ctx, log, pj)
 	return []*prowv1.ProwJob{pj}, result, err
 }
 
-func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+func (gr *gcsK8sReporter) report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	// Check if we have a destination before adding a finalizer so we don't add
+	// one that we'll never remove.
+	_, _, err := util.GetJobDestination(gr.cfg, pj)
+	if err != nil {
+		log.WithError(err).Warn("Not uploading because we couldn't find a destination")
+		return nil, nil
+	}
+
 	if !pj.Complete() && pj.Status.State != prowv1.AbortedState {
-		if err := gr.addFinalizer(pj); err != nil {
+		if err := gr.addFinalizer(ctx, pj); err != nil {
 			return nil, fmt.Errorf("failed to add finalizer to pod: %w", err)
 		}
 		return nil, nil
@@ -111,20 +119,15 @@ func (gr *gcsK8sReporter) report(log *logrus.Entry, pj *prowv1.ProwJob) (*reconc
 
 	// Aborted jobs are not completed initially
 	if !pj.Complete() {
+		log.Debug("Requeuing aborted job that is not complete.")
 		return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
-	}
-
-	_, _, err := util.GetJobDestination(gr.cfg, pj)
-	if err != nil {
-		log.WithError(err).Warn("Not uploading because we couldn't find a destination")
-		return nil, nil
 	}
 
 	return nil, gr.reportPodInfo(ctx, log, pj)
 }
 
-func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
-	pod, err := gr.rg.GetPod(pj.Spec.Cluster, gr.cfg().PodNamespace, pj.Name)
+func (gr *gcsK8sReporter) addFinalizer(ctx context.Context, pj *prowv1.ProwJob) error {
+	pod, err := gr.rg.GetPod(ctx, pj.Spec.Cluster, gr.cfg().PodNamespace, pj.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get pod %s: %w", pj.Name, err)
 	}
@@ -146,7 +149,7 @@ func (gr *gcsK8sReporter) addFinalizer(pj *prowv1.ProwJob) error {
 		return fmt.Errorf("failed to construct patch: %w", err)
 	}
 
-	if err := gr.rg.PatchPod(pj.Spec.Cluster, pod.Namespace, pod.Name, patch.Type(), patchData); err != nil {
+	if err := gr.rg.PatchPod(ctx, pj.Spec.Cluster, pod.Namespace, pod.Name, patch.Type(), patchData); err != nil {
 		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
@@ -159,7 +162,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 		return errors.New("cannot report incomplete jobs")
 	}
 
-	pod, err := gr.rg.GetPod(pj.Spec.Cluster, gr.cfg().PodNamespace, pj.Name)
+	pod, err := gr.rg.GetPod(ctx, pj.Spec.Cluster, gr.cfg().PodNamespace, pj.Name)
 	if err != nil {
 		// If we return an error we will be retried ~indefinitely. Given that permanent errors
 		// are expected (pods will be garbage collected), this isn't useful. Instead, just
@@ -210,14 +213,14 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 		return nil
 	}
 
-	if err := gr.removeFinalizer(pj.Spec.Cluster, pod); err != nil {
+	if err := gr.removeFinalizer(ctx, pj.Spec.Cluster, pod); err != nil {
 		return fmt.Errorf("failed to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
 	}
 
 	return nil
 }
 
-func (gr *gcsK8sReporter) removeFinalizer(cluster string, pod *v1.Pod) error {
+func (gr *gcsK8sReporter) removeFinalizer(ctx context.Context, cluster string, pod *v1.Pod) error {
 	finalizers := sets.NewString(pod.Finalizers...)
 	if !finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
@@ -231,7 +234,7 @@ func (gr *gcsK8sReporter) removeFinalizer(cluster string, pod *v1.Pod) error {
 		return fmt.Errorf("failed to construct patch: %w", err)
 	}
 
-	if err := gr.rg.PatchPod(cluster, pod.Namespace, pod.Name, patch.Type(), rawPatch); err != nil {
+	if err := gr.rg.PatchPod(ctx, cluster, pod.Namespace, pod.Name, patch.Type(), rawPatch); err != nil {
 		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
@@ -242,7 +245,7 @@ func (gr *gcsK8sReporter) GetName() string {
 	return kubernetesreporterapi.ReporterName
 }
 
-func (gr *gcsK8sReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
+func (gr *gcsK8sReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	// This reporting only makes sense for the Kubernetes agent (otherwise we don't
 	// have a pod to look up). It is only particularly useful for us to look at
 	// complete jobs that have a build ID.

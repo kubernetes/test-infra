@@ -17,6 +17,7 @@ limitations under the License.
 package gerrit
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -1048,7 +1049,7 @@ func TestReport(t *testing.T) {
 
 			reporter := &Client{gc: fgc, lister: fakectrlruntimeclient.NewFakeClient(allpj...)}
 
-			shouldReport := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+			shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
 				t.Errorf("shouldReport: %v, expectReport: %v", shouldReport, tc.expectReport)
 			}
@@ -1057,7 +1058,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+			reportedJobs, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

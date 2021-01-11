@@ -17,6 +17,7 @@ limitations under the License.
 package pubsub
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"testing"
@@ -430,7 +431,7 @@ func TestShouldReport(t *testing.T) {
 	c := NewReporter(fakeConfigAgent.Config)
 
 	for _, tc := range testcases {
-		r := c.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+		r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 
 		if r != tc.expectedResult {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",

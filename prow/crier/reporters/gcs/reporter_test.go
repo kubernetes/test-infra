@@ -302,7 +302,7 @@ func TestShouldReport(t *testing.T) {
 				},
 			}
 			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
-			result := gr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj)
+			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)
 			}

@@ -94,8 +94,8 @@ type messageInterface interface {
 }
 
 type reportClient interface {
-	Report(log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error)
-	ShouldReport(log *logrus.Entry, pj *prowapi.ProwJob) bool
+	Report(ctx context.Context, log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error)
+	ShouldReport(ctx context.Context, log *logrus.Entry, pj *prowapi.ProwJob) bool
 }
 
 type pubSubMessage struct {
@@ -164,8 +164,8 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
-		if s.Reporter.ShouldReport(l, &prowJob) {
-			if _, _, err := s.Reporter.Report(l, &prowJob); err != nil {
+		if s.Reporter.ShouldReport(context.TODO(), l, &prowJob) {
+			if _, _, err := s.Reporter.Report(context.TODO(), l, &prowJob); err != nil {
 				l.Warningf("failed to report status. %v", err)
 			}
 		}

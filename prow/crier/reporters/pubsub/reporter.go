@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/sirupsen/logrus"
@@ -87,20 +88,20 @@ func findLabels(pj *prowapi.ProwJob, labels ...string) map[string]string {
 }
 
 // ShouldReport tells if a prowjob should be reported by this reporter
-func (c *Client) ShouldReport(_ *logrus.Entry, pj *prowapi.ProwJob) bool {
+func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) bool {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel)
 	return pubSubMap[PubSubProjectLabel] != "" && pubSubMap[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
-	message := c.generateMessageFromPJ(pj)
+func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
-	ctx := context.Background()
+	message := c.generateMessageFromPJ(pj)
 	// TODO: Consider caching the pubsub client.
 	client, err := pubsub.NewClient(ctx, message.Project)
-
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
@@ -145,7 +146,7 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		// * pj.Status.URL: https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
 		// * prefix: https://prow.k8s.io/view/
 		// * storageURLPath: gs/kubernetes-jenkins/logs/ci-benchmark-microbenchmarks/1258197944759226371
-		prefix := c.config().Plank.GetJobURLPrefix(pj.Spec.Refs)
+		prefix := c.config().Plank.GetJobURLPrefix(pj)
 
 		storageURLPath := strings.TrimPrefix(pj.Status.URL, prefix)
 		if strings.HasPrefix(storageURLPath, api.GCSKeyType) {

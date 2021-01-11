@@ -19,6 +19,7 @@ limitations under the License.
 package github
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -118,7 +119,7 @@ func (c *Client) GetName() string {
 }
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
-func (c *Client) ShouldReport(_ *logrus.Entry, pj *v1.ProwJob) bool {
+func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob) bool {
 
 	switch {
 	case pj.Labels[client.GerritReportLabel] != "":
@@ -133,7 +134,7 @@ func (c *Client) ShouldReport(_ *logrus.Entry, pj *v1.ProwJob) bool {
 }
 
 // Report will report via reportlib
-func (c *Client) Report(log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+func (c *Client) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple

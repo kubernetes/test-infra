@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210108-eac8059329"
-        initupload: "gcr.io/k8s-prow/initupload:v20210108-eac8059329"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210108-eac8059329"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210108-eac8059329"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210111-f6f01a1373"
+        initupload: "gcr.io/k8s-prow/initupload:v20210111-f6f01a1373"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210111-f6f01a1373"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210111-f6f01a1373"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -233,6 +233,10 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        ingress-nginx:
+          branches:
+            gh-pages:
+              protect: false
         kompose:
           required_status_checks:
             contexts:
@@ -282,14 +286,7 @@ branch-protection:
             - ci-validate-manifests
           branches:
             gh-pages:
-              required_status_checks:
-                contexts: []
-              restrictions:
-                users:
-                - k8s-ci-robot
-                teams:
-                - kube-state-metrics-admins
-                - kube-state-metrics-maintainers
+              protect: false
         kube-scheduler:
           restrictions:
             users: []

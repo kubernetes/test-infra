@@ -1018,10 +1018,7 @@ func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
-// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
-// migrated over for a while
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+func TestKubernetesMergeBlockingJobMustRunOnK8sInfraProwBuild(t *testing.T) {
 	repo := "kubernetes/kubernetes"
 	jobs := c.AllStaticPresubmits([]string{repo})
 	sort.Slice(jobs, func(i, j int) bool {
@@ -1034,7 +1031,7 @@ func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
 		}
 		branches := job.Branches
 		if job.Cluster != "k8s-infra-prow-build" {
-			t.Logf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
+			t.Errorf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
 		}
 	}
 }

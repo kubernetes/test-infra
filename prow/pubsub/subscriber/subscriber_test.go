@@ -102,12 +102,12 @@ type fakeReporter struct {
 	reported bool
 }
 
-func (r *fakeReporter) Report(_ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
+func (r *fakeReporter) Report(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
 	r.reported = true
 	return nil, nil, nil
 }
 
-func (r *fakeReporter) ShouldReport(_ *logrus.Entry, pj *prowapi.ProwJob) bool {
+func (r *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) bool {
 	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 
