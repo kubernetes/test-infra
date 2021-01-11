@@ -1,0 +1,47 @@
+presubmits:
+  kubernetes-sigs/zeitgeist:
+  - name: pull-zeitgeist-build
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/zeitgeist"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - build
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: zeitgeist-build
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-zeitgeist-test
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/zeitgeist"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: zeitgeist-test
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-zeitgeist-verify
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/zeitgeist"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: zeitgeist-verify
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
