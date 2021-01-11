@@ -16,9 +16,15 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"os"
+
 	transfigure "k8s.io/test-infra/testgrid/cmd/transfigure/cmd"
 )
 
 func main() {
-	transfigure.Execute()
+	if err := transfigure.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
