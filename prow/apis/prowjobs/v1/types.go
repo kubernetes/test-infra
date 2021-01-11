@@ -573,6 +573,9 @@ type GCSConfiguration struct {
 	// builtin's and the local system's defaults.  This maps extensions
 	// to media types, for example: MediaTypes["log"] = "text/plain"
 	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
+	// JobURLPrefix holds the baseURL under which the jobs output can be viewed.
+	// If unset, this will be derived based on org/repo from the job_url_prefix_config.
+	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 
 	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to blob storage.
 	// This option is useful for testing jobs that use the pod-utilities without actually uploading.
@@ -611,15 +614,16 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 		merged.DefaultRepo = def.DefaultRepo
 	}
 
-	if merged.MediaTypes == nil {
+	if merged.MediaTypes == nil && len(def.MediaTypes) > 0 {
 		merged.MediaTypes = map[string]string{}
 	}
 
 	for extension, mediaType := range def.MediaTypes {
 		merged.MediaTypes[extension] = mediaType
 	}
-	for extension, mediaType := range g.MediaTypes {
-		merged.MediaTypes[extension] = mediaType
+
+	if merged.JobURLPrefix == "" {
+		merged.JobURLPrefix = def.JobURLPrefix
 	}
 
 	if merged.LocalOutputDir == "" {

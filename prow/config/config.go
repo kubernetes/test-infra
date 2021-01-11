@@ -506,23 +506,26 @@ func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfi
 // (to allow using multiple storageProviders within a repo)
 // we always trim the suffix here. Thus, every caller can assume
 // the job url prefix does not have a storageProvider suffix.
-func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
-	jobURLPrefix := p.getJobURLPrefix(refs)
+func (p Plank) GetJobURLPrefix(pj *prowapi.ProwJob) string {
+	jobURLPrefix := p.getJobURLPrefix(pj)
 	if strings.HasSuffix(jobURLPrefix, "gcs/") {
 		return strings.TrimSuffix(jobURLPrefix, "gcs/")
 	}
 	return strings.TrimSuffix(jobURLPrefix, "gcs")
 }
 
-func (p Plank) getJobURLPrefix(refs *prowapi.Refs) string {
-	if refs == nil {
+func (p Plank) getJobURLPrefix(pj *prowapi.ProwJob) string {
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil && pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix != "" {
+		return pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix
+	}
+	if pj.Spec.Refs == nil {
 		return p.JobURLPrefixConfig["*"]
 	}
-	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)] != "" {
-		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]
+	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)] != "" {
+		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)]
 	}
-	if p.JobURLPrefixConfig[refs.Org] != "" {
-		return p.JobURLPrefixConfig[refs.Org]
+	if p.JobURLPrefixConfig[pj.Spec.Refs.Org] != "" {
+		return p.JobURLPrefixConfig[pj.Spec.Refs.Org]
 	}
 	return p.JobURLPrefixConfig["*"]
 }

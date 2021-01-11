@@ -216,7 +216,25 @@ func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
 			def := &DecorationConfig{}
 			fuzz.New().Fuzz(def)
 
-			defaulted := (&DecorationConfig{}).ApplyDefault(def)
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &DecorationConfig{
+				UtilityImages:    &UtilityImages{},
+				Resources:        &Resources{},
+				GCSConfiguration: &GCSConfiguration{},
+			}
+			if def.UtilityImages == nil {
+				def.UtilityImages = &UtilityImages{}
+			}
+			if def.Resources == nil {
+				def.Resources = &Resources{}
+			}
+			if def.GCSConfiguration == nil {
+				def.GCSConfiguration = &GCSConfiguration{}
+			}
+			defaulted := toDefault.ApplyDefault(def)
 
 			if diff := cmp.Diff(def, defaulted); diff != "" {
 				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
