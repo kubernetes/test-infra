@@ -27,7 +27,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/cobra"
 )
 
@@ -250,22 +249,6 @@ func ensureGitUserAndEmail() error {
 	}
 	if _, err := runCmd(exec.Command("git", "config", "user.email", o.gitEmail)); err != nil {
 		return wrapErrorOrNil("Error setting git user email", err)
-	}
-
-	output, err := runCmd(exec.Command("git", "config", "user.name"))
-	if err != nil {
-		return wrapErrorOrNil("Error on git config user.name", err)
-	}
-	if diff := cmp.Diff(output, o.gitUser); diff != "" {
-		return errors.New("Unexpected Git User: (-got +want)\n" + diff)
-	}
-
-	output, err = runCmd(exec.Command("git", "config", "user.email"))
-	if err != nil {
-		return wrapErrorOrNil("Error on git config user.email", err)
-	}
-	if diff := cmp.Diff(output, o.gitEmail); diff != "" {
-		return errors.New("Unexpected Git Email: (-got +want)\n" + diff)
 	}
 	return nil
 }
