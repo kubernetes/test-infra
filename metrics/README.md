@@ -30,7 +30,7 @@ jqfilter: |
 ## Visualizations and Charts
 :warning: This is a work in progress, if you would like to contribute to the Graphs or Request a graph be added Etc, please create an issue with the `/area metrics` tag. See #20067 :warning:
 
-[![Sample Report](./images/metrics_report.png)](https://storage.googleapis.com/k8s-metrics/k8s-metrics-report/metrics-report.html)
+[![Sample Report](./reports/metrics_report.png)](https://storage.googleapis.com/k8s-metrics/k8s-metrics-report/metrics-report.html)
 
 
 
