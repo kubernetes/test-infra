@@ -38,6 +38,7 @@ periodics:
   cluster: scalability
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-18"
+  - "perfDashBuildsCount: 240"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
