@@ -199,6 +199,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
 
 	var jvd JVD
+	var duplicates int
 
 	for _, result := range results {
 		if result.err != nil {
@@ -238,6 +239,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					Junit: tests,
 					Link:  result.link,
 				})
+				// if the skipped test is a rerun of a failed test
+				if failed {
+					// store it as failed too
+					jvd.Failed = append(jvd.Failed, TestResult{
+						Junit: tests,
+						Link:  result.link,
+					})
+					// account for the duplication
+					duplicates++
+				}
 			} else if failed {
 				jvd.Failed = append(jvd.Failed, TestResult{
 					Junit: tests,
@@ -257,6 +268,6 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 		}
 	}
 
-	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped)
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped) - duplicates
 	return jvd
 }
