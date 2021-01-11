@@ -84,6 +84,22 @@ dashboards:
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: ci-oss-test-infra-autobump-prow
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: ci-oss-test-infra-heartbeat
+    name: oss-prow-heartbeat
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    test_group_name: ci-oss-test-infra-heartbeat
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
+    description: testgrid-canary-autobump
+    name: autobump-testgrid-canary
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    test_group_name: testgrid-canary-autobump
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
@@ -143,6 +159,15 @@ dashboards:
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
     test_group_name: push-testgrid-images
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
+    description: testgrid-prod-autobump
+    name: autobump-testgrid-prod
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    test_group_name: testgrid-prod-autobump
   name: googleoss-test-infra
 - dashboard_tab:
   - code_search_url_template:
@@ -482,6 +507,11 @@ test_groups:
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
   num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/ci-oss-test-infra-heartbeat
+  name: ci-oss-test-infra-heartbeat
+- gcs_prefix: oss-prow/logs/testgrid-canary-autobump
+  name: testgrid-canary-autobump
+  num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
 - gcs_prefix: oss-prow/logs/gce-build
@@ -510,6 +540,9 @@ test_groups:
   name: post-testgrid-deploy-prod
 - gcs_prefix: oss-prow/logs/push-testgrid-images
   name: push-testgrid-images
+- gcs_prefix: oss-prow/logs/testgrid-prod-autobump
+  name: testgrid-prod-autobump
+  num_failures_to_alert: 3
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-API-regression-test
   name: ESPv2-API-regression-test
   num_columns_recent: 20
