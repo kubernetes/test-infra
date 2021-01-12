@@ -6,7 +6,10 @@ go_test(
     name = "go_default_test",
     srcs = ["sinker_test.go"],
     embed = [":go_default_library"],
-    tags = ["e2e"],
+    tags = [
+        "e2e",
+        "no-remote-exec",
+    ],
     data = [
         "//prow/test/integration/test:all-srcs",
     ],

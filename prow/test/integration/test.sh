@@ -35,8 +35,8 @@ fi
 "${CURRENT_DIR}/setup-cluster.sh" "$@"
 "${CURRENT_DIR}/setup-prow.sh" "$@"
 
-go test -v -count=1 ${CURRENT_DIR}/test
+# go test -v -count=1 ${CURRENT_DIR}/test
 
 # bazel test failed with permission denied on `/root/.kube/config`, and was not able to resolve it even chmod 0777 recursively.
 # For example https://prow.k8s.io/view/gs/kubernetes-jenkins/pr-logs/pull/test-infra/20262/pull-test-infra-integration/1339698339687436288
-# bazel test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_tag_filters=e2e "$@"
+bazel test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_tag_filters=e2e "$@"
