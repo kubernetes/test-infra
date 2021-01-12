@@ -441,6 +441,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-subdir-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         node-feature-discovery:
           branches:
             gh-pages:
