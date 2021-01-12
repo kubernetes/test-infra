@@ -13,7 +13,7 @@ spec:
     runAsNonRoot: true
     runAsUser: 1000
   serviceAccountName: alertmanager
-  version: v0.21.0
+  version: v0.15.2
   storage: # Note that this section is immutable so changes require deleting and recreating the resource.
     volumeClaimTemplate:
       metadata:
