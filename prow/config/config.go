@@ -518,14 +518,24 @@ func (p Plank) getJobURLPrefix(pj *prowapi.ProwJob) string {
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil && pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix != "" {
 		return pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix
 	}
-	if pj.Spec.Refs == nil {
+
+	var org, repo string
+	if pj.Spec.Refs != nil {
+		org = pj.Spec.Refs.Org
+		repo = pj.Spec.Refs.Repo
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		org = pj.Spec.ExtraRefs[0].Org
+		repo = pj.Spec.ExtraRefs[0].Repo
+	}
+
+	if org == "" {
 		return p.JobURLPrefixConfig["*"]
 	}
-	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)] != "" {
-		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)]
+	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", org, repo)] != "" {
+		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", org, repo)]
 	}
-	if p.JobURLPrefixConfig[pj.Spec.Refs.Org] != "" {
-		return p.JobURLPrefixConfig[pj.Spec.Refs.Org]
+	if p.JobURLPrefixConfig[org] != "" {
+		return p.JobURLPrefixConfig[org]
 	}
 	return p.JobURLPrefixConfig["*"]
 }
