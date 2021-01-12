@@ -88,7 +88,7 @@ periodics:
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=conformance
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
@@ -97,13 +97,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-conformance
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
 
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
