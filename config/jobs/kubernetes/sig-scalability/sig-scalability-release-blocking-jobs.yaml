@@ -52,6 +52,7 @@ periodics:
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: scalability
   labels:
