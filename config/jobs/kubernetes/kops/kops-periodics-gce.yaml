@@ -75,3 +75,35 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-gce-latest
+
+# Semi-experimental periodics to help get GCE up to snuff!
+- interval: 1h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  name: e2e-kops-gce_scopes-kubetest
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  spec:
+    serviceAccountName: k8s-kops-test
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e-gce_scopes
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
+    testgrid-tab-name: e2e-kubetest2-gce_scopes
