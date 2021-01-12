@@ -99,7 +99,7 @@ periodics:
     testgrid-tab-name: containerd-build-1.3
     description: "builds release/1.3 branch of upstream containerd"
 - interval: 1h
-  name: ci-containerd-e2e-gci-gce
+  name: ci-containerd-e2e-cos-gce
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -126,10 +126,10 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-e2e-gci
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: containerd-e2e-cos
 - interval: 1h
-  name: ci-containerd-e2e-gci-gce-1-2
+  name: ci-containerd-e2e-cos-gce-1-2
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -156,10 +156,10 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-e2e-gci-1.2
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: containerd-e2e-cos-1.2
 - interval: 1h
-  name: ci-containerd-e2e-gci-gce-1-3
+  name: ci-containerd-e2e-cos-gce-1-3
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -186,8 +186,8 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-e2e-gci-1.3
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: containerd-e2e-cos-1.3
 
 - interval: 1h
   name: ci-containerd-e2e-ubuntu-gce
@@ -371,7 +371,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-features-1.3
 - interval: 12h
-  name: ci-containerd-soak-gci-gce
+  name: ci-containerd-soak-cos-gce
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -400,8 +400,8 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: soak-gci-gce
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: soak-cos-gce
 - name: ci-cri-containerd-build
   interval: 30m
   labels:
@@ -463,7 +463,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-device-plugin-gpu
+    testgrid-tab-name: e2e-cos-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
 - interval: 2h
@@ -494,10 +494,10 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-multizone
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-multizone
 - interval: 1h
-  name: ci-cri-containerd-e2e-gci-gce
+  name: ci-cri-containerd-e2e-cos-gce
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -522,10 +522,10 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos
 - interval: 2h
-  name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  name: ci-cri-containerd-e2e-cos-gce-alpha-features
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -551,10 +551,10 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-alpha-features
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-alpha-features
 - interval: 2h
-  name: ci-cri-containerd-e2e-gci-gce-flaky
+  name: ci-cri-containerd-e2e-cos-gce-flaky
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -576,10 +576,10 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-flaky
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-flaky
 - interval: 2h
-  name: ci-cri-containerd-e2e-gci-gce-ingress
+  name: ci-cri-containerd-e2e-cos-gce-ingress
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -604,11 +604,11 @@ periodics:
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-network-gce, sig-node-containerd
-    testgrid-tab-name: e2e-gci-ingress
+    testgrid-dashboards: sig-network-gce, sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
-  name: ci-cri-containerd-e2e-gci-gce-ip-alias
+  name: ci-cri-containerd-e2e-cos-gce-ip-alias
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -634,10 +634,10 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-ip-alias
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-ip-alias
 - interval: 2h
-  name: ci-cri-containerd-e2e-gci-gce-proto
+  name: ci-cri-containerd-e2e-cos-gce-proto
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -661,10 +661,10 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-proto
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-proto
 - interval: 1h
-  name: ci-cri-containerd-e2e-gci-gce-reboot
+  name: ci-cri-containerd-e2e-cos-gce-reboot
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -686,10 +686,10 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-reboot
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-reboot
 - interval: 1h
-  name: ci-cri-containerd-e2e-gci-gce-serial
+  name: ci-cri-containerd-e2e-cos-gce-serial
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -711,10 +711,10 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-serial
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-serial
 - interval: 1h
-  name: ci-cri-containerd-e2e-gci-gce-slow
+  name: ci-cri-containerd-e2e-cos-gce-slow
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -737,8 +737,8 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
   annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-gci-slow
+    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-tab-name: e2e-cos-slow
 - interval: 1h
   name: ci-cri-containerd-e2e-ubuntu-gce
   labels:
@@ -858,7 +858,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-features
 - interval: 1h
-  name: ci-cos-containerd-e2e-gci-gce
+  name: ci-cos-containerd-e2e-cos-gce
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
