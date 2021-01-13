@@ -122,7 +122,7 @@ create-gh-pr() {
 	/pr-creator \
 		--github-token-path="${token}" \
 		--org="${GH_ORG}" --repo="${GH_REPO}" --branch=master \
-		--title="${title}" --match-title="Bump ${PROW_INSTANCE_NAME} from" \
+		--title="${title}" --head-branch="autobump-${PROW_INSTANCE_NAME}" \
 		--body="${body}" \
 		--source="${user}:autobump-${PROW_INSTANCE_NAME}" \
 		--confirm
