@@ -52,7 +52,8 @@ func init() {
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
 type KubernetesOptions struct {
-	kubeconfig string
+	kubeconfig         string
+	projectedTokenFile string
 
 	DeckURI string
 
@@ -101,14 +102,6 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 				}
 			}
 		}
-
-		if _, statErr := os.Stat(inCluderTokenPath); statErr == nil {
-			err = watcher.Add(inCluderTokenPath)
-			if err != nil {
-				err = fmt.Errorf("faild to watch %s: %w", inCluderTokenPath, err)
-				return
-			}
-		}
 		o.kubeconfigWatchEvents = watcher.Events
 
 		go func() {
@@ -142,6 +135,7 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
+	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 }
 
 // Validate validates Kubernetes options.
@@ -173,7 +167,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	o.kubeconfigWach = &sync.Once{}
 
-	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig)
+	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.projectedTokenFile)
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
 	}
