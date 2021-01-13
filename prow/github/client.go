@@ -4054,11 +4054,17 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 	defer durationLogger()
 
 	var ais []AppInstallation
-	if _, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      "/app/installations",
-		exitCodes: []int{200},
-	}, &ais); err != nil {
+	if err := c.readPaginatedResults(
+		"/app/installations",
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]AppInstallation{}
+		},
+		func(obj interface{}) {
+			ais = append(ais, *(obj.(*[]AppInstallation))...)
+		},
+	); err != nil {
 		return nil, err
 	}
 	return ais, nil
