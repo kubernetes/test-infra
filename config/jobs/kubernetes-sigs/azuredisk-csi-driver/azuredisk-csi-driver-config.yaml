@@ -540,3 +540,62 @@ presubmits:
       testgrid-tab-name: pr-in-tree-azure-disk-e2e-windows
       description: "Run Azure Disk e2e test on a Windows cluster with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-external-e2e-single-az
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.16
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Ginkgo specific args
+        - --ginkgo-focus='External.Storage.*disk.csi.azure.com'
+        - --ginkgo-skip='\[Disruptive\]|\[Slow\]|\[Feature:VolumeSnapshotDataSource\]'
+        # Specific test args
+        - --test-azure-disk-csi-driver
+        - --run-external-e2e-ginkgo-test
+        - --storage-testdriver-repo-path=test/external-e2e/testdriver.yaml
+        securityContext:
+          privileged: true
+        env:
+          - name: ENABLE_TOPOLOGY
+            value: "false"
+          - name: KUBERNETES_PROVIDER
+            value: azure
+          - name: KUBERNETES_CONFORMANCE_PROVIDER
+            value: azure
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azuredisk-csi-driver-external-e2e-single-az
+      description: "Run k8s External E2E tests on a single-az cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
