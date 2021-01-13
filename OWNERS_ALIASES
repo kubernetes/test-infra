@@ -85,6 +85,7 @@ aliases:
   sig-release-leads:
     - alejandrox1
     - hasheddan
+    - jeremyrickard
     - justaugustus
     - saschagrunert
   sig-scalability-leads:
