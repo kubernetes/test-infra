@@ -51,6 +51,7 @@ type githubClient interface {
 	CreateFork(org, repo string) (string, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
+	EnsureFork(forkingUser, org, repo string) (string, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
@@ -516,61 +517,15 @@ func (s *Server) createIssue(org, repo, title, body string, num int, comment *gi
 func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	s.repoLock.Lock()
 	defer s.repoLock.Unlock()
-
-	// Fork repo if it doesn't exist.
 	fork := s.botUser.Login + "/" + repo
-	if !repoExists(fork, s.repos) {
-		if name, err := s.ghc.CreateFork(org, repo); err != nil {
-			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
-		} else {
-			// we got a fork but it may be named differently
-			repo = name
-		}
-		if err := waitForRepo(s.botUser.Login, repo, s.ghc); err != nil {
-			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
-		}
-		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
+
+	// fork repo if it doesn't exsit
+	if _, err := s.ghc.EnsureFork(s.botUser.Login, org, repo); err != nil {
+		return repo, err
 	}
+
+	s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
 	return repo, nil
-}
-
-func waitForRepo(owner, name string, ghc githubClient) error {
-	// Wait for at most 5 minutes for the fork to appear on GitHub.
-	// The documentation instructs us to contact support if this
-	// takes longer than five minutes.
-	after := time.After(6 * time.Minute)
-	tick := time.Tick(30 * time.Second)
-
-	var ghErr string
-	for {
-		select {
-		case <-tick:
-			repo, err := ghc.GetRepo(owner, name)
-			if err != nil {
-				ghErr = fmt.Sprintf(": %v", err)
-				logrus.WithError(err).Warn("Error getting bot repository.")
-				continue
-			}
-			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo.Repo}) {
-				return nil
-			}
-		case <-after:
-			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
-		}
-	}
-}
-
-func repoExists(repo string, repos []github.Repo) bool {
-	for _, r := range repos {
-		if !r.Fork {
-			continue
-		}
-		if r.FullName == repo {
-			return true
-		}
-	}
-	return false
 }
 
 // getPatch gets the patch for the provided PR and creates a local

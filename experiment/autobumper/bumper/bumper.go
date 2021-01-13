@@ -286,6 +286,13 @@ func Run(o *Options) error {
 			}
 		}
 
+		// Check to see if the proper fork exists and if it does not, create one.
+		// TODO(mpherman): Handle case where account has repo of same name as one we are trying to autobump but is not a fork of it (e.g. test-infra)
+		_, err := gc.EnsureFork(o.GitHubLogin, o.GitHubOrg, o.GitHubRepo)
+		if err != nil {
+			return fmt.Errorf("fork needed for autobump does not exist. unable to create new fork. %v", err)
+		}
+
 		stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 		stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {

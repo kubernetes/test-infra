@@ -164,6 +164,7 @@ type RepositoryClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) (string, error)
+	EnsureFork(forkingUser, org, repo string) (string, error)
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
@@ -3559,6 +3560,71 @@ func (c *client) CreateFork(owner, repo string) (string, error) {
 	// repo under a different name -- the repo got re-named, the
 	// bot account already has a fork with that name, etc
 	return resp.Name, err
+}
+
+// EnsureFork checks to see that there is a fork of org/repo in the forkedUsers repositories.
+// If there is not, it makes one, and waits for the fork to be created before returning.
+// The return value is the name of the repo that was created
+// (This may be different then the one that is forked due to naming conflict)
+func (c *client) EnsureFork(forkingUser, org, repo string) (string, error) {
+	// Fork repo if it doesn't exist.
+	fork := forkingUser + "/" + repo
+	repos, err := c.GetRepos(forkingUser, true)
+	if err != nil {
+		return repo, fmt.Errorf("could not fetch all existing repos: %v", err)
+	}
+	if !repoExists(fork, repos) {
+		if name, err := c.CreateFork(org, repo); err != nil {
+			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+		} else {
+			// we got a fork but it may be named differently
+			repo = name
+		}
+		if err := c.waitForRepo(forkingUser, repo); err != nil {
+			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
+		}
+	}
+	return repo, nil
+
+}
+
+func (c *client) waitForRepo(owner, name string) error {
+	// Wait for at most 5 minutes for the fork to appear on GitHub.
+	// The documentation instructs us to contact support if this
+	// takes longer than five minutes.
+	after := time.After(6 * time.Minute)
+	tick := time.Tick(30 * time.Second)
+
+	var ghErr string
+	for {
+		select {
+		case <-tick:
+			repo, err := c.GetRepo(owner, name)
+			if err != nil {
+				ghErr = fmt.Sprintf(": %v", err)
+				logrus.WithError(err).Warn("Error getting bot repository.")
+				continue
+			}
+			ghErr = ""
+			if repoExists(owner+"/"+name, []Repo{repo.Repo}) {
+				return nil
+			}
+		case <-after:
+			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
+		}
+	}
+}
+
+func repoExists(repo string, repos []Repo) bool {
+	for _, r := range repos {
+		if !r.Fork {
+			continue
+		}
+		if r.FullName == repo {
+			return true
+		}
+	}
+	return false
 }
 
 // ListRepoTeams gets a list of all the teams with access to a repository
