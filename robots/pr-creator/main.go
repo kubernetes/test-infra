@@ -42,7 +42,7 @@ type options struct {
 	source    string
 
 	title      string
-	matchTitle string
+	headBranch string
 	body       string
 }
 
@@ -78,7 +78,7 @@ func optionsFromFlags() options {
 	fs.BoolVar(&o.confirm, "confirm", false, "Set to mutate github instead of a dry run")
 	fs.BoolVar(&o.local, "local", false, "Allow source to be local-branch instead of remote-user:branch")
 	fs.StringVar(&o.title, "title", "", "Title of PR")
-	fs.StringVar(&o.matchTitle, "match-title", "", "Reuse any self-authored, open PR matching title")
+	fs.StringVar(&o.headBranch, "head-branch", "", "Reuse any self-authored open PR from this branch")
 	fs.StringVar(&o.body, "body", "", "Body of PR")
 	fs.Parse(os.Args[1:])
 	return o
@@ -100,7 +100,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
 
-	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, o.allowMods, gc)
+	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.headBranch, o.allowMods, gc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure PR exists.")
 	}
