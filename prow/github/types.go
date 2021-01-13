@@ -943,10 +943,13 @@ type DraftReviewComment struct {
 	Body     string `json:"body"`
 }
 
-// Content is some base64 encoded github file content
+// Content contains information about a github file/directory.
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	Path    string `json:"path"`
 }
 
 const (

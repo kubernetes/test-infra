@@ -2681,3 +2681,85 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		}
 	})
 }
+
+func TestGetDirectory(t *testing.T) {
+	expectedContents := []Content{
+		{
+			Type: "file",
+			Name: "bar",
+			Path: "foo/bar",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", ""); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
+	}
+}
+
+func TestGetDirectoryRef(t *testing.T) {
+	expectedContents := []Content{
+		{
+			Type: "file",
+			Name: "bar.go",
+			Path: "foo/bar.go",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "ref=12345" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", "12345"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
+	}
+}
