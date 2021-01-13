@@ -29,7 +29,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -59,7 +59,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -89,7 +89,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -119,7 +119,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -149,7 +149,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh

@@ -47,7 +47,7 @@ presubmits:
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         # The resources are set to support a 100 node CL2 test.
         resources:
           limits:
