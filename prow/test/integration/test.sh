@@ -17,13 +17,15 @@ set -o errexit
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 
-if [[ -n "${CI:-}" ]]; then
-  # TODO(chaodaiG): remove this once kind is installed in test image
+# TODO(chaodaiG): remove this once kind is installed in test image
+if ! which kind >/dev/null 2>&1; then
   echo "Install KIND for prow"
   curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.9.0/kind-linux-amd64
   chmod +x /usr/bin/kind
+fi
 
-  # TODO(chaodaiG): remove this once bazel is installed in test image
+# TODO(chaodaiG): remove this once bazel is installed in test image
+if [[ ! -f "/usr/local/lib/bazel/bin/bazel-3.0.0-linux-x86_64" ]]; then
   echo "Install bazel for prow"
   mkdir -p "/usr/local/lib/bazel/bin"
   pushd "/usr/local/lib/bazel/bin" >/dev/null

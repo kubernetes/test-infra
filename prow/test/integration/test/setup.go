@@ -32,14 +32,15 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	prow "k8s.io/test-infra/prow/client/clientset/versioned"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
+	defaultNamespace = "default"
 	testpodNamespace = "test-pods"
 )
 
-var clusterContext = flag.String("cluster", "kind-kind", "The context of cluster to use for test")
+var clusterContext = flag.String("cluster", "kind-kind-prow-integration", "The context of cluster to use for test")
 
 func getClusterContext() string {
 	return *clusterContext
@@ -60,17 +61,12 @@ func getDefaultKubeconfig(cfg string) string {
 	return defaultKubeconfig
 }
 
-func NewClients(configPath, clusterName string) (*kubernetes.Clientset, *prow.Clientset, error) {
+func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error) {
 	cfg, err := BuildClientConfig(getDefaultKubeconfig(configPath), clusterName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed create rest config: %v", err)
+		return nil, fmt.Errorf("failed create rest config: %v", err)
 	}
-	c, err := NewClientsFromConfig(cfg)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed creating kubernetes client: %v", err)
-	}
-	pc, err := prow.NewForConfig(cfg)
-	return c, pc, err
+	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }
 
 func NewClientsFromConfig(cfg *rest.Config) (*kubernetes.Clientset, error) {

@@ -22,8 +22,8 @@ if [[ -z "${CONTEXT}" ]]; then
   echo "Current kube context cannot be empty"
   exit 1
 fi
-if [[ "${CONTEXT}" != "kind-kind" ]]; then
-  echo "Current kube context is '${CONTEXT}', has to be kind-kind"
+if [[ "${CONTEXT}" != "kind-kind-prow-integration" ]]; then
+  echo "Current kube context is '${CONTEXT}', has to be kind-kind-prow-integration"
   exit 1
 fi
 
@@ -38,7 +38,6 @@ kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
 
 echo "Deploy prow components"
 kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_REPO}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
-kubectl --context=${CONTEXT} create configmap job-config --from-file=config.yaml=${CURRENT_REPO}//prow/job-config.yaml --dry-run -oyaml | kubectl apply -f -
 kubectl --context=${CONTEXT} apply -f ${CURRENT_REPO}/prow/cluster
 
 echo "Waiting for prow components"

@@ -131,20 +131,13 @@ spec:
       - name: sinker
         args:
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         - --dry-run=false
         image: localhost:5000/sinker
         volumeMounts:
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
       volumes:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config

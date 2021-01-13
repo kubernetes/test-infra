@@ -28,8 +28,11 @@ fi
 # create a cluster with the local registry enabled in containerd,
 # as well as configure node-lables and extraPortMappings for ingress,
 # see: https://kind.sigs.k8s.io/docs/user/ingress/#create-cluster
-echo "Create kind cluster"
-cat <<EOF | kind create cluster --config=-
+cluster_name='kind-prow-integration'
+running="$(docker inspect -f '{{.State.Running}}' "${cluster_name}-control-plane" 2>/dev/null || true)"
+if [ "${running}" != 'true' ]; then
+  echo "Create kind cluster"
+cat <<EOF | kind create cluster --name ${cluster_name} --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
@@ -52,6 +55,9 @@ nodes:
     hostPort: 443
     protocol: TCP
 EOF
+else
+  echo "Using existing kind cluster"
+fi
 
 # connect the registry to the cluster network
 # (the network may already be connected)
@@ -64,8 +70,8 @@ if [[ -z "${CONTEXT}" ]]; then
   echo "Current kube context cannot be empty"
   exit 1
 fi
-if [[ "${CONTEXT}" != "kind-kind" ]]; then
-  echo "Current kube context is '${CONTEXT}', has to be kind-kind"
+if [[ "${CONTEXT}" != "kind-kind-prow-integration" ]]; then
+  echo "Current kube context is '${CONTEXT}', has to be kind-kind-prow-integration"
   exit 1
 fi
 
@@ -83,8 +89,9 @@ data:
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
 
-# Install nginx and wait for it ready
+# Install nginx
 echo "Install nginx on kind cluster"
-kubectl --context=${CONTEXT} apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+# Pin the ingress-nginx manifest to 9bf4155724d8396a70129c8d06eb970d79795d92 on 01/13/2021.
+kubectl --context=${CONTEXT} apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/9bf4155724d8396a70129c8d06eb970d79795d92/deploy/static/provider/kind/deploy.yaml
 
 exit 0
