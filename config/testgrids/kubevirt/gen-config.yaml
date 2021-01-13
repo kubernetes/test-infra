@@ -1,6 +1,7 @@
 dashboard_groups:
 - dashboard_names:
   - kubevirt-presubmits
+  - kubevirt-periodics
   name: kubevirt
 dashboards:
 - dashboard_tab:
@@ -60,23 +61,37 @@ dashboards:
     test_group_name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
   - code_search_url_template:
       url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
-    name: pull-kubevirt-gosec
-    open_bug_template:
-      url: https://github.com/kubevirt/project-infra/issues/
-    test_group_name: pull-kubevirt-gosec
-  - code_search_url_template:
-      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
     name: pull-kubevirt-unit-test
     open_bug_template:
       url: https://github.com/kubevirt/project-infra/issues/
     test_group_name: pull-kubevirt-unit-test
+  name: kubevirt-presubmits
+- dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
-    name: pull-kubevirt-goveralls
+    name: periodic-kubevirt-e2e-k8s-latest
     open_bug_template:
       url: https://github.com/kubevirt/project-infra/issues/
-    test_group_name: pull-kubevirt-goveralls
-  name: kubevirt-presubmits
+    test_group_name: periodic-kubevirt-e2e-k8s-latest
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: periodic-kubevirt-e2e-k8s-prev
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: periodic-kubevirt-e2e-k8s-prev
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: periodic-kubevirt-e2e-k8s-prev-prev
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: periodic-kubevirt-e2e-k8s-prev-prev
+  - code_search_url_template:
+      url: https://github.com/kubevirt/project-infra/compare/<start-custom-0>...<end-custom-0>
+    name: periodic-kubevirt-push-nightly-conformance
+    open_bug_template:
+      url: https://github.com/kubevirt/project-infra/issues/
+    test_group_name: periodic-kubevirt-push-nightly-conformance
+  name: kubevirt-periodics
 test_groups:
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20
   name: pull-kubevirt-e2e-k8s-1.20
@@ -96,9 +111,17 @@ test_groups:
   name: pull-kubevirt-check-tests-for-flakes
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17-rook-ceph
   name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
-- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-gosec
-  name: pull-kubevirt-gosec
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-unit-test
   name: pull-kubevirt-unit-test
-- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-goveralls
-  name: pull-kubevirt-goveralls
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-latest
+  name: periodic-kubevirt-e2e-k8s-latest
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev
+  name: periodic-kubevirt-e2e-k8s-prev
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev-prev
+  name: periodic-kubevirt-e2e-k8s-prev-prev
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-push-nightly-conformance
+  name: periodic-kubevirt-push-nightly-conformance
