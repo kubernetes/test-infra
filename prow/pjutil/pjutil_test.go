@@ -24,6 +24,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -46,35 +47,47 @@ func TestPostsubmitSpec(t *testing.T) {
 		expected prowapi.ProwJobSpec
 	}{
 		{
-			name: "can override path alias and cloneuri",
+			name: "can override fields",
 			p: config.Postsubmit{
 				JobBase: config.JobBase{
 					UtilityConfig: config.UtilityConfig{
-						PathAlias: "foo",
-						CloneURI:  "bar",
+						PathAlias:      "foo",
+						CloneURI:       "bar",
+						SkipSubmodules: true,
+						CloneDepth:     7,
+						SkipFetchHead:  true,
 					},
 				},
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+					PathAlias:      "foo",
+					CloneURI:       "bar",
+					SkipSubmodules: true,
+					CloneDepth:     7,
+					SkipFetchHead:  true,
 				},
 				Report: true,
 			},
 		},
 		{
-			name: "controller can default path alias and cloneuri",
+			name: "controller can default fields",
 			refs: prowapi.Refs{
-				PathAlias: "fancy",
-				CloneURI:  "cats",
+				PathAlias:      "fancy",
+				CloneURI:       "cats",
+				SkipSubmodules: true,
+				CloneDepth:     8,
+				SkipFetchHead:  true,
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "fancy",
-					CloneURI:  "cats",
+					PathAlias:      "fancy",
+					CloneURI:       "cats",
+					SkipSubmodules: true,
+					CloneDepth:     8,
+					SkipFetchHead:  true,
 				},
 				Report: true,
 			},
@@ -84,20 +97,23 @@ func TestPostsubmitSpec(t *testing.T) {
 			p: config.Postsubmit{
 				JobBase: config.JobBase{
 					UtilityConfig: config.UtilityConfig{
-						PathAlias: "foo",
-						CloneURI:  "bar",
+						PathAlias:  "foo",
+						CloneDepth: 3,
+						CloneURI:   "bar",
 					},
 				},
 			},
 			refs: prowapi.Refs{
-				PathAlias: "fancy",
-				CloneURI:  "cats",
+				PathAlias:  "fancy",
+				CloneDepth: 1,
+				CloneURI:   "cats",
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+					PathAlias:  "foo",
+					CloneDepth: 3,
+					CloneURI:   "bar",
 				},
 				Report: true,
 			},
@@ -105,10 +121,12 @@ func TestPostsubmitSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := PostsubmitSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := PostsubmitSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("PostsubmitSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -179,10 +197,12 @@ func TestPresubmitSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := PresubmitSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := PresubmitSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("PresubmitSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -250,10 +270,90 @@ func TestBatchSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := BatchSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := BatchSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("BatchSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCompletePrimaryRefs(t *testing.T) {
+	cases := []struct {
+		name     string
+		refs     prowapi.Refs
+		jobBase  config.JobBase
+		expected prowapi.Refs
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name: "use values from refs",
+			refs: prowapi.Refs{
+				PathAlias:      "this",
+				CloneURI:       "that",
+				SkipSubmodules: true,
+				CloneDepth:     1,
+				SkipFetchHead:  true,
+			},
+			expected: prowapi.Refs{
+				PathAlias:      "this",
+				CloneURI:       "that",
+				SkipSubmodules: true,
+				CloneDepth:     1,
+				SkipFetchHead:  true,
+			},
+		},
+		{
+			name: "use values from job base",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias:      "more",
+					CloneURI:       "fun",
+					SkipSubmodules: true,
+					CloneDepth:     2,
+					SkipFetchHead:  true,
+				},
+			},
+			expected: prowapi.Refs{
+				PathAlias:      "more",
+				CloneURI:       "fun",
+				SkipSubmodules: true,
+				CloneDepth:     2,
+				SkipFetchHead:  true,
+			},
+		},
+		{
+			name: "prefer job base values",
+			refs: prowapi.Refs{
+				PathAlias:  "this",
+				CloneURI:   "that",
+				CloneDepth: 1,
+			},
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias:  "more",
+					CloneURI:   "fun",
+					CloneDepth: 2,
+				},
+			},
+			expected: prowapi.Refs{
+				PathAlias:  "more",
+				CloneURI:   "fun",
+				CloneDepth: 2,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := CompletePrimaryRefs(tc.refs, tc.jobBase)
+			if diff := cmp.Diff(actual, &tc.expected); diff != "" {
+				t.Errorf("CompletePrimaryRefs() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 

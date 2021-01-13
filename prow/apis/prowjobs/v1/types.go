@@ -796,6 +796,10 @@ type Refs struct {
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
 	CloneDepth int `json:"clone_depth,omitempty"`
+	// SkipFetchHead tells prow to avoid a git fetch <remote> call.
+	// Multiheaded repos may need to not make this call.
+	// The git fetch <remote> <BaseRef> call occurs regardless.
+	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 }
 
 func (r Refs) String() string {
