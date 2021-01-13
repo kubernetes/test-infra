@@ -111,7 +111,6 @@ periodics:
         - --project=k8s-artifacts-prod
         - --bucket=k8s-artifacts-prod-vuln-dashboard
         - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
-        - --log-level=debug
       resources:
         requests:
           cpu: 2
