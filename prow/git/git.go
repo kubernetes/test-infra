@@ -179,7 +179,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
+		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
