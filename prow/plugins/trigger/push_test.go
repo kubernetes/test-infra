@@ -48,6 +48,7 @@ func TestCreateRefs(t *testing.T) {
 	expected := prowapi.Refs{
 		Org:      "kubernetes",
 		Repo:     "repo",
+		RepoLink: "https://example.com/kubernetes/repo",
 		BaseRef:  "master",
 		BaseSHA:  "abcdef",
 		BaseLink: "https://example.com/kubernetes/repo/compare/abcdee...abcdef",
