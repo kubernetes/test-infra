@@ -2683,7 +2683,7 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 }
 
 func TestGetDirectory(t *testing.T) {
-	expectedContents := []Content{
+	expectedContents := []DirectoryContent{
 		{
 			Type: "file",
 			Name: "bar",
@@ -2724,7 +2724,7 @@ func TestGetDirectory(t *testing.T) {
 }
 
 func TestGetDirectoryRef(t *testing.T) {
-	expectedContents := []Content{
+	expectedContents := []DirectoryContent{
 		{
 			Type: "file",
 			Name: "bar.go",

@@ -161,7 +161,7 @@ type RepositoryClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
-	GetDirectory(org, repo, dirpath, commit string) ([]Content, error)
+	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) (string, error)
@@ -3006,15 +3006,15 @@ func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	durationLogger := c.log("GetFile", org, repo, filepath, commit)
 	defer durationLogger()
 
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
 	if commit != "" {
-		url = fmt.Sprintf("%s?ref=%s", url, commit)
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
 	}
 
 	var res Content
 	code, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      url,
+		path:      path,
 		org:       org,
 		exitCodes: []int{200, 404},
 	}, &res)
@@ -4174,19 +4174,19 @@ func (c *client) GetApp() (*App, error) {
 // If commit is empty, it will grab content from repo's default branch, usually master.
 //
 // See https://developer.github.com/v3/repos/contents/#get-contents
-func (c *client) GetDirectory(org, repo, dirpath, commit string) ([]Content, error) {
+func (c *client) GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error) {
 	durationLogger := c.log("GetDirectory", org, repo, dirpath, commit)
 	defer durationLogger()
 
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, dirpath)
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, dirpath)
 	if commit != "" {
-		url = fmt.Sprintf("%s?ref=%s", url, commit)
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
 	}
 
-	var res []Content
+	var res []DirectoryContent
 	code, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      url,
+		path:      path,
 		org:       org,
 		exitCodes: []int{200, 404},
 	}, &res)

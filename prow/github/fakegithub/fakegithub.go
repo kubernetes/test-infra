@@ -87,7 +87,7 @@ type FakeClient struct {
 
 	// Fake remote git storage. Directory name are keys
 	// and values map SHA to directory content
-	RemoteDirectories map[string]map[string][]github.Content
+	RemoteDirectories map[string]map[string][]github.DirectoryContent
 
 	// A list of refs that got deleted via DeleteRef
 	RefsDeleted []struct{ Org, Repo, Ref string }
@@ -764,7 +764,7 @@ func (f *FakeClient) Query(ctx context.Context, q interface{}, vars map[string]i
 }
 
 // GetDirectory returns the contents of the file.
-func (f *FakeClient) GetDirectory(org, repo, dir, commit string) ([]github.Content, error) {
+func (f *FakeClient) GetDirectory(org, repo, dir, commit string) ([]github.DirectoryContent, error) {
 	contents, ok := f.RemoteDirectories[dir]
 	if !ok {
 		return nil, fmt.Errorf("could not find dir %s", dir)

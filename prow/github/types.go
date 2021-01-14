@@ -943,13 +943,10 @@ type DraftReviewComment struct {
 	Body     string `json:"body"`
 }
 
-// Content contains information about a github file/directory.
+// Content is some base64 encoded github file content
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Path    string `json:"path"`
 }
 
 const (
@@ -1327,4 +1324,12 @@ type AppInstallationToken struct {
 	ExpiresAt    time.Time               `json:"expires_at,omitempty"`
 	Permissions  InstallationPermissions `json:"permissions,omitempty"`
 	Repositories []Repo                  `json:"repositories,omitempty"`
+}
+
+// DirectoryContent contains information about a github directory.
+type DirectoryContent struct {
+	SHA  string `json:"sha"`
+	Type string `json:"type"`
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
