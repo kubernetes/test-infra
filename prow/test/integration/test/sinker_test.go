@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package e2e
+package integration
 
 import (
 	"context"
@@ -117,12 +117,11 @@ func TestDeletePod(t *testing.T) {
 			})
 
 			if tt.hasCR {
-				t.Logf("Creating CRD: %s", tt.name)
-
+				t.Logf("Creating prowjob: %s", tt.name)
 				if err := kubeClient.Create(ctx, &prowjob); err != nil {
 					t.Fatalf("Failed creating prowjob: %v", err)
 				}
-				t.Logf("Finished creating CRD: %s", tt.name)
+				t.Logf("Finished creating prowjob: %s", tt.name)
 			}
 			// Create pod
 			t.Logf("Creating pod: %s", tt.name)

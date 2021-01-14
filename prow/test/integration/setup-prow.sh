@@ -15,7 +15,7 @@
 
 set -o errexit
 
-CURRENT_REPO="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 
 CONTEXT="$(kubectl config current-context)"
 if [[ -z "${CONTEXT}" ]]; then
@@ -37,8 +37,8 @@ kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
   --timeout=180s
 
 echo "Deploy prow components"
-kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_REPO}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
-kubectl --context=${CONTEXT} apply -f ${CURRENT_REPO}/prow/cluster
+kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_DIR}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
+kubectl --context=${CONTEXT} apply -f ${CURRENT_DIR}/prow/cluster
 
 echo "Waiting for prow components"
 for pod in sinker; do
@@ -49,6 +49,6 @@ for pod in sinker; do
 done
 
 echo "Push test image to registry"
-docker pull busybox
-docker tag busybox:latest localhost:5000/busybox:latest
+docker pull gcr.io/k8s-prow/alpine
+docker tag gcr.io/k8s-prow/alpine:latest localhost:5000/busybox:latest
 docker push localhost:5000/busybox:latest

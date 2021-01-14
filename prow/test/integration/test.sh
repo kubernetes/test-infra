@@ -25,7 +25,7 @@ if ! which kind >/dev/null 2>&1; then
 fi
 
 # TODO(chaodaiG): remove this once bazel is installed in test image
-if [[ ! -f "/usr/local/lib/bazel/bin/bazel-3.0.0-linux-x86_64" ]]; then
+if ! which bazel >/dev/null 2>&1 || [[ "$(bazel --version)" != "bazel 3.0.0" ]]; then
   echo "Install bazel for prow"
   mkdir -p "/usr/local/lib/bazel/bin"
   pushd "/usr/local/lib/bazel/bin" >/dev/null

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package e2e
+package integration
 
 import (
 	"crypto/rand"
@@ -28,7 +28,6 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -67,15 +66,6 @@ func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error
 		return nil, fmt.Errorf("failed create rest config: %v", err)
 	}
 	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
-}
-
-func NewClientsFromConfig(cfg *rest.Config) (*kubernetes.Clientset, error) {
-	kubeClient, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return kubeClient, nil
 }
 
 func BuildClientConfig(kubeConfigPath, clusterName string) (*rest.Config, error) {
