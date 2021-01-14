@@ -1,4 +1,3 @@
-// +build e2etest
 /*
 Copyright 2020 The Kubernetes Authors.
 
@@ -42,7 +41,7 @@ func getClusterContext() string {
 
 func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error) {
 	var loader clientcmd.ClientConfigLoader
-	if configPath != "" { // load from --kubeconfig
+	if configPath != "" {
 		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath}
 	} else {
 		loader = clientcmd.NewDefaultClientConfigLoadingRules()
@@ -52,6 +51,7 @@ func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error
 	// Override the cluster name if provided.
 	if clusterName != "" {
 		overrides.Context.Cluster = clusterName
+		overrides.CurrentContext = clusterName
 	}
 
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(

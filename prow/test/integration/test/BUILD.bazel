@@ -4,7 +4,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_test(
     name = "go_default_test",
-    srcs = ["sinker_test.go"],
+    srcs = [
+        "overall_test.go",
+        "sinker_test.go",
+    ],
     data = [
         "//prow/test/integration/test:all-srcs",
     ],

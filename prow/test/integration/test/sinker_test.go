@@ -1,4 +1,3 @@
-// +build e2etest
 /*
 Copyright 2020 The Kubernetes Authors.
 
@@ -100,8 +99,8 @@ func TestDeletePod(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:  "busybox",
-							Image: "localhost:5000/busybox",
+							Name:  "alpine",
+							Image: "localhost:5000/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -116,13 +115,12 @@ func TestDeletePod(t *testing.T) {
 				kubeClient.Delete(ctx, &pod)
 			})
 
-			if tt.hasCR {
-				t.Logf("Creating prowjob: %s", tt.name)
-				if err := kubeClient.Create(ctx, &prowjob); err != nil {
-					t.Fatalf("Failed creating prowjob: %v", err)
-				}
-				t.Logf("Finished creating prowjob: %s", tt.name)
+			t.Logf("Creating prowjob: %s", tt.name)
+			if err := kubeClient.Create(ctx, &prowjob); err != nil {
+				t.Fatalf("Failed creating prowjob: %v", err)
 			}
+			t.Logf("Finished creating prowjob: %s", tt.name)
+
 			// Create pod
 			t.Logf("Creating pod: %s", tt.name)
 			if err := kubeClient.Create(ctx, &pod); err != nil {
@@ -145,6 +143,13 @@ func TestDeletePod(t *testing.T) {
 				t.Fatalf("Pod was not created successfully: %v", err)
 			}
 			t.Logf("Pod is running: %s", tt.name)
+
+			// Delete prowjob if CR isn't supposed to have existed
+			if !tt.hasCR {
+				if err := kubeClient.Delete(ctx, &prowjob); err != nil {
+					t.Fatalf("Failed deleting prowjob: %v", err)
+				}
+			}
 
 			// Make sure pod is deleted, it'll take roughly 2 minutes
 			// Don't care about the outcome, will check later

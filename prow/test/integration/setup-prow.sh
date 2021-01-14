@@ -50,5 +50,5 @@ done
 
 echo "Push test image to registry"
 docker pull gcr.io/k8s-prow/alpine
-docker tag gcr.io/k8s-prow/alpine:latest localhost:5000/busybox:latest
-docker push localhost:5000/busybox:latest
+docker tag gcr.io/k8s-prow/alpine:latest localhost:5000/alpine:latest
+docker push localhost:5000/alpine:latest

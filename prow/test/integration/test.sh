@@ -49,4 +49,4 @@ trap 'dump_prow_pod_log' EXIT
 "${CURRENT_DIR}/setup-cluster.sh" "$@"
 "${CURRENT_DIR}/setup-prow.sh" "$@"
 
-bazel test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_tag_filters=e2e "$@"
+bazel test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_arg=--run-integration-test "$@"
