@@ -24,8 +24,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -433,7 +433,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var clientPJs []ctrlruntimeclient.Object
+			var clientPJs []runtime.Object
 			var origPJs []prowv1.ProwJob
 			for i := range tc.pjs {
 				clientPJs = append(clientPJs, &tc.pjs[i])

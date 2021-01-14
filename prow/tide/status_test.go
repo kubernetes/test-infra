@@ -27,7 +27,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/runtime"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -56,7 +56,7 @@ func TestExpectedStatus(t *testing.T) {
 		checkRuns         []CheckRun
 		inPool            bool
 		blocks            []int
-		prowJobs          []ctrlruntimeclient.Object
+		prowJobs          []runtime.Object
 		requiredContexts  []string
 		mergeConflicts    bool
 
@@ -435,7 +435,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -474,7 +474,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar", "baz"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -527,7 +527,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar", "baz"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -583,7 +583,7 @@ func TestExpectedStatus(t *testing.T) {
 				strings.Repeat("very-long-context", 8),
 				strings.Repeat("also-long-content", 8),
 			},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{

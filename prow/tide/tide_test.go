@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -1150,7 +1151,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		nones           []int
 		batchMerges     []int
 		presubmits      map[int][]config.Presubmit
-		preExistingJobs []ctrlruntimeclient.Object
+		preExistingJobs []runtime.Object
 		mergeErrs       map[int]error
 
 		merged           int
@@ -1380,7 +1381,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1417,7 +1418,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1458,7 +1459,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -3617,7 +3618,7 @@ func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string, state
 	return pj
 }
 
-func newFakeManager(objs ...ctrlruntimeclient.Object) *fakeManager {
+func newFakeManager(objs ...runtime.Object) *fakeManager {
 	client := &indexingClient{
 		Client:     fakectrlruntimeclient.NewFakeClient(objs...),
 		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},

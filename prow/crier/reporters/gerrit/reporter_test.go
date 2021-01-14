@@ -28,8 +28,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1041,7 +1041,7 @@ func TestReport(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fgc := &fgc{instance: "gerrit"}
-			allpj := []ctrlruntimeclient.Object{tc.pj}
+			allpj := []runtime.Object{tc.pj}
 			for idx, pj := range tc.existingPJs {
 				pj.Name = strconv.Itoa(idx)
 				allpj = append(allpj, pj)
