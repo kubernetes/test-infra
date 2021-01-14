@@ -226,17 +226,18 @@ presets:
     value: 50
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
     value: true
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
+  # Deprecated. Should be removed after 1.20 branch will be removed from testing
 - labels:
     preset-e2e-scalability-containerd: "true"
   env:
   - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
     value: "10m"
   - name: KUBE_CONTAINER_RUNTIME
-    value: "containerd"
-  - name: LOG_DUMP_SAVE_SERVICES
     value: "containerd"
 
 ###### Scalability Envs
