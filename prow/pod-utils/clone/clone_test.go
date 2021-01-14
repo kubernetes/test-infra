@@ -25,8 +25,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestPathForRefs(t *testing.T) {
@@ -614,19 +615,73 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
+		{
+			name: "support fetching repo with multiple heads",
+			refs: prowapi.Refs{
+				Org:           "org",
+				Repo:          "repo",
+				BaseRef:       "master",
+				BaseSHA:       "abcdef",
+				RepoLink:      "https://github.enterprise.com/org/repo",
+				SkipFetchHead: true, // no single HEAD
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
+			name: "support shallow fetching repo with multiple heads",
+			refs: prowapi.Refs{
+				Org:           "org",
+				Repo:          "repo",
+				BaseRef:       "master",
+				BaseSHA:       "abcdef",
+				RepoLink:      "https://github.enterprise.com/org/repo",
+				SkipFetchHead: true, // no single HEAD
+				CloneDepth:    2,
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
 	}
 
+	allow := cmp.AllowUnexported(retryCommand{}, cloneCommand{})
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env, testCase.oauthToken)
 			actualBase := g.commandsForBaseRef(testCase.refs, testCase.gitUserName, testCase.gitUserEmail, testCase.cookiePath)
-			if !reflect.DeepEqual(actualBase, testCase.expectedBase) {
-				t.Errorf("generated incorrect commands:\nGot: %#v\nExpected:%#v", actualBase, testCase.expectedBase)
+			if diff := cmp.Diff(actualBase, testCase.expectedBase, allow); diff != "" {
+				t.Errorf("commandsForBaseRef() got unexpected diff (-got, +want):\n%s", diff)
 			}
 
 			actualPull := g.commandsForPullRefs(testCase.refs, fakeTimestamp)
-			if !reflect.DeepEqual(actualPull, testCase.expectedPull) {
-				t.Errorf("generated incorrect commands: %v", diff.ObjectGoPrintDiff(testCase.expectedPull, actualPull))
+			if diff := cmp.Diff(actualPull, testCase.expectedPull, allow); diff != "" {
+				t.Errorf("commandsForPullRefs() got unexpected diff (-got, +want):\n%s", diff)
 			}
 		})
 	}
