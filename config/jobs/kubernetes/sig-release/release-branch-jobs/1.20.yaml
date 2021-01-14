@@ -1210,7 +1210,7 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
+        - --repo=k8s.io/perf-tests=release-1.20
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=120
