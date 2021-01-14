@@ -100,6 +100,19 @@ gs://<bucket path>: #bucket url
 
 A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L203-L210) runs that pushes Kettle on changes.
 
+# PubSub
+
+Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes. These events are tied to the `gcs-changes` Topic in the `kubernetes-jenkins` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
+
+[Subscriptions] are in Kuberenetes Jenkins Build - PubSub.
+- kettle
+- kettle-staging
+
+They are split so that the staging instance does not consume events aimed at production.
+
+### Auth
+For kettle to have permisions, kettle's user needs access. When updating or changing a [Subscription] make sure to add `kettle@k8s-gubernator.iam.gserviceaccount.com` as a `PubSub Editor`.
+
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
@@ -107,3 +120,5 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 [Big Query Tables]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
 [Big Query All]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator
 [Big Query Staging]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=staging&d=build&p=k8s-gubernator
+[PubSub]: https://cloud.google.com/pubsub/docs
+[Subscriptions]: https://console.cloud.google.com/cloudpubsub/subscription/list?project=kubernetes-jenkins
