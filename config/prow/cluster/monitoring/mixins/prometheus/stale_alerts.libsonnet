@@ -9,12 +9,12 @@
             expr: |||
               time()-max(prow_version) > %d * 24 * 3600
             ||| % $._config.prowImageStaleByDays.daysStale,
-            'for': $._config.prowImageStaleByDays.hoursToTrigger,
+            'for': $._config.prowImageStaleByDays.eventDuration,
             labels: {
               severity: 'critical',
             },
             annotations: {
-              message: 'The prow images are older than %(daysStale)d days for %(hoursToTrigger)s.' % ($._config.prowImageStaleByDays),
+              message: 'The prow images are older than %(daysStale)d days for %(eventDuration)s.' % ($._config.prowImageStaleByDays),
             },
           }
         ],

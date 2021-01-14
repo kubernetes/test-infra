@@ -39,7 +39,7 @@
           ),
         },
       prowImageStaleByDays+: default(config.prowImageStaleByDays, 'daysStale', 7)
-        + default(config.prowImageStaleByDays, 'hoursToTrigger', '24h'),
+        + default(config.prowImageStaleByDays, 'eventDuration', '24h'),
     }
   ),
 }
