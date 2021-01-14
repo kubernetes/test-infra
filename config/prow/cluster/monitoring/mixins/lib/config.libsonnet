@@ -67,7 +67,7 @@ local config = {
   webhookMissingAlertInterval: '10m',
 
   // How many days prow hasn't been bumped.
-  prowImageStaleByDays: 7,
+  prowImageStaleByDays: {daysStale: 7, eventDuration: '24h'},
 };
 
 // Generate the real config by adding in constant fields and defaulting where needed.
