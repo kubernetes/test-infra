@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -66,6 +67,10 @@ type fakeRepoOwners struct {
 	approvers    map[string]layeredsets.String
 	reviewers    map[string]layeredsets.String
 	dirBlacklist []*regexp.Regexp
+}
+
+func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 type fakePruner struct {

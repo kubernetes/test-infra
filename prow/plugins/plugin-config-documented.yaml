@@ -413,6 +413,13 @@ override:
 
 # Owners contains configuration related to handling OWNERS files.
 owners:
+    # Filenames allows configuring repos to use a separate set of filenames for
+    # any plugin that interacts with these files. Keys are in "org/repo" format.
+    filenames:
+        "":
+            owners: ' '
+            owners_aliases: ' '
+
     # LabelsBlackList holds a list of labels that should not be present in any
     # OWNERS file, preventing their automatic addition by the owners-label plugin.
     # This check is performed by the verify-owners plugin.

@@ -17,16 +17,17 @@ limitations under the License.
 package approvers
 
 import (
+	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/pkg/layeredsets"
 
-	"path/filepath"
-	"reflect"
-	"strings"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
@@ -37,6 +38,10 @@ type FakeRepo struct {
 	approversMap      map[string]layeredsets.String
 	leafApproversMap  map[string]sets.String
 	noParentOwnersMap map[string]bool
+}
+
+func (f FakeRepo) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 func (f FakeRepo) Approvers(path string) layeredsets.String {

@@ -29,12 +29,11 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
-	pluginName            = "heart"
-	ownersFilename        = "OWNERS"
-	ownersAliasesFilename = "OWNERS_ALIASES"
+	pluginName = "heart"
 )
 
 var reactions = []string{
@@ -99,7 +98,7 @@ func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre)
+	return handlePR(getClient(pc), pre, pc.PluginConfig.OwnersFilenames)
 }
 
 func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.IssueCommentEvent) error {
@@ -130,7 +129,7 @@ func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.Is
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(c client, pre github.PullRequestEvent) error {
+func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resolver) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
@@ -147,7 +146,8 @@ func handlePR(c client, pre github.PullRequestEvent) error {
 	// Smile at any change that adds to OWNERS files
 	for _, change := range changes {
 		_, filename := filepath.Split(change.Filename)
-		if (filename == ownersFilename || filename == ownersAliasesFilename) && change.Additions > 0 {
+		filenames := resolver(org, repo)
+		if (filename == filenames.Owners || filename == filenames.OwnersAliases) && change.Additions > 0 {
 			c.Logger.Info("Adding new OWNERS makes me happy!")
 			return c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,
