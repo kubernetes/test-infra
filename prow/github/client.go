@@ -1919,7 +1919,7 @@ func (c *client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		exitCodes:   []int{201},
 	}, &resp)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create pull request against %s/%s#%s from %s: %v", org, repo, head, base, err)
 	}
 	return resp.Num, nil
 }
