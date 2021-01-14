@@ -14,7 +14,7 @@
               severity: 'critical',
             },
             annotations: {
-              message: 'The prow images are older than %d days.' % $._config.prowImageStaleByDays.daysStale,
+              message: 'The prow images are older than %(daysStale)d days for %(hoursToTrigger)s.' % ($._config.prowImageStaleByDays),
             },
           }
         ],
