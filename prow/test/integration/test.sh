@@ -17,6 +17,16 @@ set -o errexit
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 
+function dump_prow_pod_log() {
+  local log_dir="${ARTIFACTS}/prow_pod_logs"
+  if [[ -n "${ARTIFACTS:-}" && -d "${ARTIFACTS}" ]]; then
+    mkdir -p "${log_dir}"
+    for svc in sinker; do
+      kubectl logs svc/$svc >"${log_dir}/${svc}.log"
+    done
+  fi
+}
+
 # TODO(chaodaiG): remove this once kind is installed in test image
 if ! which kind >/dev/null 2>&1; then
   echo "Install KIND for prow"
@@ -33,6 +43,8 @@ if ! which bazel >/dev/null 2>&1 || [[ "$(bazel --version)" != "bazel 3.0.0" ]];
   chmod +x bazel-3.0.0-linux-x86_64
   popd
 fi
+
+trap 'dump_prow_pod_log' EXIT
 
 "${CURRENT_DIR}/setup-cluster.sh" "$@"
 "${CURRENT_DIR}/setup-prow.sh" "$@"

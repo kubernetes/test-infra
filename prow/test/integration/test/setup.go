@@ -22,14 +22,9 @@ import (
 	"crypto/sha256"
 	"flag"
 	"fmt"
-	"os"
-	"os/user"
-	"path"
-	"strings"
 	"testing"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -45,38 +40,26 @@ func getClusterContext() string {
 	return *clusterContext
 }
 
-func getDefaultKubeconfig(cfg string) string {
-	if cfg := strings.TrimSpace(cfg); cfg != "" {
-		return cfg
-	}
-	defaultKubeconfig := os.Getenv("KUBECONFIG")
-
-	// If KUBECONFIG env var isn't set then look for $HOME/.kube/config
-	if defaultKubeconfig == "" {
-		if usr, err := user.Current(); err == nil {
-			defaultKubeconfig = path.Join(usr.HomeDir, ".kube/config")
-		}
-	}
-	return defaultKubeconfig
-}
-
 func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error) {
-	cfg, err := BuildClientConfig(getDefaultKubeconfig(configPath), clusterName)
-	if err != nil {
-		return nil, fmt.Errorf("failed create rest config: %v", err)
+	var loader clientcmd.ClientConfigLoader
+	if configPath != "" { // load from --kubeconfig
+		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath}
+	} else {
+		loader = clientcmd.NewDefaultClientConfigLoadingRules()
 	}
-	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
-}
 
-func BuildClientConfig(kubeConfigPath, clusterName string) (*rest.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}
 	// Override the cluster name if provided.
 	if clusterName != "" {
 		overrides.Context.Cluster = clusterName
 	}
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath},
-		&overrides).ClientConfig()
+
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		loader, &overrides).ClientConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed create rest config: %v", err)
+	}
+	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }
 
 // RandomString generates random string of 32 characters in length, and fail if it failed
