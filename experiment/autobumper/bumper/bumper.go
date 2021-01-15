@@ -642,6 +642,7 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
 	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
+		logrus.Info("fetchStderr is : ", fetchStderr.String())
 		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
 			return fmt.Errorf("failed to fetch from fork: %w", err)
 		}
