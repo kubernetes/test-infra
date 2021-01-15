@@ -134,6 +134,22 @@ func TestValidateOptions(t *testing.T) {
 			prefixes:      &latestPrefixes,
 			err:           true,
 		},
+		{
+			name:                "don't use default upstreamURLbase if not needed for upstream",
+			upstreamURLBase:     &whateverStr,
+			targetVersion:       &upstreamVersion,
+			prefixes:            &upstreamPrefixes,
+			err:                 false,
+			upstreamBaseChanged: false,
+		},
+		{
+			name:                "don't use default upstreamURLbase if not neededfor upstreamStaging",
+			upstreamURLBase:     &whateverStr,
+			targetVersion:       &stagingVersion,
+			prefixes:            &upstreamPrefixes,
+			err:                 false,
+			upstreamBaseChanged: false,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -190,6 +206,9 @@ func TestValidateOptions(t *testing.T) {
 			}
 			if tc.upstreamBaseChanged && defaultOption.UpstreamURLBase != defaultUpstreamURLBase {
 				t.Errorf("UpstreamURLBase should have been changed to %q, but was %q", defaultOption.UpstreamURLBase, defaultUpstreamURLBase)
+			}
+			if !tc.upstreamBaseChanged && defaultOption.UpstreamURLBase == defaultUpstreamURLBase {
+				t.Errorf("UpstreamURLBase should not have been changed to default, but was")
 			}
 		})
 	}
