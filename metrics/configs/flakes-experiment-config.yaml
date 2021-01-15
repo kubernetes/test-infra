@@ -75,9 +75,10 @@ query: |
                 select as struct
                   i
                 from t.metadata i
-                where (i.key = 'repos' or repos is not null) and
-                array_length(split(replace(ifnull(t.repos, i.value),', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
-              )
+                where (i.key = 'repos') and
+                array_length(split(replace(i.value,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+               )
+               or array_length(split(replace(t.repos,', ', ''), ',')) = 2
             )
         )
         group by job, commit
