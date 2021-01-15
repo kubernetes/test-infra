@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "prow_push", "tags")
+load("//def:image.bzl", image_tags = "tags")
 
 prow_push(
     name = "release-push",
@@ -52,6 +53,17 @@ prow_push(
             "configurator": "//testgrid/cmd/configurator:image",
             "transfigure": "//testgrid/cmd/transfigure:image",
             "gcsweb": "//gcsweb/cmd/gcsweb:image",
+        },
+    ),
+)
+
+prow_push(
+    name = "testimage-push",
+    bundle_name = "testimage",
+    images = image_tags(
+        targets = {
+            # Local registry as documented: https://kind.sigs.k8s.io/docs/user/local-registry/
+            "localhost:5000/sinker": "//prow/cmd/sinker:image",
         },
     ),
 )
