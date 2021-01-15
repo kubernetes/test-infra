@@ -333,6 +333,8 @@ milestone_applier:
     master: v1.21
   kubernetes/test-infra:
     master: v1.21
+  kubernetes/k8s.io:
+    master: v1.21
   kubernetes/kops:
     master: v1.20
     release-1.19: v1.19
@@ -802,6 +804,10 @@ plugins:
   - milestoneapplier
   - require-matching-label
   - stage
+
+  kubernetes/k8s.io:
+  - milestone
+  - milestoneapplier
 
   kubernetes/kops:
   - mergecommitblocker
