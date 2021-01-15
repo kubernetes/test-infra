@@ -765,6 +765,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
@@ -801,18 +802,15 @@ plugins:
   kubernetes/enhancements:
   - blockade
   - milestone
-  - milestoneapplier
   - require-matching-label
   - stage
 
   kubernetes/k8s.io:
   - milestone
-  - milestoneapplier
 
   kubernetes/kops:
   - mergecommitblocker
   - milestone
-  - milestoneapplier
 
   kubernetes/kubeadm:
   - milestone
@@ -825,7 +823,6 @@ plugins:
   - cherry-pick-unapproved
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - milestonestatus
   - override
   - release-note
@@ -841,7 +838,6 @@ plugins:
   - blockade
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - release-note
   - require-matching-label
@@ -849,7 +845,6 @@ plugins:
   kubernetes/sig-release:
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - require-matching-label
 
@@ -859,7 +854,6 @@ plugins:
   kubernetes/test-infra:
   - config-updater
   - milestone
-  - milestoneapplier
   - override
   - project
 
@@ -868,7 +862,6 @@ plugins:
 
   kubernetes/website:
   - milestone
-  - milestoneapplier
   - project
   - require-matching-label
 
@@ -942,6 +935,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
@@ -986,7 +980,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
@@ -994,7 +987,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-gcp:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
@@ -1002,7 +994,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
