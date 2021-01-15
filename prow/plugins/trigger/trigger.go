@@ -294,12 +294,16 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
+}
+
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, millisecondOverride ...time.Duration) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj); err != nil {
+		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj, millisecondOverride...); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")
 			errors = append(errors, err)
 		}

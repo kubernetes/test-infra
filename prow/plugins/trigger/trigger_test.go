@@ -181,7 +181,7 @@ func TestRunRequested(t *testing.T) {
 				Logger:        logrus.WithField("testcase", testCase.name),
 			}
 
-			err := RunRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
+			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", time.Nanosecond)
 			if err == nil && testCase.expectedErr {
 				t.Error("failed to receive an error")
 			}

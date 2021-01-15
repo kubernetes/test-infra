@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -258,7 +259,7 @@ func TestReconcile(t *testing.T) {
 				err: test.reportErr,
 			}
 
-			var prowjobs []ctrlruntimeclient.Object
+			var prowjobs []runtime.Object
 			if test.job != nil {
 				prowjobs = append(prowjobs, test.job)
 				test.job.Name = toReconcile

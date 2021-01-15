@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -101,7 +102,7 @@ func (unreachableCluster) Patch(_ context.Context, _ ctrlruntimeclient.Object, _
 
 func TestClean(t *testing.T) {
 
-	pods := []ctrlruntimeclient.Object{
+	pods := []runtime.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-running-pod-failed",
@@ -486,7 +487,7 @@ func TestClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []ctrlruntimeclient.Object{
+	prowJobs := []runtime.Object{
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete",
@@ -695,7 +696,7 @@ func TestClean(t *testing.T) {
 		"oldest-periodic",
 		"old-failed-trusted",
 	)
-	podsTrusted := []ctrlruntimeclient.Object{
+	podsTrusted := []runtime.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed-trusted",
@@ -751,7 +752,7 @@ func TestClean(t *testing.T) {
 
 func TestNotClean(t *testing.T) {
 
-	pods := []ctrlruntimeclient.Object{
+	pods := []runtime.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-succeeded",
@@ -767,7 +768,7 @@ func TestNotClean(t *testing.T) {
 			},
 		},
 	}
-	podsExcluded := []ctrlruntimeclient.Object{
+	podsExcluded := []runtime.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-succeeded-on-excluded-cluster",
@@ -787,7 +788,7 @@ func TestNotClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []ctrlruntimeclient.Object{
+	prowJobs := []runtime.Object{
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete",
