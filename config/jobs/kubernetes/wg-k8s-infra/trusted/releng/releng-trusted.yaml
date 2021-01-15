@@ -112,6 +112,7 @@ periodics:
         - --bucket=k8s-artifacts-prod-vuln-dashboard
         - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
         - --page-size=1000
+        - --registry-hostname=us.gcr.io
       resources:
         requests:
           cpu: 4
