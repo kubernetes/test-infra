@@ -219,7 +219,7 @@ func validateOptions(o *Options) error {
 			}
 		}
 	}
-	if o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion && o.UpstreamURLBase == "" {
+	if (o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion) && o.UpstreamURLBase == "" {
 		o.UpstreamURLBase = defaultUpstreamURLBase
 		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
 	}
