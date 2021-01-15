@@ -42,7 +42,7 @@ MAX_WIDTH = 2000000000
 def main(testgrid_config, prow_dir):
     with open(testgrid_config, "r") as config_fp:
         config = ruamel.yaml.load(config_fp,
-                                  Loader=ruamel.yaml.RoundTripLoader,
+                                  Loader=ruamel.yaml.SafeLoader,
                                   preserve_quotes=True)
 
     for dashboard in config["dashboards"]:
@@ -75,7 +75,7 @@ def move_tab(dashboard, dash_tab, prow_dir):
 
     with open(prow_job_file_name, "r") as job_fp:
         prow_config = ruamel.yaml.load(job_fp,
-                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       Loader=ruamel.yaml.SafeLoader,
                                        preserve_quotes=True)
 
     # For each presubmits, postsubmits, periodic:
@@ -121,7 +121,7 @@ def move_group(config, group, prow_dir):
 
     with open(prow_job_file_name, "r") as job_fp:
         prow_config = ruamel.yaml.load(job_fp,
-                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       Loader=ruamel.yaml.SafeLoader,
                                        preserve_quotes=True)
 
     # For each presubmit, postsubmit, and periodic
