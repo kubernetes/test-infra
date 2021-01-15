@@ -1,4 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-
+reviewers:
+- chaodaiG
+- fejta
+approvers:
+- chaodaiG
+- fejta
 labels:
- - area/prow/horologium
+- area/prow/horologium

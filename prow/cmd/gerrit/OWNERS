@@ -2,8 +2,12 @@
 
 reviewers:
 - amwat
+- chaodaiG
+- fejta
 approvers:
 - amwat
+- chaodaiG
+- fejta
 emeritus_approvers:
 - krzyzacy
 labels:

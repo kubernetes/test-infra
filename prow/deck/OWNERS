@@ -1,4 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-
+reviewers:
+- chaodaiG
+- e-blackwelder
+- michelle192837
+approvers:
+- chaodaiG
+- e-blackwelder
+- michelle192837
 labels:
  - area/prow/deck
