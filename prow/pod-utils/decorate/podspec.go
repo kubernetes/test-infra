@@ -720,7 +720,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -762,14 +762,17 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
+	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
+	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions: &gcsOptions,
-		Entries:    wrappers,
-		EntryError: requirePassingEntries,
+		GcsOptions:       &gcsOptions,
+		Entries:          wrappers,
+		EntryError:       requirePassingEntries,
+		IgnoreInterrupts: ignoreInterrupts,
 	})
 	if err != nil {
 		return nil, err
