@@ -3,9 +3,5 @@ reviewers:
 - chaodaiG
 - e-blackwelder
 - michelle192837
-approvers:
-- chaodaiG
-- e-blackwelder
-- michelle192837
 labels:
  - area/prow/deck
