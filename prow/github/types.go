@@ -944,6 +944,9 @@ type DraftReviewComment struct {
 }
 
 // Content is some base64 encoded github file content
+// It include selected fields available in content record returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
@@ -1327,6 +1330,9 @@ type AppInstallationToken struct {
 }
 
 // DirectoryContent contains information about a github directory.
+// It include selected fields available in content records returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
 type DirectoryContent struct {
 	SHA  string `json:"sha"`
 	Type string `json:"type"`
