@@ -333,6 +333,8 @@ milestone_applier:
     master: v1.21
   kubernetes/test-infra:
     master: v1.21
+  kubernetes/k8s.io:
+    master: v1.21
   kubernetes/kops:
     master: v1.20
     release-1.19: v1.19
@@ -763,6 +765,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
@@ -799,14 +802,15 @@ plugins:
   kubernetes/enhancements:
   - blockade
   - milestone
-  - milestoneapplier
   - require-matching-label
   - stage
+
+  kubernetes/k8s.io:
+  - milestone
 
   kubernetes/kops:
   - mergecommitblocker
   - milestone
-  - milestoneapplier
 
   kubernetes/kubeadm:
   - milestone
@@ -819,7 +823,6 @@ plugins:
   - cherry-pick-unapproved
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - milestonestatus
   - override
   - release-note
@@ -835,7 +838,6 @@ plugins:
   - blockade
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - release-note
   - require-matching-label
@@ -843,7 +845,6 @@ plugins:
   kubernetes/sig-release:
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - require-matching-label
 
@@ -853,7 +854,6 @@ plugins:
   kubernetes/test-infra:
   - config-updater
   - milestone
-  - milestoneapplier
   - override
   - project
 
@@ -862,7 +862,6 @@ plugins:
 
   kubernetes/website:
   - milestone
-  - milestoneapplier
   - project
   - require-matching-label
 
@@ -936,6 +935,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
@@ -980,7 +980,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
@@ -988,7 +987,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-gcp:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
@@ -996,7 +994,6 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - milestone
-  - milestoneapplier
   - milestonestatus
   - release-note
   - require-matching-label
