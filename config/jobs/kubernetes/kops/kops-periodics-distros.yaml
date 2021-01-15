@@ -367,7 +367,7 @@ periodics:
       - --extract=release/stable
       - --ginkgo-parallel
       - --kops-args=--container-runtime=containerd --networking=calico
-      - --kops-image=075585003325/Flatcar-stable-2605.10.0-hvm
+      - --kops-image=075585003325/Flatcar-stable-2605.11.0-hvm
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
