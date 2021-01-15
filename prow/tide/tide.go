@@ -46,6 +46,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
+	"k8s.io/test-infra/prow/version"
 )
 
 // For mocking out sleep during unit tests.
@@ -358,6 +359,7 @@ func (c *Controller) Sync() error {
 		c.logger.WithField("duration", duration.String()).Info("Synced")
 		tideMetrics.syncDuration.Set(duration.Seconds())
 		tideMetrics.syncHeartbeat.WithLabelValues("sync").Inc()
+		version.GatherProwVersion(c.logger)
 	}()
 	defer c.changedFiles.prune()
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)

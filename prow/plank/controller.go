@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/version"
 )
 
 // PodStatus constants
@@ -264,6 +265,7 @@ func (c *Controller) SyncMetrics() {
 	c.pjLock.RLock()
 	defer c.pjLock.RUnlock()
 	kube.GatherProwJobMetrics(c.log, c.pjs)
+	version.GatherProwVersion(c.log)
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
