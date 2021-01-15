@@ -102,7 +102,6 @@ presubmits:
     - master
     always_run: false
     decorate: true
-    skip_report: true
     optional: true
     labels:
       preset-service-account: "true"
