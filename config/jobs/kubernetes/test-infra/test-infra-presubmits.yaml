@@ -100,9 +100,8 @@ presubmits:
   - name: pull-test-infra-integration
     branches:
     - master
-    always_run: false
+    always_run: true
     decorate: true
-    optional: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
