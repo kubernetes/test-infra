@@ -93,7 +93,7 @@ export interface ProwJobSpec {
   namespace?: string;
   job?: string;
   refs?: Refs;
-  extra_refs?: Refs;
+  extra_refs?: Refs[];
   report?: boolean;
   context?: string;
   rerun_command?: string;
