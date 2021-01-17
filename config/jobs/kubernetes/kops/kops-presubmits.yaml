@@ -83,7 +83,7 @@ presubmits:
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest-1.19
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--container-runtime=docker
@@ -167,7 +167,7 @@ presubmits:
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest-1.19
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--container-runtime=containerd --networking=calico
