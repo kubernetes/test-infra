@@ -55,6 +55,7 @@ template = """
       - --deployment=kops
       - --provider=aws
       - --cluster={{name}}.test-cncf-aws.k8s.io
+      - --kops-args=--networking=calico
       - --kops-ssh-user=ubuntu
       - --kops-nodes=4
       - --extract={{extract}}
