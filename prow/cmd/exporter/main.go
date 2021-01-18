@@ -93,11 +93,10 @@ func main() {
 	informerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(pjClientset, 0, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 	pjLister := informerFactory.Prow().V1().ProwJobs().Lister()
 
-	prometheus.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
-
 	go informerFactory.Start(interrupts.Context().Done())
 
 	registry := mustRegister("exporter", pjLister)
+	registry.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
 
 	// Expose prometheus metrics
 	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, o.instrumentationOptions.MetricsPort, registry, nil)
