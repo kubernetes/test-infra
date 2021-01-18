@@ -388,7 +388,7 @@ periodics:
       command:
       - runner.sh
       args:
-      - ./test/e2e/scenarios/upgrade/run-test
+      - ./tests/e2e/scenarios/upgrade/run-test
       env:
       - name: CLOUD_PROVIDER
         value: aws
