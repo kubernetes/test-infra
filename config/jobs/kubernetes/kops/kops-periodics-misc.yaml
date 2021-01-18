@@ -361,3 +361,43 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
     testgrid-alert-email: release-team@kubernetes.io
+- interval: 4h
+  name: e2e-kops-aws-misc-upgrade
+  always_run: false
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./test/e2e/scenarios/upgrade/run-test
+      env:
+      - name: CLOUD_PROVIDER
+        value: aws
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-days-of-results: "30"
+    testgrid-tab-name: kops-aws-upgrade
