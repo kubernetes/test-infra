@@ -835,14 +835,22 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		if len(bug.TargetRelease) == 0 {
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but no target release was set", *options.TargetRelease))
-		} else if *options.TargetRelease != bug.TargetRelease[0] {
+		} else {
 			// the BugZilla web UI shows one option for target release, but returns the
 			// field as a list in the REST API. We only care for the first item and it's
 			// not even clear if the list can have more than one item in the response
-			valid = false
-			errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but it targets %q instead", *options.TargetRelease, bug.TargetRelease[0]))
-		} else {
-			validations = append(validations, fmt.Sprintf("bug target release (%s) matches configured target release for branch (%s)", bug.TargetRelease[0], *options.TargetRelease))
+			match, err := regexp.MatchString(*options.TargetRelease, bug.TargetRelease[0])
+			if err != nil {
+				valid = false
+				errors = append(errors, fmt.Sprintf("error while trying to match target release string (%q): %v", *options.TargetRelease, err))
+			}
+
+			if match {
+				validations = append(validations, fmt.Sprintf("bug target release (%s) matches configured target release for branch (%s)", bug.TargetRelease[0], *options.TargetRelease))
+			} else {
+				valid = false
+				errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but it targets %q instead", *options.TargetRelease, bug.TargetRelease[0]))
+			}
 		}
 	}
 

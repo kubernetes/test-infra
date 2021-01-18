@@ -1845,7 +1845,7 @@ func TestBugIDFromTitle(t *testing.T) {
 
 func TestValidateBug(t *testing.T) {
 	open, closed := true, false
-	one, two := "v1", "v2"
+	one, two, any := "v1", "v2", "v*"
 	verified := []plugins.BugzillaBugState{{Status: "VERIFIED"}}
 	modified := []plugins.BugzillaBugState{{Status: "MODIFIED"}}
 	updated := plugins.BugzillaBugState{Status: "UPDATED"}
@@ -1912,6 +1912,13 @@ func TestValidateBug(t *testing.T) {
 			options: plugins.BugzillaBranchOptions{TargetRelease: &one},
 			valid:   false,
 			why:     []string{"expected the bug to target the \"v1\" release, but no target release was set"},
+		},
+		{
+			name:        "matching target release pattern requirement means a valid bug",
+			bug:         bugzilla.Bug{TargetRelease: []string{"v0"}},
+			options:     plugins.BugzillaBranchOptions{TargetRelease: &any},
+			valid:       true,
+			validations: []string{"bug target release (v0) matches configured target release for branch (v*)"},
 		},
 		{
 			name:        "matching status requirement means a valid bug",
