@@ -20,7 +20,6 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-100-adhoc
