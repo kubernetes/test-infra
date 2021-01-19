@@ -58,14 +58,14 @@ query: |
             ifnull(repo_commit, version) version, /* git version, empty for ci  */
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                ifnull(repos, (select i.value from t.metadata i where i.key = 'repos')),
+                repo,
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
               ifnull(repo_commit, version)
             ) commit,  /* repo commit for PR or version for CI */
             result,  /* SUCCESS if the build passed */
             test  /* repeated tuple of tests */
-          from(
+          from (
                 select *,
                        ifnull(b.repos, (select i.value from b.metadata i where i.key = 'repos')) repo from `k8s-gubernator.build.week` as b
           ) as t

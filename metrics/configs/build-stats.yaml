@@ -22,6 +22,7 @@ query: |
   )
   where day is not null
   order by day
+
 jqfilter: |
   ([(.[] | .day|tonumber)] | max) as $newestday |
   [(.[] | select((.day|tonumber)==$newestday) | {
