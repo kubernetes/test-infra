@@ -252,6 +252,7 @@ branch-protection:
             contexts:
             - build-linux-amd64
             - build-macos-amd64
+            - build-windows-amd64
             - verify
         kubelet:
           restrictions:
