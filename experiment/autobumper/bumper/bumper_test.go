@@ -34,6 +34,41 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 )
 
+func TestCommitToRef(t *testing.T) {
+	cases := []struct {
+		name     string
+		commit   string
+		expected string
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name:     "just tag works",
+			commit:   "v0.0.30",
+			expected: "v0.0.30",
+		},
+		{
+			name:     "just commit works",
+			commit:   "deadbeef",
+			expected: "deadbeef",
+		},
+		{
+			name:     "commits past tag works",
+			commit:   "v0.0.30-14-gdeadbeef",
+			expected: "deadbeef",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if actual, expected := commitToRef(tc.commit), tc.expected; actual != tc.expected {
+				t.Errorf("commitToRef(%q) got %q want %q", tc.commit, actual, expected)
+			}
+		})
+	}
+}
+
 func TestValidateOptions(t *testing.T) {
 	emptyStr := ""
 	whateverStr := "whatever"

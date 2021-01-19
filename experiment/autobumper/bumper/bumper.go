@@ -706,6 +706,19 @@ func formatTagDate(d string) string {
 	return fmt.Sprintf("%s&#x2011;%s&#x2011;%s", d[0:4], d[4:6], d[6:8])
 }
 
+// commitToRef converts git describe part of a tag to a ref (commit or tag).
+//
+// v0.0.30-14-gdeadbeef => deadbeef
+// v0.0.30 => v0.0.30
+// deadbeef => deadbeef
+func commitToRef(commit string) string {
+	tag, _, commit := imagebumper.DeconstructCommit(commit)
+	if commit != "" {
+		return commit
+	}
+	return tag
+}
+
 func generateSummary(name, repo, prefix string, summarise bool, images map[string]string) string {
 	type delta struct {
 		oldCommit string
@@ -725,6 +738,8 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 		}
 		oldDate, oldCommit, oldVariant := imagebumper.DeconstructTag(tagFromName(image))
 		newDate, newCommit, _ := imagebumper.DeconstructTag(newTag)
+		oldCommit = commitToRef(oldCommit)
+		newCommit = commitToRef(newCommit)
 		k := oldCommit + ":" + newCommit
 		d := delta{
 			oldCommit: oldCommit,
