@@ -19,6 +19,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -34,19 +35,45 @@ func TestDeletePod(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		hasCR      bool
-		wantDelete bool
+		name             string
+		notCreatedByProw bool
+		jobStartTime     v1.Time
+		jobFinishTime    v1.Time
+		hasCR            bool
+		wantJobDeleted   bool
+		wantPodDeleted   bool
 	}{
 		{
-			"running-pod",
-			true,
-			false,
+			name:           "running-pod",
+			jobStartTime:   v1.NewTime(time.Now().Add(-1 * time.Minute)),
+			hasCR:          true,
+			wantPodDeleted: false,
 		},
 		{
-			"orphaned-pod",
-			false,
-			true,
+			name:           "orphaned-pod",
+			jobStartTime:   v1.NewTime(time.Now().Add(-1 * time.Minute)),
+			hasCR:          false,
+			wantPodDeleted: true,
+		},
+		{
+			name:           "ttl-deleted",
+			jobStartTime:   v1.NewTime(time.Now().Add(-32 * time.Minute)),
+			jobFinishTime:  v1.NewTime(time.Now().Add(-31 * time.Minute)),
+			hasCR:          true,
+			wantPodDeleted: true,
+		},
+		{
+			name:           "max-prow-job-age",
+			jobStartTime:   v1.NewTime(time.Now().Add(-49 * time.Hour)),
+			jobFinishTime:  v1.NewTime(time.Now().Add(-48 * time.Hour)),
+			hasCR:          true,
+			wantJobDeleted: true,
+			wantPodDeleted: true,
+		},
+		{
+			name:             "orphaned-pod-not-prowpod",
+			notCreatedByProw: true,
+			wantPodDeleted:   false,
 		},
 	}
 
@@ -54,6 +81,7 @@ func TestDeletePod(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			resourceName := fmt.Sprintf("%s-%s", tt.name, RandomString(t))
 
 			clusterContext := getClusterContext()
 			t.Logf("Creating client for cluster: %s", clusterContext)
@@ -68,32 +96,32 @@ func TestDeletePod(t *testing.T) {
 			prowjob := prowjobv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
-						"prow.k8s.io/job": tt.name,
+						"prow.k8s.io/job": resourceName,
 					},
 					Labels: map[string]string{
 						"created-by-prow":  "true",
 						"prow.k8s.io/type": "periodic",
-						"name":             tt.name,
+						"name":             resourceName,
 					},
-					Name:      tt.name,
+					Name:      resourceName,
 					Namespace: defaultNamespace,
 				},
 				Spec: prowjobv1.ProwJobSpec{
 					Type:      prowjobv1.PeriodicJob,
 					Namespace: testpodNamespace,
-					Job:       tt.name,
+					Job:       resourceName,
 				},
 				Status: prowjobv1.ProwJobStatus{
 					State: prowjobv1.TriggeredState,
 				},
 			}
+
 			pod := corev1.Pod{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      tt.name,
+					Name:      resourceName,
 					Namespace: testpodNamespace,
 					Labels: map[string]string{
-						"name":            tt.name,
-						"created-by-prow": "true",
+						"name": resourceName,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -109,31 +137,44 @@ func TestDeletePod(t *testing.T) {
 					},
 				},
 			}
+			if !tt.notCreatedByProw {
+				pod.ObjectMeta.Labels["created-by-prow"] = "true"
+			}
 
 			t.Cleanup(func() {
 				kubeClient.Delete(ctx, &prowjob)
 				kubeClient.Delete(ctx, &pod)
 			})
 
-			t.Logf("Creating prowjob: %s", tt.name)
-			if err := kubeClient.Create(ctx, &prowjob); err != nil {
-				t.Fatalf("Failed creating prowjob: %v", err)
+			if !tt.notCreatedByProw {
+				t.Logf("Creating prowjob: %s", resourceName)
+				if err := kubeClient.Create(ctx, &prowjob); err != nil {
+					t.Fatalf("Failed creating prowjob: %v", err)
+				}
+				t.Logf("Finished creating prowjob: %s", resourceName)
+				// Make sure pod is running
+				p := &prowjobv1.ProwJob{}
+				if err := kubeClient.Get(ctx, client.ObjectKey{
+					Name:      resourceName,
+					Namespace: defaultNamespace,
+				}, p); err != nil {
+					log.Fatalf("Prowjob %q not exist: %v", resourceName, err)
+				}
 			}
-			t.Logf("Finished creating prowjob: %s", tt.name)
 
 			// Create pod
-			t.Logf("Creating pod: %s", tt.name)
+			t.Logf("Creating pod: %s", resourceName)
 			if err := kubeClient.Create(ctx, &pod); err != nil {
 				t.Fatalf("Failed creating pod: %v", err)
 			}
-			t.Logf("Finished creating pod: %s", tt.name)
+			t.Logf("Finished creating pod: %s", resourceName)
 
 			// Make sure pod is running
-			t.Logf("Make sure pod is running: %s", tt.name)
+			t.Logf("Make sure pod is running: %s", resourceName)
 			if err = wait.Poll(time.Second, time.Minute, func() (bool, error) {
 				p := &corev1.Pod{}
 				if err := kubeClient.Get(ctx, client.ObjectKey{
-					Name:      tt.name,
+					Name:      resourceName,
 					Namespace: testpodNamespace,
 				}, p); err != nil {
 					return false, fmt.Errorf("Failed getting pod: %v", err)
@@ -142,18 +183,26 @@ func TestDeletePod(t *testing.T) {
 			}); err != nil {
 				t.Fatalf("Pod was not created successfully: %v", err)
 			}
-			t.Logf("Pod is running: %s", tt.name)
+			t.Logf("Pod is running: %s", resourceName)
 
-			// Delete prowjob if CR isn't supposed to have existed
-			if !tt.hasCR {
-				if err := kubeClient.Delete(ctx, &prowjob); err != nil {
-					t.Fatalf("Failed deleting prowjob: %v", err)
+			if !tt.notCreatedByProw {
+				// Patch prowjob to make it stale if needed
+				prowjob.Status.StartTime = tt.jobStartTime
+				prowjob.Status.CompletionTime = &tt.jobFinishTime
+				if err := kubeClient.Update(ctx, &prowjob); err != nil {
+					t.Fatalf("Failed updating prowjob %q: %v", resourceName, err)
+				}
+				// Delete prowjob if CR isn't supposed to have existed
+				if !tt.hasCR {
+					if err := kubeClient.Delete(ctx, &prowjob); err != nil {
+						t.Fatalf("Failed deleting prowjob: %v", err)
+					}
 				}
 			}
 
 			// Make sure pod is deleted, it'll take roughly 2 minutes
 			// Don't care about the outcome, will check later
-			t.Logf("Wait for sinker deleting pod or timeout in 2 minutes: %s", tt.name)
+			t.Logf("Wait for sinker deleting pod or timeout in 2 minutes: %s", resourceName)
 			var exist bool
 			wait.Poll(time.Second, 2*time.Minute, func() (bool, error) {
 				exist = false
@@ -163,7 +212,7 @@ func TestDeletePod(t *testing.T) {
 					return false, err
 				}
 				for _, p := range pods.Items {
-					if p.Name == tt.name {
+					if p.Name == resourceName {
 						exist = true
 					}
 				}
@@ -173,9 +222,27 @@ func TestDeletePod(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Logf("Pod %s exist: %v", tt.name, exist)
-			if want, got := tt.wantDelete, !exist; want != got {
+			t.Logf("Pod %s exist: %v", resourceName, exist)
+			if want, got := tt.wantPodDeleted, !exist; want != got {
 				t.Fatalf("Want deleted: %v. Got deleted: %v", want, got)
+			}
+
+			// Check for prowjob deletion.
+			{
+				exist = false
+				pjs := &prowjobv1.ProwJobList{}
+				err = kubeClient.List(ctx, pjs, ctrlruntimeclient.InNamespace(defaultNamespace))
+				if err != nil {
+					log.Fatalf("Failed listing prowjobs: %v", err)
+				}
+				for _, pj := range pjs.Items {
+					if pj.Name == resourceName {
+						exist = true
+					}
+				}
+				if tt.wantJobDeleted && exist {
+					t.Fatalf("Pod exisentce mismatch. Want: %v, got: %v", tt.wantJobDeleted, exist)
+				}
 			}
 		})
 	}
