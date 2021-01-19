@@ -184,6 +184,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-openstack:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
