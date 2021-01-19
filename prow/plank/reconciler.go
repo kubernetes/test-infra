@@ -47,6 +47,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/version"
 )
 
 const ControllerName = "plank"
@@ -161,6 +162,7 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 				continue
 			}
 			kube.GatherProwJobMetrics(r.log, pjs.Items)
+			version.GatherProwVersion(r.log)
 		}
 	}
 }

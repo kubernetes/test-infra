@@ -45,6 +45,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/version"
 )
 
 type options struct {
@@ -463,6 +464,7 @@ func (c *controller) clean() {
 	for k, v := range metrics.prowJobsCleaningErrors {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
+	version.GatherProwVersion(c.logger)
 	c.logger.Info("Sinker reconciliation complete.")
 }
 
