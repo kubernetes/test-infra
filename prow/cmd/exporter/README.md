@@ -9,7 +9,6 @@ metrics are not directly related to a specific prow-component.
 |----------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | prow_job_labels      | Gauge       | `job_name`=&lt;prow_job-name&gt; <br> `job_namespace`=&lt;prow_job-namespace&gt; <br> `job_agent`=&lt;prow_job-agent&gt; <br> `label_PROW_JOB_LABEL_KEY`=&lt;PROW_JOB_LABEL_VALUE&gt;                 |
 | prow_job_annotations | Gauge       | `job_name`=&lt;prow_job-name&gt; <br> `job_namespace`=&lt;prow_job-namespace&gt; <br> `job_agent`=&lt;prow_job-agent&gt; <br> `annotation_PROW_JOB_ANNOTATION_KEY`=&lt;PROW_JOB_ANNOTATION_VALUE&gt;  |
-| prow_job_annotations | Gauge       | `job_name`=&lt;prow_job-name&gt; <br> `job_namespace`=&lt;prow_job-namespace&gt; <br> `job_agent`=&lt;prow_job-agent&gt; <br> `annotation_PROW_JOB_ANNOTATION_KEY`=&lt;PROW_JOB_ANNOTATION_VALUE&gt;  |
 | prow_job_runtime_seconds     | Histogram     | `job_name`=&lt;prow_job-name&gt; <br> `job_namespace`=&lt;prow_job-namespace&gt; <br> `type`=&lt;prow_job-type&gt; <br> `last_state`=&lt;last-state&gt; <br> `state`=&lt;state&gt; <br> `org`=&lt;org&gt; <br> `repo`=&lt;repo&gt; <br> `base_ref`=&lt;base_ref&gt; <br>  |
 
 For example, the metric `prow_job_labels` is similar to `kube_pod_labels` defined
