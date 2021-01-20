@@ -2,6 +2,8 @@ presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -14,6 +16,8 @@ presubmits:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-build
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -26,6 +30,8 @@ presubmits:
         - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -44,6 +50,8 @@ presubmits:
         - scripts/test-infra/build-image.sh
   - name: pull-node-feature-discovery-build-gh-pages
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
