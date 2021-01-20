@@ -26507,7 +26507,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-public-jwks
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.AWSEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager
   cron: '28 22 * * *'
   labels:
@@ -26532,7 +26532,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable-1.19
       - --ginkgo-parallel
-      - --kops-args=--container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws
+      - --kops-args=--container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.AWSEBSCSIDriver.enabled=true
       - --kops-feature-flags=EnableExternalCloudController,SpecOverrideFlag
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -26551,7 +26551,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws
+    test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.AWSEBSCSIDriver.enabled=true
     test.kops.k8s.io/feature_flags: EnableExternalCloudController,SpecOverrideFlag
     test.kops.k8s.io/k8s_version: '1.19'
     test.kops.k8s.io/kops_version: ''

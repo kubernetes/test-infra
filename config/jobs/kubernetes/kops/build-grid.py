@@ -443,7 +443,8 @@ def generate():
                distro="u2004",
                k8s_version="1.19",
                feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                            '--override=cluster.spec.cloudConfig.AWSEBSCSIDriver.enabled=true'],
                extra_dashboards=['sig-aws-cloud-provider-aws', 'kops-misc'])
 
     print("")
