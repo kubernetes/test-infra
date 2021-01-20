@@ -39,6 +39,7 @@ require (
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v1.13.1
 	github.com/evanphx/json-patch v4.9.0+incompatible
+	github.com/felixge/fgprof v0.9.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
