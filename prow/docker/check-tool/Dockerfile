@@ -2,6 +2,7 @@
 # Binary tools
 #############
 
+# Use golang as the binary_tools_context
 FROM golang:1.15.6 as binary_tools_context
 
 # Pinned versions of stuff
