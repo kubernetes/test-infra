@@ -22,13 +22,6 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --timeout=170
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
