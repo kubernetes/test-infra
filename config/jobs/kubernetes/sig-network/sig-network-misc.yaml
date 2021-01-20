@@ -6,6 +6,8 @@ presubmits:
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -16,7 +18,10 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - args:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --timeout=170
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
