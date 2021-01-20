@@ -395,6 +395,8 @@ periodics:
       env:
       - name: CLOUD_PROVIDER
         value: aws
+      - name: CLUSTER_NAME
+        value: e2e-f9b0e6b3f9-bb3c3.test-cncf-aws.k8s.io
       securityContext:
         privileged: true
       resources:
