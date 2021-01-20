@@ -48,12 +48,11 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
       args:
       - --repo=github.com/containerd/containerd=master
-      - --repo=github.com/containerd/cri=master
       - --root=/go/src
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=execute
       - --
-      - /go/src/github.com/containerd/cri/test/containerd/build.sh
+      - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build
