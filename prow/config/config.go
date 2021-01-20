@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -61,6 +62,13 @@ const (
 	DefaultJobTimeout = 24 * time.Hour
 
 	ProwImplicitGitResource = "PROW_IMPLICIT_GIT_REF"
+
+	// ConfigVersionFileName is the name of a file that will be added to
+	// all configmaps by the configupdater and contain the git sha that
+	// triggered said configupdate. The configloading in turn will pick
+	// it up if present. This allows components to include the config version
+	// in their logs, which can be useful for debugging.
+	ConfigVersionFileName = "VERSION"
 )
 
 // Config is a read-only snapshot of the config.
@@ -101,6 +109,8 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
+	// The git sha from which this config was generated
+	ConfigVersionSHA string           `json:"config_version_sha,omitempty"`
 	Tide             Tide             `json:"tide,omitempty"`
 	Plank            Plank            `json:"plank,omitempty"`
 	Sinker           Sinker           `json:"sinker,omitempty"`
@@ -1059,6 +1069,15 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	}
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
+	}
+
+	versionFilePath := filepath.Join(path.Dir(prowConfig), ConfigVersionFileName)
+	if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
+		content, err := ioutil.ReadFile(versionFilePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read versionfile %s: %w", versionFilePath, err)
+		}
+		nc.ConfigVersionSHA = string(content)
 	}
 
 	nc.AllRepos = sets.String{}
