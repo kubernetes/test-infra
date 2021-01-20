@@ -17,11 +17,6 @@ presets:
   # Turn on profiling for various components.
   - name: ETCD_TEST_ARGS
     value: "--enable-pprof"
-  # Number of bytes of an additional nodes objects annotation in a kubemark
-  # cluster. The annotation label is added to make nodes objects sizes similar
-  # to regular cluster nodes.
-  - name: KUBEMARK_NODE_OBJECT_SIZE_BYTES
-    value: 15000
   # Increase throughput in Kubemark master components and turn on profiling.
   - name: KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
