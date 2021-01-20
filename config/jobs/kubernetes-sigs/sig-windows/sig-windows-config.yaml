@@ -469,6 +469,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
+    fork-per-release: "true"
     testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic, sig-windows-releases, sig-release-master-informing
     testgrid-tab-name: aks-engine-azure-windows-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
