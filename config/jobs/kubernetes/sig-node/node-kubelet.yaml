@@ -62,6 +62,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --runtime-config=api/all=true
       - --timeout=65m
       env:
       - name: GOPATH
