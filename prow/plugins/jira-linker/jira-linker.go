@@ -88,10 +88,13 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 
 		if !hasLabel {
 			jiraServerURL := config.JiraBaseUrl
+			out:
 			for _, v := range config.JiraOverrides{
-				if v.Repo == repo {
-					jiraServerURL = v.JiraUrl
-					break
+				for _, x := range v.Repos {
+					if x == repo {
+						jiraServerURL = v.JiraUrl
+						break out
+					}
 				}
 			}
 			gc.CreateComment(org, repo, event.Number, commentForTicket(jiraLink(jiraServerURL, ticketName)))
