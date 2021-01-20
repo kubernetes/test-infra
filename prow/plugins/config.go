@@ -527,6 +527,12 @@ type Welcome struct {
 // JiraLinker is the config for the jira-linker plugin
 type JiraLinker struct {
 	JiraBaseUrl string `json:"jira_base_url"`
+	JiraOverrides   []JiraOverrides
+}
+
+type JiraOverrides struct {
+	JiraUrl string `json:"jira_url,omitempty"`
+	Repo       string `json:"repo,omitempty"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
