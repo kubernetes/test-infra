@@ -18,52 +18,43 @@ package integration
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
 	"testing"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowgh "k8s.io/test-infra/prow/github"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/test-infra/prow/github"
 )
 
 func TestReportGHStatus(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name   string
-		states []prowjobv1.ProwJobState
-		want   []string
+		name  string
+		state prowjobv1.ProwJobState
+		want  string
 	}{
 		{
-			name: "triggered",
-			want: []string{"pending"},
+			name:  "pending",
+			state: prowjobv1.PendingState,
+			want:  "pending",
 		},
 		{
-			name:   "pending",
-			states: []prowjobv1.ProwJobState{prowjobv1.PendingState},
-			want:   []string{"pending", "pending"},
+			name:  "success",
+			state: prowjobv1.SuccessState,
+			want:  "success",
 		},
 		{
-			name:   "pending-success",
-			states: []prowjobv1.ProwJobState{prowjobv1.SuccessState},
-			want:   []string{"pending", "success"},
+			name:  "failed",
+			state: prowjobv1.FailureState,
+			want:  "failure",
 		},
 		{
-			name:   "pending-failed",
-			states: []prowjobv1.ProwJobState{prowjobv1.FailureState},
-			want:   []string{"pending", "failure"},
-		},
-		{
-			name:   "pending-aborted",
-			states: []prowjobv1.ProwJobState{prowjobv1.AbortedState},
-			want:   []string{"pending", "failure"},
+			name:  "aborted",
+			state: prowjobv1.AbortedState,
+			want:  "failure",
 		},
 	}
 
@@ -80,9 +71,11 @@ func TestReportGHStatus(t *testing.T) {
 				t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
 			}
 
+			githubClient := github.NewClient(func() []byte { return nil }, func([]byte) []byte { return nil }, github.DefaultGraphQLEndpoint, "http://localhost/fakeghserver")
+
 			ctx := context.Background()
 
-			podName := fmt.Sprintf("crier-test-pod-%s", RandomString(t))
+			podName := fmt.Sprintf("crier-%s-%s", tt.name, RandomString(t))
 			sha := RandomString(t)
 
 			t.Logf("Creating CRD %s for sha %s", podName, sha)
@@ -98,7 +91,6 @@ func TestReportGHStatus(t *testing.T) {
 					Labels: map[string]string{
 						"created-by-prow":  "true",
 						"prow.k8s.io/type": "presubmit",
-						"name":             podName,
 					},
 					Name:      podName,
 					Namespace: defaultNamespace,
@@ -123,12 +115,18 @@ func TestReportGHStatus(t *testing.T) {
 					Report: true,
 				},
 				Status: prowjobv1.ProwJobStatus{
-					State: prowjobv1.TriggeredState,
+					State:     tt.state,
+					StartTime: v1.NewTime(time.Now().Add(-1 * time.Second)),
 				},
+			}
+			if tt.state == prowjobv1.SuccessState || tt.state == prowjobv1.FailureState {
+				prowjob.Status.CompletionTime = &v1.Time{Time: time.Now()}
 			}
 
 			t.Cleanup(func() {
-				kubeClient.Delete(ctx, &prowjob)
+				if err := kubeClient.Delete(ctx, &prowjob); err != nil {
+					t.Logf("Failed cleanup resource %q: %v", prowjob.Name, err)
+				}
 			})
 
 			t.Logf("Creating prowjob: %s", podName)
@@ -137,50 +135,18 @@ func TestReportGHStatus(t *testing.T) {
 			}
 			t.Logf("Finished creating prowjob: %s", podName)
 
-			var waitStatus func(*testing.T, string)
-			waitStatus = func(t *testing.T, s string) {
-				if err := wait.Poll(200*time.Microsecond, 10*time.Second, func() (bool, error) {
-					e := fmt.Sprintf("http://localhost/fakeghserver/repos/fake-org/fake-repo/statuses/%s", sha)
-					resp, err := http.Get(e)
-					if err != nil {
-						return false, fmt.Errorf("Failed query endpoint %q: %v", e, err)
-					}
-					var ss []prowgh.Status
-					d := json.NewDecoder(resp.Body)
-					d.DisallowUnknownFields()
-					if err := d.Decode(&ss); err != nil {
-						return false, fmt.Errorf("Failed unmarshal response: %v", err)
-					}
-					if len(ss) == 0 { // Keep waiting for status
-						return false, nil
-					}
-					if want, got := 1, len(ss); want != got {
-						return false, fmt.Errorf("Number of contexts mismatch, want: %d: got: %d", want, got)
-					}
-					return s == ss[0].State, nil
-				}); err != nil {
-					t.Fatal(err)
+			if err := wait.Poll(200*time.Millisecond, 5*time.Minute, func() (bool, error) {
+				ss, err := githubClient.GetCombinedStatus("fake-org", "fake-repo", sha)
+				if err != nil {
+					return false, fmt.Errorf("failed listing statues: %w", err)
 				}
-			}
-
-			waitStatus(t, tt.want[0])
-
-			var patchJobStatus = func(t *testing.T, s prowjobv1.ProwJobState) {
-				t.Logf("Patching to status %s", s)
-				var changes []string
-				changes = append(changes, fmt.Sprintf("\"state\": \"%s\"", s))
-				if s == prowjobv1.SuccessState || s == prowjobv1.FailureState {
-					changes = append(changes, fmt.Sprintf("\"completionTime\": \"%s\"", time.Now().Format(time.RFC3339)))
+				if want, got := 1, len(ss.Statuses); want != got {
+					// Wait until it's ready
+					return false, nil
 				}
-				patch := []byte(fmt.Sprintf("{\"status\": {%s}}", strings.Join(changes, ", ")))
-				if err := kubeClient.Patch(ctx, &prowjob, client.RawPatch(types.MergePatchType, patch)); err != nil {
-					t.Fatalf("Failed patching prowjob: %v", err)
-				}
-			}
-
-			for i, s := range tt.states {
-				patchJobStatus(t, s)
-				waitStatus(t, tt.want[i+1])
+				return tt.want == ss.Statuses[0].State, nil
+			}); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}

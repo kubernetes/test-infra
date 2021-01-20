@@ -23,10 +23,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	prowgh "k8s.io/test-infra/prow/github"
 
@@ -63,10 +63,22 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 	ghClient := fakegithub.NewFakeClient()
 
-	mux := http.NewServeMux()
-	// setup common handlers for local and deployed runs
-	mux.Handle("/", reposHandler(ghClient))
-	mux.Handle("/fakeghserver/", http.StripPrefix("/fakeghserver", reposHandler(ghClient)))
+	r := mux.NewRouter()
+	// So far, supports APIs used by crier:
+	//type GitHubClient interface {
+	// 	BotName() (string, error) # /user
+	// 	CreateStatus(org, repo, ref string, s github.Status) error # fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA)
+	// 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
+	// 	CreateComment(org, repo string, number int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number),
+	// 	DeleteComment(org, repo string, ID int) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
+	// 	EditComment(org, repo string, ID int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
+	r.Path("/").Handler(defaultHandler())
+	r.Path("/user").Handler(userHandler(ghClient))
+	r.Path("/repos/{org}/{repo}/statuses/{sha}").Handler(statusHandler(ghClient))
+	r.Path("/repos/{org}/{repo}/commits/{sha}/status").Queries("per_page", "{page}").Handler(statusHandler(ghClient))
+	r.Path("/repos/{org}/{repo}/issues").Handler(issueHandler(ghClient))
+	r.Path("/repos/{org}/{repo}/issues/{issue_id}/comments").Handler(issueCommentHandler(ghClient))
+	r.Path("/repos/{org}/{repo}/issues/comments/${comment_id}").Handler(issueCommentHandler(ghClient))
 
 	health := pjutil.NewHealth()
 	health.ServeReady()
@@ -74,14 +86,8 @@ func main() {
 	logrus.Info("Start server")
 
 	// setup done, actually start the server
-	server := &http.Server{Addr: ":8888", Handler: mux}
+	server := &http.Server{Addr: ":8888", Handler: r}
 	interrupts.ListenAndServe(server, 5*time.Second)
-}
-
-func reposHandler(ghc *fakegithub.FakeClient) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		redirect(w, r, ghc)
-	})
 }
 
 func unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) error {
@@ -97,71 +103,119 @@ func unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	return err
 }
 
-// So far, supports APIs used by crier:
-//type GitHubClient interface {
-// 	BotName() (string, error) # /user
-// 	CreateStatus(org, repo, ref string, s github.Status) error # fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA)
-// 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
-// 	CreateComment(org, repo string, number int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number),
-// 	DeleteComment(org, repo string, ID int) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
-// 	EditComment(org, repo string, ID int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
-func redirect(w http.ResponseWriter, r *http.Request, ghc *fakegithub.FakeClient) error {
-	logrus.Infof("Got request %+v", *r)
-	var ok int
-	// By default ok is 200
-	ok = http.StatusOK
-	var err error
-	var msg string
-	parts := strings.Split(r.URL.Path, "/")
-	if strings.TrimSpace(parts[0]) == "" {
-		parts = parts[1:]
+func response(w http.ResponseWriter, r *http.Request, msg string, ok int, err error) error {
+	logrus.Infof("request: %s - %s. responses: %s, %d, %v", r.URL.Path, r.Method, msg, ok, err)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err.Error())
+		logrus.Info(err)
+		return err
 	}
-	switch {
-	case len(parts) == 0:
-		err = fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
-	case parts[0] == "user":
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Link", "")
+	w.WriteHeader(ok)
+	fmt.Fprint(w, msg)
+	logrus.Info("Succeeded with request: ", ok)
+	return nil
+}
+
+func defaultHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infof("Not supported: %s, %s", r.URL.Path, r.Method)
+		if err := response(w, r, "", http.StatusNotFound,
+			fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)); err != nil {
+			logrus.WithError(err).Error("failed serving default handler")
+		}
+	})
+}
+
+func userHandler(ghc *fakegithub.FakeClient) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		var msg string
+		var ok int
+		var err error
+		ok = http.StatusOK
 		userData, err := ghc.BotUser()
 		if err == nil {
 			var content []byte
 			content, err = json.Marshal(&userData)
 			msg = string(content)
 		}
-	case parts[0] == "repos":
-		switch {
-		case len(parts) == 4 && parts[3] == "issues":
-			// Create status is 201
+		if err := response(w, r, msg, ok, err); err != nil {
+			logrus.WithError(err).Error("failed serving user handler")
+		}
+	})
+}
+
+func statusHandler(ghc *fakegithub.FakeClient) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		var msg string
+		var ok int
+		var err error
+		ok = http.StatusOK
+		vars := mux.Vars(r)
+		org, repo, SHA := vars["org"], vars["repo"], vars["sha"]
+		if r.Method == http.MethodPost {
 			ok = http.StatusCreated
-			data := github.Issue{}
-			if err := unmarshal(w, r, &data); err != nil {
-				return fmt.Errorf("failed processing payload: %v", err)
+			data := prowgh.Status{}
+			err = unmarshal(w, r, &data)
+			if err == nil {
+				err = ghc.CreateStatus(org, repo, SHA, data)
 			}
-			org, repo := parts[1], parts[2]
+		} else if r.Method == http.MethodGet {
+			var res *prowgh.CombinedStatus
+			// []prowgh.Status
+			res, err = ghc.GetCombinedStatus(org, repo, SHA)
+			if err == nil {
+				var content []byte
+				content, err = json.Marshal(res)
+				if err == nil {
+					msg = string(content)
+				}
+			}
+		}
+		if err := response(w, r, msg, ok, err); err != nil {
+			logrus.WithError(err).Error("failed serving status handler")
+		}
+	})
+}
+
+func issueHandler(ghc *fakegithub.FakeClient) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		var msg string
+		var ok int
+		var err error
+		vars := mux.Vars(r)
+		org, repo := vars["org"], vars["repo"]
+		// Create status is 201
+		ok = http.StatusCreated
+		data := github.Issue{}
+		err = unmarshal(w, r, &data)
+		if err == nil {
 			var id int
 			id, err = ghc.CreateIssue(org, repo, *data.Title, *data.Body, *data.Milestone.Number, nil, nil)
 			msg = fmt.Sprintf("Issue %d created", id)
-		case len(parts) == 5 && parts[3] == "statuses":
-			if r.Method == http.MethodPost {
-				ok = http.StatusCreated
-				data := prowgh.Status{}
-				if err := unmarshal(w, r, &data); err != nil {
-					return fmt.Errorf("failed processing payload: %v", err)
-				}
-				org, repo, SHA := parts[1], parts[2], parts[4]
-				err = ghc.CreateStatus(org, repo, SHA, data)
-			} else if r.Method == http.MethodGet {
-				org, repo, SHA := parts[1], parts[2], parts[4]
-				var res []prowgh.Status
-				res, err = ghc.ListStatuses(org, repo, SHA)
-				if err == nil {
-					var content []byte
-					content, err = json.Marshal(res)
-					if err == nil {
-						msg = string(content)
-					}
-				}
-			}
-		case len(parts) == 6 && parts[3] == "issues" && parts[5] == "comments":
-			org, repo, issueID := parts[1], parts[2], parts[4]
+		}
+		if err := response(w, r, msg, ok, err); err != nil {
+			logrus.WithError(err).Error("failed serving issue handler")
+		}
+	})
+}
+
+func issueCommentHandler(ghc *fakegithub.FakeClient) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		var msg string
+		var ok int
+		var err error
+		ok = http.StatusOK
+		vars := mux.Vars(r)
+		org, repo := vars["org"], vars["repo"]
+		if issueID, exist := vars["issue_id"]; exist {
 			var id int
 			id, err = strconv.Atoi(issueID)
 			if err == nil {
@@ -172,17 +226,17 @@ func redirect(w http.ResponseWriter, r *http.Request, ghc *fakegithub.FakeClient
 					content, err = json.Marshal(issues)
 					msg = string(content)
 				} else if r.Method == http.MethodPost { // Create
+					ok = http.StatusCreated
 					data := prowgh.IssueComment{}
-					if err := unmarshal(w, r, &data); err != nil {
-						return fmt.Errorf("failed processing payload: %v", err)
+					err = unmarshal(w, r, &data)
+					if err == nil {
+						err = ghc.CreateComment(org, repo, id, data.Body)
 					}
-					err = ghc.CreateComment(org, repo, id, data.Body)
 				} else {
 					err = fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 				}
 			}
-		case len(parts) == 6 && parts[3] == "issues" && parts[4] == "comments":
-			org, repo, commentID := parts[1], parts[2], parts[5]
+		} else if commentID, exist := vars["comment_id"]; exist {
 			var id int
 			id, err = strconv.Atoi(commentID)
 			if err == nil {
@@ -198,22 +252,9 @@ func redirect(w http.ResponseWriter, r *http.Request, ghc *fakegithub.FakeClient
 					err = fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 				}
 			}
-		default:
-			err = fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 		}
-	default:
-		err = fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
-	}
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err.Error())
-		logrus.Info(err)
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(ok)
-	fmt.Fprint(w, msg)
-	logrus.Info("Succeeded with request: ", ok)
-	return nil
+		if err := response(w, r, msg, ok, err); err != nil {
+			logrus.WithError(err).Error("failed serving user handler")
+		}
+	})
 }

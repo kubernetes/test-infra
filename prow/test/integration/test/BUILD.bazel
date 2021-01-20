@@ -5,6 +5,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_test(
     name = "go_default_test",
     srcs = [
+        "crier_test.go",
         "overall_test.go",
         "sinker_test.go",
     ],
@@ -18,6 +19,7 @@ go_test(
     ],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/github:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/wait:go_default_library",
@@ -43,11 +45,8 @@ go_library(
     srcs = ["setup.go"],
     importpath = "k8s.io/test-infra/prow/test/integration/test",
     deps = [
-        "@io_k8s_client_go//kubernetes:go_default_library",
         "@io_k8s_client_go//plugin/pkg/client/auth/oidc:go_default_library",
-        "@io_k8s_client_go//rest:go_default_library",
         "@io_k8s_client_go//tools/clientcmd:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
-        "@io_k8s_sigs_controller_runtime//pkg/manager:go_default_library",
     ],
 )

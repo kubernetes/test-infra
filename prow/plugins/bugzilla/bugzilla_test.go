@@ -707,7 +707,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected, allowEvent))
 			}
 
-			checkComments(client, testCase.name, testCase.expectedComment, t)
+			checkComments(&client, testCase.name, testCase.expectedComment, t)
 		})
 	}
 }
@@ -1757,7 +1757,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("%s: unexpected labels: %v", testCase.name, extra.List())
 			}
 
-			checkComments(gc, testCase.name, testCase.expectedComment, t)
+			checkComments(&gc, testCase.name, testCase.expectedComment, t)
 
 			if testCase.expectedBug != nil {
 				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {
@@ -1774,7 +1774,7 @@ Instructions for interacting with me using PR comments are available [here](http
 	}
 }
 
-func checkComments(client fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
+func checkComments(client *fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
 	wantedComments := 0
 	if expectedComment != "" {
 		wantedComments = 1

@@ -2,8 +2,6 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  annotations:
-    iam.gke.io/gcp-service-account: control-plane@k8s-prow.iam.gserviceaccount.com
   name: crier
   namespace: default
 ---
@@ -114,13 +112,9 @@ spec:
         - --github-endpoint=http://fakeghserver
         - --github-token-path=/etc/github/oauth
         - --github-workers=1
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: config
           mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
         - name: oauth
           mountPath: /etc/github
@@ -129,9 +123,6 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
       - name: oauth
         secret:
           secretName: oauth-token

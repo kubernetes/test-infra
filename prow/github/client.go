@@ -931,7 +931,7 @@ func (c *client) doRequest(method, path, accept, org string, body interface{}) (
 	}
 	req, err := http.NewRequest(method, path, buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
 	if header := c.authHeader(); len(header) > 0 {
 		req.Header.Set("Authorization", header)
@@ -2063,7 +2063,7 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
-
+	logrus.Infof("Creating status: %s", fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA))
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),
