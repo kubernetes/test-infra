@@ -19,6 +19,7 @@ default:
       name: area/licensing
       target: both
       addedBy: label
+      deleteAfter: 2021-01-14T00:00:00+00:00
     - color: 0052cc
       description: Issues or PRs related to dependency changes
       name: area/dependency
