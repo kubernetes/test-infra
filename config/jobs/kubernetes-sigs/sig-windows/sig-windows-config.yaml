@@ -419,7 +419,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-windows-master-staging-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 24h
+- interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd
   decorate: true
   decoration_config:
@@ -469,7 +469,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic, sig-windows-releases, sig-release-master-informing
     testgrid-tab-name: aks-engine-azure-windows-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
