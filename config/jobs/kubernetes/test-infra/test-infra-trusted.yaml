@@ -123,7 +123,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20210119-c4c19e6d20
+      - image: gcr.io/k8s-prow/hmac:v20210120-e5293d4053
         command:
         - /hmac
         args:
@@ -965,7 +965,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20210119-c4c19e6d20
+      image: gcr.io/k8s-prow/branchprotector:v20210120-e5293d4053
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -999,7 +999,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20210119-c4c19e6d20
+      image: gcr.io/k8s-prow/label_sync:v20210120-e5293d4053
       command:
       - /app/label_sync/app.binary
       args:
@@ -1045,7 +1045,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20210119-c4c19e6d20
+    - image: gcr.io/k8s-prow/checkconfig:v20210120-e5293d4053
       command:
       - /checkconfig
       args:
