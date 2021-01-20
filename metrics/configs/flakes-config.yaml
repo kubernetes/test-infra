@@ -85,9 +85,9 @@ query: |
   order by flakes desc, commit_consistency, build_consistency, job /* flakiest jobs first */
 
 jqfilter: |
-  [(.[] | select(.job | contains("pr:")) | {(.job): {
+  [(.[] | {(.job): {
       consistency: (.commit_consistency|tonumber),
       flakes: (.flakes|tonumber),
-      flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 4) | {
+      test_flakes: ([(.flakiest[] | {
         (.name): (.flakes|tonumber)}) ])| add
   }})] | add
