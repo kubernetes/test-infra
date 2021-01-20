@@ -84,55 +84,56 @@ func (af *fileArrayFlag) Set(value string) error {
 
 // Options is the options for autobumper operations.
 type Options struct {
-	//The GitHub org name where the autobump PR will be created. Must not be empty when SkipPullRequest is false.
+	// The target GitHub org name where the autobump PR will be created. Only required when SkipPullRequest is false.
 	GitHubOrg string `yaml:"gitHubOrg"`
-	//The GitHub repo name where the autobump PR will be created. Must not be empty when SkipPullRequest is false.
+	// The target GitHub repo name where the autobump PR will be created. Only required when SkipPullRequest is false.
 	GitHubRepo string `yaml:"gitHubRepo"`
-	//The GitHub username to use. If not specified, uses values from the user associated with the access token.
+	// The GitHub username to use. If not specified, uses values from the user associated with the access token.
 	GitHubLogin string `yaml:"gitHubLogin"`
-	//The path to the GitHub token file.
+	// The path to the GitHub token file. Only required when SkipPullRequest is false.
 	GitHubToken string `yaml:"gitHubToken"`
-	//The name to use on the git commit. Requires GitEmail. If not specified, uses values from the user associated with the access token
+	// The name to use on the git commit. Only required when GitEmail is specified and SkipPullRequest is false. If not specified, uses values from the user associated with the access token
 	GitName string `yaml:"gitName"`
-	//"The email to use on the git commit. Requires GitName. If not specified, uses values from the user associated with the access token.
+	// The email to use on the git commit. Only required when GitName is specified and SkipPullRequest is false. If not specified, uses values from the user associated with the access token.
 	GitEmail string `yaml:"gitEmail"`
-	//The oncall address where we can get the JSON file that stores the current oncall information.
+	// The oncall address where we can get the JSON file that stores the current oncall information.
 	OncallAddress string `yaml:"onCallAddress"`
-	//Whether to skip creating the pull request for this bump.
+	// Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `yaml:"skipPullRequest"`
-	//The URL where upstream images are located. Must not be empty if Target Version is "upstream" or "upstreamStaging"
+	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
+	// Images will be bumped based off images located at the address using this URL and the refConfigFile or stagingRefConigFile for each Prefix.
 	UpstreamURLBase string `yaml:"upstreamURLBase"`
-	//The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
+	// The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
 	IncludedConfigPaths []string `yaml:"includedConfigPaths"`
-	//The config paths to be excluded in this bump, in which only .yaml files will be considered.
+	// The config paths to be excluded in this bump, in which only .yaml files will be considered.
 	ExcludedConfigPaths []string `yaml:"excludedConfigPaths"`
-	//The extra non-yaml file to be considered in this bump.
+	// The extra non-yaml file to be considered in this bump.
 	ExtraFiles []string `yaml:"extraFiles"`
-	//The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
+	// The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
 	TargetVersion string `yaml:"targetVersion"`
-	//The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
+	// The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
 	RemoteName string `yaml:"remoteName"`
-	//The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
+	// The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
 	HeadBranchName string `yaml:"headBranchName"`
-	//List of prefixes that the autobumped is looking for, and other information needed to bump them
+	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
 }
 
 // Prefix is the information needed for each prefix being bumped.
 type Prefix struct {
-	//Name of the tool being bumped
+	// Name of the tool being bumped
 	Name string `yaml:"name"`
-	//The image prefix that the autobumper should look for
+	// The image prefix that the autobumper should look for
 	Prefix string `yaml:"prefix"`
-	//File that is looked at when bumping to match upstream
+	// File that is looked at to determine current upstream image when bumping to upstream. Required only if targetVersion is "upstream"
 	RefConfigFile string `yaml:"refConfigFile"`
-	//File that is looked at when bumping to match upstreamStaging
+	// File that is looked at to determine current upstream staging image when bumping to upstream staging. Required only if targetVersion is "upstream-staging"
 	StagingRefConfigFile string `yaml:"stagingRefConfigFile"`
-	//Repo used when generating pull request
+	// The repo where the image source resides for the images with this prefix. Used to create the links to see comparisons between images in the PR summary.
 	Repo string `yaml:"repo"`
-	//Whether or not the format of the PR summary for this prefix should be summarised.
+	// Whether or not the format of the PR summary for this prefix should be summarised.
 	Summarise bool `yaml:"summarise"`
-	//Whether the prefix tags should be consistent after the bump
+	// Whether the prefix tags should be consistent after the bump
 	ConsistentImages bool `yaml:"consistentImages"`
 }
 
@@ -372,6 +373,8 @@ func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBra
 	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil)
 }
 
+// UpdatePullRequestWithLabels updates with github client "gc" the PR of github repo org/repo
+// with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch" with labels
 func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, labels []string) error {
 	logrus.Info("Creating or updating PR...")
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
