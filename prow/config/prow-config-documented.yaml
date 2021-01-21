@@ -219,6 +219,10 @@ branch-protection:
           - ""
         users:
           - ""
+
+
+# The git sha from which this config was generated
+config_version_sha: ' '
 deck:
     # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
     # (in addition to those listed in the GCSConfiguration).

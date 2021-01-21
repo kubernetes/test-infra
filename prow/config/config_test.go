@@ -1663,6 +1663,7 @@ func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
 		name               string
 		prowConfig         string
+		versionFileContent string
 		jobConfigs         []string
 		expectError        bool
 		expectPodNameSpace string
@@ -2294,6 +2295,16 @@ in_repo_config:
 				return nil
 			},
 		},
+		{
+			name:               "Version file sets the version",
+			versionFileContent: "some-git-sha",
+			verify: func(c *Config) error {
+				if c.ConfigVersionSHA != "some-git-sha" {
+					return fmt.Errorf("expected value of ConfigVersionSH field to be 'some-git-sha', was %q", c.ConfigVersionSHA)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -2309,6 +2320,13 @@ in_repo_config:
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			if tc.versionFileContent != "" {
+				versionFile := filepath.Join(prowConfigDir, "VERSION")
+				if err := ioutil.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
+					t.Fatalf("failed to write prow version file: %v", err)
+				}
 			}
 
 			jobConfig := ""

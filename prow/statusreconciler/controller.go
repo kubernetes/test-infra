@@ -167,10 +167,11 @@ func (c *Controller) Run(ctx context.Context) {
 		select {
 		case change := <-changes:
 			start := time.Now()
-			if err := c.reconcile(change); err != nil {
-				logrus.WithError(err).Error("Error reconciling statuses.")
+			log := logrus.WithField("old_config_revision", change.Before.ConfigVersionSHA).WithField("config_revision", change.After.ConfigVersionSHA)
+			if err := c.reconcile(change, log); err != nil {
+				log.WithError(err).Error("Error reconciling statuses.")
 			}
-			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Statuses reconciled")
+			log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Statuses reconciled")
 			c.statusClient.Save()
 		case <-ctx.Done():
 			logrus.Info("status-reconciler is shutting down...")
@@ -179,23 +180,23 @@ func (c *Controller) Run(ctx context.Context) {
 	}
 }
 
-func (c *Controller) reconcile(delta config.Delta) error {
+func (c *Controller) reconcile(delta config.Delta, log *logrus.Entry) error {
 	var errors []error
-	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
+	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
+	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
 		}
 	}
 
-	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
+	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
@@ -205,7 +206,7 @@ func (c *Controller) reconcile(delta config.Delta) error {
 	return utilerrors.NewAggregate(errors)
 }
 
-func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Presubmit) error {
+func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Presubmit, log *logrus.Entry) error {
 	var triggerErrors []error
 	for orgrepo, presubmits := range addedPresubmits {
 		if len(presubmits) == 0 {
@@ -245,7 +246,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			}
 			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
-			logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
+			logger := log.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
 			toTrigger, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 			if err != nil {
 				return err
@@ -283,7 +284,7 @@ func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, t
 	return c.prowJobTriggerer.runAndSkip(&pr, toTrigger)
 }
 
-func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config.Presubmit) error {
+func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config.Presubmit, log *logrus.Entry) error {
 	var retireErrors []error
 	for orgrepo, presubmits := range retiredPresubmits {
 		parts := strings.SplitN(orgrepo, "/", 2)
@@ -293,7 +294,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 		}
 		org, repo := parts[0], parts[1]
 		for _, presubmit := range presubmits {
-			logrus.WithFields(logrus.Fields{
+			log.WithFields(logrus.Fields{
 				"org":     org,
 				"repo":    repo,
 				"context": presubmit.Context,
@@ -310,7 +311,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 	return utilerrors.NewAggregate(retireErrors)
 }
 
-func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMigration) error {
+func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMigration, log *logrus.Entry) error {
 	var migrateErrors []error
 	for orgrepo, migrations := range migrations {
 		parts := strings.SplitN(orgrepo, "/", 2)
@@ -320,7 +321,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 		}
 		org, repo := parts[0], parts[1]
 		for _, migration := range migrations {
-			logrus.WithFields(logrus.Fields{
+			log.WithFields(logrus.Fields{
 				"org":  org,
 				"repo": repo,
 				"from": migration.from.Context,
@@ -343,7 +344,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 // or extant presubmits that are now reporting. Previous presubmits that
 // reported but were optional that are no longer optional require no action
 // as their contexts will already exist on PRs.
-func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string][]config.Presubmit {
+func addedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
 	added := map[string][]config.Presubmit{}
 
 	for repo, oldPresubmits := range old {
@@ -357,14 +358,14 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 				if oldPresubmit.Name == newPresubmit.Name {
 					if oldPresubmit.SkipReport && !newPresubmit.SkipReport {
 						added[repo] = append(added[repo], newPresubmit)
-						logrus.WithFields(logrus.Fields{
+						log.WithFields(logrus.Fields{
 							"repo": repo,
 							"name": oldPresubmit.Name,
 						}).Debug("Identified a newly-reporting blocking presubmit.")
 					}
 					if oldPresubmit.RunIfChanged != newPresubmit.RunIfChanged {
 						added[repo] = append(added[repo], newPresubmit)
-						logrus.WithFields(logrus.Fields{
+						log.WithFields(logrus.Fields{
 							"repo": repo,
 							"name": oldPresubmit.Name,
 						}).Debug("Identified a blocking presubmit running over a different set of files.")
@@ -375,7 +376,7 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 			}
 			if !found {
 				added[repo] = append(added[repo], newPresubmit)
-				logrus.WithFields(logrus.Fields{
+				log.WithFields(logrus.Fields{
 					"repo": repo,
 					"name": newPresubmit.Name,
 				}).Debug("Identified an added blocking presubmit.")
@@ -387,15 +388,15 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 	for _, presubmits := range added {
 		numAdded += len(presubmits)
 	}
-	logrus.Infof("Identified %d added blocking presubmits.", numAdded)
-	return added
+	log.Infof("Identified %d added blocking presubmits.", numAdded)
+	return added, log
 }
 
 // removedBlockingPresubmits determines stale blocking presubmits based on a
 // config update. Presubmits that are no longer blocking due to no longer
 // reporting or being optional require no action as Tide will honor those
 // statuses correctly.
-func removedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string][]config.Presubmit {
+func removedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
 	removed := map[string][]config.Presubmit{}
 
 	for repo, oldPresubmits := range old {
@@ -413,7 +414,7 @@ func removedBlockingPresubmits(old, new map[string][]config.Presubmit) map[strin
 			}
 			if !found {
 				removed[repo] = append(removed[repo], oldPresubmit)
-				logrus.WithFields(logrus.Fields{
+				log.WithFields(logrus.Fields{
 					"repo": repo,
 					"name": oldPresubmit.Name,
 				}).Debug("Identified a removed blocking presubmit.")
@@ -425,8 +426,8 @@ func removedBlockingPresubmits(old, new map[string][]config.Presubmit) map[strin
 	for _, presubmits := range removed {
 		numRemoved += len(presubmits)
 	}
-	logrus.Infof("Identified %d removed blocking presubmits.", numRemoved)
-	return removed
+	log.Infof("Identified %d removed blocking presubmits.", numRemoved)
+	return removed, log
 }
 
 type presubmitMigration struct {
@@ -438,7 +439,7 @@ type presubmitMigration struct {
 // can only track a presubmit between configuration versions by its name.
 // A presubmit "migration" that had its underlying job and context changed
 // will be treated as a deletion and creation.
-func migratedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string][]presubmitMigration {
+func migratedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]presubmitMigration, *logrus.Entry) {
 	migrated := map[string][]presubmitMigration{}
 
 	for repo, oldPresubmits := range old {
@@ -450,7 +451,7 @@ func migratedBlockingPresubmits(old, new map[string][]config.Presubmit) map[stri
 			for _, oldPresubmit := range oldPresubmits {
 				if oldPresubmit.Context != newPresubmit.Context && oldPresubmit.Name == newPresubmit.Name {
 					migrated[repo] = append(migrated[repo], presubmitMigration{from: oldPresubmit, to: newPresubmit})
-					logrus.WithFields(logrus.Fields{
+					log.WithFields(logrus.Fields{
 						"repo": repo,
 						"name": oldPresubmit.Name,
 						"from": oldPresubmit.Context,
@@ -465,6 +466,6 @@ func migratedBlockingPresubmits(old, new map[string][]config.Presubmit) map[stri
 	for _, presubmits := range migrated {
 		numMigrated += len(presubmits)
 	}
-	logrus.Infof("Identified %d migrated blocking presubmits.", numMigrated)
-	return migrated
+	log.Infof("Identified %d migrated blocking presubmits.", numMigrated)
+	return migrated, log
 }
