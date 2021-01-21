@@ -5350,3 +5350,11 @@ def go_repositories():
         sum = "h1:jxcFYjlkl8xaERsgLo+RNquI0epW6zuy/ZRQs6jnrFA=",
         version = "v1.1.2",
     )
+    go_repository(
+        name = "com_github_felixge_fgprof",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/felixge/fgprof",
+        sum = "h1:E6FUJ2Mlv043ipLOCFqo8+cHo9MhQ203E2cdEK/isEs=",
+        version = "v0.9.1",
+    )
