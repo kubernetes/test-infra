@@ -221,7 +221,7 @@ func TestFindJiraUrl(t *testing.T) {
 	} {
 		foundJiraServer := findJiraUrl(config, test.repo)
 		if foundJiraServer != test.expectedURL {
-			t.Errorf("Unexpected URL returned (got %q, expected %q",foundJiraServer,  test.expectedURL)
+			t.Errorf("Unexpected URL returned (got %q, expected %q)",foundJiraServer,  test.expectedURL)
 		}
 	}
 }
