@@ -405,6 +405,6 @@ periodics:
         requests:
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-upgrade
