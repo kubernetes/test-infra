@@ -105,32 +105,35 @@ FROM ubuntu:bionic as ruby_tools_context
 
 # Pinned versions of stuff we pull in
 ENV AWESOMEBOT_VERSION=1.19.1
+ENV FPM_VERSION=1.11.0
 ENV HTMLPROOFER_VERSION=3.12.0
 ENV LICENSEE_VERSION=9.11.0
 ENV MDL_VERSION=0.5.0
-ENV RUBY_VERSION=2.6.5
 
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    gnupg2 \
+    software-properties-common \
     build-essential \
+    zlib1g-dev \
     cmake \
-    libssl-dev \
     pkg-config \
-    zlib1g-dev
+    libssl-dev
 
-ADD https://cache.ruby-lang.org/pub/ruby/2.6/ruby-${RUBY_VERSION}.tar.gz /tmp
-WORKDIR /tmp
-RUN tar -xzf ruby-${RUBY_VERSION}.tar.gz
-WORKDIR /tmp/ruby-${RUBY_VERSION}
-RUN ./configure
-RUN make
-RUN make install
+RUN add-apt-repository -y ppa:brightbox/ruby-ng-experimental
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ruby2.6 \
+    ruby2.6-dev
 
 # Install verification tools
 RUN gem install --no-wrappers --no-document mdl -v ${MDL_VERSION}
 RUN gem install --no-wrappers --no-document html-proofer -v ${HTMLPROOFER_VERSION}
 RUN gem install --no-wrappers --no-document awesome_bot -v ${AWESOMEBOT_VERSION}
 RUN gem install --no-wrappers --no-document licensee -v ${LICENSEE_VERSION}
+RUN gem install --no-wrappers --no-document fpm -v ${FPM_VERSION}
 
 ##############
 # Python
