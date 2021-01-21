@@ -449,20 +449,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.16-continuous
-    name: knative-operator-0.16-continuous
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.16-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.16-dot-release
-    name: knative-operator-0.16-dot-release
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.16-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.17-continuous
     name: knative-operator-0.17-continuous
     open_bug_template:
@@ -503,6 +489,20 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-0.19-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.20-continuous
+    name: knative-operator-0.20-continuous
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.20-continuous
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.20-dot-release
+    name: knative-operator-0.20-dot-release
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.20-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -744,13 +744,6 @@ dashboards:
     test_group_name: ci-knative-eventing-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-operator-0.16-continuous-beta-prow-tests
-    name: knative-operator-0.16-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    test_group_name: ci-knative-operator-0.16-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-0.17-continuous-beta-prow-tests
     name: knative-operator-0.17-continuous-beta-prow-tests
     open_bug_template:
@@ -770,6 +763,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/operator/issues/
     test_group_name: ci-knative-operator-0.19-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-operator-0.20-continuous-beta-prow-tests
+    name: knative-operator-0.20-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    test_group_name: ci-knative-operator-0.20-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-operator-continuous-beta-prow-tests
@@ -2341,15 +2341,6 @@ test_groups:
   name: ci-knative-eventing-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.16-continuous
-  name: ci-knative-operator-0.16-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.16-continuous-beta-prow-tests
-  name: ci-knative-operator-0.16-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.16-dot-release
-  name: ci-knative-operator-0.16-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-operator-0.17-continuous
   name: ci-knative-operator-0.17-continuous
 - alert_stale_results_hours: 3
@@ -2376,6 +2367,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-operator-0.19-dot-release
   name: ci-knative-operator-0.19-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.20-continuous
+  name: ci-knative-operator-0.20-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.20-continuous-beta-prow-tests
+  name: ci-knative-operator-0.20-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.20-dot-release
+  name: ci-knative-operator-0.20-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-operator-auto-release
   name: ci-knative-operator-auto-release
   num_failures_to_alert: 1
