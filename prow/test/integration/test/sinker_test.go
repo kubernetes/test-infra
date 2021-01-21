@@ -282,11 +282,11 @@ func TestDeletePod(t *testing.T) {
 				}
 			}
 
-			// Make sure pod is deleted, it'll take roughly 3 minutes
+			// Make sure pod is deleted, it'll take roughly 1 minutes
 			// Don't care about the outcome, will check later
-			t.Logf("Wait for sinker deleting pod or timeout in 3 minutes: %s", pod.Name)
+			t.Logf("Wait for sinker deleting pod or timeout in 1 minutes: %s", pod.Name)
 			var exist bool
-			wait.Poll(time.Second, 2*time.Minute, func() (bool, error) {
+			wait.Poll(time.Second, 1*time.Minute, func() (bool, error) {
 				exist = false
 				pods := &corev1.PodList{}
 				err = kubeClient.List(ctx, pods, ctrlruntimeclient.InNamespace(testpodNamespace))
@@ -296,6 +296,9 @@ func TestDeletePod(t *testing.T) {
 				for _, p := range pods.Items {
 					if p.Name == pod.Name {
 						exist = true
+						if p.ObjectMeta.DeletionTimestamp != nil { // Pod scheduled to deletion
+							exist = false
+						}
 					}
 				}
 				return !exist, nil
