@@ -895,7 +895,7 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 		{
 			name:     "two prefixes being bumped with inconsistent tags",
 			prefixes: []Prefix{prowPrefix, boskosPrefix},
-			images:   map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test:tag2": "newtag2"},
+			images:   map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "tag1"},
 			err:      true,
 		},
 		{
@@ -911,6 +911,20 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 			images:           map[string]string{"inconsistent/test:tag1": "newtag1", "inconsistent/test2:tag2": "newtag2"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"inconsistent/test:tag1"}, "newtag2": {"inconsistent/test2:tag2"}},
+		},
+		{
+			name:             "One of the image types wasn't bumped. Do not include in versions.",
+			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1", "gcr.io/k8s-boskos/nobumped:tag1": "tag1"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
+		},
+		{
+			name:             "Two of the images in one type wasn't bumped. Do not include in versions. Do not error",
+			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1", "gcr.io/k8s-boskos/nobumped:tag1": "tag1", "gcr.io/k8s-boskos/nobumped2:tag1": "tag1"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
 	}
 	for _, tc := range testCases {
@@ -961,7 +975,19 @@ func TestMakeCommitSummary(t *testing.T) {
 		{
 			name:           "One bumped inconsistently",
 			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
-			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}, "tag3": {"gcr.io/inconsistnet/test:tag2"}},
+			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}, "tag3": {"gcr.io/inconsistent/test:tag3"}},
+			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
+		},
+		{
+			name:           "inconsistent tag was not bumped, do not include in result",
+			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
+			expectedResult: "Update Prow to tag1, Boskos to tag2",
+		},
+		{
+			name:           "Two images bumped to same version",
+			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/inconsistent/test:tag3"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
 		},
 	}
