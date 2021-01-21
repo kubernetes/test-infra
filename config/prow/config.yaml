@@ -460,6 +460,8 @@ tide:
   queries:
   - orgs:
     - kubeflow
+    excludedRepos: # TODO(Bobgy): move entire Kubeflow org to oss prow.
+    - kubeflow/pipelines
     labels:
     - lgtm
     - approved
