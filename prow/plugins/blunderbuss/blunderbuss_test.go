@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -112,6 +113,10 @@ type fakeOwnersClient struct {
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
 	dirBlacklist      []*regexp.Regexp
+}
+
+func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {

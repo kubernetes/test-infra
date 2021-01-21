@@ -30,16 +30,16 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 
 	prowConf "k8s.io/test-infra/prow/config"
 )
 
 const (
-	ownersFileName  = "OWNERS"
-	aliasesFileName = "OWNERS_ALIASES"
 	// GitHub's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
 	baseDirConvention = ""
 )
@@ -162,6 +162,7 @@ type delegate struct {
 	mdYAMLEnabled      func(org, repo string) bool
 	skipCollaborators  func(org, repo string) bool
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
+	filenames          ownersconfig.Resolver
 
 	cache *cache
 }
@@ -192,6 +193,7 @@ func NewClient(
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
+	filenames ownersconfig.Resolver,
 ) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "repoowners"),
@@ -203,6 +205,7 @@ func NewClient(
 			mdYAMLEnabled:      mdYAMLEnabled,
 			skipCollaborators:  skipCollaborators,
 			ownersDirBlacklist: ownersDirBlacklist,
+			filenames:          filenames,
 		},
 	}
 }
@@ -224,6 +227,7 @@ type RepoOwner interface {
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
 	TopLevelApprovers() sets.String
+	Filenames() ownersconfig.Filenames
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -241,8 +245,13 @@ type RepoOwners struct {
 	baseDir      string
 	enableMDYAML bool
 	dirBlacklist []*regexp.Regexp
+	filenames    ownersconfig.Filenames
 
 	log *logrus.Entry
+}
+
+func (r *RepoOwners) Filenames() ownersconfig.Filenames {
+	return r.filenames
 }
 
 // LoadRepoAliases returns an up-to-date RepoAliases struct for the specified repo.
@@ -271,7 +280,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 			return nil, err
 		}
 
-		entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
+		entry.aliases = loadAliasesFrom(gitRepo.Directory(), c.filenames(org, repo).OwnersAliases, log)
 		entry.sha = sha
 		c.cache.setEntry(fullName, entry)
 	}
@@ -331,6 +340,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 	}()
 	entry, ok, entryLock := c.cache.getEntry(fullName)
 	defer entryLock.Unlock()
+	filenames := c.filenames(org, repo)
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
 		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
@@ -353,8 +363,8 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			start = time.Now()
 			for _, change := range changes {
 				if mdYaml && strings.HasSuffix(change, ".md") ||
-					strings.HasSuffix(change, aliasesFileName) ||
-					strings.HasSuffix(change, ownersFileName) {
+					strings.HasSuffix(change, filenames.OwnersAliases) ||
+					strings.HasSuffix(change, filenames.Owners) {
 					reusable = false
 					log.WithField("duration", time.Since(start).String()).Debugf("Completed owners change verification loop")
 					break
@@ -374,7 +384,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			start = time.Now()
 			if entry.aliases == nil || entry.sha != sha {
 				// aliases must be loaded
-				entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
+				entry.aliases = loadAliasesFrom(gitRepo.Directory(), filenames.OwnersAliases, log)
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
@@ -392,7 +402,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirBlacklist loading")
 
 			start = time.Now()
-			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, log)
+			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, filenames, log)
 			if err != nil {
 				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 			}
@@ -442,8 +452,8 @@ func (a RepoAliases) ExpandAllAliases() sets.String {
 	return result
 }
 
-func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
-	path := filepath.Join(baseDir, aliasesFileName)
+func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
+	path := filepath.Join(baseDir, filename)
 	b, err := ioutil.ReadFile(path)
 	if os.IsNotExist(err) {
 		log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", path)
@@ -460,11 +470,12 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []*regexp.Regexp, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
 		enableMDYAML: mdYaml,
+		filenames:    filenames,
 		log:          log,
 
 		approvers:         make(map[string]map[*regexp.Regexp]sets.String),
@@ -530,7 +541,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	if filename != ownersFileName {
+	if filename != o.filenames.Owners {
 		return nil
 	}
 

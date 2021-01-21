@@ -42,6 +42,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/jira"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -204,7 +205,10 @@ func main() {
 	ownersDirBlacklist := func() config.OwnersDirBlacklist {
 		return configAgent.Config().OwnersDirBlacklist
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
+	resolver := func(org, repo string) ownersconfig.Filenames {
+		return pluginAgent.Config().OwnersFilenames(org, repo)
+	}
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,
