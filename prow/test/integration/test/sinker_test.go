@@ -283,7 +283,7 @@ func TestDeletePod(t *testing.T) {
 			}
 
 			// Make sure pod is deleted, it'll take roughly 1 minutes
-			// Don't care about the outcome, will check later
+			// Don't care about the outcome, will check later 
 			t.Logf("Wait for sinker deleting pod or timeout in 1 minutes: %s", pod.Name)
 			var exist bool
 			wait.Poll(time.Second, 1*time.Minute, func() (bool, error) {
