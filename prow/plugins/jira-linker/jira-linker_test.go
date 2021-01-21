@@ -187,3 +187,41 @@ func TestJiraTicketRef(t *testing.T) {
 		}
 	}
 }
+
+func TestFindJiraUrl(t *testing.T) {
+	config := plugins.JiraLinker{
+		JiraBaseUrl: "https://base.atlassian.net",
+		JiraOverrides: []plugins.JiraOverrides{
+			{
+				JiraUrl: "https://defence.atlassian.net",
+				Repos:   []string{"defence-repo-1", "defence-repo-2"},
+			},
+			{
+				JiraUrl: "https://other.atlassian.net",
+				Repos:   []string{"other-repo-1", "other-repo-2"},
+			},
+		},
+	}
+	for _, test := range []struct{
+		repo string
+		expectedURL	string
+	}{
+		{
+			repo: "an-improbable-repo",
+			expectedURL: "https://base.atlassian.net",
+		},
+		{
+			repo: "defence-repo-1",
+			expectedURL: "https://defence.atlassian.net",
+		},
+		{
+			repo: "other-repo-2",
+			expectedURL: "https://other.atlassian.net",
+		},
+	} {
+		foundJiraServer := findJiraUrl(config, test.repo)
+		if foundJiraServer != test.expectedURL {
+			t.Errorf("Unexpected URL returned (got %q, expected %q)",foundJiraServer,  test.expectedURL)
+		}
+	}
+}
