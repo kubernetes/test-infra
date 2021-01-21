@@ -397,6 +397,8 @@ periodics:
         value: aws
       - name: CLUSTER_NAME
         value: e2e-f9b0e6b3f9-bb3c3.test-cncf-aws.k8s.io
+      - name: KOPS_STATE_STORE
+        value: s3://k8s-kops-prow
       securityContext:
         privileged: true
       resources:
