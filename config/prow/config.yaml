@@ -454,15 +454,6 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
-    kubeflow:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/google
-      exclude:
-      - "^revert-" # don't protect revert branches
-      - "^dependabot/" # don't protect branches created by dependabot
-      - "-patch-" # don't protect branches created by editing on GitHub UI
 
 tide:
   sync_period: 2m

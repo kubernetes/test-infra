@@ -660,23 +660,6 @@ plugins:
   google/cadvisor:
   - trigger
 
-  kubeflow:
-  - approve   # Enable /approve and /assign commands.
-  - assign
-  - blunderbuss
-  - golint
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle   # Lets PRs & issues be flagged as stale
-  - override
-  - project # Lets issues be tagged into projects
-  - size
-  - skip  # Allows cleaning up stale commit statuses
-  - verify-owners   # Validates OWNERS file changes in PRs.
-  - wip   # Applies a label to PRs with wip in the title to block merge
-
   kubeflow/arena:
   - trigger
 
