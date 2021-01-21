@@ -87,16 +87,7 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 		}
 
 		if !hasLabel {
-			jiraServerURL := config.JiraBaseUrl
-			out:
-			for _, v := range config.JiraOverrides{
-				for _, x := range v.Repos {
-					if x == repo {
-						jiraServerURL = v.JiraUrl
-						break out
-					}
-				}
-			}
+			jiraServerURL := findJiraUrl(config, repo)
 			gc.CreateComment(org, repo, event.Number, commentForTicket(jiraLink(jiraServerURL, ticketName)))
 			gc.AddLabel(org, repo, event.Number, jiraLabel(jiraTeamName))
 		}
@@ -118,6 +109,20 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 	}
 
 	return nil
+}
+
+func findJiraUrl(config plugins.JiraLinker, repo string) string {
+	jiraServerURL := config.JiraBaseUrl
+out:
+	for _, v := range config.JiraOverrides {
+		for _, x := range v.Repos {
+			if x == repo {
+				jiraServerURL = v.JiraUrl
+				break out
+			}
+		}
+	}
+	return jiraServerURL
 }
 
 // Returns if found, and if so respectively the ticket type (e.g. ENG) and the ticket ref (e.g. ENG-23)
