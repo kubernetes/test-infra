@@ -60,6 +60,53 @@ template = """
           memory: 2Gi
 """
 
+kubetest2_template = """
+- name: e2e-kops-grid{{suffix}}
+  cron: '{{cron}}'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  spec:
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        cd tests/e2e;
+        make test-e2e-install;
+        kubetest2 kops
+          -v 2
+         --up --down
+          --cloud-provider=aws
+          --kops-version-marker={{kops_deploy_url}}
+          --networking={{networking}}
+          --kubernetes-version={{k8s_deploy_url}}
+          --test=kops
+          --
+          --test-package-marker={{marker}}
+          --parallel 25
+          --skip-regex="{{skip_regex}}"
+      image: {{e2e_image}}
+      resources:
+        limits:
+          memory: 2Gi
+        requests:
+          cpu: "2"
+          memory: 2Gi
+"""
+
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
 # and ideally linked to a bug, and removed once the bug is fixed
@@ -129,6 +176,7 @@ def build_cron(key):
 
 def remove_line_with_prefix(s, prefix):
     keep = []
+    found = False
     for line in s.split('\n'):
         trimmed = line.strip()
         if trimmed.startswith(prefix):
@@ -219,10 +267,12 @@ def build_test(cloud='aws',
 
     if k8s_version is None:
         extract = "release/latest"
+        marker = 'stable-latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master"
     else:
         extract = expand("release/stable-{k8s_version}")
+        marker = expand("stable-{k8s_version}.txt")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18"
@@ -241,7 +291,8 @@ def build_test(cloud='aws',
 
     kops_args = kops_args.strip()
 
-    test_args = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+    skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+    test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -277,7 +328,14 @@ def build_test(cloud='aws',
 
     cron = build_cron(tab)
 
+    # As kubetest2 adds support for additional configurations we can reduce this conditional
+    # and migrate more of the grid jobs to kubetest2
+    use_kubetest2 = container_runtime == 'containerd' and distro == 'u2004' and \
+        feature_flags is None and extra_flags is None and kops_zones is None
+
     y = template
+    if use_kubetest2:
+        y = kubetest2_template
     y = y.replace('{{cluster_name}}', cluster_name)
     y = y.replace('{{suffix}}', suffix)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
@@ -288,26 +346,34 @@ def build_test(cloud='aws',
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
+    # specific to kubetest2
+    if use_kubetest2:
+        if networking:
+            y = y.replace('{{networking}}', networking)
+        else:
+            y = remove_line_with_prefix(y, "--networking=")
+        y = y.replace('{{marker}}', marker)
+        y = y.replace('{{skip_regex}}', skip_regex)
+    else:
+        if kops_image:
+            y = y.replace('{{kops_image}}', kops_image)
+        else:
+            y = remove_line_with_prefix(y, "- --kops-image=")
+
+        if kops_zones:
+            y = y.replace('{{kops_zones}}', ','.join(kops_zones))
+        else:
+            y = remove_line_with_prefix(y, "- --kops-zones=")
+
+        if feature_flags:
+            y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+        else:
+            y = remove_line_with_prefix(y, "- --kops-feature-flags=")
 
     if kops_version:
         y = y.replace('{{kops_version}}', kops_version)
     else:
         y = y.replace('{{kops_version}}', "latest")
-
-    if kops_image:
-        y = y.replace('{{kops_image}}', kops_image)
-    else:
-        y = remove_line_with_prefix(y, "- --kops-image=")
-
-    if kops_zones:
-        y = y.replace('{{kops_zones}}', ','.join(kops_zones))
-    else:
-        y = remove_line_with_prefix(y, "- --kops-zones=")
-
-    if feature_flags:
-        y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
-    else:
-        y = remove_line_with_prefix(y, "- --kops-feature-flags=")
 
     spec = {
         'cloud': cloud,
@@ -348,6 +414,9 @@ def build_test(cloud='aws',
 
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
+
+    if use_kubetest2:
+        dashboards.append('kops-kubetest2')
 
     annotations = {
         'testgrid-dashboards': ', '.join(dashboards),
