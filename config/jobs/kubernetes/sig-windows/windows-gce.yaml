@@ -58,7 +58,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -82,7 +82,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
@@ -103,7 +103,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -127,7 +127,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win1909"
@@ -148,7 +148,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -172,7 +172,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
