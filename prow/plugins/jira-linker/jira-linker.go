@@ -113,12 +113,11 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 
 func findJiraUrl(config plugins.JiraLinker, repo string) string {
 	jiraServerURL := config.JiraBaseUrl
-out:
 	for _, v := range config.JiraOverrides {
 		for _, x := range v.Repos {
 			if x == repo {
 				jiraServerURL = v.JiraUrl
-				break out
+				return jiraServerURL
 			}
 		}
 	}
