@@ -365,23 +365,40 @@ func (c *Controller) Sync() error {
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
+	lock := sync.Mutex{}
+	wg := sync.WaitGroup{}
 	prs := make(map[string]PullRequest)
+	var errs []error
 	for _, query := range c.config().Tide.Queries {
 		q := query.Query()
-		results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
-		if err != nil && len(results) == 0 {
-			return fmt.Errorf("query %q, err: %v", q, err)
-		}
-		if err != nil {
-			c.logger.WithError(err).WithField("query", q).Warning("found partial results")
-		}
-		for _, pr := range results {
-			prs[prKey(&pr)] = pr
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
+			lock.Lock()
+			defer lock.Unlock()
+
+			if err != nil && len(results) == 0 {
+				errs = append(errs, fmt.Errorf("query %q, err: %v", q, err))
+				return
+			}
+			if err != nil {
+				c.logger.WithError(err).WithField("query", q).Warning("found partial results")
+			}
+
+			for _, pr := range results {
+				prs[prKey(&pr)] = pr
+			}
+		}()
 	}
-	c.logger.WithField(
-		"duration", time.Since(start).String(),
-	).Debugf("Found %d (unfiltered) pool PRs.", len(prs))
+	wg.Wait()
+	if err := utilerrors.NewAggregate(errs); err != nil {
+		return err
+	}
+	c.logger.WithFields(logrus.Fields{
+		"duration":       time.Since(start).String(),
+		"found_pr_count": len(prs),
+	}).Debug("Found (unfiltered) pool PRs.")
 
 	var blocks blockers.Blockers
 	var err error
