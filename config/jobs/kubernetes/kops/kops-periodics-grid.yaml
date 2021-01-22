@@ -20475,7 +20475,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20531,7 +20530,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20587,7 +20585,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20643,7 +20640,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20699,7 +20695,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20755,7 +20750,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -20811,7 +20805,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23317,7 +23310,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23373,7 +23365,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23429,7 +23420,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23485,7 +23475,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23541,7 +23530,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23597,7 +23585,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -23653,7 +23640,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26159,7 +26145,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26215,7 +26200,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26271,7 +26255,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26327,7 +26310,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26383,7 +26365,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26439,7 +26420,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \
@@ -26495,7 +26475,6 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \
           -v 2 \

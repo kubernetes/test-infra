@@ -84,7 +84,6 @@ kubetest2_template = """
       - bash
       - -c
       - |
-        cd tests/e2e
         make test-e2e-install
         kubetest2 kops \\
           -v 2 \\
