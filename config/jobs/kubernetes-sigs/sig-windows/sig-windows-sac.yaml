@@ -62,7 +62,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"

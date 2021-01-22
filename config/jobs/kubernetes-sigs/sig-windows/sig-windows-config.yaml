@@ -14,6 +14,11 @@ presets:
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
 - labels:
+    preset-windows-repo-list-master: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-master
+- labels:
     preset-windows-repo-list-2004: "true"
   env:
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
@@ -34,7 +39,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
@@ -88,7 +93,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
@@ -143,7 +148,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -206,7 +211,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -268,7 +273,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
@@ -320,7 +325,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -374,7 +379,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -428,7 +433,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -483,7 +488,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -537,7 +542,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -591,7 +596,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -645,7 +650,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -708,7 +713,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -769,7 +774,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -832,7 +837,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
