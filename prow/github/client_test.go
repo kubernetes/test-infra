@@ -623,6 +623,36 @@ func TestAddLabel(t *testing.T) {
 	}
 }
 
+func TestAddLabels(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ls []string
+		if err := json.Unmarshal(b, &ls); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ls) != 2 {
+			t.Errorf("Wrong length labels: %v", ls)
+		} else if ls[0] != "foo" {
+			t.Errorf("Wrong label: %s", ls[0])
+		} else if ls[1] != "bar" {
+			t.Errorf("Wrong label: %s", ls[1])
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.AddLabels("k8s", "kuber", 5, "foo", "bar"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
 func TestRemoveLabel(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {

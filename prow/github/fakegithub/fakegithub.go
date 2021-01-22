@@ -373,6 +373,29 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 	return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 }
 
+// AddLabels adds a list of labels
+func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	for _, label := range labels {
+		labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+		if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+		}
+
+		if f.RepoLabelsExisting == nil {
+			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
+			continue
+		}
+		for _, l := range f.RepoLabelsExisting {
+			if label == l {
+				f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
+				continue
+			}
+		}
+		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+	}
+	return nil
+}
+
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
