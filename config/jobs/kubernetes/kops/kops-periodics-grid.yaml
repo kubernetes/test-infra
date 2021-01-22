@@ -20461,13 +20461,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20475,19 +20475,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -20517,13 +20517,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20531,19 +20531,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -20573,13 +20573,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20587,19 +20587,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -20629,13 +20629,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20643,19 +20643,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -20685,13 +20685,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20699,19 +20699,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -20741,13 +20741,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20755,19 +20755,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -20797,13 +20797,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -20811,19 +20811,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=calico
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.20.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=calico \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.20.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
       resources:
@@ -23303,13 +23303,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23317,19 +23317,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -23359,13 +23359,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23373,19 +23373,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -23415,13 +23415,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23429,19 +23429,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -23471,13 +23471,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23485,19 +23485,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -23527,13 +23527,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23541,19 +23541,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -23583,13 +23583,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23597,19 +23597,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -23639,13 +23639,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -23653,19 +23653,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=cilium
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.20.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=cilium \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.20.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
       resources:
@@ -26145,13 +26145,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26159,19 +26159,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -26201,13 +26201,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26215,19 +26215,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.17.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.17.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
       resources:
@@ -26257,13 +26257,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26271,19 +26271,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -26313,13 +26313,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26327,19 +26327,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.18.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.18.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       resources:
@@ -26369,13 +26369,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26383,19 +26383,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -26425,13 +26425,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26439,19 +26439,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.19.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
       resources:
@@ -26481,13 +26481,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
@@ -26495,19 +26495,19 @@ periodics:
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-          --networking=flannel
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
-          --test=kops
-          --
-          --test-package-marker=stable-1.20.txt
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --networking=flannel \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable-1.20.txt \
+          --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
       resources:
