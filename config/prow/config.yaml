@@ -458,10 +458,10 @@ branch-protection:
       protect: true
       required_status_checks:
         contexts:
-        - cla/google	
+        - cla/google
       exclude:
-      - "^revert-" # don't protect revert branches	
-      - "^dependabot/" # don't protect branches created by dependabot	
+      - "^revert-" # don't protect revert branches
+      - "^dependabot/" # don't protect branches created by dependabot
       - "-patch-" # don't protect branches created by editing on GitHub UI
 
 tide:
