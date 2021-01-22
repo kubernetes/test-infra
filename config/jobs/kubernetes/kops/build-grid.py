@@ -84,19 +84,19 @@ kubetest2_template = """
       - bash
       - -c
       - |
-        cd tests/e2e;
-        make test-e2e-install;
-        kubetest2 kops
-          -v 2
-         --up --down
-          --cloud-provider=aws
-          --kops-version-marker={{kops_deploy_url}}
-          --networking={{networking}}
-          --kubernetes-version={{k8s_deploy_url}}
-          --test=kops
-          --
-          --test-package-marker={{marker}}
-          --parallel 25
+        cd tests/e2e
+        make test-e2e-install
+        kubetest2 kops \\
+          -v 2 \\
+          --up --down \\
+          --cloud-provider=aws \\
+          --kops-version-marker={{kops_deploy_url}} \\
+          --networking={{networking}} \\
+          --kubernetes-version={{k8s_deploy_url}} \\
+          --test=kops \\
+          -- \\
+          --test-package-marker={{marker}} \\
+          --parallel 25 \\
           --skip-regex="{{skip_regex}}"
       image: {{e2e_image}}
       resources:
