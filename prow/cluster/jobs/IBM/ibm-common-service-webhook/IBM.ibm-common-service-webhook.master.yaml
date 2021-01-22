@@ -13,7 +13,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20210121-7397b953f
+        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
         name: ""
         securityContext:
           privileged: true
@@ -145,7 +145,7 @@ postsubmits:
       - command:
         - make
         - coverage
-        image: quay.io/multicloudlab/check-tool:v20210121-7397b953f
+        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
         name: ""
         env:
         - name: CODECOV_TOKEN
