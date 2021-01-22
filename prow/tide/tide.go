@@ -60,7 +60,7 @@ type githubClient interface {
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
-	Query(context.Context, interface{}, map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 }
 
 type contextChecker interface {
@@ -72,12 +72,13 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	ctx           context.Context
-	logger        *logrus.Entry
-	config        config.Getter
-	ghc           githubClient
-	prowJobClient ctrlruntimeclient.Client
-	gc            git.ClientFactory
+	ctx                context.Context
+	logger             *logrus.Entry
+	config             config.Getter
+	ghc                githubClient
+	prowJobClient      ctrlruntimeclient.Client
+	gc                 git.ClientFactory
+	usesGitHubAppsAuth bool
 
 	sc *statusController
 
@@ -229,7 +230,7 @@ type manager interface {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc git.ClientFactory, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc git.ClientFactory, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry, usesGitHubAppsAuth bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -246,7 +247,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	go sc.run()
 
-	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker)
+	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker, usesGitHubAppsAuth)
 }
 
 func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
@@ -277,6 +278,7 @@ func newSyncController(
 	sc *statusController,
 	hist *history.History,
 	mergeChecker *mergeChecker,
+	usesGitHubAppsAuth bool,
 ) (*Controller, error) {
 	if err := mgr.GetFieldIndexer().IndexField(
 		ctx,
@@ -295,13 +297,14 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 	return &Controller{
-		ctx:           ctx,
-		logger:        logger.WithField("controller", "sync"),
-		ghc:           ghcSync,
-		prowJobClient: mgr.GetClient(),
-		config:        cfg,
-		gc:            gc,
-		sc:            sc,
+		ctx:                ctx,
+		logger:             logger.WithField("controller", "sync"),
+		ghc:                ghcSync,
+		prowJobClient:      mgr.GetClient(),
+		config:             cfg,
+		gc:                 gc,
+		usesGitHubAppsAuth: usesGitHubAppsAuth,
+		sc:                 sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
@@ -365,35 +368,9 @@ func (c *Controller) Sync() error {
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
-	lock := sync.Mutex{}
-	wg := sync.WaitGroup{}
-	prs := make(map[string]PullRequest)
-	var errs []error
-	for _, query := range c.config().Tide.Queries {
-		q := query.Query()
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
-			lock.Lock()
-			defer lock.Unlock()
-
-			if err != nil && len(results) == 0 {
-				errs = append(errs, fmt.Errorf("query %q, err: %v", q, err))
-				return
-			}
-			if err != nil {
-				c.logger.WithError(err).WithField("query", q).Warning("found partial results")
-			}
-
-			for _, pr := range results {
-				prs[prKey(&pr)] = pr
-			}
-		}()
-	}
-	wg.Wait()
-	if err := utilerrors.NewAggregate(errs); err != nil {
-		return err
+	prs, err := c.query()
+	if err != nil {
+		return fmt.Errorf("failed to query GitHub for prs: %w", err)
 	}
 	c.logger.WithFields(logrus.Fields{
 		"duration":       time.Since(start).String(),
@@ -401,7 +378,6 @@ func (c *Controller) Sync() error {
 	}).Debug("Found (unfiltered) pool PRs.")
 
 	var blocks blockers.Blockers
-	var err error
 	if len(prs) > 0 {
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
@@ -463,6 +439,49 @@ func (c *Controller) Sync() error {
 
 	c.History.Flush()
 	return nil
+}
+
+func (c *Controller) query() (map[string]PullRequest, error) {
+	lock := sync.Mutex{}
+	wg := sync.WaitGroup{}
+	prs := make(map[string]PullRequest)
+	var errs []error
+	for _, query := range c.config().Tide.Queries {
+
+		// Use org-sharded queries only when GitHub apps auth is in use
+		var queries map[string]string
+		if c.usesGitHubAppsAuth {
+			queries = query.OrgQueries()
+		} else {
+			queries = map[string]string{"": query.Query()}
+		}
+
+		for org, q := range queries {
+			org, q := org, q
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				results, err := search(c.ghc.QueryWithGitHubAppsSupport, c.logger, q, time.Time{}, time.Now(), org)
+				lock.Lock()
+				defer lock.Unlock()
+
+				if err != nil && len(results) == 0 {
+					errs = append(errs, fmt.Errorf("query %q, err: %v", q, err))
+					return
+				}
+				if err != nil {
+					c.logger.WithError(err).WithField("query", q).Warning("found partial results")
+				}
+
+				for _, pr := range results {
+					prs[prKey(&pr)] = pr
+				}
+			}()
+		}
+	}
+	wg.Wait()
+
+	return prs, utilerrors.NewAggregate(errs)
 }
 
 func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {

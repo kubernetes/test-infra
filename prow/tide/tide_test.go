@@ -28,6 +28,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
@@ -518,14 +519,16 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
-	err error
+	err  error
+	lock sync.Mutex
 
-	prs       []PullRequest
-	refs      map[string]string
-	merged    int
-	setStatus bool
-	statuses  map[string]github.Status
-	mergeErrs map[int]error
+	prs        map[string][]PullRequest
+	refs       map[string]string
+	merged     int
+	setStatus  bool
+	statuses   map[string]github.Status
+	mergeErrs  map[int]error
+	queryCalls int
 
 	expectedSHA    string
 	combinedStatus map[string]string
@@ -550,12 +553,17 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
-func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+func (f *fgc) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	sq, ok := q.(*searchQuery)
 	if !ok {
 		return errors.New("unexpected query type")
 	}
-	for _, pr := range f.prs {
+
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.queryCalls++
+
+	for _, pr := range f.prs[org] {
 		sq.Search.Nodes = append(
 			sq.Search.Nodes,
 			struct {
@@ -729,7 +737,7 @@ func TestDividePool(t *testing.T) {
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc,
+		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, false,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1661,6 +1669,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				nil,
 				nil,
 				nil,
+				false,
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
@@ -1983,7 +1992,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{
-			prs: tc.prs,
+			prs: map[string][]PullRequest{"": tc.prs},
 			refs: map[string]string{
 				"org/repo heads/A": "SHA",
 				"org/repo A":       "SHA",
@@ -4019,6 +4028,60 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
 			if int(got.Number) != tc.expected {
 				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
+			}
+		})
+	}
+}
+
+func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name                     string
+		usesGitHubAppsAuth       bool
+		prs                      map[string][]PullRequest
+		expectedNumberOfApiCalls int
+	}{
+		{
+			name:               "Apps auth is used, one call per org",
+			usesGitHubAppsAuth: true,
+			prs: map[string][]PullRequest{
+				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+			},
+			expectedNumberOfApiCalls: 2,
+		},
+		{
+			name:               "Apps auth is unused, one call for all orgs",
+			usesGitHubAppsAuth: false,
+			prs: map[string][]PullRequest{"": {
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
+			}},
+			expectedNumberOfApiCalls: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Controller{
+				logger: logrus.WithField("test", tc.name),
+				config: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+				},
+				ghc:                &fgc{prs: tc.prs},
+				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
+			}
+
+			prs, err := c.query()
+			if err != nil {
+				t.Fatalf("query() failed: %v", err)
+			}
+			if n := len(prs); n != 2 {
+				t.Errorf("expected to get two prs back, got %d", n)
+			}
+			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, c.ghc.(*fgc).queryCalls); diff != "" {
+				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
 			}
 		})
 	}
