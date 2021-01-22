@@ -731,9 +731,6 @@ plugins:
   kubeflow/mxnet-operator:
   - trigger
 
-  kubeflow/pipelines:
-  - trigger
-
   kubeflow/reporting:
   - trigger
 
