@@ -70,13 +70,13 @@ kubetest2_template = """
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
-    extra_refs:
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
     containers:
     - command:
       - runner.sh
