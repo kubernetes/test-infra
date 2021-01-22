@@ -810,6 +810,12 @@ tide:
     pr_status_base_urls:
         "": ""
 
+    # Priority is an ordered list of labels that would be prioritized before other PRs
+    # PRs should match all labels contained in a list to be prioritized
+    priority:
+      - labels:
+          - ""
+
     # Queries represents a list of GitHub search queries that collectively
     # specify the set of PRs that meet merge requirements.
     queries:

@@ -785,23 +785,43 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 	return failed
 }
 
-func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc map[int]contextChecker) (bool, PullRequest) {
+func hasAllLabels(pr PullRequest, labels []string) bool {
+	if len(labels) == 0 {
+		return true
+	}
+	prLabels := sets.NewString()
+	for _, l := range pr.Labels.Nodes {
+		prLabels.Insert(string(l.Name))
+	}
+	requiredLabels := sets.NewString(labels...)
+	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
+}
+
+func pickHighestPriorityPR(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool, priorities []config.TidePriority) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
-	for _, pr := range prs {
-		if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
-			continue
+	for _, p := range append(priorities, config.TidePriority{}) {
+		for _, pr := range prs {
+			if !hasAllLabels(pr, p.Labels) {
+				continue
+			}
+			if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
+				continue
+			}
+			if len(pr.Commits.Nodes) < 1 {
+				continue
+			}
+			if !isPassingTestsFunc(log, ghc, pr, cc[int(pr.Number)]) {
+				continue
+			}
+			smallestNumber = int(pr.Number)
+			smallestPR = pr
 		}
-		if len(pr.Commits.Nodes) < 1 {
-			continue
+		if smallestNumber > -1 {
+			return true, smallestPR
 		}
-		if !isPassingTests(log, ghc, pr, cc[int(pr.Number)]) {
-			continue
-		}
-		smallestNumber = int(pr.Number)
-		smallestPR = pr
 	}
-	return smallestNumber > -1, smallestPR
+	return false, smallestPR
 }
 
 // accumulateBatch looks at existing batch ProwJobs and, if applicable, returns:
@@ -1277,7 +1297,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes, sp.cc); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, successes, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
@@ -1297,7 +1317,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(missings) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, missings, sp.cc); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, missings, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, missingSerialTests[int(pr.Number)], []PullRequest{pr})
 		}
 	}

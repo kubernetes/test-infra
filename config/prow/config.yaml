@@ -597,6 +597,13 @@ tide:
             skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+#  TODO uncomment after merging #20468
+#  priority:
+#  # prioritize PRs fixing flaking/failing tests
+#  - labels: [ "kind/failing-test" ]
+#  - labels: [ "area/deflake" ]
+#  # prioritize critical bugfixes
+#  - labels: [ "kind/bug", "priority/critical-urgent" ]
 
 push_gateway:
   endpoint: pushgateway
