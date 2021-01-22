@@ -702,6 +702,10 @@ func (f *FakeClient) GetProjectColumns(org string, projectID int) ([]github.Proj
 
 // CreateProjectCard creates a project card under a given column.
 func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(org, columnID)
+	if err != nil {
+		return nil, err
+	}
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
@@ -710,9 +714,10 @@ func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard git
 			for id := range columnIDMap {
 				// Make sure that we behave same as github API
 				// Create project will generate an error when the card already exist in the project
-				card, err := f.GetColumnProjectCard(org, id, projectCard.ContentURL)
-				if err == nil && card != nil {
-					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+				for _, existingCard := range cards {
+					if existingCard.ContentURL == projectCard.ContentURL {
+						return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+					}
 				}
 			}
 		}
@@ -767,22 +772,20 @@ func (f *FakeClient) DeleteProjectCard(org string, projectCardID int) error {
 // GetColumnProjectCards fetches project cards  under given column
 func (f *FakeClient) GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error) {
 	f.lock.RLock()
-	defer f.lock.RUnlock()
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
-	return f.ColumnCardsMap[columnID], nil
+	res := f.ColumnCardsMap[columnID]
+	f.lock.RUnlock()
+	return res, nil
 }
 
 // GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
 func (f *FakeClient) GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error) {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 	cards, err := f.GetColumnProjectCards(org, columnID)
 	if err != nil {
 		return nil, err
 	}
-
 	for _, existingCard := range cards {
 		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
@@ -868,8 +871,6 @@ func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID 
 
 // TeamHasMember checks if a user belongs to a team
 func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 	teamMembers, _ := f.ListTeamMembers(org, teamID, github.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
@@ -880,8 +881,6 @@ func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (
 }
 
 func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error) {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 	teams, _ := f.ListTeams(org)
 	for _, team := range teams {
 		if team.Name == slug {

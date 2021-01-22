@@ -119,13 +119,13 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	for _, file := range files {
 		changes = append(changes, github.PullRequestChange{Filename: file})
 	}
-	return &fakegithub.FakeClient{
-		IssueLabelsAdded:   labels,
-		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
-		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
-		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
-		Reviews:            map[int][]github.Review{prNumber: reviews},
-	}
+	fgc := fakegithub.NewFakeClient()
+	fgc.IssueLabelsAdded = labels
+	fgc.PullRequestChanges = map[int][]github.PullRequestChange{prNumber: changes}
+	fgc.IssueComments = map[int][]github.IssueComment{prNumber: comments}
+	fgc.IssueEvents = map[int][]github.ListedIssueEvent{prNumber: events}
+	fgc.Reviews = map[int][]github.Review{prNumber: reviews}
+	return fgc
 }
 
 type fakeRepo struct {
@@ -1356,9 +1356,8 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		Number: 1,
 	}
-	fghc := &fakegithub.FakeClient{
-		PullRequests: map[int]*github.PullRequest{1: &pr},
-	}
+	fghc := fakegithub.NewFakeClient()
+	fghc.PullRequests = map[int]*github.PullRequest{1: &pr}
 
 	for _, test := range tests {
 		test.commentEvent.Repo = repo
@@ -1575,9 +1574,8 @@ func TestHandleReview(t *testing.T) {
 		Number: 1,
 		Body:   "Fix everything",
 	}
-	fghc := &fakegithub.FakeClient{
-		PullRequests: map[int]*github.PullRequest{1: &pr},
-	}
+	fghc := fakegithub.NewFakeClient()
+	fghc.PullRequests = map[int]*github.PullRequest{1: &pr}
 
 	for _, test := range tests {
 		test.reviewEvent.Repo = repo
@@ -1730,7 +1728,7 @@ func TestHandlePullRequest(t *testing.T) {
 		},
 		Name: "repo",
 	}
-	fghc := &fakegithub.FakeClient{}
+	fghc := fakegithub.NewFakeClient()
 
 	for _, test := range tests {
 		test.prEvent.Repo = repo

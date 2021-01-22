@@ -157,10 +157,9 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-			OrgMembers:    map[string][]string{"": {"m"}},
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
+		fc.OrgMembers = map[string][]string{"": {"m"}}
 		ice := github.IssueCommentEvent{
 			Action: tc.action,
 			Comment: github.IssueComment{
@@ -233,32 +232,31 @@ func newFakeClient(body, branch string, initialLabels, comments []string, parent
 	for _, comment := range comments {
 		issueComments = append(issueComments, github.IssueComment{Body: comment})
 	}
-	return &fakegithub.FakeClient{
-			IssueComments: map[int][]github.IssueComment{1: issueComments},
-			RepoLabelsExisting: []string{
-				lgtmLabel,
-				releaseNote,
-				ReleaseNoteLabelNeeded,
-				releaseNoteNone,
-				releaseNoteActionRequired,
-			},
-			IssueLabelsAdded:   labels,
-			IssueLabelsRemoved: []string{},
-		},
-		&github.PullRequestEvent{
-			Action: github.PullRequestActionEdited,
+	fghc := fakegithub.NewFakeClient()
+	fghc.IssueComments = map[int][]github.IssueComment{1: issueComments}
+	fghc.RepoLabelsExisting = []string{
+		lgtmLabel,
+		releaseNote,
+		ReleaseNoteLabelNeeded,
+		releaseNoteNone,
+		releaseNoteActionRequired,
+	}
+	fghc.IssueLabelsAdded = labels
+	fghc.IssueLabelsRemoved = []string{}
+	return fghc, &github.PullRequestEvent{
+		Action: github.PullRequestActionEdited,
+		Number: 1,
+		PullRequest: github.PullRequest{
+			Base:   github.PullRequestBranch{Ref: branch},
 			Number: 1,
-			PullRequest: github.PullRequest{
-				Base:   github.PullRequestBranch{Ref: branch},
-				Number: 1,
-				Body:   body,
-				User:   github.User{Login: "cjwagner"},
-			},
-			Repo: github.Repo{
-				Owner: github.User{Login: "org"},
-				Name:  "repo",
-			},
-		}
+			Body:   body,
+			User:   github.User{Login: "cjwagner"},
+		},
+		Repo: github.Repo{
+			Owner: github.User{Login: "org"},
+			Name:  "repo",
+		},
+	}
 }
 
 func TestReleaseNotePR(t *testing.T) {

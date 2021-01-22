@@ -177,16 +177,15 @@ func TestHandle(t *testing.T) {
 		for _, name := range tc.filesChanged {
 			changes = append(changes, github.PullRequestChange{Filename: name})
 		}
-		fghc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				basicPR.Number: &basicPR,
-			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				basicPR.Number: changes,
-			},
-			RepoLabelsExisting: tc.repoLabels,
-			IssueLabelsAdded:   []string{},
+		fghc := fakegithub.NewFakeClient()
+		fghc.PullRequests = map[int]*github.PullRequest{
+			basicPR.Number: &basicPR,
 		}
+		fghc.PullRequestChanges = map[int][]github.PullRequestChange{
+			basicPR.Number: changes,
+		}
+		fghc.RepoLabelsExisting = tc.repoLabels
+		fghc.IssueLabelsAdded = []string{}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
 			fghc.AddLabel(basicPR.Base.Repo.Owner.Login, basicPR.Base.Repo.Name, basicPR.Number, label)

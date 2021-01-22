@@ -36,8 +36,6 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-var ()
-
 type options struct {
 	port int
 }

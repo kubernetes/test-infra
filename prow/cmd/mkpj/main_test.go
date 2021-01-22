@@ -68,7 +68,7 @@ func TestOptions_Validate(t *testing.T) {
 func TestDefaultPR(t *testing.T) {
 	author := "Bernardo Soares"
 	sha := "Esther Greenwood"
-	fakeGitHubClient := &fakegithub.FakeClient{}
+	fakeGitHubClient := fakegithub.NewFakeClient()
 	fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {
 		User: github.User{Login: author},
 		Head: github.PullRequestBranch{SHA: sha},
@@ -109,7 +109,7 @@ func TestDefaultBaseRef(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			fakeGitHubClient := &fakegithub.FakeClient{}
+			fakeGitHubClient := fakegithub.NewFakeClient()
 			fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {Base: github.PullRequestBranch{
 				SHA: test.prBaseSha,
 			}}}

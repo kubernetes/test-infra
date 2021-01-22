@@ -296,13 +296,12 @@ func TestHandle(t *testing.T) {
 
 	for _, tc := range tcs {
 		expectAdded := []string{}
-		fakeClient := &fakegithub.FakeClient{
-			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
-			IssueComments:      make(map[int][]github.IssueComment),
-			PullRequestChanges: make(map[int][]github.PullRequestChange),
-			IssueLabelsAdded:   []string{},
-			IssueLabelsRemoved: []string{},
-		}
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.RepoLabelsExisting = []string{labels.BlockedPaths, otherLabel}
+		fakeClient.IssueComments = make(map[int][]github.IssueComment)
+		fakeClient.PullRequestChanges = make(map[int][]github.PullRequestChange)
+		fakeClient.IssueLabelsAdded = []string{}
+		fakeClient.IssueLabelsRemoved = []string{}
 		if tc.hasLabel {
 			label := formatLabel(labels.BlockedPaths)
 			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)

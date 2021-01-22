@@ -689,13 +689,12 @@ Instructions for interacting with me using PR comments are available [here](http
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			client := fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
-				},
-				IssueComments: map[int][]github.IssueComment{},
+			client := fakegithub.NewFakeClient()
+			client.PullRequests = map[int]*github.PullRequest{
+				1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 			}
-			event, err := digestComment(&client, logrus.WithField("testCase", testCase.name), testCase.e)
+			client.IssueComments = map[int][]github.IssueComment{}
+			event, err := digestComment(client, logrus.WithField("testCase", testCase.name), testCase.e)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -707,7 +706,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("%s: did not get correct event: %v", testCase.name, cmp.Diff(actual, expected, allowEvent))
 			}
 
-			checkComments(&client, testCase.name, testCase.expectedComment, t)
+			checkComments(client, testCase.name, testCase.expectedComment, t)
 		})
 	}
 }
@@ -1694,11 +1693,10 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			e := *base // copy so parallel tests don't collide
-			gc := fakegithub.FakeClient{
-				IssueLabelsExisting: []string{},
-				IssueComments:       map[int][]github.IssueComment{},
-				PullRequests:        map[int]*github.PullRequest{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.IssueLabelsExisting = []string{}
+			gc.IssueComments = map[int][]github.IssueComment{}
+			gc.PullRequests = map[int]*github.PullRequest{}
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
@@ -1736,7 +1734,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
@@ -1757,7 +1755,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("%s: unexpected labels: %v", testCase.name, extra.List())
 			}
 
-			checkComments(&gc, testCase.name, testCase.expectedComment, t)
+			checkComments(gc, testCase.name, testCase.expectedComment, t)
 
 			if testCase.expectedBug != nil {
 				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {

@@ -111,13 +111,12 @@ func TestHandlePR(t *testing.T) {
 			Number:      basicPR.Number,
 			PullRequest: basicPR,
 		}
-		fakeGitHubClient := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				basicPR.Number: &basicPR,
-			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				basicPR.Number: tc.changes,
-			},
+		fakeGitHubClient := fakegithub.NewFakeClient()
+		fakeGitHubClient.PullRequests = map[int]*github.PullRequest{
+			basicPR.Number: &basicPR,
+		}
+		fakeGitHubClient.PullRequestChanges = map[int][]github.PullRequestChange{
+			basicPR.Number: tc.changes,
 		}
 		fakeClient := client{
 			GitHubClient: fakeGitHubClient,

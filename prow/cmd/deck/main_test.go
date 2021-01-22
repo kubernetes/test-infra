@@ -538,7 +538,8 @@ func TestRerun(t *testing.T) {
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
-			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
+			rc := fakegithub.NewFakeClient()
+			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
 			pca := plugins.NewFakeConfigAgent()
 			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
@@ -1125,9 +1126,8 @@ func TestCanTriggerJob(t *testing.T) {
 	}
 	pcfgGetter := func() *plugins.Configuration { return pcfg }
 
-	ghc := &fakegithub.FakeClient{
-		OrgMembers: map[string][]string{org: {trustedUser}},
-	}
+	ghc := fakegithub.NewFakeClient()
+	ghc.OrgMembers = map[string][]string{org: {trustedUser}}
 
 	pj := prowapi.ProwJob{
 		Spec: prowapi.ProwJobSpec{

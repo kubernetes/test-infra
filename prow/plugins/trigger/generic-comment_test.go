@@ -869,38 +869,37 @@ func TestHandleGenericComment(t *testing.T) {
 			if tc.Branch == "" {
 				tc.Branch = "master"
 			}
-			g := &fakegithub.FakeClient{
-				IssueComments: map[int][]github.IssueComment{},
-				OrgMembers:    map[string][]string{"org": {"trusted-member"}},
-				PullRequests: map[int]*github.PullRequest{
-					0: {
-						User:   github.User{Login: tc.PRAuthor},
-						Number: 0,
-						Head: github.PullRequestBranch{
-							SHA: "cafe",
-						},
-						Base: github.PullRequestBranch{
-							Ref: tc.Branch,
-							Repo: github.Repo{
-								Owner: github.User{Login: "org"},
-								Name:  "repo",
-							},
+			g := fakegithub.NewFakeClient()
+			g.IssueComments = map[int][]github.IssueComment{}
+			g.OrgMembers = map[string][]string{"org": {"trusted-member"}}
+			g.PullRequests = map[int]*github.PullRequest{
+				0: {
+					User:   github.User{Login: tc.PRAuthor},
+					Number: 0,
+					Head: github.PullRequestBranch{
+						SHA: "cafe",
+					},
+					Base: github.PullRequestBranch{
+						Ref: tc.Branch,
+						Repo: github.Repo{
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
 						},
 					},
 				},
-				IssueLabelsExisting: tc.IssueLabels,
-				PullRequestChanges:  map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
-				CombinedStatuses: map[string]*github.CombinedStatus{
-					"cafe": {
-						Statuses: []github.Status{
-							{State: github.StatusPending, Context: "pull-job"},
-							{State: github.StatusFailure, Context: "pull-jib"},
-							{State: github.StatusSuccess, Context: "pull-jub"},
-						},
-					},
-				},
-				Collaborators: []string{"k8s-ci-robot"},
 			}
+			g.IssueLabelsExisting = tc.IssueLabels
+			g.PullRequestChanges = map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}}
+			g.CombinedStatuses = map[string]*github.CombinedStatus{
+				"cafe": {
+					Statuses: []github.Status{
+						{State: github.StatusPending, Context: "pull-job"},
+						{State: github.StatusFailure, Context: "pull-jib"},
+						{State: github.StatusSuccess, Context: "pull-jub"},
+					},
+				},
+			}
+			g.Collaborators = []string{"k8s-ci-robot"}
 			fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
 			fakeProwJobClient := fake.NewSimpleClientset()
 			c := Client{

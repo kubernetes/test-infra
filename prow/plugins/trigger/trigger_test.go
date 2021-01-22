@@ -350,12 +350,11 @@ func TestTrustedUser(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
-				Collaborators: []string{"test-collaborator"},
+			fc := fakegithub.NewFakeClient()
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
 			}
+			fc.Collaborators = []string{"test-collaborator"}
 
 			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {

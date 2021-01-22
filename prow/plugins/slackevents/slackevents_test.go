@@ -291,7 +291,7 @@ func TestComment(t *testing.T) {
 			SentMessages: make(map[string][]string),
 		}
 		client := client{
-			GitHubClient: &fakegithub.FakeClient{},
+			GitHubClient: fakegithub.NewFakeClient(),
 			SlackClient:  fakeSlackClient,
 			SlackConfig:  plugins.Slack{MentionChannels: []string{"sig-node", "sig-api-machinery"}},
 		}

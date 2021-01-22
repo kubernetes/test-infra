@@ -478,10 +478,9 @@ func TestGetGCSDirsForPR(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
-		gitHubClient := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				123: {Number: 123},
-			},
+		gitHubClient := fakegithub.NewFakeClient()
+		gitHubClient.PullRequests = map[int]*github.PullRequest{
+			123: {Number: 123},
 		}
 		toSearch, err := getStorageDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
