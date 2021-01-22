@@ -131,7 +131,7 @@ periodics:
       # Azure-specific test args
       - --provider=skeleton
       - --deployment=aksengine
-      - --aksengine-agentpoolcount=2
+      - --aksengine-agentpoolcount=3
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.20
@@ -182,7 +182,7 @@ periodics:
       # Azure-specific test args
       - --provider=skeleton
       - --deployment=aksengine
-      - --aksengine-agentpoolcount=2
+      - --aksengine-agentpoolcount=3
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.20
@@ -234,7 +234,7 @@ periodics:
       # Azure-specific test args
       - --provider=skeleton
       - --deployment=aksengine
-      - --aksengine-agentpoolcount=2
+      - --aksengine-agentpoolcount=3
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
       - --aksengine-orchestratorRelease=1.20
