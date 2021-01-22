@@ -595,12 +595,12 @@ func TestListIssueComments(t *testing.T) {
 	}
 }
 
-func TestAddLabel(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func addLabelHTTPServer(t *testing.T, org, repo string, number int, labels ...string) *httptest.Server {
+	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels" {
+		if r.URL.Path != fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
@@ -610,12 +610,20 @@ func TestAddLabel(t *testing.T) {
 		var ls []string
 		if err := json.Unmarshal(b, &ls); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ls) != 1 {
+		} else if len(ls) != len(labels) {
 			t.Errorf("Wrong length labels: %v", ls)
-		} else if ls[0] != "yay" {
-			t.Errorf("Wrong label: %s", ls[0])
+		}
+
+		for index, label := range labels {
+			if ls[index] != label {
+				t.Errorf("Wrong label: %s", ls[index])
+			}
 		}
 	}))
+}
+
+func TestAddLabel(t *testing.T) {
+	ts := addLabelHTTPServer(t, "k8s", "kuber", 5, "yay")
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.AddLabel("k8s", "kuber", 5, "yay"); err != nil {
@@ -624,32 +632,38 @@ func TestAddLabel(t *testing.T) {
 }
 
 func TestAddLabels(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatalf("Could not read request body: %v", err)
-		}
-		var ls []string
-		if err := json.Unmarshal(b, &ls); err != nil {
-			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ls) != 2 {
-			t.Errorf("Wrong length labels: %v", ls)
-		} else if ls[0] != "foo" {
-			t.Errorf("Wrong label: %s", ls[0])
-		} else if ls[1] != "bar" {
-			t.Errorf("Wrong label: %s", ls[1])
-		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if err := c.AddLabels("k8s", "kuber", 5, "foo", "bar"); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
+	testCases := []struct {
+		name   string
+		org    string
+		repo   string
+		number int
+		labels []string
+	}{
+		{
+			name:   "one label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 1,
+			labels: []string{"one"},
+		},
+		{
+			name:   "two label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 2,
+			labels: []string{"one", "two"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := addLabelHTTPServer(t, tc.org, tc.repo, tc.number, tc.labels...)
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			if err := c.AddLabels(tc.org, tc.repo, tc.number, tc.labels...); err != nil {
+				t.Errorf("Didn't expect error: %v", err)
+			}
+		})
 	}
 }
 
