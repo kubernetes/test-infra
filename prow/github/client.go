@@ -159,6 +159,7 @@ type RepositoryClient interface {
 	DeleteRepoLabel(org, repo, label string) error
 	GetRepoLabels(org, repo string) ([]Label, error)
 	AddLabel(org, repo string, number int, label string) error
+	AddLabels(org, repo string, number int, labels ...string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
@@ -2463,14 +2464,21 @@ func (c *client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
 //
 // See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *client) AddLabel(org, repo string, number int, label string) error {
-	durationLogger := c.log("AddLabel", org, repo, number, label)
+	return c.AddLabels(org, repo, number, label)
+}
+
+// AddLabels adds one or more labels to org/repo#number, returning an error on a bad response code.
+//
+// See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
+func (c *client) AddLabels(org, repo string, number int, labels ...string) error {
+	durationLogger := c.log("AddLabels", org, repo, number, labels)
 	defer durationLogger()
 
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 		org:         org,
-		requestBody: []string{label},
+		requestBody: labels,
 		exitCodes:   []int{200},
 	}, nil)
 	return err

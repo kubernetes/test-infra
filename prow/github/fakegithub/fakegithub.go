@@ -356,21 +356,35 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
-	if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
-		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
-	}
-	if f.RepoLabelsExisting == nil {
-		f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-		return nil
-	}
-	for _, l := range f.RepoLabelsExisting {
-		if label == l {
+	return f.AddLabels(owner, repo, number, label)
+}
+
+// AddLabels adds a list of labels
+func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	for _, label := range labels {
+		labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+		if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+		}
+
+		if f.RepoLabelsExisting == nil {
 			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-			return nil
+			continue
+		}
+
+		var repoLabelExists bool
+		for _, l := range f.RepoLabelsExisting {
+			if label == l {
+				f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
+				repoLabelExists = true
+				break
+			}
+		}
+		if !repoLabelExists {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 		}
 	}
-	return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+	return nil
 }
 
 // RemoveLabel removes a label
