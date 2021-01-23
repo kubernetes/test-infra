@@ -483,25 +483,19 @@ func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string)
 		}
 		if f.RepoLabelsExisting == nil {
 			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-			return nil
+			continue
 		}
+
+		var repoLabelExists bool
 		for _, l := range f.RepoLabelsExisting {
 			if label == l {
 				f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-				continue
+				repoLabelExists = true
+				break
 			}
-
-			var repoLabelExists bool
-			for _, l := range f.RepoLabelsExisting {
-				if label == l {
-					f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-					repoLabelExists = true
-					break
-				}
-			}
-			if !repoLabelExists {
-				return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
-			}
+		}
+		if !repoLabelExists {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 		}
 	}
 	return nil

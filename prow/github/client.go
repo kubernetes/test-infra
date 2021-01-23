@@ -2063,7 +2063,6 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
-	logrus.Infof("Creating status: %s", fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA))
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),

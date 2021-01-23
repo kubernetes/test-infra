@@ -693,7 +693,6 @@ Instructions for interacting with me using PR comments are available [here](http
 			client.PullRequests = map[int]*github.PullRequest{
 				1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 			}
-			client.IssueComments = map[int][]github.IssueComment{}
 			event, err := digestComment(client, logrus.WithField("testCase", testCase.name), testCase.e)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
