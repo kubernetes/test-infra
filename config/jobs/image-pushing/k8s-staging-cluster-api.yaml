@@ -190,3 +190,32 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-scl-image-builder-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+
+periodics:
+- name: cluster-api-push-images-nightly
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  cron: '0 8 * * *' # everday at 0:00 PT (8:00 UTC)
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: sigs.k8s.io/cluster-api
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+      - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+        command:
+          - /run.sh
+        args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+          - --project=k8s-staging-cluster-api
+          - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
+          - --env-passthrough=PULL_BASE_REF
+          - --gcb-config=cloudbuild-nightly.yaml
+          - .
+  annotations:
+    # this is the name of some testgrid dashboard to report to.
+    testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+    testgrid-tab-name: cluster-api-push-images-nightly
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
