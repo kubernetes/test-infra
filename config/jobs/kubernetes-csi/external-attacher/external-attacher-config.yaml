@@ -31,7 +31,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.17"
+          value: "1.17.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.17"
         - name: CSI_PROW_DRIVER_VERSION
@@ -119,7 +119,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.18"
+          value: "1.18.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.18"
         - name: CSI_PROW_DRIVER_VERSION
@@ -207,7 +207,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.19"
+          value: "1.19.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
@@ -295,7 +295,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.20"
+          value: "1.20.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
@@ -387,7 +387,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.20"
+          value: "1.20.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION

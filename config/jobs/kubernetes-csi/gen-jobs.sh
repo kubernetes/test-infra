@@ -344,7 +344,7 @@ EOF
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "$kubernetes"
+          value: "$kubernetes.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DRIVER_VERSION
@@ -606,7 +606,10 @@ done
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
 for kubernetes in $k8s_versions master; do
+    # master -> latest
     actual="${kubernetes/master/latest}"
+    # 1.20 -> 1.20.0
+    actual="$(echo "$actual" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)$/\1.\2.0/')"
 
     for tests in non-alpha alpha; do
         # Alpha with latest sidecars only on master.
