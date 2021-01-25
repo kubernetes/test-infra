@@ -24,7 +24,6 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.17
 1.18
 1.19
 1.20
@@ -33,7 +32,6 @@ k8s_versions="
 # All the deployment versions we're testing.
 # Must have a deploy/kubernetes-<version> dir in csi-driver-host-path
 deployment_versions="
-1.17
 1.18
 1.19
 1.20
