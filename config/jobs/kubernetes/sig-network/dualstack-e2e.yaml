@@ -196,7 +196,7 @@ periodics:
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
-      - --ginkgo-parallel=20
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
@@ -248,7 +248,7 @@ periodics:
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
-      - --ginkgo-parallel=20
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
