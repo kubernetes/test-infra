@@ -127,123 +127,99 @@ func defaultHandler() func(*http.Request) (string, int, error) {
 func userHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
 	return func(r *http.Request) (string, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
-		var msg string
-		var statusCode int
-		var err error
-		statusCode = http.StatusOK
 		userData, err := ghc.BotUser()
 		if err != nil {
-			return msg, statusCode, err
+			return "", http.StatusInternalServerError, err
 		}
 		var content []byte
 		content, err = json.Marshal(&userData)
-		return string(content), statusCode, err
+		return string(content), http.StatusOK, err
 	}
 }
 
 func statusHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
 	return func(r *http.Request) (string, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
-		var msg string
-		var statusCode int
-		var err error
-		statusCode = http.StatusOK
 		vars := mux.Vars(r)
 		org, repo, SHA := vars["org"], vars["repo"], vars["sha"]
-		if r.Method == http.MethodPost {
-			statusCode = http.StatusCreated
+		if r.Method == http.MethodPost { // Create
 			data := prowgh.Status{}
-			if err = unmarshal(r, &data); err != nil {
-				return msg, statusCode, err
+			if err := unmarshal(r, &data); err != nil {
+				return "", http.StatusInternalServerError, err
 			}
-			return msg, statusCode, ghc.CreateStatus(org, repo, SHA, data)
+			return "", http.StatusCreated, ghc.CreateStatus(org, repo, SHA, data)
 		}
 		if r.Method == http.MethodGet {
-			var res *prowgh.CombinedStatus
-			res, err = ghc.GetCombinedStatus(org, repo, SHA)
+			res, err := ghc.GetCombinedStatus(org, repo, SHA)
 			if err != nil {
-				return msg, statusCode, err
+				return "", http.StatusInternalServerError, err
 			}
-			var content []byte
-			content, err = json.Marshal(res)
+			content, err := json.Marshal(res)
 			if err != nil {
-				return msg, statusCode, err
+				return "", http.StatusInternalServerError, err
 			}
-			return string(content), statusCode, nil
+			return string(content), http.StatusOK, nil
 		}
-		return msg, statusCode, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
+		return "", http.StatusInternalServerError, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 	}
 }
 
 func issueHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
 	return func(r *http.Request) (string, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
-		var msg string
-		var statusCode int
-		var err error
 		vars := mux.Vars(r)
 		org, repo := vars["org"], vars["repo"]
-		// Create status is 201
-		statusCode = http.StatusCreated
 		data := prowgh.Issue{}
-		if err = unmarshal(r, &data); err != nil {
-			return msg, statusCode, err
+		if err := unmarshal(r, &data); err != nil {
+			return "", http.StatusInternalServerError, err
 		}
-		var id int
-		id, err = ghc.CreateIssue(org, repo, data.Title, data.Body, data.Milestone.Number, nil, nil)
-		msg = fmt.Sprintf("Issue %d created", id)
-		return msg, statusCode, err
+		id, err := ghc.CreateIssue(org, repo, data.Title, data.Body, data.Milestone.Number, nil, nil)
+		return fmt.Sprintf("Issue %d created", id), http.StatusCreated, err
 	}
 }
 
 func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
 	return func(r *http.Request) (string, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
-		var msg string
-		var statusCode int
-		var err error
-		statusCode = http.StatusOK
 		vars := mux.Vars(r)
 		org, repo := vars["org"], vars["repo"]
 		if issueID, exist := vars["issue_id"]; exist {
-			var id int
-			id, err = strconv.Atoi(issueID)
+			id, err := strconv.Atoi(issueID)
 			if err != nil {
-				return msg, statusCode, err
+				return "", http.StatusInternalServerError, err
 			}
 			if r.Method == http.MethodGet { // List
 				var issues []prowgh.IssueComment
 				issues, err = ghc.ListIssueComments(org, repo, id)
 				var content []byte
 				content, err = json.Marshal(issues)
-				return string(content), statusCode, err
+				return string(content), http.StatusOK, err
 			}
 			if r.Method == http.MethodPost { // Create
-				statusCode = http.StatusCreated
 				data := prowgh.IssueComment{}
 				if err = unmarshal(r, &data); err != nil {
-					return msg, statusCode, err
+					return "", http.StatusInternalServerError, err
 				}
-				return msg, statusCode, ghc.CreateComment(org, repo, id, data.Body)
+				return "", http.StatusCreated, ghc.CreateComment(org, repo, id, data.Body)
 			}
 		}
 		if commentID, exist := vars["comment_id"]; exist {
 			var id int
-			id, err = strconv.Atoi(commentID)
+			id, err := strconv.Atoi(commentID)
 			if err != nil {
-				return msg, statusCode, err
+				return "", http.StatusInternalServerError, err
 			}
 			if r.Method == http.MethodDelete { // Delete
-				return msg, statusCode, ghc.DeleteComment(org, repo, id)
+				return "", http.StatusOK, ghc.DeleteComment(org, repo, id)
 			}
 			if r.Method == http.MethodPatch { // Edit
 				content := &prowgh.IssueComment{}
-				if err = unmarshal(r, content); err != nil {
-					return msg, statusCode, err
+				if err := unmarshal(r, content); err != nil {
+					return "", http.StatusInternalServerError, err
 				}
-				return msg, statusCode, ghc.EditComment(org, repo, id, content.Body)
+				return "", http.StatusOK, ghc.EditComment(org, repo, id, content.Body)
 			}
 		}
-		return msg, statusCode, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
+		return "", http.StatusInternalServerError, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 	}
 }
