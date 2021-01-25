@@ -6,27 +6,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_examples/kubeflow-examples-postsubmit
 - name: kubeflow-gcp-blueprints-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_gcp-blueprints/kubeflow-gcp-blueprints-postsubmit
-- name: kubeflow-mxnet-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_mxnet-operator/kubeflow-mxnet-operator-postsubmit
-- name: kubeflow-reporting-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_reporting/kubeflow-reporting-postsubmit
 - name: kubeflow-testing-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_testing/kubeflow-testing-postsubmit
-- name: kubeflow-tf-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
-- name: kubeflow-experimental-seldon-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-seldon/kubeflow-experimental-seldon-postsubmit
-- name: kubeflow-caffe2-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_caffe2-operator/kubeflow-caffe2-operator-postsubmit
 - name: kubeflow-website-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_website/kubeflow-website-postsubmit
-- name: kubeflow-kubebench-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubebench/kubeflow-kubebench-postsubmit
-- name: kubeflow-mpi-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_mpi-operator/kubeflow-mpi-operator-postsubmit
-- name: kubeflow-chainer-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_chainer-operator/kubeflow-chainer-operator-postsubmit
-- name: kubeflow-arena-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_arena/kubeflow-arena-postsubmit
-- name: kubeflow-xgboost-operator-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_xgboost-operator/kubeflow-xgboost-operator-postsubmit

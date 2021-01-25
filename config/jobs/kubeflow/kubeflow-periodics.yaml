@@ -1,28 +1,4 @@
-#******************************************************************************
-# kubeflow/kfctl
-#******************************************************************************
-# These tests are named kubeflow even though they are for the kfctl repo
-# because that used to be the repo that had our main E2E tests for kubeflow
 periodics:
-- name: kubeflow-periodic-1-1
-  cluster: kubeflow
-  interval: 8h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kfctl
-      - name: BRANCH_NAME
-        value: v1.1-branch
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow on the 1-0 release
 #******************************************************************************
 # kubeflow/kubeflow
 #******************************************************************************
@@ -48,26 +24,6 @@ periodics:
     # TODO: use a public email group
     testgrid-alert-email: kubeflow-engineering@google.com
     testgrid-num-failures-to-alert: "3"
-
-- name: kubeflow-kubeflow-periodic-1-1
-  cluster: kubeflow
-  interval: 8h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kfctl
-      - name: BRANCH_NAME
-        value: v1.1-branch
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow on the 1-1 branch
 
 #******************************************************************************
 # kubeflow/gcp-blueprints
@@ -120,47 +76,6 @@ periodics:
     testgrid-alert-email: kubeflow-engineering@google.com
     testgrid-num-failures-to-alert: "3"
 #******************************************************************************
-# kubeflow/manifests
-#******************************************************************************
-- name: kubeflow-manifests-periodic-1-1
-  cluster: kubeflow
-  interval: 8h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: manifests
-      - name: BRANCH_NAME
-        value: v1.1-branch
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow/manifests on the master branch.
-- name: kubeflow-manifests-periodic-master
-  cluster: kubeflow
-  interval: 8h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: manifests
-      - name: BRANCH_NAME
-        value: master
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow/manifests on the master branch.
-#******************************************************************************
 # kubeflow/examples
 #******************************************************************************
 - name: kubeflow-examples-periodic
@@ -207,28 +122,6 @@ periodics:
     description: Periodic job to run kfp functional test
     testgrid-alert-email: kubeflow-pipelines+test@google.com
     testgrid-num-failures-to-alert: "5"
-#******************************************************************************
-# kubeflow/kfctl
-#******************************************************************************
-- name: kubeflow-kfctl-periodic
-  cluster: kubeflow
-  interval: 8h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kfctl
-      - name: BRANCH_NAME
-        value: master
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow kfctl
 - name: kubeflow-periodic-project-cleanup
   cluster: kubeflow
   interval: 1h

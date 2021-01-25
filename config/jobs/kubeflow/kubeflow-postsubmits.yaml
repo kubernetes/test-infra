@@ -55,19 +55,6 @@ postsubmits:
       testgrid-alert-email: kubeflow-engineering@google.com
       testgrid-num-failures-to-alert: "3"
 
-  kubeflow/reporting:
-  - name: kubeflow-reporting-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/reporting.
   kubeflow/website:
   - name: kubeflow-website-postsubmit
     cluster: kubeflow
@@ -94,110 +81,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/testing.
-  kubeflow/tf-operator:
-  - name: kubeflow-tf-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/tf-operator.
-  kubeflow/experimental-seldon:
-  - name: kubeflow-experimental-seldon-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/experimental-seldon.
-  kubeflow/caffe2-operator:
-  - name: kubeflow-caffe2-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/caffe2-operator.
-  kubeflow/kubebench:
-  - name: kubeflow-kubebench-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/kubebench.
-  kubeflow/mpi-operator:
-  - name: kubeflow-mpi-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/mpi-operator.
-  kubeflow/chainer-operator:
-  - name: kubeflow-chainer-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/chainer-operator.
-  kubeflow/mxnet-operator:
-  - name: kubeflow-mxnet-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/mxnet-operator.
-  kubeflow/arena:
-  - name: kubeflow-arena-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/arena.
   kubeflow/pipelines:
   - name: kubeflow-pipeline-postsubmit-standalone-component-test
     cluster: kubeflow
@@ -290,16 +173,3 @@ postsubmits:
       description: Postsubmit tests for kubeflow/pipeline.
       testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"
-  kubeflow/xgboost-operator:
-  - name: kubeflow-xgboost-operator-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/xgboost-operator.
