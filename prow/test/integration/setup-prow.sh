@@ -33,7 +33,13 @@ for app in sinker crier fakeghserver; do
 done
 
 echo "Pushing prow images"
-bazel run //prow:testimage-push "$@"
+for retry_count in 1 2 3; do
+  if bazel run //prow:testimage-push "$@"; then
+    echo "Succeeded pushing test images"
+    break
+  fi
+  echo "*************** Test Image Push Failed, Retrying ${retry_count} ***************"
+done
 
 echo "Deploy prow components"
 # An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
