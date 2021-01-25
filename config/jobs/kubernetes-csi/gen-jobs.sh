@@ -24,7 +24,6 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.17
 1.18
 1.19
 1.20
@@ -33,7 +32,6 @@ k8s_versions="
 # All the deployment versions we're testing.
 # Must have a deploy/kubernetes-<version> dir in csi-driver-host-path
 deployment_versions="
-1.17
 1.18
 1.19
 1.20
@@ -344,7 +342,7 @@ EOF
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "$kubernetes"
+          value: "$kubernetes.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DRIVER_VERSION
@@ -606,7 +604,10 @@ done
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
 for kubernetes in $k8s_versions master; do
+    # master -> latest
     actual="${kubernetes/master/latest}"
+    # 1.20 -> 1.20.0
+    actual="$(echo "$actual" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)$/\1.\2.0/')"
 
     for tests in non-alpha alpha; do
         # Alpha with latest sidecars only on master.
