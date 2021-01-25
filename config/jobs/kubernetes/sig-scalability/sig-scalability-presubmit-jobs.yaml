@@ -436,6 +436,7 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -505,6 +506,7 @@ presubmits:
             - --test-cmd-args=--provider=kubemark
             - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+            - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
