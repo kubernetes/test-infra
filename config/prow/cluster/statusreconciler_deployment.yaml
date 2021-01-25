@@ -44,7 +44,8 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --job-config-path=/etc/job-config
-        - --blacklist=kubernetes/kubernetes
+        - --denylist=kubernetes/kubernetes
+        - --denylist=kubeflow/pipelines
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
