@@ -96,34 +96,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/testing.
       testgrid-num-columns-recent: '30'
-  kubeflow/arena:
-  - name: kubeflow-arena-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for kubeflow/arena.
-      testgrid-num-columns-recent: '30'
-  kubeflow/fairing:
-  - name: kubeflow-fairing-presubmit
-    cluster: kubeflow
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for kubeflow/fairing.
-      testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
   - name: kubeflow-pipeline-frontend-test
     cluster: kubeflow
