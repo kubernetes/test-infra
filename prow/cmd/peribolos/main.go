@@ -1006,6 +1006,7 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 				switch {
 				case existing == nil:
 					if full, err := client.GetRepo(orgName, repo.Name); err != nil {
+						repoLogger.WithError(err).Error("failed to get repository data")
 						allErrors = append(allErrors, err)
 					} else {
 						existing = &full
@@ -1023,13 +1024,14 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 
 		if existing == nil {
 			if wantRepo.Archived != nil && *wantRepo.Archived {
-				repoLogger.Errorf("repo does not exist but is configured as archived: not creating")
+				repoLogger.Error("repo does not exist but is configured as archived: not creating")
 				allErrors = append(allErrors, fmt.Errorf("nonexistent repo configured as archived: %s", wantName))
 				continue
 			}
 			repoLogger.Info("repo does not exist, creating")
 			created, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo))
 			if err != nil {
+				repoLogger.WithError(err).Error("failed to create repository")
 				allErrors = append(allErrors, err)
 			} else {
 				existing = created
@@ -1054,6 +1056,7 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 			if delta.Defined() {
 				repoLogger.Info("repo exists and differs from desired state, updating")
 				if _, err := client.UpdateRepo(orgName, existing.Name, delta); err != nil {
+					repoLogger.WithError(err).Error("failed to update repository")
 					allErrors = append(allErrors, err)
 				}
 			}
