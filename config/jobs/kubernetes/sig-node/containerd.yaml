@@ -51,6 +51,7 @@ periodics:
       - --root=/go/src
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=execute
+      - --
       - --env=DEPLOY_DIR=containerd/master
       - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
@@ -292,7 +293,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -403,24 +404,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cos
     testgrid-tab-name: soak-cos-gce
-- name: ci-cri-containerd-build
-  interval: 30m
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
-      args:
-      - --repo=github.com/containerd/cri=master
-      - --root=/go/src
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - ./test/build.sh
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: build
-    description: "builds master branch of upstream cri for containerd"
 - name: ci-cri-containerd-windows-build
   interval: 30m
   labels:
