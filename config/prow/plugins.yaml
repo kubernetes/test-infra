@@ -241,15 +241,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.17:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
         release-1.18:
             - cpanato # Release Manager
             - feiskyer # Release Manager
