@@ -182,7 +182,10 @@ func TestParseIssueComment(t *testing.T) {
 				State: prowapi.ProwJobState(tc.state),
 			},
 		}
-		deletes, entries, update := parseIssueComments(pj, "k8s-ci-robot", tc.ics)
+		isBot := func(candidate string) bool {
+			return candidate == "k8s-ci-robot"
+		}
+		deletes, entries, update := parseIssueComments(pj, isBot, tc.ics)
 		if len(deletes) != len(tc.expectedDeletes) {
 			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 		} else {
@@ -225,9 +228,12 @@ type fakeGhClient struct {
 	status []github.Status
 }
 
-func (gh fakeGhClient) BotName() (string, error) {
-	return "BotName", nil
+func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
+	return func(candidate string) bool {
+		return candidate == "BotName"
+	}, nil
 }
+
 func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
 	if d := s.Description; len(d) > maxLen {
 		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)

@@ -17,10 +17,12 @@ limitations under the License.
 package pubsub
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -48,9 +50,11 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 	var testcases = []struct {
 		name            string
 		pj              *prowapi.ProwJob
+		jobURLPrefix    string
 		expectedMessage *ReportMessage
 		expectedError   error
 	}{
+		// tests with gubernator job URLs
 		{
 			name: "Prowjob with all information for presubmit jobs should work with no error",
 			pj: &prowapi.ProwJob{
@@ -74,6 +78,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 					},
 				},
 			},
+			jobURLPrefix: "guber/",
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
 				Topic:   testPubSubTopicName,
@@ -110,6 +115,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 					Job:  "test1",
 				},
 			},
+			jobURLPrefix: "guber/",
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
 				Topic:   testPubSubTopicName,
@@ -158,6 +164,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 					URL:   "guber/test1",
 				},
 			},
+			jobURLPrefix: "guber/",
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
 				Topic:   testPubSubTopicName,
@@ -188,23 +195,123 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				Status:  prowapi.SuccessState,
 			},
 		},
-	}
 
-	fca := &fca{
-		c: &config.Config{
-			ProwConfig: config.ProwConfig{
-				Plank: config.Plank{
-					JobURLPrefixConfig: map[string]string{"*": "guber/"},
+		// tests with regular job URLs
+		{
+			name: "Prowjob with all information for presubmit jobs should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Labels: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
 				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "https://prow.k8s.io/view/gcs/test1",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PresubmitJob,
+					Job:  "test1",
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
+				},
+			},
+			jobURLPrefix: "https://prow.k8s.io/view/gcs/",
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "https://prow.k8s.io/view/gcs/test1",
+				GCSPath: "gs://test1",
+				Refs: []prowapi.Refs{
+					{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
+				},
+				JobType: prowapi.PresubmitJob,
+				JobName: "test1",
+			},
+		},
+		{
+			name: "Prowjob with all information for periodic jobs should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Labels: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "https://prow.k8s.io/view/gcs/test1",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
+					Job:  "test1",
+				},
+			},
+			jobURLPrefix: "https://prow.k8s.io/view/gcs/",
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "https://prow.k8s.io/view/gcs/test1",
+				GCSPath: "gs://test1",
+				JobType: prowapi.PeriodicJob,
+				JobName: "test1",
+			},
+		},
+		{
+			name: "Prowjob with all information annotations should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "https://prow.k8s.io/view/gcs/test1",
+				},
+			},
+			jobURLPrefix: "https://prow.k8s.io/view/gcs/",
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "https://prow.k8s.io/view/gcs/test1",
+				GCSPath: "gs://test1",
 			},
 		},
 	}
 
-	c := &Client{
-		config: fca.Config,
-	}
-
 	for _, tc := range testcases {
+		fca := &fca{
+			c: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{
+						JobURLPrefixConfig: map[string]string{"*": tc.jobURLPrefix},
+					},
+				},
+			},
+		}
+
+		c := &Client{
+			config: fca.Config,
+		}
+
 		m := c.generateMessageFromPJ(tc.pj)
 
 		if !reflect.DeepEqual(m, tc.expectedMessage) {
@@ -324,7 +431,7 @@ func TestShouldReport(t *testing.T) {
 	c := NewReporter(fakeConfigAgent.Config)
 
 	for _, tc := range testcases {
-		r := c.ShouldReport(tc.pj)
+		r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 
 		if r != tc.expectedResult {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",

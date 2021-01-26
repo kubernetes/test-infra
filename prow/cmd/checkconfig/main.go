@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -39,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -89,29 +91,36 @@ const (
 	mismatchedTideWarning        = "mismatched-tide"
 	mismatchedTideLenientWarning = "mismatched-tide-lenient"
 	tideStrictBranchWarning      = "tide-strict-branch"
+	tideContextPolicy            = "tide-context-policy"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
+	validDecorationConfigWarning = "valid-decoration-config"
 	jobNameLengthWarning         = "long-job-names"
 	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
+	managedWebhooksWarning       = "managed-webhooks"
 	validateOwnersWarning        = "validate-owners"
 	missingTriggerWarning        = "missing-trigger"
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
 	verifyOwnersFilePresence     = "verify-owners-presence"
+	validateClusterFieldWarning  = "validate-cluster-field"
 )
 
 var defaultWarnings = []string{
 	mismatchedTideWarning,
 	tideStrictBranchWarning,
+	tideContextPolicy,
 	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
 	jobRefsDuplicationWarning,
 	needsOkToTestWarning,
+	managedWebhooksWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
 	validateURLsWarning,
 	unknownFieldsWarning,
+	validateClusterFieldWarning,
 }
 
 var expensiveWarnings = []string{
@@ -174,12 +183,13 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	o.github.AddFlags(flag)
+	o.github.AllowAnonymous = true
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
 	if err := o.DefaultAndValidate(); err != nil {
-		return fmt.Errorf("Invalid options: %v", err)
+		return fmt.Errorf("invalid options: %v", err)
 	}
 	return nil
 }
@@ -192,6 +202,21 @@ func main() {
 		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
+	if err := validate(o); err != nil {
+		switch e := err.(type) {
+		case utilerrors.Aggregate:
+			reportWarning(o.strict, e)
+		default:
+			logrus.WithError(err).Fatal("Validation failed")
+		}
+
+	} else {
+		logrus.Info("checkconfig passes without any error!")
+	}
+
+}
+
+func validate(o options) error {
 	// use all warnings by default
 	if len(o.warnings.Strings()) == 0 {
 		if o.expensive {
@@ -203,13 +228,13 @@ func main() {
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error loading Prow config.")
+		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
 
 	if o.prowYAMLRepoName != "" {
 		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
-			logrus.WithError(err).Fatal("Error validating .prow.yaml")
+			return fmt.Errorf("error validating .prow.yaml: %w", err)
 		}
 	}
 
@@ -217,7 +242,7 @@ func main() {
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
 		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
 	}
@@ -229,18 +254,18 @@ func main() {
 	var errs []error
 	if pcfg != nil && o.warningEnabled(verifyOwnersFilePresence) {
 		if o.github.TokenPath == "" {
-			logrus.Fatal("Cannot verify OWNERS file presence without a GitHub token")
+			return errors.New("cannot verify OWNERS file presence without a GitHub token")
 		}
 		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
 			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				logrus.WithError(err).Fatal("Error starting secrets agent.")
+				return fmt.Errorf("error starting secrets agent: %w", err)
 			}
 		}
 
 		githubClient, err := o.github.GitHubClient(secretAgent, false)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GitHub client.")
+			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
 		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
 		// 404s are expected to happen, no point in retrying
@@ -264,6 +289,11 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(validDecorationConfigWarning) {
+		if err := validateDecorationConfig(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
@@ -276,6 +306,11 @@ func main() {
 	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(managedWebhooksWarning) {
+		if err := validateManagedWebhooks(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -297,18 +332,18 @@ func main() {
 	if o.warningEnabled(unknownFieldsWarning) {
 		cfgBytes, err := ioutil.ReadFile(o.configPath)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow config for validation.")
+			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
-		if err := validateUnknownFields(cfg, cfgBytes, o.configPath); err != nil {
+		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
 		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config for validation.")
+			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(pcfg, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -317,12 +352,18 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
-	if len(errs) > 0 {
-		reportWarning(o.strict, utilerrors.NewAggregate(errs))
-		return
+	if o.warningEnabled(tideContextPolicy) {
+		if err := validateTideContextPolicy(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(validateClusterFieldWarning) {
+		if err := validateCluster(cfg); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	logrus.Info("checkconfig passes without any error!")
+	return utilerrors.NewAggregate(errs)
 }
 func policyIsStrict(p config.Policy) bool {
 	if p.Protect == nil || !*p.Protect {
@@ -764,19 +805,19 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
 	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
-		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
+		if presubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, presubmit.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
 	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
-		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, postsubmit.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
 	for _, periodic := range cfg.AllPeriodics() {
-		if periodic.Agent == string(v1.KubernetesAgent) && !periodic.Decorate {
+		if periodic.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, periodic.JobBase.UtilityConfig) {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
 	}
@@ -785,6 +826,34 @@ func validateDecoratedJobs(cfg *config.Config) error {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
+}
+
+func validateDecorationConfig(cfg *config.Config) error {
+	var configErrors []error
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && presubmit.Decorate != nil && *presubmit.Decorate && presubmit.DecorationConfig != nil {
+			if err := presubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && postsubmit.Decorate != nil && *postsubmit.Decorate && postsubmit.DecorationConfig != nil {
+			if err := postsubmit.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+
+	for _, periodic := range cfg.AllPeriodics() {
+		if periodic.Agent == string(v1.KubernetesAgent) && periodic.Decorate != nil && *periodic.Decorate && periodic.DecorationConfig != nil {
+			if err := periodic.DecorationConfig.Validate(); err != nil {
+				configErrors = append(configErrors, err)
+			}
+		}
+	}
+	return utilerrors.NewAggregate(configErrors)
 }
 
 func validateNeedsOkToTestLabel(cfg *config.Config) error {
@@ -808,6 +877,29 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 		}
 	}
 	return utilerrors.NewAggregate(queryErrors)
+}
+
+func validateManagedWebhooks(cfg *config.Config) error {
+	mw := cfg.ManagedWebhooks
+	var errs []error
+	orgs := sets.String{}
+	for repo := range mw.OrgRepoConfig {
+		if !strings.Contains(repo, "/") {
+			org := repo
+			orgs.Insert(org)
+		}
+	}
+	for repo := range mw.OrgRepoConfig {
+		if strings.Contains(repo, "/") {
+			org := strings.SplitN(repo, "/", 2)[0]
+			if orgs.Has(org) {
+				errs = append(errs, fmt.Errorf(
+					"org-level and repo-level webhooks are configured together for %q, "+
+						"which is not allowed as there will be duplicated webhook events", repo))
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func pluginsWithOwnersFile() string {
@@ -928,4 +1020,84 @@ func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) e
 	}
 
 	return nil
+}
+
+func validateTideContextPolicy(cfg *config.Config) error {
+	// We can not know all possible branches without asking GitHub, so instead we verify
+	// all branches that are explicitly configured on any job. This will hopefully catch
+	// most cases.
+	allKnownOrgRepoBranches := map[string]sets.String{}
+	for orgRepo, jobs := range cfg.PresubmitsStatic {
+		if _, ok := allKnownOrgRepoBranches[orgRepo]; !ok {
+			allKnownOrgRepoBranches[orgRepo] = sets.String{}
+		}
+
+		for _, job := range jobs {
+			allKnownOrgRepoBranches[orgRepo].Insert(job.Branches...)
+		}
+	}
+
+	// We have to disableInRepoConfig for this check, else we will
+	// attempt to clone the repo if its enabled
+	originalInRepoConfig := cfg.InRepoConfig
+	cfg.InRepoConfig = config.InRepoConfig{}
+	defer func() { cfg.InRepoConfig = originalInRepoConfig }()
+
+	var errs []error
+	for orgRepo, branches := range allKnownOrgRepoBranches {
+		split := strings.Split(orgRepo, "/")
+		if n := len(split); n != 2 {
+			// May happen for gerrit
+			continue
+		}
+		org, repo := split[0], split[1]
+
+		if branches.Len() == 0 {
+			// Make sure we always test at least one branch per repo
+			// to catch cases where ppl only have jobs with empty branch
+			// configs.
+			branches.Insert("master")
+		}
+		for _, branch := range branches.List() {
+			if _, err := cfg.GetTideContextPolicy(nil, org, repo, branch, nil, ""); err != nil {
+				errs = append(errs, fmt.Errorf("context policy for %s branch in %s/%s is invalid: %w", branch, org, repo, err))
+			}
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+var agentsNotSupportingCluster = sets.NewString("jenkins")
+
+func validateJobCluster(job config.JobBase) error {
+	if job.Cluster != "" && job.Cluster != kube.DefaultClusterAlias && agentsNotSupportingCluster.Has(job.Agent) {
+		return fmt.Errorf("%s: cannot set cluster field if agent is %s", job.Name, job.Agent)
+	}
+	return nil
+}
+
+func validateCluster(cfg *config.Config) error {
+	var errs []error
+	for orgRepo, jobs := range cfg.PresubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
+	for _, job := range cfg.Periodics {
+		if err := validateJobCluster(job.JobBase); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", "invalid periodic job", err))
+		}
+
+	}
+	for orgRepo, jobs := range cfg.PostsubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }

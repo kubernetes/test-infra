@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind
+    cluster: k8s-infra-prow-build
     optional: false
     always_run: true
     decorate: true
@@ -13,10 +14,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
         command:
         - wrapper.sh
         - bash
@@ -27,7 +29,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -36,13 +38,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9000Mi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9000Mi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -51,6 +52,7 @@ presubmits:
 
 
   - name: pull-kubernetes-e2e-kind-canary
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false # manual for testing new configurations
     decorate: true
@@ -63,6 +65,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -78,7 +81,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -87,20 +90,20 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-e2e-kind-ipv6
-    optional: true
+    cluster: k8s-infra-prow-build
+    optional: false
     always_run: true
     skip_report: false
     decorate: true
@@ -113,10 +116,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
         command:
         - wrapper.sh
         - bash
@@ -127,7 +131,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -142,19 +146,19 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-e2e-kind-ipv6-canary
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false # manual for testing new configurations
     decorate: true
@@ -167,6 +171,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -182,7 +187,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -197,13 +202,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -222,10 +226,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 2h # allow plenty of time for a serial conformance run
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
         command:
         - wrapper.sh
         - bash
@@ -240,13 +245,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -254,7 +258,6 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
-    optional: true
     always_run: true
     decorate: true
     skip_branches:
@@ -266,10 +269,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
         command:
         - wrapper.sh
         - bash
@@ -286,15 +290,15 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
+    cluster: k8s-infra-prow-build

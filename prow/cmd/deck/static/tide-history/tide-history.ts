@@ -250,12 +250,12 @@ function redrawRecords(recs: FilteredRecord[]): void {
 
       r.appendChild(cell.link(
         `${rec.repo} ${rec.branch}`,
-        `https://github.com/${rec.repo}/tree/${rec.branch}`,
+        `/github-link?dest=${rec.repo}/tree/${rec.branch}`,
       ));
       if (rec.baseSHA) {
           r.appendChild(cell.link(
             rec.baseSHA.slice(0, 7),
-            `https://github.com/${rec.repo}/commit/${rec.baseSHA}`,
+            `/github-link?dest=${rec.repo}/commit/${rec.baseSHA}`,
           ));
       } else {
           r.appendChild(cell.text(""));

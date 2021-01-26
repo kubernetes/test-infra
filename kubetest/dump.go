@@ -39,6 +39,9 @@ type logDumper struct {
 
 	services []string
 	files    []string
+
+	// DumpSysctls will record sysctl values from each node
+	DumpSysctls bool
 }
 
 // newLogDumper is the constructor for a logDumper
@@ -237,6 +240,9 @@ type logDumperNode struct {
 	dumper *logDumper
 
 	dir string
+
+	// DumpSysctls will record sysctl values from the node
+	DumpSysctls bool
 }
 
 // connectToNode makes an SSH connection to the node and returns a logDumperNode
@@ -246,9 +252,10 @@ func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host str
 		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
 	}
 	return &logDumperNode{
-		client: client,
-		dir:    filepath.Join(d.artifactsDir, nodeName),
-		dumper: d,
+		client:      client,
+		dir:         filepath.Join(d.artifactsDir, nodeName),
+		dumper:      d,
+		DumpSysctls: d.DumpSysctls,
 	}, nil
 }
 
@@ -274,6 +281,13 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	// This does duplicate the other files, but ensures we have all output
 	if err := n.shellToFile(ctx, "sudo journalctl --output=short-precise", filepath.Join(n.dir, "journal.log")); err != nil {
 		errors = append(errors, err)
+	}
+
+	if n.DumpSysctls {
+		// Capture sysctls if asked
+		if err := n.shellToFile(ctx, "sudo sysctl --all", filepath.Join(n.dir, "sysctl.conf")); err != nil {
+			errors = append(errors, err)
+		}
 	}
 
 	// Capture logs from any systemd services in our list, that are registered

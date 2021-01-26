@@ -32,4 +32,5 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="${root}/config/prow/config.yaml"
 job_config_path="${root}/config/jobs"
 
+docker pull gcr.io/k8s-prow/mkpj 1>&2 || true
 docker run -i --rm -v "${root}:${root}:z" gcr.io/k8s-prow/mkpj "--config-path=${config}" "--job-config-path=${job_config_path}" "$@"

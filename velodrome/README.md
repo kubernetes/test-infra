@@ -1,6 +1,8 @@
 [Velodrome](http://velodrome.k8s.io/)
 =========
 
+ > # :warning: **Velodrome no longer exists**: Cleanup is in progress
+
 Overview
 --------
 
@@ -76,7 +78,7 @@ convention used by velodrome:
 - Project: A project describe a completely hermetic instance of the website for
   a given team. A project can span across multiple organizations and multiple
   repositories. e.g. The kubernetes project is made of repositories in the
-  `kubernetes` organization, and `kubernetes-incubator`.
+  `kubernetes` organization, and `kubernetes-sigs`.
 
 Adding a new project
 ====================

@@ -22,10 +22,13 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -43,56 +46,43 @@ var ice = github.IssueCommentEvent{
 var repoLevelSecret = `
 '*':
   - value: key1
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
-foo:
-  - value: key3
-    expiry: 9999-10-02T15:00:00Z
-  - value: key4
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 foo/bar:
   - value: 123abc
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key6
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 `
 
 var orgLevelSecret = `
 '*':
   - value: key1
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 foo:
   - value: 123abc
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key4
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 `
 
 var globalSecret = `
 '*':
   - value: 123abc
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
-`
-
-var expiredGlobalSecret = `
-'*':
-  - value: 123abc
-    expiry: 2019-10-02T15:00:00Z
-  - value: key2
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 `
 
 var missingMatchingSecret = `
 somerandom:
   - value: 123abc
-    expiry: 2019-10-02T15:00:00Z
+    created_at: 2019-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
 `
 
 var secretInOldFormat = `123abc`
@@ -117,10 +107,11 @@ func TestHook(t *testing.T) {
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient: github.NewFakeClient(),
-		OwnersClient: repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }),
+		GitHubClient:   github.NewFakeClient(),
+		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }, ownersconfig.FakeResolver),
+		BugzillaClient: &bugzilla.Fake{},
 	}
-	metrics := NewMetrics()
+	metrics := githubeventserver.NewMetrics()
 	var testcases = []struct {
 		name           string
 		secret         []byte
@@ -152,34 +143,10 @@ func TestHook(t *testing.T) {
 			shouldSucceed: true,
 		},
 		{
-			name:   "Token not matching at any level.",
-			secret: []byte("123abcd"),
-			tokenGenerator: func() []byte {
-				return []byte(repoLevelSecret)
-			},
-			shouldSucceed: false,
-		},
-		{
-			name:   "Token matching but expired.",
-			secret: []byte("123abc"),
-			tokenGenerator: func() []byte {
-				return []byte(expiredGlobalSecret)
-			},
-			shouldSucceed: false,
-		},
-		{
-			name:   "Token matching at organization level but repo level token mismatch.",
-			secret: []byte("key3"),
-			tokenGenerator: func() []byte {
-				return []byte(expiredGlobalSecret)
-			},
-			shouldSucceed: false,
-		},
-		{
 			name:   "Token not matching anywhere (wildcard token missing).",
 			secret: []byte("123abc"),
 			tokenGenerator: func() []byte {
-				return []byte(expiredGlobalSecret)
+				return []byte(missingMatchingSecret)
 			},
 			shouldSucceed: false,
 		},
@@ -201,6 +168,7 @@ func TestHook(t *testing.T) {
 			Plugins:        pa,
 			ConfigAgent:    ca,
 			Metrics:        metrics,
+			RepoEnabled:    func(org, repo string) bool { return true },
 			TokenGenerator: tc.tokenGenerator,
 		})
 		defer s.Close()

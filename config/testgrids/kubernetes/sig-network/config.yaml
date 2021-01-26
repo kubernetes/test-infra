@@ -7,8 +7,9 @@ dashboard_groups:
     - sig-network-gce
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
-    - sig-network-netd
     - sig-network-service-apis
+    - sig-network-ingress-controller-conformance
+    - sig-network-kind
 
 dashboards:
 - name: sig-network-dns
@@ -34,89 +35,76 @@ dashboards:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ip-alias
       test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
-      base_options: include-filter-by-regex=\[sig-network\]
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ipvs
       test_group_name: ci-kubernetes-e2e-gci-gce-ipvs
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce e2e tests in ipvs proxier mode
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
     - name: pull-gci-gce-ipvs
       test_group_name: pull-kubernetes-e2e-gci-gce-ipvs
-      base_options: include-filter-by-regex=\[sig-network\]
       description: presubmit network gci-gce e2e tests in ipvs proxier mode
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-coredns
       test_group_name: ci-kubernetes-e2e-gci-gce-coredns
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce tests with CoreDNS
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-coredns-nodecache
       test_group_name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce tests with CoreDNS and nodelocaldns cache enabled
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-kube-dns
       test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce tests with kube-dns
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-kube-dns-nodecache
       test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce tests with kube-dns and nodelocaldns cache enabled
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce
       test_group_name: ci-kubernetes-e2e-gci-gce
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-slow
       test_group_name: ci-kubernetes-e2e-gci-gce-slow
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce slow e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-serial
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce serial e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-serial-kube-dns
       test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce with kube-dns serial e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-serial-kube-dns-nodecache
       test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce with kube-dns and nodelocaldns cache serial e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-alpha-features
       test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-      base_options: include-filter-by-regex=\[sig-network\]
       description: network gci-gce alpha features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gci-gce-basic-sctp
-      test_group_name: ci-kubernetes-e2e-gci-gce-basic-sctp
-      base_options: include-filter-by-regex=\[sig-network\]
-      description: network gci-gce SCTP support basic e2e tests for master branch
+    - name: ubuntu-gce-basic-sctp
+      test_group_name: ci-kubernetes-e2e-ubuntu-gce-basic-sctp
+      description: network ubuntu-gce SCTP support basic e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
-- name: sig-network-netd
 - name: sig-network-service-apis
+- name: sig-network-ingress-controller-conformance
+- name: sig-network-kind

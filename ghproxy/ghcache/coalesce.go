@@ -21,7 +21,10 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httputil"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -57,7 +60,17 @@ type responseWaiter struct {
 func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Only coalesce GET requests
 	if req.Method != http.MethodGet {
-		return r.delegate.RoundTrip(req)
+		resp, err := r.delegate.RoundTrip(req)
+		if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
+			var tokenBudgetName string
+			if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+				tokenBudgetName = val
+			} else {
+				tokenBudgetName = r.hasher.Hash(req)
+			}
+			collectMetrics(ModeNoStore, req, resp, tokenBudgetName)
+		}
+		return resp, err
 	}
 
 	var cacheMode = ModeError
@@ -131,9 +144,28 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}()
 
-	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), r.hasher.Hash(req))
+	var tokenBudgetName string
+	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+		tokenBudgetName = val
+	} else {
+		tokenBudgetName = r.hasher.Hash(req)
+	}
+
+	collectMetrics(cacheMode, req, resp, tokenBudgetName)
+	return resp, err
+}
+
+func collectMetrics(cacheMode CacheResponseMode, req *http.Request, resp *http.Response, tokenBudgetName string) {
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path, req.Header.Get("User-Agent"), tokenBudgetName)
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
+		if cacheMode == ModeRevalidated && resp.Header.Get(cacheEntryCreationDateHeader) != "" {
+			intVal, err := strconv.Atoi(resp.Header.Get(cacheEntryCreationDateHeader))
+			if err != nil {
+				logrus.WithError(err).WithField("header-value", resp.Header.Get(cacheEntryCreationDateHeader)).Warn("Failed to convert cacheEntryCreationDateHeader value to int")
+			} else {
+				ghmetrics.CollectCacheEntryAgeMetrics(float64(time.Now().Unix()-int64(intVal)), req.URL.Path, req.Header.Get("User-Agent"), tokenBudgetName)
+			}
+		}
 	}
-	return resp, err
 }

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build-canary
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     labels:
@@ -15,14 +16,26 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
+        imagePullPolicy: Always
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+        - build
+        - --
+        - //...
+        - -//vendor/...
+        - -//build/...
+        - //build/release-tars
+        resources:
+          limits:
+            cpu: 4
+            memory: 36Gi
+          requests:
+            cpu: 4
+            memory: 36Gi
   - name: pull-kubernetes-bazel-test-canary
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     labels:
@@ -31,24 +44,31 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-testing-canaries
       testgrid-tab-name: pull-bazel-test
+      description: runs bazel test //... -//build/... -//vendor/... without RBE
     extra_refs:
     - base_ref: master
       org: kubernetes
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
+        imagePullPolicy: Always
         command:
         - ../test-infra/hack/bazel.sh
         args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...
         - -//vendor/...
+        resources:
+          limits:
+            cpu: 4
+            memory: 38Gi
+          requests:
+            cpu: 4
+            memory: 38Gi
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
@@ -192,71 +212,6 @@ periodics:
     testgrid-dashboards: google-gke, sig-testing-canaries
     testgrid-tab-name: gke-canary
 
-- interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-canary
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
-      - --ginkgo-parallel
-      - --kops-etcd-version=3.2.24
-      - --kops-master-count=3
-      - --kops-multiple-zones
-      - --kops-nodes=6
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops, sig-testing-canaries
-    testgrid-tab-name: kops-aws-canary
-
-- interval: 30m
-  name: ci-kubernetes-e2e-kops-gce-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-gce-canary.k8s.local
-      - --deployment=kops
-      - --extract=ci/latest
-      - --ginkgo-parallel=30
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=us-central1-c
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
-  annotations:
-    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:

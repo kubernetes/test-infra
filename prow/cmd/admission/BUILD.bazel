@@ -20,6 +20,7 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/scheme:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
@@ -48,6 +49,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/flagutil:go_default_library",
         "@io_k8s_api//admission/v1beta1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
     ],

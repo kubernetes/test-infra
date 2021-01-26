@@ -31,18 +31,24 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 )
 
-const metricsPort = 9090
-
 type CreateServer func(http.Handler) interrupts.ListenAndServer
 
 // ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
-func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg prometheus.Gatherer, createServer CreateServer) {
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, port int, reg prometheus.Gatherer, createServer CreateServer) {
 	if pushGateway.Endpoint != "" {
 		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
 		if !pushGateway.ServeMetrics {
 			return
 		}
 	}
+
+	// These get registered in controller-runtimes registry via an init in the internal/controller/metrics package. if
+	// we dont unregister them, metrics break if that package is somehow imported.
+	// Setting the default prometheus registry in controller-runtime is unfortunately not an option, because that would
+	// result in all metrics that got registered in controller-runtime via an init to vanish, as inits of dependencies
+	// always get executed before our own init.
+	ctrlruntimemetrics.Registry.Unregister(prometheus.NewGoCollector())
+	ctrlruntimemetrics.Registry.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	if reg == nil {
 		reg = prometheus.DefaultGatherer
@@ -55,7 +61,7 @@ func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway,
 	metricsMux.Handle("/metrics", handler)
 	var server interrupts.ListenAndServer
 	if createServer == nil {
-		server = &http.Server{Addr: ":" + strconv.Itoa(metricsPort), Handler: metricsMux}
+		server = &http.Server{Addr: ":" + strconv.Itoa(port), Handler: metricsMux}
 	} else {
 		server = createServer(handler)
 	}
@@ -63,8 +69,8 @@ func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway,
 }
 
 // ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, pushGateway config.PushGateway) {
-	ExposeMetricsWithRegistry(component, pushGateway, nil, nil)
+func ExposeMetrics(component string, pushGateway config.PushGateway, port int) {
+	ExposeMetricsWithRegistry(component, pushGateway, port, nil, nil)
 }
 
 // pushMetrics is meant to run in a goroutine and continuously push

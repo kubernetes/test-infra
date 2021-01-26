@@ -1,0 +1,44 @@
+{{define "report"}}
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+            table {
+            border-collapse: collapse;
+            width: 100%;
+            }
+
+            th, td {
+            text-align: left;
+            padding: 8px;
+            }
+
+            tr:nth-child(even){background-color: #f2f2f2}
+
+            th {
+            background-color: #4CAF50;
+            color: white;
+            }
+            </style>
+        </head>
+        <body>
+        <h1>Prow Job Report</h1>
+        <form action="/action_page.php" method="get">
+            <table border="1" >
+            <tr>
+                <th>Name</th>
+                <th>Primary Dashboard</th>
+                <th>Resources (Cpu Req, Cpu Limit, Mem Request, Mem Limit)</th>
+            </tr>
+            {{- range . -}}
+                <tr>
+                    <td><label><input type="checkbox" {{ if .QOSGuaranteed }}checked{{ end }}>{{ .Name }}</label></td>
+                    <td><label>{{ .PrimaryDashboard }}</label></td>
+                    <td><label>{{ .RequestMilliCPU }}, {{ .LimitMilliCPU }}, {{ .RequestGigaMem }}, {{ .LimitGigaMem }} </label></td>
+                </tr>
+            {{- end}}
+            </table>
+        </form>
+        </body>
+    </html>
+{{end}}

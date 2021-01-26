@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    # TODO(fejta): consider a better project, but this is what service-account uses now
+    iam.gke.io/gcp-service-account: pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+  name: grandmatriarch
+  namespace: test-pods
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: grandmatriarch
+  namespace: test-pods
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - update
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: grandmatriarch
+  namespace: test-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: grandmatriarch
+subjects:
+- kind: ServiceAccount
+  name: grandmatriarch
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grandmatriarch
+  namespace: test-pods
+  labels:
+    app: grandmatriarch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grandmatriarch
+  template:
+    metadata:
+      labels:
+        app: grandmatriarch
+    spec:
+      serviceAccountName: grandmatriarch
+      containers:
+      - name: bakery
+        image: gcr.io/k8s-prow/grandmatriarch:v20210123-aa0de54ee1
+        args:
+        - http-cookiefile

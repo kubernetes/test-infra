@@ -33,7 +33,7 @@ hostname = secrets.get_hostname()
 
 def get_app_config():
     with open('config.yaml') as config_file:
-        return yaml.load(config_file)
+        return yaml.safe_load(config_file)
 
 config = {
     'webapp2_extras.sessions': {

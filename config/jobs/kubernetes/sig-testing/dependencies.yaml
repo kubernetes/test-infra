@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-dependencies
+    cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
@@ -20,7 +21,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - make
         - verify
@@ -30,46 +31,20 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: "vendor vendor-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
+        resources:
+          limits:
+            cpu: 2
+            memory: 1.2Gi
+          requests:
+            cpu: 2
+            memory: 1.2Gi
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
-    always_run: true
-    skip_report: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - name: main
-        command:
-        - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        args:
-        - make
-        - verify
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        # Space separated list of the checks to run
-        - name: WHAT
-          value: "vendor vendor-licenses"
-    annotations:
-      testgrid-create-test-group: 'true'
-  - name: pull-kubernetes-godeps
-    run_if_changed: '^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$'
-    path_alias: "k8s.io/kubernetes"
-    decorate: true
-    branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
     always_run: false
-    skip_report: false
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -78,7 +53,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - make
         - verify
@@ -86,14 +61,15 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        # Force checks to run; we don't have remotes so we can't rely on the
-        # bash/git checks to work.
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "Y"
         # Space separated list of the checks to run
         - name: WHAT
-          value: "godeps staging-godeps godep-licenses"
+          value: "external-dependencies-version vendor vendor-licenses"
+        resources:
+          limits:
+            cpu: 2
+            memory: 1.2Gi
+          requests:
+            cpu: 2
+            memory: 1.2Gi
     annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'

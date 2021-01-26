@@ -19,9 +19,6 @@ set -o pipefail
 
 # A wrapper script for running kettle
 
-# Update gcloud
-gcloud components update
-
 # Authenticate gcloud
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"

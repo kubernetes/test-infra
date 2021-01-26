@@ -1,0 +1,116 @@
+periodics:
+- name: ci-k8sio-groups
+  interval: 24h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    serviceAccountName: gsuite-groups-manager
+    containers:
+    - name: groups
+      image: golang:1.13
+      command:
+      - bash
+      args:
+      - -c
+      - "cd groups && make run -- --confirm"
+
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-groups
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    run_if_changed: '^groups/groups.yaml'
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: gsuite-groups-manager
+      containers:
+      - name: groups
+        image: golang:1.13
+        command:
+        - bash
+        args:
+        - -c
+        - "cd groups && make run -- --confirm"
+  - name: post-k8sio-dns-update
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    run_if_changed: "^dns/zone-configs/"
+    branches:
+    - ^master$
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: k8s-infra-dns-updater
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200616-67ce585
+        command:
+        - bash
+        args:
+        - -c
+        - "cd dns && make push-local"
+  - name: post-k8sio-deploy-prow-build-resources
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
+    branches:
+    - ^master$
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: prow-deployer
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          gcloud container clusters get-credentials prow-build --project=k8s-infra-prow-build --region=us-central1
+          kubectl --context=gke_k8s-infra-prow-build_us-central1_prow-build \
+            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources
+  - name: post-k8sio-deploy-prow-build-trusted-resources
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
+    branches:
+    - ^master$
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: prow-deployer
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          gcloud container clusters get-credentials prow-build-trusted --project=k8s-infra-prow-build-trusted --region=us-central1
+          kubectl --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
+            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources

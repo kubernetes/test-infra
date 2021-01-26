@@ -1,0 +1,46 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cluster.go",
+        "files.go",
+        "map_abstractions.go",
+        "output.go",
+        "summarize.go",
+        "text.go",
+    ],
+    importpath = "k8s.io/test-infra/triage/summarize",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//triage/berghelroach:go_default_library",
+        "//triage/utils:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
+        "@io_k8s_klog_v2//:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "cluster_test.go",
+        "output_test.go",
+        "summarize_test.go",
+        "text_test.go",
+    ],
+    embed = [":go_default_library"],
+)

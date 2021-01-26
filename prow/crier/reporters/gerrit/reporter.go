@@ -18,14 +18,16 @@ limitations under the License.
 package gerrit
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/labels"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -66,30 +68,33 @@ type gerritClient interface {
 // Client is a gerrit reporter client
 type Client struct {
 	gc     gerritClient
-	lister pjlister.ProwJobLister
+	lister ctrlruntimeclient.Reader
 }
 
 // Job is the view of a prowjob scoped for a report
 type Job struct {
-	Name, State, icon, url string
+	Name  string
+	State v1.ProwJobState
+	Icon  string
+	URL   string
 }
 
 // JobReport is the structured job report format
 type JobReport struct {
-	Jobs    []*Job
-	success int
-	total   int
-	message string
-	header  string
+	Jobs    []Job
+	Success int
+	Total   int
+	Message string
+	Header  string
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cookiefilePath string, projects map[string][]string, lister pjlister.ProwJobLister) (*Client, error) {
+func NewReporter(cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
 	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
 	}
-	gc.Start(cookiefilePath)
+	gc.Authenticate(cookiefilePath, "")
 	return &Client{
 		gc:     gc,
 		lister: lister,
@@ -102,17 +107,19 @@ func (c *Client) GetName() string {
 }
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
-func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
+func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) bool {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 		// not done yet
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ not finished")
+		log.Info("PJ not finished")
 		return false
 	}
 
 	if pj.Status.State == v1.AbortedState {
 		// aborted (new patchset)
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ aborted")
+		log.Info("PJ aborted")
 		return false
 	}
 
@@ -120,7 +127,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
 		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
 		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
-		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Not a gerrit job")
+		log.Info("Not a gerrit job")
 		return false
 	}
 
@@ -130,22 +137,22 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	}
 
 	// Only report when all jobs of the same type on the same revision finished
-	selector := labels.Set{
+	selector := map[string]string{
 		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
 		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
 		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
 	}
 
-	pjs, err := c.lister.List(selector.AsSelector())
-	if err != nil {
-		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+	var pjs v1.ProwJobList
+	if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return false
 	}
 
-	for _, pjob := range pjs {
+	for _, pjob := range pjs.Items {
 		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
-			logrus.WithField("prowjob", pjob.ObjectMeta.Name).Info("Other jobs with same label are still running on this revision")
+			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 	}
@@ -154,9 +161,9 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-
-	logger := logrus.WithField("prowjob", pj)
+func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
@@ -171,23 +178,23 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 
 		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
 
-		selector := labels.Set{
+		selector := map[string]string{
 			clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 			pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
 			gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 		}
 
-		pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
-		if err != nil {
-			logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-			return nil, err
+		var pjsOnRevisionWithSameLabel v1.ProwJobList
+		if err := c.lister.List(ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
+			return nil, nil, err
 		}
 
 		mostRecentJob := map[string]*v1.ProwJob{}
-		for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
+		for idx, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel.Items {
 			job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
 			if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
-				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
+				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = &pjsOnRevisionWithSameLabel.Items[idx]
 			}
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
@@ -197,8 +204,8 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
-	report := generateReport(toReportJobs)
-	message := report.header + report.message
+	report := GenerateReport(toReportJobs)
+	message := report.Header + report.Message
 	// report back
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[clientGerritInstance]
@@ -210,10 +217,10 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		reportLabel = codeReview
 	}
 
-	if report.total <= 0 {
+	if report.Total <= 0 {
 		// Shouldn't happen but return if does
 		logger.Warn("Tried to report empty or aborted jobs.")
-		return nil, nil
+		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
 	if reportLabel != "" {
@@ -221,7 +228,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		// Can only vote below zero before merge
 		// TODO(fejta): cannot vote below previous vote after merge
 		switch {
-		case report.success == report.total:
+		case report.Success == report.Total:
 			vote = lgtm
 		case pj.Spec.Type == v1.PresubmitJob:
 			vote = lbtm
@@ -236,18 +243,18 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
 		if reportLabel == "" {
-			return nil, err
+			return nil, nil, err
 		}
 		// Retry without voting on a label
 		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
 			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
-	return toReportJobs, nil
+	return toReportJobs, nil, nil
 }
 
 func statusIcon(state v1.ProwJobState) string {
@@ -258,39 +265,43 @@ func statusIcon(state v1.ProwJobState) string {
 	return icon
 }
 
-func jobFromPJ(pj *v1.ProwJob) *Job {
-	return &Job{Name: pj.Spec.Job, State: string(pj.Status.State), icon: statusIcon(pj.Status.State), url: pj.Status.URL}
+func jobFromPJ(pj *v1.ProwJob) Job {
+	return Job{Name: pj.Spec.Job, State: pj.Status.State, Icon: statusIcon(pj.Status.State), URL: pj.Status.URL}
 }
 
 func (j *Job) serialize() string {
-	return fmt.Sprintf(jobReportFormat, j.icon, j.Name, strings.ToUpper(j.State), j.url)
+	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
 }
 
-func deserializeJob(s string) *Job {
-	j := &Job{}
-	n, err := fmt.Sscanf(s, jobReportFormat, &j.icon, &j.Name, &j.State, &j.url)
-	if err != nil || n != 4 {
-		logrus.Debugf("Could not deserialize %s to a job: %v", s, err)
-		return nil
+func deserialize(s string, j *Job) error {
+	var state string
+	n, err := fmt.Sscanf(s, jobReportFormat, &j.Icon, &j.Name, &state, &j.URL)
+	if err != nil {
+		return err
 	}
-	return j
+	j.State = v1.ProwJobState(strings.ToLower(state))
+	const want = 4
+	if n != want {
+		return fmt.Errorf("scan: got %d, want %d", n, want)
+	}
+	return nil
 }
 
-func generateReport(pjs []*v1.ProwJob) *JobReport {
-	report := &JobReport{total: len(pjs)}
+func GenerateReport(pjs []*v1.ProwJob) JobReport {
+	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
 		report.Jobs = append(report.Jobs, job)
 		if pj.Status.State == v1.SuccessState {
-			report.success++
+			report.Success++
 		}
 
-		report.message += job.serialize()
-		report.message += "\n"
+		report.Message += job.serialize()
+		report.Message += "\n"
 
 	}
-	report.header = defaultProwHeader
-	report.header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.success, report.total)
+	report.Header = defaultProwHeader
+	report.Header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.Success, report.Total)
 	return report
 }
 
@@ -309,19 +320,28 @@ func ParseReport(message string) *JobReport {
 	if !isReport {
 		return nil
 	}
-	report := &JobReport{}
-	report.header = contents[start]
-	for i := start; i < len(contents); i++ {
-		j := deserializeJob(contents[i])
-		if j != nil {
-			report.Jobs = append(report.Jobs, j)
+	var report JobReport
+	report.Header = contents[start] + "\n"
+	for i := start + 1; i < len(contents); i++ {
+		if contents[i] == "" {
+			continue
 		}
+		var j Job
+		if err := deserialize(contents[i], &j); err != nil {
+			logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
+			continue
+		}
+		report.Total++
+		if j.State == v1.SuccessState {
+			report.Success++
+		}
+		report.Jobs = append(report.Jobs, j)
 	}
-	report.message = strings.TrimPrefix(message, report.header)
-	return report
+	report.Message = strings.TrimPrefix(message, report.Header+"\n")
+	return &report
 }
 
 // String implements Stringer for JobReport
-func (r *JobReport) String() string {
-	return fmt.Sprintf("%s\n%s", r.header, r.message)
+func (r JobReport) String() string {
+	return fmt.Sprintf("%s\n%s", r.Header, r.Message)
 }

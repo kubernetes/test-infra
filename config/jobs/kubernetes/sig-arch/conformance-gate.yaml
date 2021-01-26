@@ -1,0 +1,17 @@
+periodics:
+- interval: 3h
+  name: apisnoop-conformance-gate
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    testgrid-tab-name: apisnoop-conformance-gate
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: 'Uses APISnoop to check that new GA endpoints are conformance tested in latest e2e test run'
+  decorate: true
+  spec:
+    containers:
+    - name: apisnoop-gate
+      image: gcr.io/k8s-staging-apisnoop/snoopdb:v20201028-v2020.09.23-156-g74df23c
+      command:
+      - /usr/local/bin/docker-entrypoint.sh
+      - postgres

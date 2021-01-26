@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # this replaces the bootstrap / scenario based job going forward
   - name: pull-kubernetes-integration
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -17,7 +18,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -26,10 +27,15 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 6
+            memory: 15Gi
           requests:
-            cpu: 4
+            cpu: 6
+            memory: 15Gi
 periodics:
 - interval: 1h
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-master
   decorate: true
   extra_refs:
@@ -43,21 +49,27 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: integration-master
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
       - ./hack/jenkins/test-dockerized.sh
+      env:
+      - name: SHORT
+        value: --short=false
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
         requests:
-          cpu: 4
+          cpu: 6
+          memory: 20Gi

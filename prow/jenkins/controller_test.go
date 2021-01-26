@@ -17,6 +17,7 @@ limitations under the License.
 package jenkins
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -154,10 +155,10 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotName() (string, error) {
-	f.Lock()
-	defer f.Unlock()
-	return "bot", nil
+func (f *fghc) BotUserChecker() (func(string) bool, error) {
+	return func(candidate string) bool {
+		return candidate == "bot"
+	}, nil
 }
 func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
 	f.Lock()
@@ -327,7 +328,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("failed to list prowjobs from client %v", err)
 		}
@@ -555,7 +556,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("failed to list prowjobs from client %v", err)
 		}
@@ -655,7 +656,7 @@ func TestBatch(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -669,7 +670,7 @@ func TestBatch(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -683,7 +684,7 @@ func TestBatch(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get(context.Background(), "known_name", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
@@ -1113,7 +1114,7 @@ func TestSyncAbortedJob(t *testing.T) {
 				t.Fatalf("syncAbortedJob failed: %v", err)
 			}
 
-			pj, err := pjClient.ProwV1().ProwJobs("").Get(pj.Name, metav1.GetOptions{})
+			pj, err := pjClient.ProwV1().ProwJobs("").Get(context.Background(), pj.Name, metav1.GetOptions{})
 			if err != nil {
 				t.Fatalf("failed to get prowjob: %v", err)
 			}

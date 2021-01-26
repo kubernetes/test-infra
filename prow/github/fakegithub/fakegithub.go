@@ -21,8 +21,10 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -50,9 +52,9 @@ type FakeClient struct {
 	CombinedStatuses    map[string]*github.CombinedStatus
 	CreatedStatuses     map[string][]github.Status
 	IssueEvents         map[int][]github.ListedIssueEvent
-	Commits             map[string]github.SingleCommit
+	Commits             map[string]github.RepositoryCommit
 
-	//All Labels That Exist In The Repo
+	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
 	// org/repo#number:label
 	IssueLabelsAdded    []string
@@ -83,6 +85,10 @@ type FakeClient struct {
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
 
+	// Fake remote git storage. Directory name are keys
+	// and values map SHA to directory content
+	RemoteDirectories map[string]map[string][]github.DirectoryContent
+
 	// A list of refs that got deleted via DeleteRef
 	RefsDeleted []struct{ Org, Repo, Ref string }
 
@@ -103,11 +109,25 @@ type FakeClient struct {
 	Column             string
 	OrgRepoIssueLabels map[string][]github.Label
 	OrgProjects        map[string][]github.Project
+
+	// Maps org name to the list of hooks
+	OrgHooks map[string][]github.Hook
+	// Maps repo name to the list of hooks
+	RepoHooks map[string][]github.Hook
+
+	// Error will be returned if set. Currently only implemented for CreateStatus
+	Error error
 }
 
-// BotName returns authenticated login.
-func (f *FakeClient) BotName() (string, error) {
-	return botName, nil
+func (f *FakeClient) BotUser() (*github.UserData, error) {
+	return &github.UserData{Login: botName}, nil
+}
+
+func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool {
+		candidate = strings.TrimSuffix(candidate, "[bot]")
+		return candidate == botName
+	}, nil
 }
 
 // IsMember returns true if user is in org.
@@ -272,12 +292,15 @@ func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
 }
 
 // GetSingleCommit returns a single commit.
-func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error) {
+func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.RepositoryCommit, error) {
 	return f.Commits[SHA], nil
 }
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	if f.Error != nil {
+		return f.Error
+	}
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}
@@ -333,21 +356,35 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
-	if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
-		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
-	}
-	if f.RepoLabelsExisting == nil {
-		f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-		return nil
-	}
-	for _, l := range f.RepoLabelsExisting {
-		if label == l {
+	return f.AddLabels(owner, repo, number, label)
+}
+
+// AddLabels adds a list of labels
+func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	for _, label := range labels {
+		labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+		if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+		}
+
+		if f.RepoLabelsExisting == nil {
 			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
-			return nil
+			continue
+		}
+
+		var repoLabelExists bool
+		for _, l := range f.RepoLabelsExisting {
+			if label == l {
+				f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
+				repoLabelExists = true
+				break
+			}
+		}
+		if !repoLabelExists {
+			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 		}
 	}
-	return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+	return nil
 }
 
 // RemoveLabel removes a label
@@ -427,7 +464,7 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
-func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
+func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {
 		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
@@ -503,7 +540,7 @@ func (f *FakeClient) GetOrgProjects(org string) ([]github.Project, error) {
 }
 
 // GetProjectColumns returns the list of columns for a given project.
-func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, error) {
+func (f *FakeClient) GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error) {
 	// Get project name
 	for _, projects := range f.RepoProjects {
 		for _, project := range projects {
@@ -516,7 +553,7 @@ func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, e
 }
 
 // CreateProjectCard creates a project card under a given column.
-func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
+func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
@@ -526,7 +563,7 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 			for id := range columnIDMap {
 				// Make sure that we behave same as github API
 				// Create project will generate an error when the card already exist in the project
-				card, err := f.GetColumnProjectCard(id, projectCard.ContentURL)
+				card, err := f.GetColumnProjectCard(org, id, projectCard.ContentURL)
 				if err == nil && card != nil {
 					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
 				}
@@ -547,7 +584,7 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 }
 
 // DeleteProjectCard deletes the project card of a specific issue or PR
-func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
+func (f *FakeClient) DeleteProjectCard(org string, projectCardID int) error {
 	if f.ColumnCardsMap == nil {
 		return fmt.Errorf("Project card doesn't exist")
 	}
@@ -579,7 +616,7 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 }
 
 // GetColumnProjectCards fetches project cards  under given column
-func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, error) {
+func (f *FakeClient) GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
@@ -587,8 +624,8 @@ func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, 
 }
 
 // GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
-func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
-	cards, err := f.GetColumnProjectCards(columnID)
+func (f *FakeClient) GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(org, columnID)
 	if err != nil {
 		return nil, err
 	}
@@ -632,7 +669,7 @@ func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
 }
 
 // MoveProjectCard moves a specific project card to a specified column in the same project
-func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
+func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID int) error {
 	// Remove project card from old column
 	newCards := []github.ProjectCard{}
 	oldColumnID := -1
@@ -675,8 +712,8 @@ func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 }
 
 // TeamHasMember checks if a user belongs to a team
-func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error) {
-	teamMembers, _ := f.ListTeamMembers(teamID, github.RoleAll)
+func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
+	teamMembers, _ := f.ListTeamMembers(org, teamID, github.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
 			return true, nil
@@ -738,4 +775,25 @@ func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body
 // It does not modify the passed interface at all.
 func (f *FakeClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
 	return nil
+}
+
+// GetDirectory returns the contents of the file.
+func (f *FakeClient) GetDirectory(org, repo, dir, commit string) ([]github.DirectoryContent, error) {
+	contents, ok := f.RemoteDirectories[dir]
+	if !ok {
+		return nil, fmt.Errorf("could not find dir %s", dir)
+	}
+	if commit == "" {
+		if master, ok := contents["master"]; ok {
+			return master, nil
+		}
+
+		return nil, fmt.Errorf("could not find dir %s in master", dir)
+	}
+
+	if content, ok := contents[commit]; ok {
+		return content, nil
+	}
+
+	return nil, fmt.Errorf("could not find dir %s with ref %s", dir, commit)
 }

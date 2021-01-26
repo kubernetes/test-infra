@@ -7,7 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -20,13 +20,17 @@ presubmits:
         env:
         - name: ZONE
           value: us-central1-c
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
+      description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
     always_run: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -36,13 +40,17 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-sanity
+      description: Kubernetes sanity tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
     always_run: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -52,13 +60,17 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-unit
+      description: Kubernetes unit tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
     always_run: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -68,6 +80,10 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-verify
+      description: Kubernetes verify tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
     always_run: true
     labels:
@@ -75,7 +91,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -95,3 +111,7 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+      description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build

@@ -17,14 +17,15 @@ limitations under the License.
 package trigger
 
 import (
-	"reflect"
+	"context"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clienttesting "k8s.io/client-go/testing"
 
@@ -80,275 +81,6 @@ func TestHelpProvider(t *testing.T) {
 	}
 }
 
-func TestRunAndSkipJobs(t *testing.T) {
-	var testCases = []struct {
-		name string
-
-		requestedJobs        []config.Presubmit
-		skippedJobs          []config.Presubmit
-		elideSkippedContexts bool
-		jobCreationErrs      sets.String // job names which fail creation
-
-		expectedJobs     sets.String // by name
-		expectedStatuses []github.Status
-		expectedErr      bool
-	}{
-		{
-			name: "nothing requested means nothing done",
-		},
-		{
-			name: "all requested jobs get run",
-			requestedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			expectedJobs: sets.NewString("first", "second"),
-		},
-		{
-			name: "failure on job creation bubbles up but doesn't stop others from starting",
-			requestedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			jobCreationErrs: sets.NewString("first"),
-			expectedJobs:    sets.NewString("second"),
-			expectedErr:     true,
-		},
-		{
-			name: "all skipped jobs get skipped",
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
-				Context:     "first-context",
-				Description: "Skipped.",
-			}, {
-				State:       github.StatusSuccess,
-				Context:     "second-context",
-				Description: "Skipped.",
-			}},
-		},
-		{
-			name: "all skipped jobs get ignored if skipped statuses are elided",
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			elideSkippedContexts: true,
-		},
-		{
-			name: "skipped jobs with skip report get ignored",
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context", SkipReport: true},
-			}},
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
-				Context:     "first-context",
-				Description: "Skipped.",
-			}},
-		},
-		{
-			name: "overlap between jobs callErrors and has no external action",
-			requestedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}},
-			expectedErr: true,
-		},
-		{
-			name: "disjoint sets of jobs get triggered and skipped correctly",
-			requestedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "third",
-				},
-				Reporter: config.Reporter{Context: "third-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "fourth",
-				},
-				Reporter: config.Reporter{Context: "fourth-context"},
-			}},
-			expectedJobs: sets.NewString("first", "second"),
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
-				Context:     "third-context",
-				Description: "Skipped.",
-			}, {
-				State:       github.StatusSuccess,
-				Context:     "fourth-context",
-				Description: "Skipped.",
-			}},
-		},
-		{
-			name: "disjoint sets of jobs get triggered and skipped correctly, even if one creation fails",
-			requestedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "first",
-				},
-				Reporter: config.Reporter{Context: "first-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "second",
-				},
-				Reporter: config.Reporter{Context: "second-context"},
-			}},
-			skippedJobs: []config.Presubmit{{
-				JobBase: config.JobBase{
-					Name: "third",
-				},
-				Reporter: config.Reporter{Context: "third-context"},
-			}, {
-				JobBase: config.JobBase{
-					Name: "fourth",
-				},
-				Reporter: config.Reporter{Context: "fourth-context"},
-			}},
-			jobCreationErrs: sets.NewString("first"),
-			expectedJobs:    sets.NewString("second"),
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
-				Context:     "third-context",
-				Description: "Skipped.",
-			}, {
-				State:       github.StatusSuccess,
-				Context:     "fourth-context",
-				Description: "Skipped.",
-			}},
-			expectedErr: true,
-		},
-	}
-
-	pr := &github.PullRequest{
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
-					Login: "org",
-				},
-				Name: "repo",
-			},
-			Ref: "branch",
-		},
-		Head: github.PullRequestBranch{
-			SHA: "foobar1",
-		},
-	}
-
-	for _, testCase := range testCases {
-		fakeGitHubClient := fakegithub.FakeClient{}
-		fakeProwJobClient := fake.NewSimpleClientset()
-		fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-			switch action := action.(type) {
-			case clienttesting.CreateActionImpl:
-				prowJob, ok := action.Object.(*prowapi.ProwJob)
-				if !ok {
-					return false, nil, nil
-				}
-				if testCase.jobCreationErrs.Has(prowJob.Spec.Job) {
-					return true, action.Object, errors.New("failed to create job")
-				}
-			}
-			return false, nil, nil
-		})
-		client := Client{
-			GitHubClient:  &fakeGitHubClient,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			Logger:        logrus.WithField("testcase", testCase.name),
-			GitClient:     nil,
-		}
-
-		err := RunAndSkipJobs(client, pr, fakegithub.TestRef, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
-		if err == nil && testCase.expectedErr {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if err != nil && !testCase.expectedErr {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-
-		if actual, expected := fakeGitHubClient.CreatedStatuses[pr.Head.SHA], testCase.expectedStatuses; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: created incorrect statuses: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
-		}
-
-		observedCreatedProwJobs := sets.NewString()
-		existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
-			t.Errorf("%s: could not list current state of prow jobs: %v", testCase.name, err)
-			continue
-		}
-		for _, job := range existingProwJobs.Items {
-			observedCreatedProwJobs.Insert(job.Spec.Job)
-		}
-
-		if missing := testCase.expectedJobs.Difference(observedCreatedProwJobs); missing.Len() > 0 {
-			t.Errorf("%s: didn't create all expected ProwJobs, missing: %s", testCase.name, missing.List())
-		}
-		if extra := observedCreatedProwJobs.Difference(testCase.expectedJobs); extra.Len() > 0 {
-			t.Errorf("%s: created unexpected ProwJobs: %s", testCase.name, extra.List())
-		}
-	}
-}
-
 func TestRunRequested(t *testing.T) {
 	var testCases = []struct {
 		name string
@@ -363,6 +95,21 @@ func TestRunRequested(t *testing.T) {
 			name: "nothing requested means nothing done",
 		},
 		{
+			name: "disjoint sets of jobs get triggered",
+			requestedJobs: []config.Presubmit{{
+				JobBase: config.JobBase{
+					Name: "first",
+				},
+				Reporter: config.Reporter{Context: "first-context"},
+			}, {
+				JobBase: config.JobBase{
+					Name: "second",
+				},
+				Reporter: config.Reporter{Context: "second-context"},
+			}},
+			expectedJobs: sets.NewString("first", "second"),
+		},
+		{
 			name: "all requested jobs get run",
 			requestedJobs: []config.Presubmit{{
 				JobBase: config.JobBase{
@@ -412,51 +159,53 @@ func TestRunRequested(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		fakeGitHubClient := fakegithub.FakeClient{}
-		fakeProwJobClient := fake.NewSimpleClientset()
-		fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-			switch action := action.(type) {
-			case clienttesting.CreateActionImpl:
-				prowJob, ok := action.Object.(*prowapi.ProwJob)
-				if !ok {
-					return false, nil, nil
+		t.Run(testCase.name, func(t *testing.T) {
+			var fakeGitHubClient fakegithub.FakeClient
+			fakeProwJobClient := fake.NewSimpleClientset()
+			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+				switch action := action.(type) {
+				case clienttesting.CreateActionImpl:
+					prowJob, ok := action.Object.(*prowapi.ProwJob)
+					if !ok {
+						return false, nil, nil
+					}
+					if testCase.jobCreationErrs.Has(prowJob.Spec.Job) {
+						return true, action.Object, errors.New("failed to create job")
+					}
 				}
-				if testCase.jobCreationErrs.Has(prowJob.Spec.Job) {
-					return true, action.Object, errors.New("failed to create job")
-				}
+				return false, nil, nil
+			})
+			client := Client{
+				GitHubClient:  &fakeGitHubClient,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				Logger:        logrus.WithField("testcase", testCase.name),
 			}
-			return false, nil, nil
+
+			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", time.Nanosecond)
+			if err == nil && testCase.expectedErr {
+				t.Error("failed to receive an error")
+			}
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			observedCreatedProwJobs := sets.NewString()
+			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
+			if err != nil {
+				t.Errorf("could not list current state of prow jobs: %v", err)
+				return
+			}
+			for _, job := range existingProwJobs.Items {
+				observedCreatedProwJobs.Insert(job.Spec.Job)
+			}
+
+			if missing := testCase.expectedJobs.Difference(observedCreatedProwJobs); missing.Len() > 0 {
+				t.Errorf("didn't create all expected ProwJobs, missing: %s", missing.List())
+			}
+			if extra := observedCreatedProwJobs.Difference(testCase.expectedJobs); extra.Len() > 0 {
+				t.Errorf("created unexpected ProwJobs: %s", extra.List())
+			}
 		})
-		client := Client{
-			GitHubClient:  &fakeGitHubClient,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			Logger:        logrus.WithField("testcase", testCase.name),
-		}
-
-		err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
-		if err == nil && testCase.expectedErr {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if err != nil && !testCase.expectedErr {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-
-		observedCreatedProwJobs := sets.NewString()
-		existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
-			t.Errorf("%s: could not list current state of prow jobs: %v", testCase.name, err)
-			continue
-		}
-		for _, job := range existingProwJobs.Items {
-			observedCreatedProwJobs.Insert(job.Spec.Job)
-		}
-
-		if missing := testCase.expectedJobs.Difference(observedCreatedProwJobs); missing.Len() > 0 {
-			t.Errorf("%s: didn't create all expected ProwJobs, missing: %s", testCase.name, missing.List())
-		}
-		if extra := observedCreatedProwJobs.Difference(testCase.expectedJobs); extra.Len() > 0 {
-			t.Errorf("%s: created unexpected ProwJobs: %s", testCase.name, extra.List())
-		}
 	}
 }
 
@@ -524,6 +273,7 @@ func TestTrustedUser(t *testing.T) {
 		repo string
 
 		expectedTrusted bool
+		expectedReason  string
 	}{
 		{
 			name:            "user is member of trusted org",
@@ -556,6 +306,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember).String(),
 		},
 		{
 			name:            "user is trusted org member",
@@ -573,6 +324,27 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member",
+			onlyOrgMembers:  false,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator | notSecondaryMember).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member, onlyOrgMembers true",
+			onlyOrgMembers:  true,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notSecondaryMember).String(),
 		},
 	}
 
@@ -585,12 +357,15 @@ func TestTrustedUser(t *testing.T) {
 				Collaborators: []string{"test-collaborator"},
 			}
 
-			trusted, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}
-			if trusted != tc.expectedTrusted {
-				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			if trustedResponse.IsTrusted != tc.expectedTrusted {
+				t.Errorf("For case %s, expect trusted: %v, but got: %v", tc.name, tc.expectedTrusted, trustedResponse.IsTrusted)
+			}
+			if trustedResponse.Reason != tc.expectedReason {
+				t.Errorf("For case %s, expect trusted reason: %v, but got: %v", tc.name, tc.expectedReason, trustedResponse.Reason)
 			}
 		})
 	}
@@ -747,6 +522,65 @@ func TestGetPostsubmits(t *testing.T) {
 
 			if !tc.expectedPostsubmits.Equal(actualPostsubmits) {
 				t.Errorf("got a different set of postsubmits than expected, diff: %v", tc.expectedPostsubmits.Difference(actualPostsubmits))
+			}
+		})
+	}
+}
+
+func TestCreateWithRetry(t *testing.T) {
+	testCases := []struct {
+		name            string
+		numFailedCreate int
+		expectedErrMsg  string
+	}{
+		{
+			name: "Initial success",
+		},
+		{
+			name:            "Success after retry",
+			numFailedCreate: 7,
+		},
+		{
+			name:            "Failure",
+			numFailedCreate: 8,
+			expectedErrMsg:  "need retrying",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			fakeProwJobClient := fake.NewSimpleClientset()
+			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+				if _, ok := action.(clienttesting.CreateActionImpl); ok && tc.numFailedCreate > 0 {
+					tc.numFailedCreate--
+					return true, nil, errors.New("need retrying")
+				}
+				return false, nil, nil
+			})
+
+			pj := &prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: "foo"}}
+
+			var errMsg string
+			err := createWithRetry(context.TODO(), fakeProwJobClient.ProwV1().ProwJobs(""), pj, time.Nanosecond)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedErrMsg {
+				t.Fatalf("expected error %s, got error %v", tc.expectedErrMsg, err)
+			}
+			if err != nil {
+				return
+			}
+
+			result, err := fakeProwJobClient.ProwV1().ProwJobs("").List(context.Background(), metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("faile to list prowjobs: %v", err)
+			}
+
+			if len(result.Items) != 1 {
+				t.Errorf("expected to find exactly one prowjob, got %+v", result.Items)
 			}
 		})
 	}

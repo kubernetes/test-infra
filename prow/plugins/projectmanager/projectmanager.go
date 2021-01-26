@@ -35,7 +35,7 @@ const (
 
 var (
 	failedToAddProjectCard = "Failed to add project card for the issue/PR"
-	issueAlreadyInProject  = "The issue/PR %d already assigned to the project %s"
+	issueAlreadyInProject  = "The issue/PR %s already assigned to the project %s"
 
 	handleIssueActions = map[github.IssueEventAction]bool{
 		github.IssueActionOpened:    true,
@@ -66,7 +66,7 @@ org/repos:
                   area/sig-testing
 */
 // TODO Handle Label deletion, pr/issue should be removed from the project when label criteria does  not meet
-// TODO Pr/issue state change, pr/iisue is on project board only if its state is listed in the configuration
+// TODO Pr/issue state change, pr/issue is on project board only if its state is listed in the configuration
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssueOrPullRequest, helpProvider)
 }
@@ -91,10 +91,37 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		}
 		configString[orgRepoName] = repoDescr
 	}
-
+	id := 123
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		ProjectManager: plugins.ProjectManager{
+			OrgRepos: map[string]plugins.ManagedOrgRepo{
+				"org/repo": {
+					Projects: map[string]plugins.ManagedProject{
+						"project": {
+							Columns: []plugins.ManagedColumn{
+								{
+									ID:    &id,
+									Name:  "To do",
+									State: "open",
+									Labels: []string{
+										"area/conformance",
+									},
+									Org: "org",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The project-manager plugin automatically adds Pull Requests to specified GitHub Project Columns, if the label on the PR matches with configured project and the column.",
 		Config:      configString,
+		Snippet:     yamlSnippet,
 	}
 	return pluginHelp, nil
 }
@@ -104,9 +131,9 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)
-	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
-	GetColumnProjectCards(columnID int) ([]github.ProjectCard, error)
-	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
+	GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error)
+	GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error)
+	CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
 }
 
 type eventData struct {
@@ -141,7 +168,7 @@ func handleIssueOrPullRequest(pc plugins.Agent, ie github.IssueEvent) error {
 		repo:   ie.Repo.Name,
 		state:  ie.Issue.State,
 		labels: ie.Issue.Labels,
-		remove: (ie.Action == github.IssueActionUnlabeled),
+		remove: ie.Action == github.IssueActionUnlabeled,
 	}
 
 	return handle(pc.GitHubClient, pc.PluginConfig.ProjectManager, pc.Logger, eventData)
@@ -248,13 +275,13 @@ func getColumnID(gc githubClient, orgRepoName, projectName, columnName, issueURL
 
 	for _, project := range projects {
 		if project.Name == projectName {
-			columns, err := gc.GetProjectColumns(project.ID)
+			columns, err := gc.GetProjectColumns(orgRepoParts[0], project.ID)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, column := range columns {
-				cards, err := gc.GetColumnProjectCards(column.ID)
+				cards, err := gc.GetColumnProjectCards(orgRepoParts[0], column.ID)
 				if err != nil {
 					return nil, err
 				}
@@ -285,6 +312,6 @@ func addIssueToColumn(gc githubClient, columnID int, e eventData) error {
 		projectCard.ContentType = "Issue"
 	}
 	projectCard.ContentID = e.id
-	_, err := gc.CreateProjectCard(columnID, projectCard)
+	_, err := gc.CreateProjectCard(e.org, columnID, projectCard)
 	return err
 }

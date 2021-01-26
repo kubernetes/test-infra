@@ -22,6 +22,7 @@ go_library(
         "@com_github_sirupsen_logrus//:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
         "@io_k8s_apimachinery//pkg/util/validation:go_default_library",
     ],
 )
@@ -43,18 +44,19 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["podspec_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/clonerefs:go_default_library",
         "//prow/entrypoint:go_default_library",
         "//prow/initupload:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/sidecar:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
         "@io_k8s_utils//pointer:go_default_library",
     ],
 )

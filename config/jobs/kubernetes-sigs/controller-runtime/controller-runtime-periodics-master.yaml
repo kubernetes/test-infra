@@ -1,0 +1,19 @@
+periodics:
+- interval: 6h
+  name: periodic-controller-runtime-test-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: controller-runtime
+    base_ref: master
+  spec:
+    containers:
+    - image: golang:1.15
+      command:
+      - ./hack/ci-check-everything.sh
+      resources:
+        requests:
+          cpu: "7000m"
+  annotations:
+    testgrid-dashboards: sig-api-machinery-kubebuilder
+    testgrid-tab-name: controller-runtime-periodic-master

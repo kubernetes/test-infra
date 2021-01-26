@@ -13,7 +13,11 @@ go run prow/cmd/hook/main.go
 --config-path=config/prow/config.yaml
 --plugin-config=config/prow/plugins.yaml
 --hmac-secret-file=path/to/hmac
--github-token-path=path/to/github-token
+--github-token-path=path/to/github-token
+
+# Note:
+# --deck-url is required because --dry-run flag requires it
+# --hmac-secret-file is required for running locally, use the same hmac token for phony below
 ```
 
 ## Usage
@@ -21,11 +25,16 @@ Once you have a running server that manages github webhook events, generate an
 `hmac` token (same process as in [prow](../..)), and point a `phony` pull
 request event at it with the following:
 ```
-bazel run //prow/cmd/phony --
---address=http://localhost:8888/hook
---hmac=<hmac token>
---event=pull_request
---payload="{}"
+phony --help
+Usage of ./phony:
+  -address string
+    	Where to send the fake hook. (default "http://localhost:8888/hook")
+  -event string
+    	Type of event to send, such as pull_request. (default "ping")
+  -hmac string
+    	HMAC token to sign payload with. (default "abcde12345")
+  -payload string
+    	File to send as payload. If unspecified, sends "{}".
 ```
 
 If you are testing `hook` and successfully sent the webhook from `phony`, you should see a log from `hook` resembling the following:

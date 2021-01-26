@@ -24,14 +24,15 @@ import (
 	"path"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"k8s.io/test-infra/prow/io"
 )
 
 const reporterName = "gcsreporter"
@@ -39,30 +40,29 @@ const reporterName = "gcsreporter"
 type gcsReporter struct {
 	cfg    config.Getter
 	dryRun bool
-	logger *logrus.Entry
 	author util.Author
 }
 
-func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+func (gr *gcsReporter) Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
 	_, _, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
-		return []*prowv1.ProwJob{pj}, nil
+		log.WithError(err).Info("Not uploading prowjob because we couldn't find a destination")
+		return []*prowv1.ProwJob{pj}, nil, nil
 	}
-	stateErr := gr.reportJobState(ctx, pj)
-	prowjobErr := gr.reportProwjob(ctx, pj)
+	stateErr := gr.reportJobState(ctx, log, pj)
+	prowjobErr := gr.reportProwjob(ctx, log, pj)
 
-	return []*prowv1.ProwJob{pj}, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
+	return []*prowv1.ProwJob{pj}, nil, utilerrors.NewAggregate([]error{stateErr, prowjobErr})
 }
 
-func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) error {
-	startedErr := gr.reportStartedJob(ctx, pj)
+func (gr *gcsReporter) reportJobState(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
+	startedErr := gr.reportStartedJob(ctx, log, pj)
 	var finishedErr error
 	if pj.Complete() {
-		finishedErr = gr.reportFinishedJob(ctx, pj)
+		finishedErr = gr.reportFinishedJob(ctx, log, pj)
 	}
 	return utilerrors.NewAggregate([]error{startedErr, finishedErr})
 }
@@ -70,12 +70,12 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) e
 // reportStartedJob uploads a started.json for the job. This will almost certainly
 // happen before the pod itself gets to upload one, at which point the pod will
 // upload its own. If for some reason one already exists, it will not be overwritten.
-func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
 	s := metadata.Started{
 		Timestamp: pj.Status.StartTime.Unix(),
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 	}
-	output, err := json.Marshal(s)
+	output, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
@@ -86,14 +86,14 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 	}
 
 	if gr.dryRun {
-		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
+		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload started.json")
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "started.json"), false, output)
+	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
-func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
 	if !pj.Complete() {
 		return errors.New("cannot report finished.json for incomplete job")
 	}
@@ -105,7 +105,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 		Result:    string(pj.Status.State),
 	}
-	output, err := json.Marshal(f)
+	output, err := json.MarshalIndent(f, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
@@ -116,15 +116,15 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 	}
 
 	if gr.dryRun {
-		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
+		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload finished.json")
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "finished.json"), false, output)
+	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
 }
 
-func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
+func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
 	// Unconditionally dump the prowjob to GCS, on all job updates.
-	output, err := json.Marshal(pj)
+	output, err := json.MarshalIndent(pj, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
@@ -135,32 +135,31 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 	}
 
 	if gr.dryRun {
-		gr.logger.Infof("Would upload pod info to %q/%q", bucketName, dir)
+		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	return util.WriteContent(ctx, gr.logger, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
+	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
 }
 
 func (gr *gcsReporter) GetName() string {
 	return reporterName
 }
 
-func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
+func (gr *gcsReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	// We can only report jobs once they have a build ID. By denying responsibility
 	// for it until it has one, crier will not mark us as having handled it until
 	// it is possible for us to handle it, ensuring that we get a chance to see it.
 	return pj.Status.BuildID != ""
 }
 
-func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Client: storage}, dryRun)
+func New(cfg config.Getter, opener io.Opener, dryRun bool) *gcsReporter {
+	return newWithAuthor(cfg, util.StorageAuthor{Opener: opener}, dryRun)
 }
 
 func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {
 	return &gcsReporter{
 		cfg:    cfg,
 		dryRun: dryRun,
-		logger: logrus.WithField("component", reporterName),
 		author: author,
 	}
 }

@@ -9,7 +9,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: quay.io/kubespray/kubespray:v2.12.5
+      - image: quay.io/kubespray/kubespray:v2.13.0
         args:
         - yamllint
         - "--strict"

@@ -13,7 +13,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             - runner.sh
             - bash
@@ -22,7 +22,7 @@ periodics:
             - |
               result=0
               # Run the tests as usual
-              GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
               time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
               # Send the cache off to gcs
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
@@ -40,7 +40,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             - runner.sh
             - bash
@@ -53,6 +53,6 @@ periodics:
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
               result=0
-              GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
               time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
               exit $result

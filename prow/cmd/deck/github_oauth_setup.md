@@ -46,7 +46,7 @@ The following steps will show you how to set up an OAuth app.
 
     * [Mount](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets) secrets to your deck volume:
 
-        Open `test-infra/prow/cluster/deck_deployment.yaml`.
+        Open `test-infra/config/prow/cluster/deck_deployment.yaml`.
         Under `volumes` token, add:
         ```yaml
         - name: oauth-config

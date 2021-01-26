@@ -1,0 +1,69 @@
+# Copyright 2020 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: tide
+  labels:
+    app: tide
+spec:
+  replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tide
+  template:
+    metadata:
+      labels:
+        app: tide
+    spec:
+      serviceAccountName: tide
+      containers:
+      - name: tide
+        image: gcr.io/k8s-prow/tide:v20200820-86c379653b
+        args:
+        - --dry-run=false
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/oauth
+        - --config-path=/etc/config/config.yaml
+        - --job-config-path=/etc/job-config
+        - --history-uri=gs://k8s-staging-prow/tide-history.json
+        - --status-path=gs://k8s-staging-prow/tide-status-checkpoint.yaml
+        ports:
+        - name: http
+          containerPort: 8888
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config

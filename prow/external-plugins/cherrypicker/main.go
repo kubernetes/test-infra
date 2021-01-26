@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -30,25 +31,29 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
 type options struct {
 	port int
 
-	dryRun bool
-	github prowflagutil.GitHubOptions
-	labels prowflagutil.Strings
+	dryRun                 bool
+	github                 prowflagutil.GitHubOptions
+	labels                 prowflagutil.Strings
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	webhookSecretFile string
 	prowAssignments   bool
 	allowAll          bool
+	issueOnConflict   bool
+	labelPrefix       string
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for idx, group := range []flagutil.OptionGroup{&o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return err
+			return fmt.Errorf("%d: %w", idx, err)
 		}
 	}
 
@@ -64,7 +69,9 @@ func gatherOptions() options {
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
+	fs.StringVar(&o.labelPrefix, "label-prefix", defaultLabelPrefix, "Set a custom label prefix.")
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -80,7 +87,7 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.DebugLevel)
-	log := logrus.StandardLogger().WithField("plugin", "cherrypick")
+	log := logrus.StandardLogger().WithField("plugin", pluginName)
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
@@ -106,18 +113,18 @@ func main() {
 		log.WithError(err).Fatal("Error getting bot e-mail.")
 	}
 
-	botName, err := githubClient.BotName()
+	botUser, err := githubClient.BotUser()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	repos, err := githubClient.GetRepos(botName, true)
+	repos, err := githubClient.GetRepos(botUser.Login, true)
 	if err != nil {
 		log.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
 	server := &Server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		botName:        botName,
+		botUser:        botUser,
 		email:          email,
 
 		gc:  git.ClientFactoryFrom(gitClient),
@@ -127,12 +134,17 @@ func main() {
 		labels:          o.labels.Strings(),
 		prowAssignments: o.prowAssignments,
 		allowAll:        o.allowAll,
+		issueOnConflict: o.issueOnConflict,
+		labelPrefix:     o.labelPrefix,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
 
 		repos: repos,
 	}
+
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	health.ServeReady()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", server)

@@ -143,10 +143,13 @@ users:
 If you store kubeconfig files in kubernetes secrets to allow pods to access other kubernetes clusters (like many of Prow's components require) consider using [`merge_kubeconfig_secret.py`](/gencred/merge_kubeconfig_secret.py) to merge the kubeconfig produced by `gencred` into the secret.
 
 ```shell
-# Generate a kubeconfig.yaml as described and shown above, then run something like:
-./merge_kubeconfig_secret.py --src-key=config-old --dest-key=config-new kubeconfig.yaml
-# Update references (e.g. `--kubeconfig` flags) to point to config-new instead of config-old.
+# Generate a kubeconfig.yaml as described and shown above.
+./merge_kubeconfig_secret.py --auto --context=my-kube-context kubeconfig.yaml
+# Note: The first time the script is used you may be prompted to rerun it with --src-key specified.
+# Finish by updating references (e.g. `--kubeconfig` flags in Prow deployment files) to point to the updated secret key. The script will indicate which key was updated in its output.
 ```
+
+The script exposes optional flags to override the secret namespace, name, keys, and pruning behavior. Run `./merge_kubeconfig_secret.py --help` to view all options.
 
 ### Library
 

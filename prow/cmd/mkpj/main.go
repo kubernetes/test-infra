@@ -38,14 +38,16 @@ type options struct {
 	jobName       string
 	configPath    string
 	jobConfigPath string
-
-	baseRef    string
-	baseSha    string
-	pullNumber int
-	pullSha    string
-	pullAuthor string
-	org        string
-	repo       string
+	triggerJob    bool
+	outputPath    string
+	kubeOptions   prowflagutil.KubernetesOptions
+	baseRef       string
+	baseSha       string
+	pullNumber    int
+	pullSha       string
+	pullAuthor    string
+	org           string
+	repo          string
 
 	local bool
 
@@ -54,7 +56,7 @@ type options struct {
 	pullRequest  *github.PullRequest
 }
 
-func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, prowapi.ProwJobSpec) {
+func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
 	for fullRepoName, ps := range conf.PresubmitsStatic {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
@@ -189,6 +191,12 @@ func (o *options) Validate() error {
 		return err
 	}
 
+	if o.triggerJob {
+		if err := o.kubeOptions.Validate(false); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -204,7 +212,11 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	o.kubeOptions.AddFlags(fs)
+	o.github.AddFlags(fs)
+	o.github.AllowAnonymous = true
+	o.github.AllowDirectAccess = true
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -231,7 +243,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
-	job, pjs := o.genJobSpec(conf, o.jobName)
+	job, pjs := o.genJobSpec(conf)
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
@@ -248,13 +260,20 @@ func main() {
 		}
 	}
 	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations)
-	b, err := yaml.Marshal(&pj)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error marshalling YAML.")
+	if !o.triggerJob {
+		b, err := yaml.Marshal(&pj)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error marshalling YAML.")
+		}
+		fmt.Print(string(b))
+		if o.local {
+			logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
+		}
+		return
 	}
-	fmt.Print(string(b))
-	if o.local {
-		logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
+
+	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
 

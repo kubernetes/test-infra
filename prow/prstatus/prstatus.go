@@ -42,15 +42,10 @@ const (
 	loginKey     = "login"
 )
 
-type githubClient interface {
-	Query(context.Context, interface{}, map[string]interface{}) error
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-}
-
-// PullRequestQueryHandler defines an interface that query handlers should implement.
-type PullRequestQueryHandler interface {
-	QueryPullRequests(context.Context, githubClient, string) ([]PullRequest, error)
-	GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
+// pullRequestQueryHandler defines an interface that query handlers should implement.
+type pullRequestQueryHandler interface {
+	queryPullRequests(context.Context, githubQuerier, string) ([]PullRequest, error)
+	getHeadContexts(ghc githubStatusFetcher, pr PullRequest) ([]Context, error)
 }
 
 // UserData represents data returned to client request to the endpoint. It has a flag that indicates
@@ -72,7 +67,7 @@ type PullRequestWithContexts struct {
 type DashboardAgent struct {
 	repos  []string
 	goac   *githuboauth.Config
-	github *flagutil.GitHubOptions
+	github flagutil.GitHubOptions
 
 	log *logrus.Entry
 }
@@ -149,7 +144,7 @@ func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagu
 	return &DashboardAgent{
 		repos:  repos,
 		goac:   config,
-		github: github,
+		github: *github,
 		log:    log,
 	}
 }
@@ -169,11 +164,19 @@ func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *se
 	return session.Save(r, w)
 }
 
+type GitHubClient interface {
+	githubQuerier
+	githubStatusFetcher
+	BotUser() (*github.UserData, error)
+}
+
+type githubClientCreator func(accessToken string) GitHubClient
+
 // HandlePrStatus returns a http handler function that handles request to /pr-status
 // endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
 // of the user and serve the data in return. The Query handler is passed to the method so as it
 // can be mocked in the unit test..
-func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) http.HandlerFunc {
+func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, createClient githubClientCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
 			da.log.WithError(err).Errorf("Error %s.", action)
@@ -199,14 +202,14 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		// If access token exists, get user login using the access token. This is a
 		// chance to validate whether the access token is consumable or not. If
 		// not, we invalidate the sessions and continue as if not logged in.
-		token, ok := session.Values[tokenKey].(*oauth2.Token)
+		token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
 		var user *github.User
-		var botName string
+		var botUser *github.UserData
 		if ok && token.Valid() {
-			githubClient := da.github.GitHubClientWithAccessToken(token.AccessToken)
+			githubClient := createClient(token.AccessToken)
 			var err error
-			botName, err = githubClient.BotName()
-			user = &github.User{Login: botName}
+			botUser, err = githubClient.BotUser()
+			user = &github.User{Login: botUser.Login}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
@@ -240,7 +243,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 
 			// Construct query
-			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken)
+			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken) // TODO(fejta): we should not recreate the client
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {
@@ -254,14 +257,14 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 					query += fmt.Sprintf(" repo:\"%s\"", v)
 				}
 			}
-			pullRequests, err := queryHandler.QueryPullRequests(context.Background(), ghc, query)
+			pullRequests, err := queryHandler.queryPullRequests(context.Background(), ghc, query)
 			if err != nil {
 				serverError("Error with querying user data.", err)
 				return
 			}
 			var pullRequestWithContexts []PullRequestWithContexts
 			for _, pr := range pullRequests {
-				prcontexts, err := queryHandler.GetHeadContexts(ghc, pr)
+				prcontexts, err := queryHandler.getHeadContexts(ghc, pr)
 				if err != nil {
 					serverError("Error with getting head context of pr", err)
 					continue
@@ -290,9 +293,13 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 	}
 }
 
-// QueryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
+type githubQuerier interface {
+	Query(context.Context, interface{}, map[string]interface{}) error
+}
+
+// queryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
 // is consumed by the github client.
-func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
+func (da *DashboardAgent) queryPullRequests(ctx context.Context, ghc githubQuerier, query string) ([]PullRequest, error) {
 	var prs []PullRequest
 	vars := map[string]interface{}{
 		"query":        (githubql.String)(query),
@@ -326,24 +333,45 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 	return prs, nil
 }
 
-// GetHeadContexts returns the status checks' contexts of the head commit of the PR.
-func (da *DashboardAgent) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+type githubStatusFetcher interface {
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
+}
+
+// getHeadContexts returns the status checks' contexts of the head commit of the PR.
+func (da *DashboardAgent) getHeadContexts(ghc githubStatusFetcher, pr PullRequest) ([]Context, error) {
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
 	}
-	contexts := make([]Context, 0, len(combined.Statuses))
+	checkruns, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch checkruns: %v", err)
+	}
+	contexts := make([]Context, 0, len(combined.Statuses)+len(checkruns.CheckRuns))
 	for _, status := range combined.Statuses {
-		contexts = append(
-			contexts,
-			Context{
-				Context:     status.Context,
-				Description: status.Description,
-				State:       strings.ToUpper(status.State),
-			},
-		)
+		contexts = append(contexts, Context{
+			Context:     status.Context,
+			Description: status.Description,
+			State:       strings.ToUpper(status.State),
+		})
+	}
+	for _, checkrun := range checkruns.CheckRuns {
+		var state string
+		if checkrun.CompletedAt == "" {
+			state = "PENDING"
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			state = "SUCCESS"
+		} else {
+			state = strings.ToUpper(checkrun.Conclusion)
+		}
+		contexts = append(contexts, Context{
+			Context:     checkrun.Name,
+			Description: checkrun.DetailsURL,
+			State:       state,
+		})
 	}
 	return contexts, nil
 }

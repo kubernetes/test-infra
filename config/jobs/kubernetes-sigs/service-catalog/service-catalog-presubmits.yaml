@@ -13,7 +13,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.13
         command:
         - make
         args:
@@ -27,7 +27,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -37,19 +37,64 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-service-catalog-test-e2e
+  - name: pull-service-catalog-test-e2e-k8s-1-16-9
     <<: *build_image_cfg
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    # Setting that job optional to check how it behaves
-    optional: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
+          env:
+            - name: KUBERNETES_VERSION
+              value: "v1.16.9"
+          args:
+            - make
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-service-catalog-test-e2e-k8s-1-17-5
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          env:
+            - name: KUBERNETES_VERSION
+              value: "v1.17.5"
+          args:
+            - make
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-service-catalog-test-e2e-k8s-1-18-2
+    <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    # Run only on PR created to master branch. K8s in version 1.18 is not supported for
+    # legacy (v0.2.x) Service Catalog.
+    branches:
+      - master
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          env:
+            - name: KUBERNETES_VERSION
+              value: "v1.18.2"
           args:
             - make
             - test-e2e
@@ -72,7 +117,7 @@ presubmits:
       - master
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -87,7 +132,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -103,7 +148,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -119,7 +164,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -135,7 +180,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -151,13 +196,13 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
             - make
-            - arch-image-ppc64le
+            - arch-image-s390x
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -167,7 +212,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh

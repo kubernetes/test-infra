@@ -176,8 +176,8 @@ def component(cmd, *kinds, **kwargs):
 # target which includes everything.
 #
 # Thus you can do things like:
-#   bazel run //prow/cluster:hook.apply  # Update all hook resources
-#   bazel run //prow/cluster:staging.apply  # Update everything on staging prow
+#   bazel run //config/prow/cluster:hook.apply  # Update all hook resources
+#   bazel run //config/prow/cluster:staging.apply  # Update everything on staging prow
 #
 # Concretely, the following:
 #   release(

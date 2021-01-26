@@ -20,7 +20,10 @@ package pjutil
 import (
 	"net/http"
 	"net/http/pprof"
+	"strconv"
 	"time"
+
+	"github.com/felixge/fgprof"
 
 	"k8s.io/test-infra/prow/interrupts"
 )
@@ -29,13 +32,14 @@ import (
 // The contents of this function are identical to what the `net/http/pprof` package does on import for
 // the simple case where the default mux is to be used, but with a custom mux to ensure we don't serve
 // this data from an exposed port.
-func ServePProf() {
+func ServePProf(port int) {
 	pprofMux := http.NewServeMux()
 	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
 	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	server := &http.Server{Addr: ":6060", Handler: pprofMux}
+	pprofMux.Handle("/debug/fgprof", fgprof.Handler())
+	server := &http.Server{Addr: ":" + strconv.Itoa(port), Handler: pprofMux}
 	interrupts.ListenAndServe(server, 5*time.Second)
 }

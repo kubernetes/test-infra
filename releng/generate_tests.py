@@ -45,7 +45,14 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 3Gi
+          limits:
+            cpu: 1000m
+            memory: 3Gi
 """
 
 
@@ -133,6 +140,17 @@ class E2ENodeTest:
         """Returns the Prow config for the job from the given fields."""
         prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
+        # use cluster from test_suite, or job, or not at all
+        if 'cluster' in test_suite:
+            prow_config['cluster'] = test_suite['cluster']
+        elif 'cluster' in self.job:
+            prow_config['cluster'] = self.job['cluster']
+        # use resources from test_suite, or job, or default
+        if 'resources' in test_suite:
+            prow_config['resources'] = test_suite['resources']
+        elif 'resources' in self.job:
+            prow_config['resources'] = self.job['resources']
+        # pull interval or cron from job
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']
@@ -242,6 +260,16 @@ class E2ETest:
         """Returns the Prow config for the e2e job from the given fields."""
         prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
+        # use cluster from test_suite, or job, or not at all
+        if 'cluster' in test_suite:
+            prow_config['cluster'] = test_suite['cluster']
+        elif 'cluster' in self.job:
+            prow_config['cluster'] = self.job['cluster']
+        # use resources from test_suite, or job, or default
+        if 'resources' in test_suite:
+            prow_config['resources'] = test_suite['resources']
+        elif 'resources' in self.job:
+            prow_config['resources'] = self.job['resources']
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']

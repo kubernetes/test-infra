@@ -81,7 +81,7 @@ bazel-release-push:
 branchprotector-image: bazel-release-push
 
 branchprotector-cronjob: get-cluster-credentials
-	@echo Consider bazel run //prow/cluster:branchprotector_cronjob.apply instead
+	@echo Consider bazel run //config/prow/cluster:branchprotector_cronjob.apply instead
 	kubectl apply -f cluster/branchprotector_cronjob.yaml
 
 .PHONY: branchprotector-image branchprotector-cronjob

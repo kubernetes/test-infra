@@ -26,7 +26,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-alibaba-cloud
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.14.1
         command:
         - make
         args:

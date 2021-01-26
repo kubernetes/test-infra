@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Includes bash.
-FROM alpine:latest
+# Includes bash, see //containers.bzl
+FROM gcr.io/k8s-prow/alpine:v20200605-44f6c96
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG

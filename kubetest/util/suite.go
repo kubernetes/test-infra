@@ -37,8 +37,9 @@ type TestCase struct {
 // A build (column in testgrid) is composed of one or more TestSuites.
 type TestSuite struct {
 	XMLName  xml.Name `xml:"testsuite"`
+	Name     string   `xml:"name,arr"`
+	Time     float64  `xml:"time,attr"` // seconds
 	Failures int      `xml:"failures,attr"`
 	Tests    int      `xml:"tests,attr"`
-	Time     float64  `xml:"time,attr"`
 	Cases    []TestCase
 }

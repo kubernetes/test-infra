@@ -20,9 +20,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 // ClientFactory knows how to create clientFactory for repos
@@ -48,33 +50,106 @@ type repoClient struct {
 	interactor
 }
 
-// NewClientFactory allows for the creation of repository clients
-func NewClientFactory(host string, useSSH bool, username LoginGetter, token TokenGetter, gitUser GitUserGetter, censor Censor) (ClientFactory, error) {
-	cacheDir, err := ioutil.TempDir("", "gitcache")
+type ClientFactoryOpts struct {
+	// Host, defaults to "github.com" if unset
+	Host string
+	// UseSSH, defaults to false
+	UseSSH *bool
+	// The directory in which the cache should be
+	// created. Defaults to the "/var/tmp" on
+	// Linux and os.TempDir otherwise
+	CacheDirBase *string
+	// If unset, publishing action will error
+	Username LoginGetter
+	// If unset, publishing action will error
+	Token TokenGetter
+	// The git user to use.
+	GitUser GitUserGetter
+	// The censor to use. Not needed for anonymous
+	// actions.
+	Censor Censor
+}
+
+// Apply allows to use a ClientFactoryOpts as Opt
+func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
+	if cfo.Host != "" {
+		target.Host = cfo.Host
+	}
+	if cfo.UseSSH != nil {
+		target.UseSSH = cfo.UseSSH
+	}
+	if cfo.CacheDirBase != nil {
+		target.CacheDirBase = cfo.CacheDirBase
+	}
+	if cfo.Token != nil {
+		target.Token = cfo.Token
+	}
+	if cfo.GitUser != nil {
+		target.GitUser = cfo.GitUser
+	}
+	if cfo.Censor != nil {
+		target.Censor = cfo.Censor
+	}
+	if cfo.Username != nil {
+		target.Username = cfo.Username
+	}
+}
+
+// ClientFactoryOpts allows to manipulate the options for a ClientFactory
+type ClientFactoryOpt func(*ClientFactoryOpts)
+
+func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
+	if cfo.Host == "" {
+		cfo.Host = "github.com"
+	}
+	if cfo.CacheDirBase == nil {
+		switch runtime.GOOS {
+		case "linux":
+			cfo.CacheDirBase = utilpointer.StringPtr("/var/tmp")
+		default:
+			cfo.CacheDirBase = utilpointer.StringPtr("")
+		}
+	}
+	if cfo.Censor == nil {
+		cfo.Censor = func(in []byte) []byte { return in }
+	}
+}
+
+// NewClientFactory allows for the creation of repository clients. It uses github.com
+// without authentication by default.
+func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
+	o := ClientFactoryOpts{}
+	defaultClientFactoryOpts(&o)
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	cacheDir, err := ioutil.TempDir(*o.CacheDirBase, "gitcache")
 	if err != nil {
 		return nil, err
 	}
 	var remotes RemoteResolverFactory
-	if useSSH {
+	if o.UseSSH != nil && *o.UseSSH {
 		remotes = &sshRemoteResolverFactory{
-			host:     host,
-			username: username,
+			host:     o.Host,
+			username: o.Username,
 		}
 	} else {
-		remotes = &simpleAuthResolverFactory{
-			host:     host,
-			username: username,
-			token:    token,
+		remotes = &httpResolverFactory{
+			host:     o.Host,
+			username: o.Username,
+			token:    o.Token,
 		}
 	}
 	return &clientFactory{
-		cacheDir:   cacheDir,
-		remotes:    remotes,
-		gitUser:    gitUser,
-		censor:     censor,
-		masterLock: &sync.Mutex{},
-		repoLocks:  map[string]*sync.Mutex{},
-		logger:     logrus.WithField("client", "git"),
+		cacheDir:     cacheDir,
+		cacheDirBase: *o.CacheDirBase,
+		remotes:      remotes,
+		gitUser:      o.GitUser,
+		censor:       o.Censor,
+		masterLock:   &sync.Mutex{},
+		repoLocks:    map[string]*sync.Mutex{},
+		logger:       logrus.WithField("client", "git"),
 	}, nil
 }
 
@@ -104,6 +179,8 @@ type clientFactory struct {
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
+	// cacheDirBase is the basedir under which create tempdirs
+	cacheDirBase string
 	// masterLock guards mutations to the repoLocks records
 	masterLock *sync.Mutex
 	// repoLocks guard mutating access to subdirectories under the cacheDir
@@ -127,9 +204,13 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	}
 	client := &repoClient{
 		publisher: publisher{
-			remote:   c.remotes.PublishRemote(org, repo),
+			remotes: remotes{
+				publishRemote: c.remotes.PublishRemote(org, repo),
+				centralRemote: c.remotes.CentralRemote(org, repo),
+			},
 			executor: executor,
 			info:     c.gitUser,
+			logger:   logger,
 		},
 		interactor: interactor{
 			dir:      dir,
@@ -161,7 +242,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := ioutil.TempDir("", "gitrepo")
+	repoDir, err := ioutil.TempDir(c.cacheDirBase, "gitrepo")
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +257,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	c.masterLock.Unlock()
 	c.repoLocks[cacheDir].Lock()
 	defer c.repoLocks[cacheDir].Unlock()
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err

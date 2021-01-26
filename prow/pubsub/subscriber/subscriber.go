@@ -17,6 +17,7 @@ limitations under the License.
 package subscriber
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -25,6 +26,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -69,7 +72,7 @@ func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
 
 // ProwJobClient mostly for testing.
 type ProwJobClient interface {
-	Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 // Subscriber handles Pub/Sub subscriptions, update metrics,
@@ -91,8 +94,8 @@ type messageInterface interface {
 }
 
 type reportClient interface {
-	Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error)
-	ShouldReport(pj *prowapi.ProwJob) bool
+	Report(ctx context.Context, log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error)
+	ShouldReport(ctx context.Context, log *logrus.Entry, pj *prowapi.ProwJob) bool
 }
 
 type pubSubMessage struct {
@@ -161,8 +164,8 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
-		if s.Reporter.ShouldReport(&prowJob) {
-			if _, err := s.Reporter.Report(&prowJob); err != nil {
+		if s.Reporter.ShouldReport(context.TODO(), l, &prowJob) {
+			if _, _, err := s.Reporter.Report(context.TODO(), l, &prowJob); err != nil {
 				l.Warningf("failed to report status. %v", err)
 			}
 		}
@@ -204,7 +207,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		}
 	}
 
-	if _, err := s.ProwJobClient.Create(&prowJob); err != nil {
+	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err

@@ -1,0 +1,231 @@
+periodics:
+- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+      - --timeout=120m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-win2019-provider-gcp-compute-persistent-disk-csi-driver
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
+- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-1909
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+      - --timeout=180m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win1909"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-win1909-provider-gcp-compute-persistent-disk-csi-driver
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
+
+presubmits:
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-win2019
+    decorate: true
+    decoration_config:
+      timeout: 350m
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    always_run: false
+    optional: true
+    branches:
+    - master
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+        - --timeout=180m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: win2019-presubmit-gcp-compute-persistent-disk-csi-driver
+      description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+      testgrid-alert-email: jinxu@google.com
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-win1909
+    decorate: true
+    decoration_config:
+      timeout: 350m
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    always_run: false
+    optional: true
+    branches:
+    - master
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+        - --timeout=180m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win1909"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: win1909-presubmit-gcp-compute-persistent-disk-csi-driver
+      description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+      testgrid-alert-email: jinxu@google.com
+
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-1-19
+    decorate: true
+    decoration_config:
+      timeout: 200m
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    always_run: false
+    optional: true
+    branches:
+    - master
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=ci/latest-1.19
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
+        - --timeout=180m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: windows-1-19-presubmit-gcp-compute-persistent-disk-csi-driver
+      description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+      testgrid-alert-email: jinxu@google.com

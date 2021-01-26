@@ -10,6 +10,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/sidecar",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/entrypoint:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
@@ -43,6 +44,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/entrypoint:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/pod-utils/wrapper:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",

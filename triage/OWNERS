@@ -1,11 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- Katharine
+- BenTheElder
 - spiffxp
+- michaelkolber
 approvers:
-- Katharine
+- BenTheElder
 - spiffxp
+- michaelkolber
+emeritus_approvers:
+- Katharine
 
 labels:
 - area/triage

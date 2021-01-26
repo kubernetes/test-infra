@@ -1,0 +1,41 @@
+presubmits:
+  kubernetes-csi/csi-driver-host-path:
+  - name: pull-kubernetes-csi-csi-driver-host-path-windows
+    always_run: false
+    decorate: true
+    skip_report: false
+    skip_branches: []
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-kubernetes-csi-csi-driver-host-path-windows
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path-windows
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --gcp-zone=us-west1-b
+        - --extract=ci/latest
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=../deploy/util/deploy.sh
+        - --timeout=60m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        resources:
+          requests:
+            cpu: 2000m

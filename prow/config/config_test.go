@@ -23,20 +23,25 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
+	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -213,6 +218,17 @@ deck:
 `,
 			expectError: true,
 		},
+		{
+			name: "Invalid Spyglass gcs browser web prefix",
+			spyglassConfig: `
+deck:
+  spyglass:
+    gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
+    gcs_browser_prefixes:
+      '*': https://gcsweb.k8s.io/gcs/
+`,
+			expectError: true,
+		},
 	}
 	for _, tc := range testCases {
 		// save the config
@@ -278,6 +294,49 @@ deck:
 
 }
 
+func TestGetGCSBrowserPrefix(t *testing.T) {
+	testCases := []struct {
+		id       string
+		config   Spyglass
+		expected string
+	}{
+		{
+			id: "only default",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"*": "https://default.com/gcs/",
+				},
+			},
+			expected: "https://default.com/gcs/",
+		},
+		{
+			id: "org exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org": "https://org.com/gcs/",
+				},
+			},
+			expected: "https://org.com/gcs/",
+		},
+		{
+			id: "repo exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org/repo": "https://repo.com/gcs/",
+				},
+			},
+			expected: "https://repo.com/gcs/",
+		},
+	}
+
+	for _, tc := range testCases {
+		actual := tc.config.GCSBrowserPrefixes.GetGCSBrowserPrefix("org", "repo")
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Fatalf("%s", cmp.Diff(tc.expected, actual))
+		}
+	}
+}
+
 func TestDecorationRawYaml(t *testing.T) {
 	var testCases = []struct {
 		name        string
@@ -301,23 +360,158 @@ periodics:
       - "./..."`,
 		},
 		{
+			name: "with bad default",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+      # clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expectError: true,
+		},
+		{
+			name: "repo should inherit from default config",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'org/inherit':
+      timeout: 2h
+      grace_period: 15s
+      utility_images: {}
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+		},
+		{
+			name: "with default and repo, use default",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'random/repo':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:random"
+        initupload: "initupload:random"
+        entrypoint: "entrypoint:random"
+        sidecar: "sidecar:org"
+      gcs_configuration:
+        bucket: "ignore"
+        path_strategy: "legacy"
+        default_org: "random"
+        default_repo: "repo"
+      gcs_credentials_secret: "random-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: "default-service-account",
+			},
+		},
+		{
 			name: "with default, no explicit decorate",
 			rawConfig: `
 plank:
-  default_decoration_config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
 
 periodics:
 - name: kubernetes-defaulted-decoration
@@ -351,20 +545,21 @@ periodics:
 			name: "with default, has explicit decorate",
 			rawConfig: `
 plank:
-  default_decoration_config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
 
 periodics:
 - name: kubernetes-defaulted-decoration
@@ -406,39 +601,95 @@ periodics:
 				GCSCredentialsSecret: "explicit-service-account",
 			},
 		},
+		{
+			name: "with default, configures bucket explicitly",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+        mediaTypes:
+          log: text/plain
+      gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  decoration_config:
+    gcs_configuration:
+      bucket: "explicit-bucket"
+    gcs_credentials_secret: "explicit-service-account"
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "explicit-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: "explicit-service-account",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		t.Run(tc.name, func(t *testing.T) {
+			// save the config
+			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+			if err != nil {
+				t.Fatalf("fail to make tempdir: %v", err)
+			}
+			defer os.RemoveAll(prowConfigDir)
 
-		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
-			t.Fatalf("fail to write prow config: %v", err)
-		}
-
-		cfg, err := Load(prowConfig, "")
-		if tc.expectError && err == nil {
-			t.Errorf("tc %s: Expect error, but got nil", tc.name)
-		} else if !tc.expectError && err != nil {
-			t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
-		}
-
-		if tc.expected != nil {
-			if len(cfg.Periodics) != 1 {
-				t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			if !reflect.DeepEqual(cfg.Periodics[0].DecorationConfig, tc.expected) {
-				t.Errorf("%s: expected defaulted config:\n%#v\n but got:\n%#v\n", tc.name, tc.expected, cfg.Periodics[0].DecorationConfig)
+			cfg, err := Load(prowConfig, "")
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
-		}
+
+			if tc.expected != nil {
+				if len(cfg.Periodics) != 1 {
+					t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+				}
+
+				if diff := cmp.Diff(cfg.Periodics[0].DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("got diff: %s", diff)
+				}
+			}
+		})
 	}
-
 }
 
 func TestValidateAgent(t *testing.T) {
@@ -623,7 +874,7 @@ func TestValidatePodSpec(t *testing.T) {
 			name: "reject reserved mount name",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      decorate.VolumeMounts()[0],
+					Name:      decorate.VolumeMounts().List()[0],
 					MountPath: "/whatever",
 				})
 			},
@@ -633,7 +884,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
-					MountPath: decorate.VolumeMountPaths()[0],
+					MountPath: decorate.VolumeMountPathsOnTestContainer().List()[0],
 				})
 			},
 		},
@@ -642,23 +893,41 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Dir(decorate.VolumeMountPaths()[0]),
+					MountPath: filepath.Dir(decorate.VolumeMountPathsOnTestContainer().List()[0]),
+				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
 				})
 			},
+			pass: true,
 		},
 		{
 			name: "accept conflicting mount path child",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Join(decorate.VolumeMountPaths()[0], "extra"),
+					MountPath: filepath.Join(decorate.VolumeMountPathsOnTestContainer().List()[0], "extra"),
+				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
 				})
 			},
+			pass: true,
+		},
+		{
+			name: "accept mount path that works only through decoration volume",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "gcs-credentials",
+					MountPath: "/secrets/gcs",
+				})
+			},
+			pass: true,
 		},
 		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
-				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts()[0]})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts().List()[0]})
 			},
 		},
 		{
@@ -701,7 +970,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current); {
+			switch err := validatePodSpec(jt, current, true); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -953,6 +1222,133 @@ func TestValidateLabels(t *testing.T) {
 	}
 }
 
+func TestValidateMultipleContainers(t *testing.T) {
+	ka := string(prowjobv1.KubernetesAgent)
+	yes := true
+	defCfg := prowapi.DecorationConfig{
+		UtilityImages: &prowjobv1.UtilityImages{
+			CloneRefs:  "clone-me",
+			InitUpload: "upload-me",
+			Entrypoint: "enter-me",
+			Sidecar:    "official-drink-of-the-org",
+		},
+		GCSCredentialsSecret: "upload-secret",
+		GCSConfiguration: &prowjobv1.GCSConfiguration{
+			PathStrategy: prowjobv1.PathStrategyExplicit,
+			DefaultOrg:   "so-org",
+			DefaultRepo:  "very-repo",
+		},
+	}
+	goodSpec := v1.PodSpec{
+		Containers: []v1.Container{
+			{
+				Name:    "test1",
+				Command: []string{"hello", "world"},
+			},
+			{
+				Name: "test2",
+				Args: []string{"hello", "world"},
+			},
+		},
+	}
+	ns := "target-namespace"
+	cases := []struct {
+		name string
+		base JobBase
+		pass bool
+	}{
+		{
+			name: "valid kubernetes job with multiple containers",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec:          &goodSpec,
+				Namespace:     &ns,
+			},
+			pass: true,
+		},
+		{
+			name: "invalid: containers with no cmd or args",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "test1",
+						},
+						{
+							Name: "test2",
+						},
+					},
+				},
+				Namespace: &ns,
+			},
+		},
+		{
+			name: "invalid: containers with no names",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Command: []string{"hello", "world"},
+						},
+						{
+							Args: []string{"hello", "world"},
+						},
+					},
+				},
+				Namespace: &ns,
+			},
+		},
+		{
+			name: "invalid: no decoration enabled",
+			base: JobBase{
+				Name:      "name",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+			},
+		},
+		{
+			name: "invalid: container names reserved for decoration",
+			base: JobBase{
+				Name:          "name",
+				Agent:         ka,
+				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:    "place-entrypoint",
+							Command: []string{"hello", "world"},
+						},
+						{
+							Name: "sidecar",
+							Args: []string{"hello", "world"},
+						},
+					},
+				}, Namespace: &ns,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
 func TestValidateJobBase(t *testing.T) {
 	ka := string(prowjobv1.KubernetesAgent)
 	ja := string(prowjobv1.JenkinsAgent)
@@ -1073,6 +1469,53 @@ func TestValidateJobBase(t *testing.T) {
 	}
 }
 
+func TestValidateDeck(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
+	cases := []struct {
+		name        string
+		deck        Deck
+		expectedErr string
+	}{
+		{
+			name:        "empty Deck is valid",
+			deck:        Deck{},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is false => no errors",
+			deck:        Deck{SkipStoragePathValidation: &boolFalse, AdditionalAllowedBuckets: []string{"foo", "bar", "batz"}},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => error",
+			deck:        Deck{AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is true => error",
+			deck:        Deck{SkipStoragePathValidation: &boolTrue, AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectingErr := len(tc.expectedErr) > 0
+			err := tc.deck.Validate()
+			if expectingErr && err == nil {
+				t.Fatalf("expecting error (%v), but did not get an error", tc.expectedErr)
+			}
+			if !expectingErr && err != nil {
+				t.Fatalf("not expecting error, but got an error: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				t.Fatalf("expected error (%v), but got unknown error, instead: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
 func TestValidateRefs(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -1139,11 +1582,88 @@ func TestValidateRefs(t *testing.T) {
 	}
 }
 
+func TestValidateReportingWithGerritLabel(t *testing.T) {
+	cases := []struct {
+		name     string
+		labels   map[string]string
+		reporter Reporter
+		expected error
+	}{
+		{
+			name: "no errors if job is set to report",
+			reporter: Reporter{
+				Context: "context",
+			},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+		},
+		{
+			name:     "no errors if Gerrit report label is not defined",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				"label": "value",
+			},
+		},
+		{
+			name:     "no errors if job is set to skip report and Gerrit report label is empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "",
+			},
+		},
+		{
+			name:     "error if job is set to skip report and Gerrit report label is set to non-empty",
+			reporter: Reporter{SkipReport: true},
+			labels: map[string]string{
+				gerrit.GerritReportLabel: "label",
+			},
+			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", gerrit.GerritReportLabel),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			base := JobBase{
+				Name:   "test-job",
+				Labels: tc.labels,
+			}
+			presubmits := []Presubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			var expected error
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid presubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePresubmits(presubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
+			}
+
+			postsubmits := []Postsubmit{
+				{
+					JobBase:  base,
+					Reporter: tc.reporter,
+				},
+			}
+			if tc.expected != nil {
+				expected = fmt.Errorf("invalid postsubmit job %s: %v", "test-job", tc.expected)
+			}
+			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
+			}
+		})
+	}
+}
+
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
 		name               string
 		prowConfig         string
+		versionFileContent string
 		jobConfigs         []string
 		expectError        bool
 		expectPodNameSpace string
@@ -1775,6 +2295,16 @@ in_repo_config:
 				return nil
 			},
 		},
+		{
+			name:               "Version file sets the version",
+			versionFileContent: "some-git-sha",
+			verify: func(c *Config) error {
+				if c.ConfigVersionSHA != "some-git-sha" {
+					return fmt.Errorf("expected value of ConfigVersionSH field to be 'some-git-sha', was %q", c.ConfigVersionSHA)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1790,6 +2320,13 @@ in_repo_config:
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			if tc.versionFileContent != "" {
+				versionFile := filepath.Join(prowConfigDir, "VERSION")
+				if err := ioutil.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
+					t.Fatalf("failed to write prow version file: %v", err)
+				}
 			}
 
 			jobConfig := ""
@@ -2401,7 +2938,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		plank                Plank
-		refs                 *prowapi.Refs
+		prowjob              *prowapi.ProwJob
 		expectedJobURLPrefix string
 	}{
 		{
@@ -2417,7 +2954,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-org": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -2429,8 +2966,35 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"}}},
 			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "Matching repo in extraRefs returns JobURLPrefix from repo",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
+			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "JobURLPrefix in decoration config overrides job_url_prefix_config",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob: &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{
+				DecorationConfig: &prowjobv1.DecorationConfig{GCSConfiguration: &prowjobv1.GCSConfiguration{JobURLPrefix: "https://overriden"}},
+				Refs:             &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			}},
+			expectedJobURLPrefix: "https://overriden",
 		},
 		{
 			name: "Matching org and not matching repo returns JobURLPrefix from org",
@@ -2441,7 +3005,19 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			expectedJobURLPrefix: "https://my-third-prow",
+		},
+		{
+			name: "Matching org in extraRefs and not matching repo returns JobURLPrefix from org",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -2452,14 +3028,22 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
+		},
+		{
+			name:                 "gcs/ suffix in JobURLPrefix will be automatically trimmed",
+			plank:                Plank{JobURLPrefixConfig: map[string]string{"*": "https://my-prow/view/gcs/"}},
+			expectedJobURLPrefix: "https://my-prow/view/",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if prefix := tc.plank.GetJobURLPrefix(tc.refs); prefix != tc.expectedJobURLPrefix {
+			if tc.prowjob == nil {
+				tc.prowjob = &prowjobv1.ProwJob{}
+			}
+			if prefix := tc.plank.GetJobURLPrefix(tc.prowjob); prefix != tc.expectedJobURLPrefix {
 				t.Errorf("expected JobURLPrefix to be %q but was %q", tc.expectedJobURLPrefix, prefix)
 			}
 		})
@@ -2467,6 +3051,8 @@ func TestPlankJobURLPrefix(t *testing.T) {
 }
 
 func TestValidateComponentConfig(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
 	testCases := []struct {
 		name        string
 		config      *Config
@@ -2587,6 +3173,36 @@ func TestValidateComponentConfig(t *testing.T) {
 				},
 			}}},
 			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets:  []string{},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets non-empty, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation false and AdditionalAllowedBuckets non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolFalse,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: false,
 		},
 	}
 
@@ -2790,19 +3406,31 @@ func TestManagedHmacEntityValidation(t *testing.T) {
 	}{
 		{
 			name:       "Missing managed HmacEntities",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: nil}},
+			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: ManagedWebhooks{}}},
 			shouldFail: false,
 		},
 		{
 			name: "Config with all valid dates",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
-				"foo/baz": {TokenCreatedAfter: time.Now()}}}},
+			prowConfig: Config{ProwConfig: ProwConfig{
+				ManagedWebhooks: ManagedWebhooks{
+					OrgRepoConfig: map[string]ManagedWebhookInfo{
+						"foo/bar": {TokenCreatedAfter: time.Now()},
+						"foo/baz": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			}},
 			shouldFail: false,
 		},
 		{
 			name: "Config with one invalid dates",
-			prowConfig: Config{ProwConfig: ProwConfig{ManagedWebhooks: map[string]ManagedWebhookInfo{"foo/bar": {TokenCreatedAfter: time.Now()},
-				"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)}}}},
+			prowConfig: Config{ProwConfig: ProwConfig{
+				ManagedWebhooks: ManagedWebhooks{
+					OrgRepoConfig: map[string]ManagedWebhookInfo{
+						"foo/bar": {TokenCreatedAfter: time.Now()},
+						"foo/baz": {TokenCreatedAfter: time.Now().Add(time.Hour)},
+					},
+				},
+			}},
 			shouldFail: true,
 		},
 	}
@@ -2953,6 +3581,8 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 }
 
 func TestSetDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		repo          string
@@ -2962,13 +3592,13 @@ func TestSetDecorationDefaults(t *testing.T) {
 	}{
 		{
 			id:            "no dc in presubmit or in plank's config, expect no changes",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config:        &Config{ProwConfig: ProwConfig{}},
 			expected:      nil,
 		},
 		{
 			id:            "no dc in presubmit or in plank's by repo config, expect plank's defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3010,7 +3640,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:            "no dc in presubmit, part of plank's by repo config, expect merged by repo config and defaults",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			repo:          "org/repo",
 			config: &Config{
 				ProwConfig: ProwConfig{
@@ -3063,7 +3693,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit and plank's defaults, expect presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3123,7 +3753,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:   "dc in presubmit, plank's by repo config and defaults, expected presubmit's dc",
 			repo: "org/repo",
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				DecorationConfig: &prowapi.DecorationConfig{
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:test-from-ps",
@@ -3197,7 +3827,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3255,7 +3885,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by org config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3313,7 +3943,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config and defaults, expect by * config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3357,7 +3987,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config org and org/repo co-exists, expect by org/repo config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3431,7 +4061,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		{
 			id:            "no dc in presubmit, dc in plank's by repo config with org and * to co-exists, expect by 'org' config's dc",
 			repo:          "org/repo",
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
@@ -3486,6 +4116,80 @@ func TestSetDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, no dc in presubmit or in plank's by repo config, expect plank's defaults",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test",
+					InitUpload: "initupload:test",
+					Entrypoint: "entrypoint:test",
+					Sidecar:    "sidecar:test",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket",
+					PathStrategy: "single",
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "credentials-gcs",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by setting decorated to false",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test",
+									InitUpload: "initupload:test",
+									Entrypoint: "entrypoint:test",
+									Sidecar:    "sidecar:test",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket",
+									PathStrategy: "single",
+									DefaultOrg:   "org",
+									DefaultRepo:  "repo",
+								},
+								GCSCredentialsSecret: "credentials-gcs",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -3494,67 +4198,27 @@ func TestSetDecorationDefaults(t *testing.T) {
 			postsubmit := &Postsubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 
 			setPresubmitDecorationDefaults(tc.config, presubmit, tc.repo)
-			if !reflect.DeepEqual(presubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(presubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(presubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("presubmit: %s", diff)
 			}
 
 			setPostsubmitDecorationDefaults(tc.config, postsubmit, tc.repo)
-			if !reflect.DeepEqual(postsubmit.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(postsubmit.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(postsubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("postsubmit: %s", diff)
 			}
 		})
 	}
 }
 
 func TestSetPeriodicDecorationDefaults(t *testing.T) {
+	yes := true
+	no := false
 	testCases := []struct {
 		id            string
 		config        *Config
 		utilityConfig UtilityConfig
 		expected      *prowapi.DecorationConfig
 	}{
-		{
-			id: "extraRefs[0] not defined, no DefaultDecorationConfigs exists, changes from DefaultDecorationConfig expected",
-			config: &Config{
-				ProwConfig: ProwConfig{
-					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
-								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
-							},
-						},
-					},
-				},
-			},
-			utilityConfig: UtilityConfig{Decorate: true},
-			expected: &prowapi.DecorationConfig{
-				UtilityImages: &prowapi.UtilityImages{
-					CloneRefs:  "clonerefs:test-by-*",
-					InitUpload: "initupload:test-by-*",
-					Entrypoint: "entrypoint:test-by-*",
-					Sidecar:    "sidecar:test-by-*",
-				},
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "test-bucket-by-*",
-					PathStrategy: "single-by-*",
-					DefaultOrg:   "org-by-*",
-					DefaultRepo:  "repo-by-*",
-				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
-			},
-		},
 		{
 			id: "extraRefs[0] not defined, changes from defaultDecorationConfigs[*] expected",
 			config: &Config{
@@ -3580,7 +4244,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					},
 				},
 			},
-			utilityConfig: UtilityConfig{Decorate: true},
+			utilityConfig: UtilityConfig{Decorate: &yes},
 			expected: &prowapi.DecorationConfig{
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:test-by-*",
@@ -3634,26 +4298,11 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 								GCSCredentialsSecret: "credentials-gcs-by-org",
 							},
 						},
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							UtilityImages: &prowapi.UtilityImages{
-								CloneRefs:  "clonerefs:test",
-								InitUpload: "initupload:test",
-								Entrypoint: "entrypoint:test",
-								Sidecar:    "sidecar:test",
-							},
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket:       "test-bucket",
-								PathStrategy: "single",
-								DefaultOrg:   "org",
-								DefaultRepo:  "repo",
-							},
-							GCSCredentialsSecret: "credentials-gcs",
-						},
 					},
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3718,7 +4367,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 			utilityConfig: UtilityConfig{
-				Decorate: true,
+				Decorate: &yes,
 				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "org",
@@ -3742,14 +4391,175 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
 			},
 		},
+		{
+			id: "decorate_all_jobs set, plank's default decoration config expected",
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:test-by-*",
+					InitUpload: "initupload:test-by-*",
+					Entrypoint: "entrypoint:test-by-*",
+					Sidecar:    "sidecar:test-by-*",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "test-bucket-by-*",
+					PathStrategy: "single-by-*",
+					DefaultOrg:   "org-by-*",
+					DefaultRepo:  "repo-by-*",
+				},
+				GCSCredentialsSecret: "credentials-gcs-by-*",
+			},
+		},
+		{
+			id:            "opt out of decorate_all_jobs by specifying undecorated",
+			utilityConfig: UtilityConfig{Decorate: &no},
+			config: &Config{
+				JobConfig: JobConfig{
+					DecorateAllJobs: true,
+				},
+				ProwConfig: ProwConfig{
+					Plank: Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								UtilityImages: &prowapi.UtilityImages{
+									CloneRefs:  "clonerefs:test-by-*",
+									InitUpload: "initupload:test-by-*",
+									Entrypoint: "entrypoint:test-by-*",
+									Sidecar:    "sidecar:test-by-*",
+								},
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "test-bucket-by-*",
+									PathStrategy: "single-by-*",
+									DefaultOrg:   "org-by-*",
+									DefaultRepo:  "repo-by-*",
+								},
+								GCSCredentialsSecret: "credentials-gcs-by-*",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
 			periodic := &Periodic{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
 			setPeriodicDecorationDefaults(tc.config, periodic)
-			if !reflect.DeepEqual(periodic.DecorationConfig, tc.expected) {
-				t.Fatalf("%v", diff.ObjectReflectDiff(periodic.DecorationConfig, tc.expected))
+			if diff := cmp.Diff(periodic.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
+func TestDecorationRequested(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name        string
+		decorateAll bool
+		presubmits  map[string][]Presubmit
+		postsubmits map[string][]Postsubmit
+		periodics   []Periodic
+		expected    bool
+	}{
+		{
+			name:        "decorate_all_jobs set",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "at-least one job is decorated",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{Name: "presubmit-job"}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &yes}}},
+				},
+			},
+			expected: true,
+		},
+		{
+			name:        "decorate_all_jobs set, at-least one job does not opt out",
+			decorateAll: true,
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "periodic-job"}},
+			},
+			expected: true,
+		},
+		{
+			name: "decorate_all_jobs set, all jobs opt out",
+			presubmits: map[string][]Presubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			postsubmits: map[string][]Postsubmit{
+				"org/repo": {
+					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+				},
+			},
+			periodics: []Periodic{
+				{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			jobConfig := &JobConfig{
+				DecorateAllJobs:   tc.decorateAll,
+				PresubmitsStatic:  tc.presubmits,
+				PostsubmitsStatic: tc.postsubmits,
+				Periodics:         tc.periodics,
+			}
+
+			if actual := jobConfig.decorationRequested(); actual != tc.expected {
+				t.Errorf("expected %t got %t", tc.expected, actual)
 			}
 		})
 	}
@@ -4085,5 +4895,259 @@ func TestDefaultAndValidateReportTemplate(t *testing.T) {
 				t.Fatalf("\nGot: %#v\nExpected: %#v", tc.controller, tc.expected)
 			}
 		})
+	}
+}
+
+func TestValidatePresubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		presubmits    []Presubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated presubmit job: a",
+		},
+		{
+			name: "Duplicate jobname on different branches doesn't cause error",
+			presubmits: []Presubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			presubmits:    []Presubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid presubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid triggering config causes error",
+			presubmits:    []Presubmit{{Trigger: "some-trigger", JobBase: JobBase{Name: "my-job"}, Reporter: Reporter{Context: "foo"}}},
+			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePresubmits(tc.presubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
+func TestValidatePostsubmits(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		postsubmits   []Postsubmit
+		expectedError string
+	}{
+		{
+			name: "Duplicate context causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}},
+			},
+			expectedError: `[jobs b and a report to the same GitHub context "repeated", jobs a and b report to the same GitHub context "repeated"]`,
+		},
+		{
+			name: "Duplicate context on different branch doesn't cause error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"master"}}},
+				{JobBase: JobBase{Name: "b"}, Reporter: Reporter{Context: "repeated"}, Brancher: Brancher{Branches: []string{"next"}}},
+			},
+		},
+		{
+			name: "Duplicate jobname causes error",
+			postsubmits: []Postsubmit{
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
+				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
+			},
+			expectedError: "duplicated postsubmit job: a",
+		},
+		{
+			name:          "Invalid JobBase causes error",
+			postsubmits:   []Postsubmit{{Reporter: Reporter{Context: "foo"}}},
+			expectedError: `invalid postsubmit job : name: must match regex "^[A-Za-z0-9-._]+$"`,
+		},
+		{
+			name:          "Invalid reporting config causes error",
+			postsubmits:   []Postsubmit{{JobBase: JobBase{Name: "my-job"}}},
+			expectedError: "invalid postsubmit job my-job: job is set to report but has no context configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validatePostsubmits(tc.postsubmits, "")
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
+func TestValidateStorageBucket(t *testing.T) {
+	testCases := []struct {
+		name        string
+		yaml        string
+		bucket      string
+		expectedErr string
+	}{
+		{
+			name:        "unspecified config means no validation",
+			yaml:        ``,
+			bucket:      "who-knows",
+			expectedErr: "",
+		},
+		{
+			name: "validation disabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: true`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "",
+		},
+		{
+			name: "validation enabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "bucket \"random-unknown-bucket\" not in allowed list",
+		},
+		{
+			name: "DecorationConfig allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+plank:
+    default_decoration_configs:
+        '*':
+            gcs_configuration:
+                bucket: "kubernetes-jenkins"`,
+			bucket:      "kubernetes-jenkins",
+			expectedErr: "",
+		},
+		{
+			name: "custom allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+    additional_allowed_buckets:
+    - "kubernetes-prow"`,
+			bucket:      "kubernetes-prow",
+			expectedErr: "",
+		},
+		{
+			name: "unknown bucket path",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "istio-prow",
+			expectedErr: "bucket \"istio-prow\" not in allowed list",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(nested *testing.T) {
+			cfg, err := loadConfigYaml(tc.yaml, nested)
+			if err != nil {
+				nested.Fatalf("failed to load prow config: err=%v\nYAML=%v", err, tc.yaml)
+			}
+			expectingErr := len(tc.expectedErr) > 0
+
+			err = cfg.ValidateStorageBucket(tc.bucket)
+
+			if expectingErr && err == nil {
+				nested.Fatalf("no errors, but was expecting error: %v", tc.expectedErr)
+			}
+			if err != nil && !expectingErr {
+				nested.Fatalf("expecting no errors, but got: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				nested.Fatalf("expecting error substring \"%v\", but got error: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
+func loadConfigYaml(prowConfigYaml string, t *testing.T) (*Config, error) {
+	prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+	if err != nil {
+		t.Fatalf("fail to make tempdir: %v", err)
+	}
+	defer os.RemoveAll(prowConfigDir)
+
+	prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+	if err := ioutil.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
+		t.Fatalf("fail to write prow config: %v", err)
+	}
+
+	return Load(prowConfig, "")
+}
+
+func TestGenYamlDocs(t *testing.T) {
+	const fixtureName = "./prow-config-documented.yaml"
+	inputFiles, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatalf("filepath.Glob: %v", err)
+	}
+	prowapiInputFiles, err := filepath.Glob("../apis/prowjobs/v1/*.go")
+	if err != nil {
+		t.Fatalf("prowapi filepath.Glob: %v", err)
+	}
+	inputFiles = append(inputFiles, prowapiInputFiles...)
+
+	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	if err != nil {
+		t.Fatalf("failed to construct commentMap: %v", err)
+	}
+	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
+	if err != nil {
+		t.Fatalf("genyaml errored: %v", err)
+	}
+	if os.Getenv("UPDATE") != "" {
+		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
+			t.Fatalf("failed to write fixture: %v", err)
+		}
+	}
+	expectedYaml, err := ioutil.ReadFile(fixtureName)
+	if err != nil {
+		t.Fatalf("failed to read fixture: %v", err)
+	}
+	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
+		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
 	}
 }

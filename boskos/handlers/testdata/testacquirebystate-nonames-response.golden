@@ -1,1 +1,0 @@
-state: state1, dest: newState, owner: owner, names:  - all of them must be set in the request.

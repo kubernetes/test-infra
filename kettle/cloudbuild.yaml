@@ -2,6 +2,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/kettle:$_GIT_TAG', '.' ]
     dir: kettle/
+    timeout: 1200s
   - name: gcr.io/cloud-builders/docker
     args: [ 'tag', 'gcr.io/$PROJECT_ID/kettle:$_GIT_TAG', 'gcr.io/$PROJECT_ID/kettle:latest']
 substitutions:
@@ -9,3 +10,4 @@ substitutions:
 images:
   - 'gcr.io/$PROJECT_ID/kettle:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/kettle:latest'
+timeout: 1260s

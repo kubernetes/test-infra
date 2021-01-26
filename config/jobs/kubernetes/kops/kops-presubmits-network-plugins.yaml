@@ -1,0 +1,366 @@
+presubmits:
+  kubernetes/kops:
+
+  - name: pull-kops-e2e-cni-amazonvpc
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=amazonvpc --node-size=t3.large
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-amazonvpc
+
+  - name: pull-kops-e2e-cni-calico
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=calico
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-calico
+
+  - name: pull-kops-e2e-cni-canal
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/|nodeup\/pkg\/model\/networking\/(flannel|canal).go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=canal
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|up\sand\sdown|headless|service-proxy-name
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-canal
+
+  - name: pull-kops-e2e-cni-cilium
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=cilium
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|affinity.*clusterIP|CLOSE_WAIT|NodePort|service\.kubernetes\.io
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-cilium
+
+  - name: pull-kops-e2e-cni-flannel
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|nodeup\/pkg\/model\/(sysctls|networking\/flannel).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=flannel
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|up\sand\sdown|headless|service-proxy-name
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-flannel
+
+  - name: pull-kops-e2e-cni-kuberouter
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=kube-router
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-kuberouter
+
+  - name: pull-kops-e2e-cni-weave
+    branches:
+    - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--networking=weave
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-weave

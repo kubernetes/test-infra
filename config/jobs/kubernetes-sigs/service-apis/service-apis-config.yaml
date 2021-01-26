@@ -1,83 +1,11 @@
 presubmits:
   kubernetes-sigs/service-apis:
-  - name: pull-service-apis-boilerplate
+  - name: pull-service-apis-verify
     annotations:
       testgrid-dashboards: sig-network-service-apis
-      testgrid-tab-name: boilerplate
-    decorate: true
-    path_alias: sigs.k8s.io/service-apis
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-          # generic runner script, handles DIND, bazelrc for caching, etc.
-          - runner.sh
-        args:
-        - ./hack/verify-boilerplate.sh
-
-  - name: pull-service-apis-gofmt
-    annotations:
-      testgrid-dashboards: sig-network-service-apis
-      testgrid-tab-name: gofmt
-    decorate: true
-    path_alias: sigs.k8s.io/service-apis
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-          # generic runner script, handles DIND, bazelrc for caching, etc.
-          - runner.sh
-        args:
-        - ./hack/verify-gofmt.sh
-
-  - name: pull-service-apis-golint
-    annotations:
-      testgrid-dashboards: sig-network-service-apis
-      testgrid-tab-name: golint
-    decorate: true
-    path_alias: sigs.k8s.io/service-apis
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-          # generic runner script, handles DIND, bazelrc for caching, etc.
-          - runner.sh
-        args:
-          - ./hack/verify-golint.sh
-
-  - name: pull-service-apis-docs
-    annotations:
-      testgrid-dashboards: sig-network-service-apis
-      testgrid-tab-name: docs
-    decorate: true
-    path_alias: sigs.k8s.io/service-apis
-    always_run: true
-    skip_report: false
+      testgrid-tab-name: verify
     labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-          # generic runner script, handles DIND, bazelrc for caching, etc.
-          - runner.sh
-        args:
-        - ./hack/verify-docs.sh
-        # docker-in-docker needs privileged mode.
-        securityContext:
-          privileged: true
-
-  - name: pull-service-apis-build
-    annotations:
-      testgrid-dashboards: sig-network-service-apis
-      testgrid-tab-name: build
-    labels:
+      preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
     decorate: true
     path_alias: sigs.k8s.io/service-apis
@@ -85,12 +13,36 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
           # generic runner script, handles DIND, bazelrc for caching, etc.
           - runner.sh
         args:
           - make
+          - verify
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
+  - name: pull-service-apis-test
+    annotations:
+      testgrid-dashboards: sig-network-service-apis
+      testgrid-tab-name: test
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/service-apis
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test
+          # docker-in-docker needs privileged mode.
+          securityContext:
+            privileged: true

@@ -1,3 +1,9 @@
+# Deprecation Notice
+
+July 14, 2020:  
+kubetest will be deprecated in favor of [kubetest2](https://github.com/kubernetes-sigs/kubetest2), 
+so kubetest is moving to a maintenance mode only and we are not taking PRs except for urgent bug fixes. 
+
 # Kubetest
 
 Kubetest is the interface for launching and running e2e tests.
@@ -81,7 +87,7 @@ See [extract_k8s.go] for further details.
 ## Cluster-lifecycle
 
 There are various ways to deploy kubernetes. Choose a strategy with the
-`--deployment` flag (for example `--deployment=kops` or `--deployment=kubernetes-anywhere`).
+`--deployment` flag (for example `--deployment=kops`).
 See `kubetest --help` for a full list of options.
 
 ### Up

@@ -3,12 +3,12 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-1804-d1703-0-v20181113 # docker 17.03
+    image: ubuntu-gke-1804-1-16-v20200330 # docker 17.03
     project: ubuntu-os-gke-cloud
     # Using `n1-standard-4` to enable CPU manager node e2e tests.
     machine: n1-standard-4
   cos-stable1:
-    image_regex: cos-stable-73-11647-510-0 # docker v18.09.7, deprecated after 2020-06-19
+    image_family: cos-81-lts # docker v19.03.6, deprecated after 2021-06-24
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
     # Using `n1-standard-4` to enable CPU manager node e2e tests.

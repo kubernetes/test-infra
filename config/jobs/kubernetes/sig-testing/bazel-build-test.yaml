@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -19,14 +20,25 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
+        - build
+        - --
+        - //...
+        - -//vendor/...
+        - -//build/...
+        - //build/release-tars
+        resources:
+          limits:
+            cpu: 4
+            memory: "36Gi"
+          requests:
+            cpu: 4
+            memory: "36Gi"
   - name: pull-kubernetes-bazel-test
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -36,6 +48,7 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
+      description: runs bazel test //... -//build/... -//vendor/...
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -45,18 +58,23 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...
         - -//vendor/...
+        resources:
+          limits:
+            cpu: 7
+            memory: 38Gi
+          requests:
+            cpu: 7
+            memory: 38Gi
 postsubmits:
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
@@ -72,7 +90,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -104,7 +122,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - bash
         args:
@@ -123,67 +141,6 @@ postsubmits:
       testgrid-dashboards: sig-release-master-informing
       testgrid-tab-name: bazel-build-master
       description: 'OWNER: sig-testing; Builds kubernetes at each bommit using bazel with RBE'
-  - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: google-unit
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //hack:verify-all
-        - --
-        - -//build/...
-        - -//vendor/...
-
-  - name: post-kubernetes-bazel-test
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      fork-per-release: "true"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-master-informing, google-unit
-      description: 'OWNER: sig-testing; Runs kubernetes unit tests at each commit using bazel'
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //hack:verify-all
-        - --
-        - -//build/...
-        - -//vendor/...
 
 periodics:
 # periodic bazel build jobs
@@ -210,7 +167,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - bash
       args:
@@ -224,6 +181,13 @@ periodics:
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
@@ -232,7 +196,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-build
-    description: run kubernetes-bazel-build with latest image
+    description: run kubernetes-bazel-build on k8s-infra-prow-build without RBE
+  cluster: k8s-infra-prow-build
   interval: 1h
   decorate: true
   labels:
@@ -248,7 +213,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       imagePullPolicy: Always
       command:
       - bash
@@ -258,56 +223,28 @@ periodics:
         set -o errexit
         gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
         ../test-infra/scenarios/kubernetes_bazel.py \
-            --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci-canary \
+            --gcs=gs://k8s-release-dev/ci-canary \
             --version-suffix=-bazel
+      resources:
+        limits:
+          cpu: 4
+          memory: "12Gi"
+        requests:
+          cpu: 4
+          memory: "12Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
 
 # periodic bazel test jobs
-- name: periodic-kubernetes-bazel-test-master
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 6h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-master-blocking, google-unit
-    testgrid-tab-name: bazel-test-master
-    description: "runs bazel test //... //hack:verify-all -//build/... -//vendor/..."
-  interval: 5m
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-  extra_refs:
-  - base_ref: master
-    org: kubernetes
-    repo: kubernetes
-  - base_ref: master
-    org: kubernetes
-    repo: test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-      command:
-      - ../test-infra/hack/bazel.sh
-      args:
-      - test
-      - --config=unit
-      - --config=remote
-      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-      - //...
-      - //hack:verify-all
-      - --
-      - -//build/...
-      - -//vendor/...
 - name: periodic-kubernetes-bazel-test-canary
   annotations:
+    fork-per-release-periodic-interval: 6h
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
-    description: run kubernetes-bazel-test with latest image
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
   interval: 1h
   decorate: true
   labels:
@@ -322,7 +259,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
@@ -335,3 +272,50 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
+      resources:
+        limits:
+          cpu: 4
+          memory: "38Gi"
+        requests:
+          cpu: 4
+          memory: "38Gi"
+- name: periodic-kubernetes-bazel-test-master
+  annotations:
+    fork-per-release: "true"
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: bazel-test-master
+    description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
+  interval: 5m
+  cluster: k8s-infra-prow-build
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-kubernetes-master
+      command:
+      - ../test-infra/hack/bazel.sh
+      args:
+      - test
+      - --config=unit
+      - //...
+      - //hack:verify-all
+      - --
+      - -//build/...
+      - -//vendor/...
+      resources:
+        limits:
+          cpu: 7
+          memory: 38Gi
+        requests:
+          cpu: 7
+          memory: 38Gi

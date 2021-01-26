@@ -1,0 +1,54 @@
+# A daemonset to create /dev/loopX device nodes before they are
+# needed.
+#
+# Normally, new nodes are created dynamically by the kernel. But nodes
+# in a KIND cluster are started with a copy of /dev from the host and
+# loop devices created later on do not show up in that static /dev
+# (https://github.com/kubernetes-sigs/kind/issues/1248). Creating
+# "enough" (100 in this daemonset) in advance avoids running out of
+# loop devices.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: create-loop-devs
+  namespace: kube-system
+  labels:
+    app: create-loop-devs
+spec:
+  selector:
+    matchLabels:
+      name: create-loop-devs
+  template:
+    metadata:
+      labels:
+        name: create-loop-devs
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: loopdev
+        command:
+        - sh
+        - -c
+        - |
+          while true; do
+            for i in $(seq 0 1000); do
+                if ! [ -e /dev/loop$i ]; then
+                  mknod /dev/loop$i b 7 $i
+                fi
+            done
+            sleep 100000000
+          done
+        image: alpine:3.6
+        imagePullPolicy: IfNotPresent
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: dev
+          mountPath: /dev
+      volumes:
+      - name: dev
+        hostPath:
+          path: /dev

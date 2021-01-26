@@ -14,6 +14,8 @@
 
 ARG GO_VERSION
 
+FROM multiarch/qemu-user-static:5.1.0-2 as qemu-image
+
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine
 
@@ -38,5 +40,18 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
         --path-update=false \
         --usage-reporting=false && \
     gcloud info > /workspace/gcloud-info.txt
+
+# Install docker Buildx for fast docker builds
+ENV HOME=/root
+RUN mkdir -p  $HOME/.docker/cli-plugins \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.4.1/buildx-v0.4.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
+
+# Copy qemu static binaries.
+COPY --from=qemu-image /usr/bin /qemu-bin
+RUN cp /qemu-bin/qemu-* /usr/bin/ && \
+    rm -rf /qemu-bin
+
+RUN apk add qemu
 
 ENTRYPOINT ["/bin/bash"]

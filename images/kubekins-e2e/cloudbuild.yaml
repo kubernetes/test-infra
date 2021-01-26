@@ -23,22 +23,24 @@ steps:
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+    - -f
+    - images/kubekins-e2e/Dockerfile
     - .
-    dir: images/kubekins-e2e
+    dir: .
   - name: gcr.io/cloud-builders/docker
     args:
     - tag
     - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
-    dir: images/kubekins-e2e
+    dir: .
 substitutions:
-  _BAZEL_VERSION: 2.2.0
+  _BAZEL_VERSION: 3.4.1
+  _OLD_BAZEL_VERSION: 2.2.0
   _CFSSL_VERSION: R1.2
   _CONFIG: master
   _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _OLD_BAZEL_VERSION: 0.23.2
   _UPGRADE_DOCKER: 'false'
 options:
   substitution_option: ALLOW_LOOSE

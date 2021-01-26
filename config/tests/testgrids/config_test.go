@@ -46,19 +46,23 @@ var (
 		"istio",
 		"googleoss",
 		"google",
+		"knative", // This allows both "knative" and "knative-sandbox", as well as "knative-google"
 		"kopeio",
 		"redhat",
 		"vmware",
 		"gardener",
 		"jetstack",
 		"kyma",
+		"kubevirt",
 	}
 	orgs = []string{
 		"conformance",
+		"kops",
 		"presubmits",
 		"sig",
 		"wg",
 		"provider",
+		"kubernetes-clients",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 
@@ -76,6 +80,9 @@ var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 // Shared testgrid config, loaded at TestMain.
 var cfg *config_pb.Configuration
 
+// Shared prow config, loaded at Test Main
+var prowConfig *prow_config.Config
+
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if *protoPath == "" {
@@ -86,7 +93,13 @@ func TestMain(m *testing.M) {
 	var err error
 	cfg, err = config.Read(*protoPath, context.Background(), nil)
 	if err != nil {
-		fmt.Printf("Could not load config: %v", err)
+		fmt.Printf("Could not load config: %v\n", err)
+		os.Exit(1)
+	}
+
+	prowConfig, err = prow_config.Load(*prowPath, *jobPath)
+	if err != nil {
+		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -159,7 +172,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	// dashboard name set
-	dashboardmap := make(map[string]bool)
+	dashboardSet := sets.NewString()
 
 	for dashboardidx, dashboard := range cfg.Dashboards {
 		// All dashboard must have a name
@@ -184,10 +197,10 @@ func TestConfig(t *testing.T) {
 		}
 
 		// All dashboard must not have duplicated names
-		if dashboardmap[dashboard.Name] {
+		if dashboardSet.Has(dashboard.Name) {
 			t.Errorf("Duplicated dashboard: %v", dashboard.Name)
 		} else {
-			dashboardmap[dashboard.Name] = true
+			dashboardSet.Insert(dashboard.Name)
 		}
 
 		// All dashboard must have at least one tab
@@ -263,8 +276,8 @@ func TestConfig(t *testing.T) {
 	}
 
 	// No dup of dashboard groups, and no dup dashboard in a dashboard group
-	groups := make(map[string]bool)
-	tabs := make(map[string]string)
+	groupSet := sets.NewString()
+	dashboardToGroupMap := make(map[string]string)
 
 	for idx, dashboardGroup := range cfg.DashboardGroups {
 		// All dashboard must have a name
@@ -289,25 +302,25 @@ func TestConfig(t *testing.T) {
 		}
 
 		// All dashboardgroup must not have duplicated names
-		if _, ok := groups[dashboardGroup.Name]; ok {
+		if groupSet.Has(dashboardGroup.Name) {
 			t.Errorf("Duplicated dashboard: %v", dashboardGroup.Name)
 		} else {
-			groups[dashboardGroup.Name] = true
+			groupSet.Insert(dashboardGroup.Name)
 		}
 
-		if _, ok := dashboardmap[dashboardGroup.Name]; ok {
+		if dashboardSet.Has(dashboardGroup.Name) {
 			t.Errorf("%v is both a dashboard and dashboard group name.", dashboardGroup.Name)
 		}
 
 		for _, dashboard := range dashboardGroup.DashboardNames {
 			// All dashboard must not have duplicated names
-			if exist, ok := tabs[dashboard]; ok {
-				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, exist, dashboardGroup.Name)
+			if assignedGroup, ok := dashboardToGroupMap[dashboard]; ok {
+				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, assignedGroup, dashboardGroup.Name)
 			} else {
-				tabs[dashboard] = dashboardGroup.Name
+				dashboardToGroupMap[dashboard] = dashboardGroup.Name
 			}
 
-			if _, ok := dashboardmap[dashboard]; !ok {
+			if !dashboardSet.Has(dashboard) {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
 			}
 
@@ -315,15 +328,18 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v in group %v must have the group name as a prefix", dashboard, dashboardGroup.Name)
 			}
 		}
+	}
 
-		// Dashboards that match this dashboard group's prefix should be a part of it
-		for dashboard := range dashboardmap {
-			if strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
-				group, ok := tabs[dashboard]
+	// Dashboards that match this dashboard group's prefix should be a part of it, unless this group is the prefix of the assigned group
+	// (e.g. knative and knative-sandbox).
+	for thisGroup := range groupSet {
+		for dashboard := range dashboardSet {
+			if strings.HasPrefix(dashboard, thisGroup+"-") {
+				assignedGroup, ok := dashboardToGroupMap[dashboard]
 				if !ok {
-					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, dashboardGroup.Name)
-				} else if group != dashboardGroup.Name {
-					t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, dashboardGroup.Name, group)
+					t.Errorf("Dashboard %v should be in dashboard_group %v", dashboard, thisGroup)
+				} else if assignedGroup != thisGroup && !strings.HasPrefix(assignedGroup, thisGroup) {
+					t.Errorf("Dashboard %v should be in dashboard_group %v instead of dashboard_group %v", dashboard, thisGroup, assignedGroup)
 				}
 			}
 		}
@@ -343,16 +359,17 @@ func TestConfig(t *testing.T) {
 	}
 }
 
-// TODO(spiffxp): These are all repos that don't have their presubmits in testgrid.
+// TODO: These are all repos that don't have their presubmits in testgrid.
 // Convince sig leads or subproject owners this is a bad idea and whittle this down
 // to just kubernetes-security/
+// Tracking issue: https://github.com/kubernetes/test-infra/issues/18159
 var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
-	"kubeflow/pipelines",
-	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
+	"kubernetes-sigs/cluster-capacity",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
+	"kubernetes-sigs/kubetest2",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
 	"kubernetes-sigs/scheduler-plugins",
 	"kubernetes-sigs/service-catalog",
@@ -379,16 +396,61 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 	return false
 }
 
+// A job is merge-blocking if it:
+// - is not optional
+// - reports (aka does not skip reporting)
+// - always runs OR runs if some path changed
+func isMergeBlocking(job prow_config.Presubmit) bool {
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+}
+
+// All jobs in presubmits-kuberentes-blocking must be merge-blocking for kubernetes/kubernetes
+// All jobs that are merge-blocking for kubernetes/kubernetes must be in presubmits-kubernetes-blocking
+func TestPresubmitsKubernetesDashboards(t *testing.T) {
+	var dashboard *config_pb.Dashboard
+	repo := "kubernetes/kubernetes"
+	dash := "presubmits-kubernetes-blocking"
+	for _, d := range cfg.Dashboards {
+		if d.Name == dash {
+			dashboard = d
+		}
+	}
+	if dashboard == nil {
+		t.Errorf("Missing dashboard: %s", dash)
+	}
+	testgroups := make(map[string]bool)
+	for _, tab := range dashboard.DashboardTab {
+		testgroups[tab.TestGroupName] = false
+	}
+	jobs := make(map[string]bool)
+	for _, job := range prowConfig.AllStaticPresubmits([]string{repo}) {
+		if isMergeBlocking(job) {
+			jobs[job.Name] = false
+		}
+	}
+	for job, seen := range jobs {
+		if _, ok := testgroups[job]; !seen && !ok {
+			t.Errorf("%s: job is merge-blocking for %s but missing from %s", job, repo, dash)
+		}
+		jobs[job] = true
+	}
+	for tg, seen := range testgroups {
+		if _, ok := jobs[tg]; !seen && !ok {
+			t.Errorf("%s: should not be in %s because not actually merge-blocking for %s", tg, dash, repo)
+		}
+		testgroups[tg] = true
+	}
+}
+
 func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
 	jobs := make(map[string]bool)
 
-	prowConfig, err := prow_config.Load(*prowPath, *jobPath)
-	if err != nil {
-		t.Fatalf("Could not load prow configs: %v\n", err)
-	}
-
 	for repo, presubmits := range prowConfig.PresubmitsStatic {
+		// Assume that all jobs in the exceptionList are valid
 		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
+			for _, job := range presubmits {
+				jobs[job.Name] = true
+			}
 			continue
 		}
 		for _, job := range presubmits {
@@ -428,19 +490,15 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 	}
 
 	// Conclusion
-	badjobs := []string{}
 	for job, valid := range jobs {
 		if !valid {
-			badjobs = append(badjobs, job)
 			t.Errorf("Job %v does not have a matching testgrid testgroup", job)
 		}
 	}
 
-	badconfigs := []string{}
 	for testgroup, valid := range testgroups {
 		if !valid {
-			badconfigs = append(badconfigs, testgroup)
-			t.Errorf("Testgrid group %v does not have a matching jenkins or prow job", testgroup)
+			t.Errorf("Testgrid group %v is supposed to be moved to have their presubmits in testgrid. See this issue: https://github.com/kubernetes/test-infra/issues/18159", testgroup)
 		}
 	}
 }

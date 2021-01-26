@@ -26,8 +26,8 @@ import (
 // whether or not we were successful.
 type Record struct {
 	Refs     prowapi.Refs `json:"refs"`
-	Commands []Command    `json:"commands"`
-	Failed   bool         `json:"failed"`
+	Commands []Command    `json:"commands,omitempty"`
+	Failed   bool         `json:"failed,omitempty"`
 
 	// FinalSHA is the SHA from ultimate state of a cloned ref
 	// This is used to populate RepoCommit in started.json properly

@@ -1,0 +1,206 @@
+presubmits:
+  kubernetes-sigs/cluster-api:
+  - name: pull-cluster-api-build-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-build-main
+  - name: pull-cluster-api-make-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-make.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-make-main
+  - name: pull-cluster-api-apidiff-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-apidiff-main
+  - name: pull-cluster-api-verify
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    skip_branches:
+    - gh-pages
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        command:
+        - "runner.sh"
+        - "make"
+        - "verify"
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-verify-main
+  - name: pull-cluster-api-test-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-test-main
+  - name: pull-cluster-api-e2e-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    path_alias: sigs.k8s.io/cluster-api
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "\\[PR-Blocking\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-e2e-main
+  - name: pull-cluster-api-e2e-full-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    optional: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-e2e-full-main
+  - name: pull-cluster-api-e2e-k8s-latest-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    optional: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    path_alias: sigs.k8s.io/cluster-api
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: BUILD_NODE_IMAGE_TAG
+            value: "ci/latest"
+          - name: KUBERNETES_VERSION
+            value: "ci/latest"
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "v1.20.0"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "ci/latest"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.4.13-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "1.7.0"
+          - name: GINKGO_FOCUS
+            value: "\\[Periodic-K8SVersion\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-e2e-k8s-latest-main

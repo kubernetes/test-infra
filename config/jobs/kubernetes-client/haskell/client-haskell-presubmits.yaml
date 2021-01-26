@@ -1,0 +1,21 @@
+presubmits:
+  kubernetes-client/haskell:
+  - name: kubernetes-clients-haskell-unit-tests
+    always_run: true
+    decorate: true
+    optional: true
+    spec:
+      containers:
+      - image: docker.io/haskell:8.6.5
+        env:
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          stack upgrade
+          stack test --system-ghc --no-install-ghc --allow-different-user
+    annotations:
+      testgrid-create-test-group: 'true'

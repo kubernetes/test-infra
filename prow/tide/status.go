@@ -30,7 +30,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -218,9 +217,10 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	// fixing label issues takes precedence over status contexts
 	var contexts []string
+	log := logrus.WithFields(pr.logFields())
 	for _, commit := range pr.Commits.Nodes {
 		if commit.Commit.OID == pr.HeadRefOID {
-			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc, logrus.New().WithFields(pr.logFields())) {
+			for _, ctx := range unsuccessfulContexts(append(commit.Commit.Status.Contexts, checkRunNodesToContexts(log, commit.Commit.StatusCheckRollup.Contexts.Nodes)...), cc, log) {
 				contexts = append(contexts, string(ctx.Context))
 			}
 		}
@@ -289,7 +289,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
 	passingUpToDatePJs := &prowapi.ProwJobList{}
-	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
+	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingFields{indexNamePassingJobs: indexKey}); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
 		log.WithError(err).Error("Failed to list ProwJobs.")
 		return github.StatusSuccess, statusInPool, nil
@@ -384,7 +384,8 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			wantDesc = fmt.Sprintf("%s...", wantDesc[0:(maxStatusDescriptionLength-3)])
 			log.WithField("original-desc", original).Warn("GitHub status description needed to be truncated to fit GH API limit")
 		}
-		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
+		actualState = githubql.StatusState(strings.ToLower(string(actualState)))
+		if wantState != string(actualState) || wantDesc != actualDesc {
 			if err := sc.ghc.CreateStatus(
 				org,
 				repo,
@@ -396,9 +397,11 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					TargetURL:   targetURL(c, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
-					"Failed to set status context from %q to %q.",
-					string(actualState),
+					"Failed to set status context from %q to %q and description from %q to %q",
+					actualState,
 					wantState,
+					actualDesc,
+					wantDesc,
 				)
 			}
 		}
@@ -606,7 +609,7 @@ func indexKeyPassingJobs(repo config.OrgRepo, baseSHA, headSHA string) string {
 	return fmt.Sprintf("%s@%s+%s", repo, baseSHA, headSHA)
 }
 
-func indexFuncPassingJobs(obj runtime.Object) []string {
+func indexFuncPassingJobs(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {

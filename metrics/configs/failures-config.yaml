@@ -39,21 +39,9 @@ query: |
   ) passes
   on jobs.job = passes.job
   order by broken_days desc, latest_pass, first_run, weekly_builds desc, jobs.job
-  
+
 jqfilter: |
   [(.[] | select((.latest_pass|length) == 0 or (.broken_days|tonumber) > 30)
   | {(.job): {
       failing_days: (.broken_days|tonumber)
   }})] | add
-
-measurements:
-  jq: |
-    [(.[] | {
-      measurement: "failures",
-      tags: {
-        job: (.job)
-      },
-      fields: {
-        job: (.job),
-        failing_days: (.broken_days|tonumber)
-    }})]

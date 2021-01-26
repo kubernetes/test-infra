@@ -70,23 +70,3 @@ jqfilter: |
     consistent_runs: (.consistent_runs|tonumber),
     builds: (.builds|tonumber)
   })]
-
-measurements: 
-  backfill: pr_consistency
-  jq: |
-    [(.[] | {
-      measurement: "pr_consistency",
-      time: (.day|tonumber),
-      tags: {
-        day: (.day|tonumber)
-      },
-      fields: {
-        commit_consistency: (.commit_consistency|tonumber),
-        commits: (.commits|tonumber),
-        consistent_commits: (.consistent_commits|tonumber),
-        run_consistency: (.run_consistency|tonumber),
-        runs: (.runs|tonumber),
-        consistent_runs: (.consistent_runs|tonumber),
-        builds: (.builds|tonumber)
-      }
-    })]

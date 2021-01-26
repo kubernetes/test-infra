@@ -1,0 +1,555 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind-dual-canary
+    optional: true
+    always_run: false
+    skip_report: false
+    decorate: true
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: FOCUS
+          value: \[Conformance\]|DualStack
+        - name: PARALLEL
+          value: "true"
+        - name: BUILD_TYPE
+          value: bazel
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use DualStack
+        - name: "IP_FAMILY"
+          value: "DualStack"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "4000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: pr-sig-network-kind, dual
+      description: Runs tests against a Dual Stack Kubernetes in Docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
+  - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+    optional: true
+    always_run: false
+    skip_report: false
+    decorate: true
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: FOCUS
+          value: \[Conformance\]|DualStack
+        - name: PARALLEL
+          value: "true"
+        - name: BUILD_TYPE
+          value: bazel
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use DualStack
+        - name: "IP_FAMILY"
+          value: "DualStack"
+        - name: KUBE_PROXY_MODE
+          value: "ipvs"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "4000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: pr-sig-network-kind, ipvs, dual
+      description: Runs tests against a Dual Stack Kubernetes in Docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
+
+periodics:
+# network test against kubernetes master branch with `kind`
+- interval: 6h
+  name: ci-kubernetes-kind-network
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, master
+    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind` ipv6
+- interval: 6h
+  name: ci-kubernetes-kind-network-ipv6
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, IPv6, master
+    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind` dual stack
+- interval: 6h
+  name: ci-kubernetes-kind-network-dual
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "DualStack"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, dual, master
+    description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind`
+- interval: 6h
+  name: ci-kubernetes-kind-network-ipvs
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: KUBE_PROXY_MODE
+        value: "ipvs"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, ipvs, master
+    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind` ipv6
+- interval: 6h
+  name: ci-kubernetes-kind-network-ipvs-ipv6
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: KUBE_PROXY_MODE
+        value: "ipvs"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, ipvs, IPv6, master
+    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind` dual stack
+- interval: 6h
+  name: ci-kubernetes-kind-network-ipvs-dual
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "DualStack"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: KUBE_PROXY_MODE
+        value: "ipvs"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, ipvs, dual, master
+    description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind`, skipping
+# serial tests so it runs in ~20m
+- interval: 6h
+  name: ci-kubernetes-kind-network-parallel
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      env:
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, master [non-serial]
+    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'
+# network test against kubernetes master branch with `kind` ipv6
+- interval: 6h
+  name: ci-kubernetes-kind-network-parallel-ipv6
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: BUILD_TYPE
+        value: bazel
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "4000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-network-kind, sig-testing-kind
+    testgrid-tab-name: sig-network-kind, IPv6, master [non-serial]
+    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-num-columns-recent: '3'

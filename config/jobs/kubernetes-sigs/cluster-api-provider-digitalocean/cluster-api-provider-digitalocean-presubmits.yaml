@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -33,7 +33,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - make
         args:
@@ -56,3 +56,57 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: pr-lint
+  - name: pull-cluster-api-provider-digitalocean-e2e
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: pr-e2e
+  - name: pull-cluster-api-provider-digitalocean-conformance-v1alpha3
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: pr-conformance

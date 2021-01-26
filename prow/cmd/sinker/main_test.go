@@ -18,9 +18,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -28,9 +30,9 @@ import (
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1fake "k8s.io/client-go/kubernetes/fake"
-	clienttesting "k8s.io/client-go/testing"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -45,21 +47,25 @@ const (
 	terminatedPodTTL = 30 * time.Minute // must be less than maxPodAge
 )
 
+func newDefaultFakeSinkerConfig() config.Sinker {
+	return config.Sinker{
+		MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
+		MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
+		TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
+	}
+}
+
 type fca struct {
 	c *config.Config
 }
 
-func newFakeConfigAgent() *fca {
+func newFakeConfigAgent(s config.Sinker) *fca {
 	return &fca{
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
-				Sinker: config.Sinker{
-					MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
-					MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
-					TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
-				},
+				Sinker:           s,
 			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{
@@ -80,13 +86,18 @@ func startTime(s time.Time) *metav1.Time {
 	return &start
 }
 
-type unreachableCluster struct{}
+type unreachableCluster struct{ ctrlruntimeclient.Client }
 
-func (unreachableCluster) Delete(name string, options *metav1.DeleteOptions) error {
+func (unreachableCluster) Delete(_ context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	return fmt.Errorf("I can't hear you.")
 }
-func (unreachableCluster) List(opts metav1.ListOptions) (*corev1api.PodList, error) {
-	return nil, fmt.Errorf("I can't hear you.")
+
+func (unreachableCluster) List(_ context.Context, _ ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
+	return fmt.Errorf("I can't hear you.")
+}
+
+func (unreachableCluster) Patch(_ context.Context, _ ctrlruntimeclient.Object, _ ctrlruntimeclient.Patch, _ ...ctrlruntimeclient.PatchOption) error {
+	return errors.New("I can't hear you.")
 }
 
 func TestClean(t *testing.T) {
@@ -404,6 +415,56 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+				Namespace:  "ns",
+				Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "completed-pod-without-prowjob-that-still-has-finalizer",
+				Namespace:  "ns",
+				Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "very-young-orphaned-pod-is-kept-to-account-for-cache-staleness",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+				CreationTimestamp: metav1.Now(),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				// The corresponding prowjob will only show up in a GET and not in a list requests. We do this to make
+				// sure that the orphan check does another get on the prowjob before declaring a pod orphaned rather
+				// than relying on the possibly outdated list created in the very beginning of the sync.
+				Name:      "get-only-prowjob",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -419,6 +480,8 @@ func TestClean(t *testing.T) {
 		"old-running",
 		"ttl-expired",
 		"completed-prowjob-ttl-expired-while-pod-still-pending",
+		"completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+		"completed-pod-without-prowjob-that-still-has-finalizer",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -611,7 +674,18 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
 			},
 		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:        metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime:   setComplete(-terminatedPodTTL - time.Second),
+				PrevReportStates: map[string]prowv1.ProwJobState{"gcsk8sreporter": prowv1.AbortedState},
+			},
+		},
 	}
+
 	deletedProwJobs := sets.NewString(
 		"job-complete",
 		"old-failed",
@@ -639,22 +713,28 @@ func TestClean(t *testing.T) {
 	}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
 
-	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
-	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	fpc := []podInterface{unreachableCluster{}}
-	for _, fakeClient := range fkc {
-		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
+	fpjc := &clientWrapper{
+		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
+		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+	}
+	fkc := []*podClientWrapper{
+		{t: t, Client: fakectrlruntimeclient.NewFakeClient(pods...)},
+		{t: t, Client: fakectrlruntimeclient.NewFakeClient(podsTrusted...)},
+	}
+	fpc := map[string]ctrlruntimeclient.Client{"unreachable": unreachableCluster{}}
+	for idx, fakeClient := range fkc {
+		fpc[strconv.Itoa(idx)] = &podClientWrapper{t: t, Client: fakeClient}
 	}
 	// Run
 	c := controller{
 		logger:        logrus.WithField("component", "sinker"),
 		prowJobClient: fpjc,
 		podClients:    fpc,
-		config:        newFakeConfigAgent().Config,
+		config:        newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config,
 	}
 	c.clean()
-	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
-	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
+	assertSetsEqual(deletedPods, fkc[0].deletedPods, t, "did not delete correct Pods")
+	assertSetsEqual(deletedPodsTrusted, fkc[1].deletedPods, t, "did not delete correct trusted Pods")
 
 	remainingProwJobs := &prowv1.ProwJobList{}
 	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
@@ -670,15 +750,88 @@ func TestClean(t *testing.T) {
 	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
 }
 
-func getDeletedObjectNames(actions []clienttesting.Action) sets.String {
-	names := sets.NewString()
-	for _, action := range actions {
-		switch action := action.(type) {
-		case clienttesting.DeleteActionImpl:
-			names.Insert(action.Name)
-		}
+func TestNotClean(t *testing.T) {
+
+	pods := []runtime.Object{
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
 	}
-	return names
+	podsExcluded := []runtime.Object{
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded-on-excluded-cluster",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+	}
+	setComplete := func(d time.Duration) *metav1.Time {
+		completed := metav1.NewTime(time.Now().Add(d))
+		return &completed
+	}
+	prowJobs := []runtime.Object{
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-60 * time.Second),
+			},
+		},
+	}
+
+	deletedPods := sets.NewString(
+		"job-complete-pod-succeeded",
+	)
+
+	fpjc := &clientWrapper{
+		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
+		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+	}
+	podClientValid := podClientWrapper{
+		t: t, Client: fakectrlruntimeclient.NewFakeClient(pods...),
+	}
+	podClientExcluded := podClientWrapper{
+		t: t, Client: fakectrlruntimeclient.NewFakeClient(podsExcluded...),
+	}
+	fpc := map[string]ctrlruntimeclient.Client{
+		"build-cluster-valid":    &podClientValid,
+		"build-cluster-excluded": &podClientExcluded,
+	}
+	// Run
+	fakeSinkerConfig := newDefaultFakeSinkerConfig()
+	fakeSinkerConfig.ExcludeClusters = []string{"build-cluster-excluded"}
+	fakeConfigAgent := newFakeConfigAgent(fakeSinkerConfig).Config
+	c := controller{
+		logger:        logrus.WithField("component", "sinker"),
+		prowJobClient: fpjc,
+		podClients:    fpc,
+		config:        fakeConfigAgent,
+	}
+	c.clean()
+	assertSetsEqual(deletedPods, podClientValid.deletedPods, t, "did not delete correct Pods")
+	assertSetsEqual(sets.String{}, podClientExcluded.deletedPods, t, "did not delete correct Pods")
 }
 
 func assertSetsEqual(expected, actual sets.String, t *testing.T, prefix string) {
@@ -712,15 +865,6 @@ func TestFlags(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.configPath = "/random/path"
-			},
-		},
-		{
-			name: "default config-path when empty",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
 			},
 		},
 		{
@@ -772,6 +916,11 @@ func TestFlags(t *testing.T) {
 				dryRun: flagutil.Bool{
 					Explicit: true,
 				},
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+					HealthPort:  flagutil.DefaultHealthPort,
+				},
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
@@ -809,14 +958,73 @@ func TestFlags(t *testing.T) {
 }
 
 func TestDeletePodToleratesNotFound(t *testing.T) {
-	client := corev1fake.NewSimpleClientset().CoreV1().Pods("default")
-	m := &sinkerReconciliationMetrics{}
-	c := &controller{}
-	l := logrus.NewEntry(logrus.New())
-
-	c.deletePod(l, "i-do-not-exist", "reason", client, m)
-
-	if n := len(m.podRemovalErrors); n != 0 {
-		t.Errorf("Expected no pod removal errors, got %v", m.podRemovalErrors)
+	m := &sinkerReconciliationMetrics{
+		podsRemoved:      map[string]int{},
+		podRemovalErrors: map[string]int{},
 	}
+	c := &controller{config: newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config}
+	l := logrus.NewEntry(logrus.New())
+	pod := &corev1api.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "existing",
+			Namespace: "ns",
+			Labels: map[string]string{
+				kube.CreatedByProw:  "true",
+				kube.ProwJobIDLabel: "job-running",
+			},
+		},
+	}
+	client := fakectrlruntimeclient.NewFakeClient(pod)
+
+	c.deletePod(l, &corev1api.Pod{}, "reason", client, m)
+	c.deletePod(l, pod, "reason", client, m)
+
+	if n := len(m.podRemovalErrors); n != 1 {
+		t.Errorf("Expected 1 pod removal errors, got %v", m.podRemovalErrors)
+	}
+	if n := len(m.podsRemoved); n != 1 {
+		t.Errorf("Expected 1 pod removal, got %v", m.podsRemoved)
+	}
+}
+
+type podClientWrapper struct {
+	t *testing.T
+	ctrlruntimeclient.Client
+	deletedPods sets.String
+}
+
+func (c *podClientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	var pod corev1api.Pod
+	name := types.NamespacedName{
+		Namespace: obj.(metav1.Object).GetNamespace(),
+		Name:      obj.(metav1.Object).GetName(),
+	}
+	if err := c.Get(ctx, name, &pod); err != nil {
+		return err
+	}
+	// The kube api allows this but we want to ensure in tests that we first clean up finalizers before deleting a pod
+	if len(pod.Finalizers) > 0 {
+		c.t.Errorf("attempting to delete pod %s that still has %v finalizers", pod.Name, pod.Finalizers)
+	}
+	if err := c.Client.Delete(ctx, obj, opts...); err != nil {
+		return err
+	}
+	if c.deletedPods == nil {
+		c.deletedPods = sets.String{}
+	}
+	c.deletedPods.Insert(pod.Name)
+	return nil
+}
+
+type clientWrapper struct {
+	ctrlruntimeclient.Client
+	getOnlyProwJobs map[string]*prowv1.ProwJob
+}
+
+func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey, obj ctrlruntimeclient.Object) error {
+	if pj, exists := c.getOnlyProwJobs[key.String()]; exists {
+		*obj.(*prowv1.ProwJob) = *pj
+		return nil
+	}
+	return c.Client.Get(ctx, key, obj)
 }

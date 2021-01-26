@@ -79,7 +79,12 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time) ([
 		vars["searchCursor"] = cursor
 		log = log.WithField("searchCursor", *cursor)
 	}
-	log.WithField("duration", time.Since(requestStart).String()).Debugf("Query returned %d PRs and cost %d point(s). %d remaining.", len(ret), totalCost, remaining)
+	log.WithFields(logrus.Fields{
+		"duration":       time.Since(requestStart).String(),
+		"pr_found_count": len(ret),
+		"cost":           totalCost,
+		"remaining":      remaining,
+	}).Debug("Finished query")
 	return ret, nil
 }
 

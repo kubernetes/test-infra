@@ -17,132 +17,81 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/spyglass/lenses"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/spyglass/api"
+	"k8s.io/test-infra/prow/spyglass/lenses/common"
 )
 
 // ListArtifacts gets the names of all artifacts available from the given source
-func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
+func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, error) {
 	keyType, key, err := splitSrc(src)
 	if err != nil {
 		return []string{}, fmt.Errorf("error parsing src: %v", err)
 	}
 	gcsKey := ""
 	switch keyType {
-	case gcsKeyType:
-		gcsKey = key
 	case prowKeyType:
-		if gcsKey, err = s.prowToGCS(key); err != nil {
+		storageProvider, key, err := s.prowToGCS(key)
+		if err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
 		}
+		gcsKey = fmt.Sprintf("%s://%s", storageProvider, key)
 	default:
-		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
-	}
-
-	artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
-	logFound := false
-	for _, name := range artifactNames {
-		if name == "build-log.txt" {
-			logFound = true
-			break
+		if keyType == gcsKeyType {
+			keyType = providers.GS
 		}
+		gcsKey = fmt.Sprintf("%s://%s", keyType, key)
 	}
-	if err != nil || !logFound {
-		artifactNames = append(artifactNames, "build-log.txt")
-	}
-	return artifactNames, nil
-}
 
-// KeyToJob takes a spyglass URL and returns the jobName and buildID.
-func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error) {
-	src = strings.Trim(src, "/")
-	parsed := strings.Split(src, "/")
-	if len(parsed) < 2 {
-		return "", "", fmt.Errorf("expected at least two path components in %q", src)
-	}
-	jobName = parsed[len(parsed)-2]
-	buildID = parsed[len(parsed)-1]
-	return jobName, buildID, nil
-}
-
-// prowToGCS returns the GCS key corresponding to the given prow key
-func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
-	jobName, buildID, err := s.KeyToJob(prowKey)
+	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
 	if err != nil {
-		return "", fmt.Errorf("could not get GCS src: %v", err)
+		logrus.Warningf("error retrieving artifact names from gcs storage: %v", err)
+	}
+
+	artifactNamesSet := sets.NewString(artifactNames...)
+
+	jobName, buildID, err := common.KeyToJob(src)
+	if err != nil {
+		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get prow job from src %q: %v", prowKey, err)
+		// we don't return the error because we assume that if we cannot get the prowjob from the jobAgent,
+		// then we must already have all the build-logs in gcs
+		logrus.Infof("unable to get prowjob from Pod: %v", err)
+		return artifactNamesSet.List(), nil
 	}
 
-	url := job.Status.URL
-	prefix := s.config().Plank.GetJobURLPrefix(job.Spec.Refs)
-	if !strings.HasPrefix(url, prefix) {
-		return "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
+	jobContainers := job.Spec.PodSpec.Containers
+
+	for _, container := range jobContainers {
+		logName := singleLogName
+		if len(jobContainers) > 1 {
+			logName = fmt.Sprintf("%s-%s", container.Name, singleLogName)
+		}
+		artifactNamesSet.Insert(logName)
 	}
-	return url[len(prefix):], nil
+
+	return artifactNamesSet.List(), nil
+}
+
+// prowToGCS returns the GCS key corresponding to the given prow key
+func (s *Spyglass) prowToGCS(prowKey string) (string, string, error) {
+	return common.ProwToGCS(s.JobAgent, s.config, prowKey)
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
-func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]lenses.Artifact, error) {
-	artStart := time.Now()
-	arts := []lenses.Artifact{}
-	keyType, key, err := splitSrc(src)
-	if err != nil {
-		return arts, fmt.Errorf("error parsing src: %v", err)
-	}
-	jobName, buildID, err := s.KeyToJob(src)
-	if err != nil {
-		return arts, fmt.Errorf("could not derive job: %v", err)
-	}
-	gcsKey := ""
-	switch keyType {
-	case gcsKeyType:
-		gcsKey = strings.TrimSuffix(key, "/")
-	case prowKeyType:
-		if gcsKey, err = s.prowToGCS(key); err != nil {
-			logrus.Warningln(err)
-		}
-	default:
-		return nil, fmt.Errorf("invalid src: %v", src)
-	}
-
-	podLogNeeded := false
-	for _, name := range artifactNames {
-		art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
-		if err == nil {
-			// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
-			// (these files are being explicitly requested and so will presumably soon be accessed, so
-			// the extra network I/O should not be too problematic).
-			_, err = art.Size()
-		}
-		if err != nil {
-			if name == "build-log.txt" {
-				podLogNeeded = true
-			}
-			continue
-		}
-		arts = append(arts, art)
-	}
-
-	if podLogNeeded {
-		art, err := s.PodLogArtifactFetcher.artifact(jobName, buildID, sizeLimit)
-		if err != nil {
-			logrus.Errorf("Failed to fetch pod log: %v", err)
-		} else {
-			arts = append(arts, art)
-		}
-	}
-
-	logrus.WithField("duration", time.Since(artStart).String()).Infof("Retrieved artifacts for %v", src)
-	return arts, nil
+func (s *Spyglass) FetchArtifacts(ctx context.Context, src string, podName string, sizeLimit int64, artifactNames []string) ([]api.Artifact, error) {
+	return common.FetchArtifacts(ctx, s.JobAgent, s.config, s.StorageArtifactFetcher, s.PodLogArtifactFetcher, src, podName, sizeLimit, artifactNames)
 }
 
 func splitSrc(src string) (keyType, key string, err error) {

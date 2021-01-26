@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -200,9 +202,8 @@ func uploadLogfilesToGCS(logDir string) error {
 	gcsLogPath := *gcsPath + "/" + *nodeName
 	klog.Infof("Uploading logfiles to GCS at path '%v'", gcsLogPath)
 	for uploadAttempt := 0; uploadAttempt < 3; uploadAttempt++ {
-		// Upload the files with compression (-z) and parallelism (-m) for speeding
-		// up, and set their ACL to make them publicly readable.
-		if err = runCommand("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
+		// Upload the files with compression (-z) and parallelism (-m) for speeding up.
+		if err = runCommand("gsutil", "-m", "-q", "cp", "-c",
 			"-z", "log,txt,xml", logDir+"/*", gcsLogPath); err != nil {
 			klog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
 			continue
@@ -217,7 +218,7 @@ func uploadLogfilesToGCS(logDir string) error {
 // fetch the list of nodes on which logexporter succeeded.
 func writeSuccessMarkerFile() error {
 	markerFilePath := *gcsPath + "/logexported-nodes-registry/" + *nodeName + ".txt"
-	cmd := exec.Command("gsutil", "-q", "cp", "-a", "public-read", "-", markerFilePath)
+	cmd := exec.Command("gsutil", "-q", "cp", "-", markerFilePath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return fmt.Errorf("Failed to get stdin pipe to write marker file: %v", err)
@@ -241,9 +242,36 @@ func runCommand(name string, arg ...string) error {
 	return err
 }
 
+func dumpNetworkDebugInfo() {
+	klog.Info("Dumping network connectivity debug info")
+	resolv, err := ioutil.ReadFile("/etc/resolv.conf")
+	if err != nil {
+		klog.Errorf("Failed to read /etc/resolv.conf: %v", err)
+	}
+	klog.Infof("/etc/resolv.conf: %q", string(resolv))
+	addrs, err := net.LookupHost("kubernetes.default")
+	if err != nil {
+		klog.Errorf("Failed to resolve kubernetes.default: %v", err)
+	}
+	klog.Infof("kubernetes.default resolves to: %v", addrs)
+	addrs, err = net.LookupHost("google.com")
+	if err != nil {
+		klog.Errorf("Failed to resolve google.com: %v", err)
+	}
+	klog.Infof("google.com resolves to: %v", addrs)
+	resp, err := http.Get("http://google.com/")
+	if err != nil {
+		klog.Errorf("Failed to get http://google.com/: %v", err)
+	}
+	defer resp.Body.Close()
+	klog.Infof("GET http://google.com finished with: %v code", resp.StatusCode)
+}
+
 func main() {
 	pflag.Parse()
 	if err := checkConfigValidity(); err != nil {
+		klog.Errorf("Bad config provided: %v", err)
+		dumpNetworkDebugInfo()
 		klog.Fatalf("Bad config provided: %v", err)
 	}
 

@@ -29,4 +29,4 @@ A new container image is automatically built and published to
 [gcr.io/k8s-prow/ghproxy](https://gcr.io/k8s-prow/ghproxy) whenever this
 directory is changed on the master branch. You can find a recent stable image
 tag and an example of how to deploy ghProxy to Kubernetes by checking out
-[Prow's ghProxy deployment](/prow/cluster/ghproxy.yaml).
+[Prow's ghProxy deployment](/config/prow/cluster/ghproxy.yaml).

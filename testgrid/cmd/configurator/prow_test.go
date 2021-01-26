@@ -32,7 +32,7 @@ const ProwJobName = "TestJob"
 const ExampleRepository = "test/repo"
 
 func Test_applySingleProwjobAnnotations(t *testing.T) {
-	tests := []struct {
+	tests := []*struct {
 		name           string
 		initialConfig  config.Configuration
 		prowJobType    prowapi.ProwJobType
@@ -290,6 +290,8 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-num-columns-recent":        "13",
 				"testgrid-num-failures-to-alert":     "4",
 				"testgrid-alert-stale-results-hours": "24",
+				"testgrid-days-of-results":           "30",
+				"testgrid-in-cell-metric":            "haunted-house",
 			},
 			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
@@ -299,6 +301,8 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						NumColumnsRecent:       13,
 						NumFailuresToAlert:     4,
 						AlertStaleResultsHours: 24,
+						DaysOfResults:          30,
+						ShortTextMetric:        "haunted-house",
 					},
 				},
 				Dashboards: []*config.Dashboard{
@@ -344,7 +348,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 
-				if !reflect.DeepEqual(test.initialConfig, test.expectedConfig) {
+				if !reflect.DeepEqual(&test.initialConfig, &test.expectedConfig) {
 					t.Errorf("Configurations did not match; got %s, expected %s", test.initialConfig.String(), test.expectedConfig.String())
 				}
 			}

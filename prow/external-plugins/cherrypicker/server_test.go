@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -26,6 +27,8 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 )
+
+var commentFormat = "%s/%s#%d %s"
 
 type fghc struct {
 	sync.Mutex
@@ -39,6 +42,7 @@ type fghc struct {
 	prLabels   []github.Label
 	labels     []github.Label
 	orgMembers []github.TeamMember
+	issues     []github.Issue
 }
 
 func (f *fghc) AddLabel(org, repo string, number int, label string) error {
@@ -79,7 +83,7 @@ func (f *fghc) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
 func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
-	f.comments = append(f.comments, fmt.Sprintf("%s/%s#%d %s", org, repo, number, comment))
+	f.comments = append(f.comments, fmt.Sprintf(commentFormat, org, repo, number, comment))
 	return nil
 }
 
@@ -95,6 +99,10 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	return github.FullRepo{}, nil
 }
 
+func (f *fghc) EnsureFork(forkingUser, org, repo string) (string, error) {
+	return "", nil
+}
+
 var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
 
 func prToString(pr github.PullRequest) string {
@@ -103,6 +111,34 @@ func prToString(pr github.PullRequest) string {
 		labels = append(labels, label.Name)
 	}
 	return fmt.Sprintf(expectedFmt, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, labels)
+}
+
+func (f *fghc) CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error) {
+	f.Lock()
+	defer f.Unlock()
+
+	var ghLabels []github.Label
+	var ghAssignees []github.User
+
+	num := len(f.issues) + 1
+
+	for _, label := range labels {
+		ghLabels = append(ghLabels, github.Label{Name: label})
+	}
+
+	for _, assignee := range assignees {
+		ghAssignees = append(ghAssignees, github.User{Login: assignee})
+	}
+
+	f.issues = append(f.issues, github.Issue{
+		Title:     title,
+		Body:      body,
+		Number:    num,
+		Labels:    ghLabels,
+		Assignees: ghAssignees,
+	})
+
+	return num, nil
 }
 
 func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
@@ -140,8 +176,8 @@ func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
 	return f.orgMembers, nil
 }
 
-func (f *fghc) CreateFork(org, repo string) error {
-	return nil
+func (f *fghc) CreateFork(org, repo string) (string, error) {
+	return repo, nil
 }
 
 var initialFiles = map[string][]byte{
@@ -245,11 +281,11 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 	expectedTitle := "[stage] This is a fix for X"
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
-	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
+	expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, expectedBase)
 	expectedLabels := []string{}
 	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
@@ -258,9 +294,9 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -270,7 +306,7 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 	got := prToString(ghc.prs[0])
 	if got != expected {
@@ -396,16 +432,16 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -415,13 +451,13 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var expectedFn = func(branch string) string {
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 		expectedBody := "This is an automated cherry-pick of #2"
-		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
 		expectedLabels := s.labels
 		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
@@ -509,33 +545,20 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 
 	events := []github.PullRequestEventAction{github.PullRequestActionClosed, github.PullRequestActionLabeled}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
 	}
 
-	for _, evt := range events {
-		ghc := &fghc{
-			orgMembers: []github.TeamMember{
-				{
-					Login: "approver",
-				},
-				{
-					Login: "merge-bot",
-				},
-				{
-					Login: "developer",
-				},
-			},
-			prComments: []github.IssueComment{
-				{
-					User: github.User{
-						Login: "developer",
-					},
-					Body: "a review comment",
-				},
-			},
+	testCases := []struct {
+		name        string
+		labelPrefix string
+		prLabels    []github.Label
+	}{
+		{
+			name:        "Default label prefix",
+			labelPrefix: defaultLabelPrefix,
 			prLabels: []github.Label{
 				{
 					Name: "cherrypick/release-1.5",
@@ -547,55 +570,193 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 					Name: "cherrypick/release-1.7",
 				},
 			},
-			isMember: true,
-			patch:    patch,
-		}
+		},
+		{
+			name:        "Custom label prefix",
+			labelPrefix: "needs-cherry-pick-",
+			prLabels: []github.Label{
+				{
+					Name: "needs-cherry-pick-release-1.5",
+				},
+				{
+					Name: "needs-cherry-pick-release-1.6",
+				},
+				{
+					Name: "needs-cherry-pick-release-1.7",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, evt := range events {
+				ghc := &fghc{
+					orgMembers: []github.TeamMember{
+						{
+							Login: "approver",
+						},
+						{
+							Login: "merge-bot",
+						},
+						{
+							Login: "developer",
+						},
+					},
+					prComments: []github.IssueComment{
+						{
+							User: github.User{
+								Login: "developer",
+							},
+							Body: "a review comment",
+						},
+					},
+					prLabels: tc.prLabels,
+					isMember: true,
+					patch:    patch,
+				}
+
+				s := &Server{
+					botUser:        botUser,
+					gc:             c,
+					push:           func(newBranch string, force bool) error { return nil },
+					ghc:            ghc,
+					tokenGenerator: getSecret,
+					log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+					repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+
+					labels:          []string{"cla: yes"},
+					prowAssignments: false,
+					labelPrefix:     tc.labelPrefix,
+				}
+
+				if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr(evt)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+
+				var expectedFn = func(branch string) string {
+					expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
+					expectedBody := "This is an automated cherry-pick of #2"
+					expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
+					expectedLabels := s.labels
+					return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
+				}
+
+				if len(ghc.prs) != 2 {
+					t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+				}
+
+				expectedBranches := []string{"release-1.5", "release-1.6"}
+				seenBranches := make(map[string]struct{})
+				for _, p := range ghc.prs {
+					pr := prToString(p)
+					if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+						t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+					}
+					if pr == expectedFn("release-1.5") {
+						seenBranches["release-1.5"] = struct{}{}
+					}
+					if pr == expectedFn("release-1.6") {
+						seenBranches["release-1.6"] = struct{}{}
+					}
+				}
+				if len(seenBranches) != 2 {
+					t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+				}
+			}
+		})
+	}
+}
+
+func TestCherryPickCreateIssue(t *testing.T) {
+	testCases := []struct {
+		org       string
+		repo      string
+		title     string
+		body      string
+		prNum     int
+		labels    []string
+		assignees []string
+	}{
+		{
+			org:       "istio",
+			repo:      "istio",
+			title:     "brand new feature",
+			body:      "automated cherry-pick",
+			prNum:     2190,
+			labels:    nil,
+			assignees: []string{"clarketm"},
+		},
+		{
+			org:       "kubernetes",
+			repo:      "kubernetes",
+			title:     "alpha feature",
+			body:      "automated cherry-pick",
+			prNum:     3444,
+			labels:    []string{"new", "1.18"},
+			assignees: nil,
+		},
+	}
+
+	errMsg := func(field string) string {
+		return fmt.Sprintf("GH issue %q does not match: \nexpected: \"%%v\" \nactual: \"%%v\"", field)
+	}
+
+	for _, tc := range testCases {
+
+		ghc := &fghc{}
 
 		s := &Server{
-			botName:        botName,
-			gc:             c,
-			push:           func(newBranch string) error { return nil },
-			ghc:            ghc,
-			tokenGenerator: getSecret,
-			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
-
-			labels:          []string{"cla: yes"},
-			prowAssignments: false,
+			ghc: ghc,
 		}
 
-		if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr(evt)); err != nil {
+		if err := s.createIssue(tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		var expectedFn = func(branch string) string {
-			expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
-			expectedBody := "This is an automated cherry-pick of #2"
-			expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-			expectedLabels := s.labels
-			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
+		if len(ghc.issues) < 1 {
+			t.Fatalf("Expected 1 GH issue to be created but got: %d", len(ghc.issues))
 		}
 
-		if len(ghc.prs) != 2 {
-			t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+		ghIssue := ghc.issues[len(ghc.issues)-1]
+
+		if tc.title != ghIssue.Title {
+			t.Fatalf(errMsg("title"), tc.title, ghIssue.Title)
 		}
 
-		expectedBranches := []string{"release-1.5", "release-1.6"}
-		seenBranches := make(map[string]struct{})
-		for _, p := range ghc.prs {
-			pr := prToString(p)
-			if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
-				t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
-			}
-			if pr == expectedFn("release-1.5") {
-				seenBranches["release-1.5"] = struct{}{}
-			}
-			if pr == expectedFn("release-1.6") {
-				seenBranches["release-1.6"] = struct{}{}
-			}
+		if tc.body != ghIssue.Body {
+			t.Fatalf(errMsg("body"), tc.title, ghIssue.Title)
 		}
-		if len(seenBranches) != 2 {
-			t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+
+		if len(ghc.issues) != ghIssue.Number {
+			t.Fatalf(errMsg("number"), len(ghc.issues), ghIssue.Number)
 		}
+
+		var actualAssignees []string
+		for _, assignee := range ghIssue.Assignees {
+			actualAssignees = append(actualAssignees, assignee.Login)
+		}
+
+		if !reflect.DeepEqual(tc.assignees, actualAssignees) {
+			t.Fatalf(errMsg("assignees"), tc.assignees, actualAssignees)
+		}
+
+		var actualLabels []string
+		for _, label := range ghIssue.Labels {
+			actualLabels = append(actualLabels, label.Name)
+		}
+
+		if !reflect.DeepEqual(tc.labels, actualLabels) {
+			t.Fatalf(errMsg("labels"), tc.labels, actualLabels)
+		}
+
+		cpFormat := fmt.Sprintf(commentFormat, tc.org, tc.repo, tc.prNum, "In response to a cherrypick label: %s")
+		expectedComment := fmt.Sprintf(cpFormat, fmt.Sprintf("new issue created for failed cherrypick: #%d", ghIssue.Number))
+		actualComment := ghc.comments[len(ghc.comments)-1]
+
+		if expectedComment != actualComment {
+			t.Fatalf(errMsg("comment"), expectedComment, actualComment)
+		}
+
 	}
 }

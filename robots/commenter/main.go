@@ -205,7 +205,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	return func(m meta) (string, error) {
 		out := bytes.Buffer{}
 		err := t.Execute(&out, m)
-		return string(out.Bytes()), err
+		return out.String(), err
 	}
 }
 

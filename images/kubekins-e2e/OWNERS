@@ -2,9 +2,16 @@
 
 reviewers:
 - amwat
+- justaugustus
 - spiffxp
 - BenTheElder
+- MushuEE
 approvers:
 - amwat
+- justaugustus
 - spiffxp
 - BenTheElder
+
+labels:
+- sig/release
+- area/release-eng

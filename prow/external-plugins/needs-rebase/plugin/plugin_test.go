@@ -81,8 +81,8 @@ func (f *fghc) CreateComment(org, repo string, number int, comment string) error
 	return nil
 }
 
-func (f *fghc) BotName() (string, error) {
-	return "k8s-ci-robot", nil
+func (f *fghc) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool { return candidate == "k8s-ci-robot" }, nil
 }
 
 func (f *fghc) AddLabel(org, repo string, number int, label string) error {
@@ -162,7 +162,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 	}
 
 	oldSleep := sleep
-	sleep = func(time.Duration) { return }
+	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {
@@ -185,19 +185,19 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			name:      "mergeable no-op",
 			pr:        pr(),
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			name:      "unmergeable no-op",
 			pr:        pr(),
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			pr:        pr(),
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -206,7 +206,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			name:      "unmergeable -> mergeable",
 			pr:        pr(),
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -236,7 +236,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 
 func TestHandlePullRequestEvent(t *testing.T) {
 	oldSleep := sleep
-	sleep = func(time.Duration) { return }
+	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {
@@ -254,17 +254,17 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		{
 			name:      "mergeable no-op",
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -272,7 +272,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		{
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -316,22 +316,22 @@ func TestHandleAll(t *testing.T) {
 	}{
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTM, labels.NeedsSig},
+			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,

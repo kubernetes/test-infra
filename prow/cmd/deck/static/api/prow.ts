@@ -93,13 +93,13 @@ export interface ProwJobSpec {
   namespace?: string;
   job?: string;
   refs?: Refs;
-  extra_refs?: Refs;
+  extra_refs?: Refs[];
   report?: boolean;
   context?: string;
   rerun_command?: string;
   max_concurrency?: number;
   error_on_eviction?: boolean;
-  pod_spec?: object;
+  pod_spec?: PodSpec;
   build_spec?: object;
   jenkins_spec?: object;
   pipeline_run_spec?: object;
@@ -121,4 +121,11 @@ export interface ProwJobStatus {
   build_id?: string;
   jenkins_build_id?: string;
   prev_report_states?: { [key: string]: ProwJobState };
+}
+
+// PodSpec is a description of a pod.
+// PodSpec mirrors the PodSpec struct defined in k8s.io/api/core/v1
+// Podspec interface only holds containers right now since no other values are used
+export interface PodSpec {
+  containers: object[];
 }

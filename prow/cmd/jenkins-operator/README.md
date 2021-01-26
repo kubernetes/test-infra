@@ -87,6 +87,10 @@ What is interesting for us here is the `agent` field which needs to
 be set to `jenkins` in order for jobs to be dispatched to Jenkins and
 `name` which is the name of the job inside Jenkins.
 
+The following parameters must be added within each Jenkins job:
+* `BUILD_ID`
+* `PROW_JOB_ID`
+
 ## Sharding
 
 Sharding of Jenkins jobs is supported via Kubernetes labels and label

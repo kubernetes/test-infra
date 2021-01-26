@@ -1,0 +1,10 @@
+# PROW_INSTANCE_SPECIFIC
+# Domains are different among prow instances
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: monitoring-prow-k8s-io
+  namespace: prow-monitoring
+spec:
+  domains:
+  - monitoring.prow.k8s.io

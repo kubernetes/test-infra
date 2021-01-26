@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
         command:
         - runner.sh
         - kubetest
@@ -38,7 +38,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/kubernetes.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
         - --ginkgo-parallel=30
@@ -64,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
         command:
         - runner.sh
         - kubetest
@@ -85,7 +85,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
         command:
         - runner.sh
         - kubetest
@@ -135,7 +135,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
@@ -145,6 +145,8 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: ENABLE_TOPOLOGY
+          value: "true"
   - name: pull-kubernetes-e2e-azure-file
     decorate: true
     always_run: false
@@ -164,7 +166,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
         command:
         - runner.sh
         - kubetest
@@ -188,7 +190,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         - --ginkgo-parallel=1
@@ -217,7 +219,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
       command:
       - runner.sh
       - kubetest
@@ -238,7 +240,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       - --ginkgo-parallel=1
@@ -272,7 +274,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
       command:
       - runner.sh
       - kubetest
@@ -293,7 +295,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.46.3/aks-engine-v0.46.3-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       - --ginkgo-parallel=1
@@ -303,6 +305,8 @@ periodics:
       env:
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+      - name: ENABLE_TOPOLOGY
+        value: "true"
   annotations:
     testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
     testgrid-tab-name: k8s-e2e-azure-disk-vmss-1-16
@@ -327,7 +331,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
       command:
       - runner.sh
       - kubetest
@@ -351,7 +355,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.48.0/aks-engine-v0.48.0-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-file-csi-driver
       - --ginkgo-parallel=1
@@ -366,4 +370,222 @@ periodics:
     testgrid-tab-name: k8s-e2e-azure-file-1-16
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin.
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: kubernetes-e2e-capz-azure-disk-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-disk-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin on a CAPZ cluster.
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: kubernetes-e2e-capz-azure-disk-vmss-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: EXP_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-disk-vmss-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin on a CAPZ cluster with Machine Pool.
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: kubernetes-e2e-capz-azure-file-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azurefile-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-file # In-tree Azure file storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-file-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure File e2e test with Azure File in-tree volume plugin on a CAPZ cluster.
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: kubernetes-e2e-capz-azure-file-vmss-1-16
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azurefile-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: EXP_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-file # In-tree Azure file storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-file-vmss-1-16-capz
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure File e2e test with Azure File in-tree volume plugin on a CAPZ cluster with Machine Pool.
     testgrid-num-columns-recent: '30'

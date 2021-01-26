@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -71,35 +72,26 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
 		// "/ok-to-test" comments since the PR was just opened!
-		member, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo)
+		trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo)
+		member := trustedResponse.IsTrusted
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		}
 		if member {
+			// dedicated draft check for create to comment on the PR
+			if pr.PullRequest.Draft {
+				c.Logger.Info("Skipping all jobs for draft PR.")
+				return draftMsg(c.GitHubClient, pr.PullRequest)
+			}
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
+			return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
 			return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 		}
 	case github.PullRequestActionReopened:
-		// When a PR is reopened, check that the user is in the org or that an org
-		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
-		l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
-		if err != nil {
-			return fmt.Errorf("could not validate PR: %s", err)
-		} else if trusted {
-			// Eventually remove need-ok-to-test
-			// Does not work for TrustedUser() == true since labels are not fetched in this case
-			if github.HasLabel(labels.NeedsOkToTest, l) {
-				if err := c.GitHubClient.RemoveLabel(org, repo, num, labels.NeedsOkToTest); err != nil {
-					return err
-				}
-			}
-			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
-		}
+		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
 		// event and the changes field will list that the base SHA and
@@ -123,7 +115,11 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 		}
 	case github.PullRequestActionSynchronize:
-		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
+		var errs []error
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			errs = append(errs, fmt.Errorf("failed to abort jobs: %w", err))
+		}
+		return utilerrors.NewAggregate(append(errs, buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)))
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
@@ -132,29 +128,37 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
+				return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 			}
 		}
 		if pr.Label.Name == labels.OkToTest {
 			// When the bot adds the label from an /ok-to-test command,
 			// we will trigger tests based on the comment event and do not
 			// need to trigger them here from the label, as well
-			botName, err := c.GitHubClient.BotName()
+			botUserChecker, err := c.GitHubClient.BotUserChecker()
 			if err != nil {
 				return err
 			}
-			if author == botName {
+			if botUserChecker(pr.Sender.Login) {
 				c.Logger.Debug("Label added by the bot, skipping.")
 				return nil
 			}
-			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
+			return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 		}
 	case github.PullRequestActionClosed:
 		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
 			c.Logger.WithError(err).Error("Failed to abort jobs for closed pull request")
 			return err
 		}
+	case github.PullRequestActionReadyForReview:
+		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
+	case github.PullRequestActionConvertedToDraft:
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			c.Logger.WithError(err).Error("Failed to abort jobs for pull request converted to draft")
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -164,7 +168,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 		return fmt.Errorf("failed to construct label selector: %w", err)
 	}
 
-	jobs, err := c.ProwJobClient.List(metav1.ListOptions{LabelSelector: selector.String()})
+	jobs, err := c.ProwJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return fmt.Errorf("failed to list prowjobs for pr: %w", err)
 	}
@@ -180,7 +184,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 		// and must not overwrite changes made to it in the interim by the responsible agent.
 		// The accepted trade-off for now is that this leads to failure if unrelated fields where changed
 		// by another different actor.
-		if _, err := c.ProwJobClient.Update(&job); err != nil && !apierrors.IsConflict(err) {
+		if _, err := c.ProwJobClient.Update(context.TODO(), &job, metav1.UpdateOptions{}); err != nil && !apierrors.IsConflict(err) {
 			errs = append(errs, fmt.Errorf("failed to abort job %s: %w", job.Name, err))
 		}
 	}
@@ -233,7 +237,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
+		return buildAllButDrafts(c, &pr.PullRequest, pr.GUID, baseSHA, presubmits)
 	}
 	return nil
 }
@@ -297,14 +301,21 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 	return nil
 }
 
+func draftMsg(ghc githubClient, pr github.PullRequest) error {
+	org, repo, _ := orgRepoAuthor(pr)
+
+	comment := "Skipping CI for Draft Pull Request.\nIf you want CI signal for your change, please convert it to an actual PR.\nYou can still manually trigger a test run with `/test all`"
+	return ghc.CreateComment(org, repo, pr.Number, comment)
+}
+
 // TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
 // If already known, GitHub labels should be provided to save tokens. Otherwise, it fetches them.
 func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
-	if orgMember, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo); err != nil {
+	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
-	} else if orgMember {
+	} else if trustedResponse.IsTrusted {
 		return l, true, nil
 	}
 	// Then check if PR has ok-to-test label
@@ -318,13 +329,22 @@ func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, 
 	return l, github.HasLabel(labels.OkToTest, l), nil
 }
 
+// buildAllButDrafts ensures that all builds that should run and will be required are built, but skips draft PRs
+func buildAllButDrafts(c Client, pr *github.PullRequest, eventGUID string, baseSHA string, presubmits []config.Presubmit) error {
+	if pr.Draft {
+		c.Logger.Info("Skipping all jobs for draft PR.")
+		return nil
+	}
+	return buildAll(c, pr, eventGUID, baseSHA, presubmits)
+}
+
 // buildAll ensures that all builds that should run and will be required are built
-func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool, baseSHA string, presubmits []config.Presubmit) error {
+func buildAll(c Client, pr *github.PullRequest, eventGUID string, baseSHA string, presubmits []config.Presubmit) error {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
-	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, c.Logger)
+	toTest, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, eventGUID, elideSkippedContexts)
+	return RunRequested(c, pr, baseSHA, toTest, eventGUID)
 }

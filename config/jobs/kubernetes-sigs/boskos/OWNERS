@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- ixdy
+- alvaroaleman
+- stevekuznetsov
+
+reviewers:
+- ixdy
+- alvaroaleman
+- stevekuznetsov
+
+labels:
+- area/boskos

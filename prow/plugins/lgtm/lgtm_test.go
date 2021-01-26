@@ -34,13 +34,15 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 type fakeOwnersClient struct {
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
+	approvers map[string]layeredsets.String
+	reviewers map[string]layeredsets.String
 }
 
 var _ repoowners.Interface = &fakeOwnersClient{}
@@ -62,9 +64,13 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 }
 
 type fakeRepoOwners struct {
-	approvers    map[string]sets.String
-	reviewers    map[string]sets.String
+	approvers    map[string]layeredsets.String
+	reviewers    map[string]layeredsets.String
 	dirBlacklist []*regexp.Regexp
+}
+
+func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 type fakePruner struct {
@@ -87,9 +93,9 @@ func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string { return
 func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String     { return nil }
 func (f *fakeRepoOwners) IsNoParentOwners(path string) bool             { return false }
 func (f *fakeRepoOwners) LeafApprovers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Approvers(path string) sets.String             { return f.approvers[path] }
+func (f *fakeRepoOwners) Approvers(path string) layeredsets.String      { return f.approvers[path] }
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
+func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String      { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
 func (f *fakeRepoOwners) TopLevelApprovers() sets.String                { return nil }
 
@@ -127,20 +133,12 @@ func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, er
 	return *full, err
 }
 
-var approvers = map[string]sets.String{
-	"doc/README.md": {
-		"cjwagner": {},
-		"jessica":  {},
-	},
+var approvers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("cjwagner", "jessica"),
 }
 
-var reviewers = map[string]sets.String{
-	"doc/README.md": {
-		"alice": {},
-		"bob":   {},
-		"mark":  {},
-		"sam":   {},
-	},
+var reviewers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("alice", "bob", "mark", "sam"),
 }
 
 func TestLGTMComment(t *testing.T) {
@@ -493,13 +491,13 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
-		botName, err := fc.BotName()
+		botUser, err := fc.BotUser()
 		if err != nil {
 			t.Fatalf("For case %s, could not get Bot nam", tc.name)
 		}
 		ic := github.IssueComment{
 			User: github.User{
-				Login: botName,
+				Login: botUser.Login,
 			},
 			Body: removeLGTMLabelNoti,
 		}
@@ -1002,12 +1000,12 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 				},
-				Commits:          make(map[string]github.SingleCommit),
+				Commits:          make(map[string]github.RepositoryCommit),
 				Collaborators:    []string{"collab"},
 				IssueLabelsAdded: c.IssueLabelsAdded,
 			}
 			fakeGitHub.IssueLabelsAdded = append(fakeGitHub.IssueLabelsAdded, "kubernetes/kubernetes#101:lgtm")
-			commit := github.SingleCommit{}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fakeGitHub.Commits[SHA] = commit
 			pc := &plugins.Configuration{}
@@ -1102,7 +1100,7 @@ func TestAddTreeHashComment(t *testing.T) {
 				body:   "/lgtm",
 			}
 			fc := &fakegithub.FakeClient{
-				Commits:       make(map[string]github.SingleCommit),
+				Commits:       make(map[string]github.RepositoryCommit),
 				IssueComments: map[int][]github.IssueComment{},
 				PullRequests: map[int]*github.PullRequest{
 					101: {
@@ -1116,7 +1114,7 @@ func TestAddTreeHashComment(t *testing.T) {
 				},
 				Collaborators: []string{"collab1", "collab2"},
 			}
-			commit := github.SingleCommit{}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fc.Commits[SHA] = commit
 			handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})

@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -33,6 +34,7 @@ import (
 var testQuery = TideQuery{
 	Orgs:                   []string{"org"},
 	Repos:                  []string{"k/k", "k/t-i"},
+	ExcludedRepos:          []string{"org/repo"},
 	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
 	Author:                 "batman",
@@ -40,25 +42,92 @@ var testQuery = TideQuery{
 	ReviewApprovedRequired: true,
 }
 
+var expectedQueryComponents = []string{
+	"is:pr",
+	"state:open",
+	"archived:false",
+	"label:\"lgtm\"",
+	"label:\"approved\"",
+	"-label:\"foo\"",
+	"author:\"batman\"",
+	"milestone:\"milestone\"",
+	"review:approved",
+}
+
 func TestTideQuery(t *testing.T) {
 	q := " " + testQuery.Query() + " "
-	checkTok := func(tok string) {
-		if !strings.Contains(q, " "+tok+" ") {
-			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
-		}
-	}
+	checkTok := checkTok(t, q)
 
-	checkTok("is:pr")
-	checkTok("state:open")
 	checkTok("org:\"org\"")
 	checkTok("repo:\"k/k\"")
 	checkTok("repo:\"k/t-i\"")
-	checkTok("label:\"lgtm\"")
-	checkTok("label:\"approved\"")
-	checkTok("-label:\"foo\"")
-	checkTok("author:\"batman\"")
-	checkTok("milestone:\"milestone\"")
-	checkTok("review:approved")
+	checkTok("-repo:\"org/repo\"")
+	for _, expectedComponent := range expectedQueryComponents {
+		checkTok(expectedComponent)
+	}
+
+	elements := strings.Fields(q)
+	alreadySeen := sets.String{}
+	for _, element := range elements {
+		if alreadySeen.Has(element) {
+			t.Errorf("element %q was multiple times in the query string", element)
+		}
+		alreadySeen.Insert(element)
+	}
+}
+
+func checkTok(t *testing.T, q string) func(tok string) {
+	return func(tok string) {
+		t.Run("Query string contains "+tok, func(t *testing.T) {
+			if !strings.Contains(q, " "+tok+" ") {
+				t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
+			}
+		})
+	}
+}
+
+func TestOrgQueries(t *testing.T) {
+	queries := testQuery.OrgQueries()
+	if n := len(queries); n != 2 {
+		t.Errorf("expected exactly two queries, got %d", n)
+	}
+	if queries["org"] == "" {
+		t.Error("no query for org org found")
+	}
+	if queries["k"] == "" {
+		t.Error("no query for org k found")
+	}
+
+	for org, query := range queries {
+		t.Run(org, func(t *testing.T) {
+			checkTok := checkTok(t, " "+query+" ")
+			t.Logf("query: %s", query)
+
+			for _, expectedComponent := range expectedQueryComponents {
+				checkTok(expectedComponent)
+			}
+
+			elements := strings.Fields(query)
+			alreadySeen := sets.String{}
+			for _, element := range elements {
+				if alreadySeen.Has(element) {
+					t.Errorf("element %q was multiple times in the query string", element)
+				}
+				alreadySeen.Insert(element)
+			}
+
+			if org == "org" {
+				checkTok(`org:"org"`)
+				checkTok(`-repo:"org/repo"`)
+			}
+
+			if org == "k" {
+				for _, repo := range testQuery.Repos {
+					checkTok(fmt.Sprintf(`repo:"%s"`, repo))
+				}
+			}
+		})
+	}
 }
 
 func TestOrgExceptionsAndRepos(t *testing.T) {
@@ -108,8 +177,6 @@ func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
 		MergeType: map[string]github.PullRequestMergeType{
 			"kubernetes/kops":             github.MergeRebase,
-			"kubernetes/charts":           github.MergeSquash,
-			"helm/charts":                 github.MergeSquash,
 			"kubernetes-helm":             github.MergeSquash,
 			"kubernetes-helm/chartmuseum": github.MergeMerge,
 		},
@@ -129,11 +196,6 @@ func TestMergeMethod(t *testing.T) {
 			"kubernetes",
 			"kops",
 			github.MergeRebase,
-		},
-		{
-			"kubernetes",
-			"charts",
-			github.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
@@ -161,14 +223,6 @@ func TestMergeTemplate(t *testing.T) {
 				TitleTemplate: "",
 				BodyTemplate:  "",
 			},
-			"kubernetes/charts": {
-				TitleTemplate: "{{ .Number }}",
-				BodyTemplate:  "",
-			},
-			"helm/charts": {
-				TitleTemplate: "",
-				BodyTemplate:  "{{ .Body }}",
-			},
 			"kubernetes-helm": {
 				TitleTemplate: "{{ .Title }}",
 				BodyTemplate:  "{{ .Body }}",
@@ -192,22 +246,6 @@ func TestMergeTemplate(t *testing.T) {
 			expected: TideMergeCommitTemplate{
 				TitleTemplate: "",
 				BodyTemplate:  "",
-			},
-		},
-		{
-			org:  "kubernetes",
-			repo: "charts",
-			expected: TideMergeCommitTemplate{
-				TitleTemplate: "{{ .Number }}",
-				BodyTemplate:  "",
-			},
-		},
-		{
-			org:  "helm",
-			repo: "charts",
-			expected: TideMergeCommitTemplate{
-				TitleTemplate: "",
-				BodyTemplate:  "{{ .Body }}",
 			},
 		},
 		{

@@ -20,54 +20,84 @@ import (
 	"testing"
 )
 
-var globalSecret = `
+var tokens = `
 '*':
   - value: abc
-    expiry: 9999-10-02T15:00:00Z
+    created_at: 2020-10-02T15:00:00Z
+  - value: key
+    created_at: 2018-10-02T15:00:00Z
+'org1':
+  - value: abc1
+    created_at: 2020-10-02T15:00:00Z
+  - value: key1
+    created_at: 2018-10-02T15:00:00Z
+'org2/repo':
+  - value: abc2
+    created_at: 2020-10-02T15:00:00Z
   - value: key2
-    expiry: 2018-10-02T15:00:00Z
+    created_at: 2018-10-02T15:00:00Z
 `
 
 var defaultTokenGenerator = func() []byte {
-	return []byte(globalSecret)
+	return []byte(tokens)
 }
 
 // echo -n 'BODY' | openssl dgst -sha1 -hmac KEY
 func TestValidatePayload(t *testing.T) {
 	var testcases = []struct {
+		name           string
 		payload        string
 		sig            string
 		tokenGenerator func() []byte
 		valid          bool
 	}{
 		{
+			"empty payload with a correct signature can pass the check",
 			"{}",
 			"sha1=db5c76f4264d0ad96cf21baec394964b4b8ce580",
 			defaultTokenGenerator,
 			true,
 		},
 		{
+			"empty payload with a wrong formatted signature cannot pass the check",
 			"{}",
 			"db5c76f4264d0ad96cf21baec394964b4b8ce580",
 			defaultTokenGenerator,
 			false,
 		},
 		{
+			"empty signature is not valid",
 			"{}",
 			"",
 			defaultTokenGenerator,
 			false,
 		},
 		{
-			"{}",
-			"",
+			"org-level webhook event with a correct signature can pass the check",
+			`{"organization": {"login": "org1"}}`,
+			"sha1=cf2d7e20aa4863abe204a61a8adf53ddaef0b33b",
 			defaultTokenGenerator,
-			false,
+			true,
+		},
+		{
+			"repo-level webhook event with a correct signature can pass the check",
+			`{"repository": {"full_name": "org2/repo"}}`,
+			"sha1=0b5ea8bf5683e4bf89cf900271e1c8a021b4b0b3",
+			defaultTokenGenerator,
+			true,
+		},
+		{
+			"payload with both repository and organization is considered as a repo-level webhook event",
+			`{"repository": {"full_name": "org2/repo"}, "organization": {"login": "org2"}}`,
+			"sha1=db5ba00c9ed0153322d33decb7ad579401e917f6",
+			defaultTokenGenerator,
+			true,
 		},
 	}
 	for _, tc := range testcases {
-		if ValidatePayload([]byte(tc.payload), tc.sig, tc.tokenGenerator) != tc.valid {
-			t.Errorf("Wrong validation for %+v", tc)
+		res := ValidatePayload([]byte(tc.payload), tc.sig, tc.tokenGenerator)
+		if res != tc.valid {
+			t.Errorf("Wrong validation for the test %q: expected %t but got %t", tc.name, tc.valid, res)
 		}
 	}
 }

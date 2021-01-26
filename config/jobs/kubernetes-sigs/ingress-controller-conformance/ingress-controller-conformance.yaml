@@ -1,0 +1,124 @@
+presubmits:
+  kubernetes-sigs/ingress-controller-conformance:
+
+  - name: pull-ingress-controller-conformance-boilerplate
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/verify-boilerplate.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: boilerplate
+
+  - name: pull-ingress-controller-conformance-codegen
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify-codegen
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: verify-codegen
+
+  - name: pull-ingress-controller-conformance-gherkin
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - pip3 install reformat-gherkin==2.0.0 --ignore-installed PyYAML && make verify-gherkin
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: verify-gherkin
+
+  - name: pull-ingress-controller-conformance-gofmt
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/verify-gofmt.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: gofmt
+
+  - name: pull-ingress-controller-conformance-golint
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/verify-golint.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: golint
+
+  - name: pull-ingress-controller-conformance-build
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: sigs.k8s.io/ingress-controller-conformance
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - build
+    annotations:
+      testgrid-dashboards: sig-network-ingress-controller-conformance
+      testgrid-tab-name: build

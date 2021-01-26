@@ -46,6 +46,35 @@ type Options struct {
 
 	// EntryError requires all entries to pass in order to exit cleanly.
 	EntryError bool `json:"entry_error,omitempty"`
+
+	// IgnoreInterrupts instructs the waiting process to ignore interrupt
+	// signals. An interrupt signal is sent to this process when the kubelet
+	// decides to delete the test Pod. This may be as a result of:
+	//  - the ProwJob exceeding the `default_job_timeout` as configured for Prow
+	//  - the ProwJob exceeding the `timeout` as configured for the job itself
+	//  - the Pod exceeding the `pod_running_timeout` as configured for Prow
+	//  - cluster instability causing the Pod to be evicted
+	//
+	// When this happens, the `entrypoint` process also gets the signal, and
+	// forwards it to the process under test. `entrypoint` will wait for the
+	// test process to exit, either configured with:
+	//  - `grace_period` in the default decoration configurations for Prow
+	//  - `grace_period` in the job's specific configuration
+	// After the grace period, `entrypoint` will forcefully terminate the test
+	// process and signal to `sidecar` that the process has exited.
+	//
+	// In parallel, the kubelet will be waiting on the Pod's `terminationGracePeriod`
+	// after sending the interrupt signal, at which point the kubelet will forcefully
+	// terminate all containers in the Pod.
+	//
+	// If `ignore_interrupts` is set, `sidecar` will do nothing upon receipt of
+	// the interrupt signal; this implicitly means that upload of logs and artifacts
+	// will begin when the test process exits, which may be as long as the grace
+	// period if the test process does not gracefully handle interrupts. This will
+	// require that the user configures the Pod's termination grace period to be
+	// longer than the `entrypoint` grace period for the test process and the time
+	// taken by `sidecar` to upload all relevant artifacts.
+	IgnoreInterrupts bool `json:"ignore_interrupts,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {

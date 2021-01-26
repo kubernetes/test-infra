@@ -18,9 +18,10 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-platform-aws: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -35,10 +36,14 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
         - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KOPS_ARCH=amd64
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
         - --env=KUBE_GCS_UPDATE_LATEST=n
         - --env=KUBE_FASTBUILD=true
+        - --env=USER=ubuntu
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws

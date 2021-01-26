@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -38,7 +38,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -72,14 +72,14 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           cd $(GOPATH)/src/k8s.io/kubernetes &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -109,14 +109,14 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -145,14 +145,14 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          ./test/build.sh -p $(BUILD_ID) -f pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -181,14 +181,14 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          ./test/build.sh -p $(BUILD_ID) pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -217,14 +217,14 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
         - bash
         - -c
         - >-
-          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          ./test/build.sh -p $(BUILD_ID) -f pr &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -252,12 +252,12 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         env:
         - name: ZONE
           value: us-central1-a
         - name: IMAGE_FAMILY
-          value: cos-73-lts
+          value: cos-85-lts
         - name: IMAGE_PROJECT
           value: cos-cloud
         - name: BOSKOS_PROJECT_TYPE

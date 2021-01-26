@@ -32,9 +32,11 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -62,7 +64,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -75,18 +77,19 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
 // Body creates a view for prow job metadata.
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		StartTime    time.Time
 		FinishedTime time.Time
 		Finished     bool
 		Passed       bool
+		Errored      bool
 		Elapsed      time.Duration
 		Hint         string
 		Metadata     map[string]interface{}
@@ -100,12 +103,12 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		switch a.JobPath() {
-		case "started.json":
+		case prowv1.StartedStatusFile:
 			if err = json.Unmarshal(read, &started); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
 			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		case "finished.json":
+		case prowv1.FinishedStatusFile:
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
@@ -124,14 +127,16 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			// Only show the prowjob-based hint if we don't have a pod-based one
 			// (the pod-based ones are probably more useful when they exist)
 			if metadataViewData.Hint == "" {
-				metadataViewData.Hint = hintFromProwJob(read)
+				hint, errored := hintFromProwJob(read)
+				metadataViewData.Hint = hint
+				metadataViewData.Errored = errored
 			}
 		}
 	}
 
 	if !metadataViewData.StartTime.IsZero() {
 		if metadataViewData.FinishedTime.IsZero() {
-			metadataViewData.Elapsed = time.Now().Sub(metadataViewData.StartTime)
+			metadataViewData.Elapsed = time.Since(metadataViewData.StartTime)
 		} else {
 			metadataViewData.Elapsed =
 				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
@@ -205,13 +210,13 @@ func hintFromPodInfo(buf []byte) string {
 			}
 		}
 		if failedMount {
-			return fmt.Sprintf("The job could not started because one or more of the volumes could not be mounted.")
+			return "The job could not started because one or more of the volumes could not be mounted."
 		}
 	}
 	// Check if we cannot be scheduled
 	// This is unlikely - we only outright fail if a pod is actually scheduled to a node that can't support it.
 	if report.Pod.Status.Phase == v1.PodFailed && report.Pod.Status.Reason == "MatchNodeSelector" {
-		return fmt.Sprintf("The job could not start because it was scheduled to a node that does not satisfy its NodeSelector")
+		return "The job could not start because it was scheduled to a node that does not satisfy its NodeSelector"
 	}
 	// Usually we would fail to schedule it at all, so it will be pending forever.
 	if report.Pod.Status.Phase == v1.PodPending {
@@ -233,18 +238,18 @@ func hintFromPodInfo(buf []byte) string {
 	return ""
 }
 
-func hintFromProwJob(buf []byte) string {
+func hintFromProwJob(buf []byte) (string, bool) {
 	var pj prowv1.ProwJob
 	if err := json.Unmarshal(buf, &pj); err != nil {
 		logrus.WithError(err).Info("Failed to decode prowjob.json")
-		return ""
+		return "", false
 	}
 
 	if pj.Status.State == prowv1.ErrorState {
-		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description)
+		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description), true
 	}
 
-	return ""
+	return "", false
 }
 
 // flattenMetadata flattens the metadata for use by Body.

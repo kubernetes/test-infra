@@ -1,0 +1,120 @@
+metadata:
+  annotations:
+    prow.k8s.io/job: job-name
+  creationTimestamp: null
+  labels:
+    created-by-prow: "true"
+    needstobe: inherited
+    prow.k8s.io/build-id: "blabla"
+    prow.k8s.io/id: pod
+    prow.k8s.io/job: job-name
+    prow.k8s.io/refs.org: org-name
+    prow.k8s.io/refs.pull: "1"
+    prow.k8s.io/refs.repo: repo-name
+    prow.k8s.io/type: presubmit
+  name: pod
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - command:
+    - /tools/entrypoint
+    env:
+    - name: MY_ENV
+      value: rocks
+    - name: ARTIFACTS
+      value: /logs/artifacts
+    - name: BUILD_ID
+      value: blabla
+    - name: BUILD_NUMBER
+      value: blabla
+    - name: CI
+      value: "true"
+    - name: GOPATH
+      value: /home/prow/go
+    - name: JOB_NAME
+      value: job-name
+    - name: JOB_SPEC
+      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}],"decoration_config":{"timeout":"2h0m0s","grace_period":"10s","utility_images":{"clonerefs":"clonerefs:tag","initupload":"initupload:tag","entrypoint":"entrypoint:tag","sidecar":"sidecar:tag"},"gcs_configuration":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes"},"gcs_credentials_secret":"secret-name","ssh_key_secrets":["ssh-1","ssh-2"],"skip_cloning":true}}'
+    - name: JOB_TYPE
+      value: presubmit
+    - name: PROW_JOB_ID
+      value: pod
+    - name: PULL_BASE_REF
+      value: base-ref
+    - name: PULL_BASE_SHA
+      value: base-sha
+    - name: PULL_NUMBER
+      value: "1"
+    - name: PULL_PULL_SHA
+      value: pull-sha
+    - name: PULL_REFS
+      value: base-ref:base-sha,1:pull-sha
+    - name: REPO_NAME
+      value: repo-name
+    - name: REPO_OWNER
+      value: org-name
+    - name: ENTRYPOINT_OPTIONS
+      value: '{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}'
+    image: tester
+    name: test
+    resources: {}
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /logs
+      name: logs
+    - mountPath: /tools
+      name: tools
+  - command:
+    - /sidecar
+    env:
+    - name: JOB_SPEC
+      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}],"decoration_config":{"timeout":"2h0m0s","grace_period":"10s","utility_images":{"clonerefs":"clonerefs:tag","initupload":"initupload:tag","entrypoint":"entrypoint:tag","sidecar":"sidecar:tag"},"gcs_configuration":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes"},"gcs_credentials_secret":"secret-name","ssh_key_secrets":["ssh-1","ssh-2"],"skip_cloning":true}}'
+    - name: SIDECAR_OPTIONS
+      value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}'
+    image: sidecar:tag
+    name: sidecar
+    resources: {}
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /logs
+      name: logs
+    - mountPath: /secrets/gcs
+      name: gcs-credentials
+  initContainers:
+  - command:
+    - /initupload
+    env:
+    - name: INITUPLOAD_OPTIONS
+      value: '{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}'
+    - name: JOB_SPEC
+      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}],"decoration_config":{"timeout":"2h0m0s","grace_period":"10s","utility_images":{"clonerefs":"clonerefs:tag","initupload":"initupload:tag","entrypoint":"entrypoint:tag","sidecar":"sidecar:tag"},"gcs_configuration":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes"},"gcs_credentials_secret":"secret-name","ssh_key_secrets":["ssh-1","ssh-2"],"skip_cloning":true}}'
+    image: initupload:tag
+    name: initupload
+    resources: {}
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /secrets/gcs
+      name: gcs-credentials
+  - args:
+    - /entrypoint
+    - /tools/entrypoint
+    command:
+    - /bin/cp
+    image: entrypoint:tag
+    name: place-entrypoint
+    resources: {}
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /tools
+      name: tools
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 10
+  volumes:
+  - emptyDir: {}
+    name: logs
+  - emptyDir: {}
+    name: tools
+  - name: gcs-credentials
+    secret:
+      secretName: secret-name
+status: {}

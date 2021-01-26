@@ -54,18 +54,18 @@ var (
 )
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)
-	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
-	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
-	GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error)
-	MoveProjectCard(projectCardID int, newColumnID int) error
-	DeleteProjectCard(projectCardID int) error
-	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error)
+	CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
+	GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error)
+	MoveProjectCard(org string, projectCardID int, newColumnID int) error
+	DeleteProjectCard(org string, projectCardID int) error
+	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 }
 
 func init() {
@@ -86,10 +86,35 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = fmt.Sprintf(columnsMsg, columnMap)
 		}
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Project: plugins.ProjectConfig{
+			Orgs: map[string]plugins.ProjectOrgConfig{
+				"org": {
+					MaintainerTeamID: 123456,
+					ProjectColumnMap: map[string]string{
+						"project1": "To do",
+						"project2": "Backlog",
+					},
+					Repos: map[string]plugins.ProjectRepoConfig{
+						"repo": {
+							MaintainerTeamID: 123456,
+							ProjectColumnMap: map[string]string{
+								"project3": "To do",
+								"project4": "Backlog",
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The project plugin allows members of a GitHub team to set the project and column on an issue or pull request.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/project <board>, /project <board> <column>, or /project clear <board>",
@@ -162,11 +187,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	// Only handle comments that don't come from the bot
-	botName, err := gc.BotName()
+	botUserChecker, err := gc.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if e.User.Login == botName {
+	if botUserChecker(e.User.Login) {
 		return nil
 	}
 
@@ -187,7 +212,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if maintainerTeamID == -1 {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
 	}
-	isAMember, err := gc.TeamHasMember(maintainerTeamID, e.User.Login)
+	isAMember, err := gc.TeamHasMember(org, maintainerTeamID, e.User.Login)
 	if err != nil {
 		return err
 	}
@@ -248,7 +273,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	// Get all columns for proposedProject
-	projectColumns, err := gc.GetProjectColumns(projectID)
+	projectColumns, err := gc.GetProjectColumns(org, projectID)
 	if err != nil {
 		return err
 	}
@@ -308,7 +333,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	for _, colID := range projectColumns {
 		// make issue URL in the form of card content URL
 		issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", org, repo, e.Number)
-		existingProjectCard, err = gc.GetColumnProjectCard(colID.ID, issueURL)
+		existingProjectCard, err = gc.GetColumnProjectCard(org, colID.ID, issueURL)
 		if err != nil {
 			return err
 		}
@@ -327,7 +352,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	// Clear issue/PR from project if command is to clear
 	if shouldClear {
 		if existingProjectCard != nil {
-			if err := gc.DeleteProjectCard(existingProjectCard.ID); err != nil {
+			if err := gc.DeleteProjectCard(org, existingProjectCard.ID); err != nil {
 				return err
 			}
 			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
@@ -340,7 +365,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project
 	if existingProjectCard != nil {
 		log.Infof("Move card to column proposedColumnID: %v with issue: %v ", proposedColumnID, e.Number)
-		if err := gc.MoveProjectCard(existingProjectCard.ID, proposedColumnID); err != nil {
+		if err := gc.MoveProjectCard(org, existingProjectCard.ID, proposedColumnID); err != nil {
 			return err
 		}
 		msg = fmt.Sprintf(successMovingCardMsg, proposedColumnName, proposedColumnID)
@@ -355,7 +380,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		projectCard.ContentType = "Issue"
 	}
 
-	if _, err := gc.CreateProjectCard(proposedColumnID, projectCard); err != nil {
+	if _, err := gc.CreateProjectCard(org, proposedColumnID, projectCard); err != nil {
 		return err
 	}
 

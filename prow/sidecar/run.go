@@ -31,6 +31,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -42,19 +43,29 @@ func nameEntry(idx int, opt wrapper.Options) string {
 }
 
 func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
+
+	var paths []string
+
+	for _, opt := range entries {
+		paths = append(paths, opt.MarkerFile)
+	}
+
+	results := wrapper.WaitForMarkers(ctx, paths...)
+
 	passed := true
 	var aborted bool
 	var failures int
 
-	for _, opt := range entries {
-		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)
-		passed = passed && err == nil && returnCode == 0
-		aborted = aborted || returnCode == entrypoint.AbortedErrorCode
-		if returnCode != 0 && returnCode != entrypoint.PreviousErrorCode {
+	for _, res := range results {
+		passed = passed && res.Err == nil && res.ReturnCode == 0
+		aborted = aborted || res.ReturnCode == entrypoint.AbortedErrorCode
+		if res.ReturnCode != 0 && res.ReturnCode != entrypoint.PreviousErrorCode {
 			failures++
 		}
 	}
+
 	return passed, aborted, failures
+
 }
 
 // Run will watch for the process being wrapped to exit
@@ -68,19 +79,23 @@ func (o Options) Run(ctx context.Context) (int, error) {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	// If we are being asked to terminate by the kubelet but we have
-	// NOT seen the test process exit cleanly, we need a to start
-	// uploading artifacts to GCS immediately. If we notice the process
-	// exit while doing this best-effort upload, we can race with the
-	// second upload but we can tolerate this as we'd rather get SOME
-	// data into GCS than attempt to cancel these uploads and get none.
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		select {
 		case s := <-interrupt:
-			logrus.Errorf("Received an interrupt: %s, cancelling...", s)
-			cancel()
+			if o.IgnoreInterrupts {
+				logrus.Warnf("Received an interrupt: %s, ignoring...", s)
+			} else {
+				// If we are being asked to terminate by the kubelet but we have
+				// NOT seen the test process exit cleanly, we need a to start
+				// uploading artifacts to GCS immediately. If we notice the process
+				// exit while doing this best-effort upload, we can race with the
+				// second upload but we can tolerate this as we'd rather get SOME
+				// data into GCS than attempt to cancel these uploads and get none.
+				logrus.Errorf("Received an interrupt: %s, cancelling...", s)
+				cancel()
+			}
 		case <-ctx.Done():
 		}
 	}()
@@ -100,33 +115,29 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	buildLog := logReader(entries)
+	buildLogs := logReaders(entries)
 	metadata := combineMetadata(entries)
-	return failures, o.doUpload(spec, passed, aborted, metadata, buildLog)
+	return failures, o.doUpload(spec, passed, aborted, metadata, buildLogs)
 }
 
 const errorKey = "sidecar-errors"
 
-func start(part string) string {
-	return fmt.Sprintf("\n==== start of %s log ====\n", part)
-}
-
-func logReader(entries []wrapper.Options) io.Reader {
-	var readers []io.Reader
-	for i, opt := range entries {
-		ent := nameEntry(i, opt)
+func logReaders(entries []wrapper.Options) map[string]io.Reader {
+	readers := make(map[string]io.Reader)
+	for _, opt := range entries {
+		buildLog := "build-log.txt"
 		if len(entries) > 1 {
-			readers = append(readers, strings.NewReader(start(ent)))
+			buildLog = fmt.Sprintf("%s-build-log.txt", opt.ContainerName)
 		}
 		log, err := os.Open(opt.ProcessLog)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
-			readers = append(readers, strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err)))
+			readers[buildLog] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
 		} else {
-			readers = append(readers, log)
+			readers[buildLog] = log
 		}
 	}
-	return io.MultiReader(readers...)
+	return readers
 }
 
 func combineMetadata(entries []wrapper.Options) map[string]interface{} {
@@ -166,9 +177,11 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReader io.Reader) error {
-	uploadTargets := map[string]gcs.UploadFunc{
-		"build-log.txt": gcs.DataUpload(logReader),
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader) error {
+	uploadTargets := make(map[string]gcs.UploadFunc)
+
+	for logName, reader := range logReaders {
+		uploadTargets[logName] = gcs.DataUpload(reader)
 	}
 
 	var result string
@@ -197,7 +210,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 	if err != nil {
 		logrus.WithError(err).Warn("Could not marshal finishing data")
 	} else {
-		uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewBuffer(finishedData))
 	}
 
 	if err := o.GcsOptions.Run(spec, uploadTargets); err != nil {

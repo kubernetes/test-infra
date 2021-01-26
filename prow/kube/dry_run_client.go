@@ -17,6 +17,7 @@ limitations under the License.
 package kube
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -47,37 +48,37 @@ type dryRunProwJobClient struct {
 }
 
 // Create does nothing on a dry-run client
-func (c *dryRunProwJobClient) Create(*prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *dryRunProwJobClient) Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error) {
 	return nil, nil
 }
 
 // Update does nothing on a dry-run client
-func (c *dryRunProwJobClient) Update(*prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *dryRunProwJobClient) Update(context.Context, *prowapi.ProwJob, metav1.UpdateOptions) (*prowapi.ProwJob, error) {
 	return nil, nil
 }
 
 // UpdateStatus does nothing on a dry-run client
-func (c *dryRunProwJobClient) UpdateStatus(*prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *dryRunProwJobClient) UpdateStatus(context.Context, *prowapi.ProwJob, metav1.UpdateOptions) (*prowapi.ProwJob, error) {
 	return nil, nil
 }
 
 // Delete does nothing on a dry-run client
-func (c *dryRunProwJobClient) Delete(name string, options *metav1.DeleteOptions) error {
+func (c *dryRunProwJobClient) Delete(_ context.Context, name string, options metav1.DeleteOptions) error {
 	return nil
 }
 
 // DeleteCollection does nothing on a dry-run client
-func (c *dryRunProwJobClient) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+func (c *dryRunProwJobClient) DeleteCollection(_ context.Context, options metav1.DeleteOptions, listOptions metav1.ListOptions) error {
 	return nil
 }
 
 // Get does nothing on a dry-run client
-func (c *dryRunProwJobClient) Get(name string, options metav1.GetOptions) (*prowapi.ProwJob, error) {
+func (c *dryRunProwJobClient) Get(ctx context.Context, name string, options metav1.GetOptions) (*prowapi.ProwJob, error) {
 	return nil, nil
 }
 
 // List reaches out to `deck` to retrieve the ProwJobs on the cluster via proxy
-func (c *dryRunProwJobClient) List(opts metav1.ListOptions) (*prowapi.ProwJobList, error) {
+func (c *dryRunProwJobClient) List(ctx context.Context, opts metav1.ListOptions) (*prowapi.ProwJobList, error) {
 	var jl prowapi.ProwJobList
 	err := c.request("/prowjobs.js", map[string]string{"labelSelector": opts.LabelSelector}, &jl)
 	return &jl, err
@@ -169,12 +170,12 @@ func (c *dryRunProwJobClient) doRequest(urlPath string, query map[string]string)
 }
 
 // Watch does nothing on a dry-run client
-func (c *dryRunProwJobClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+func (c *dryRunProwJobClient) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return nil, nil
 }
 
 // Patch does nothing on a dry-run client
-func (c *dryRunProwJobClient) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *prowapi.ProwJob, err error) {
+func (c *dryRunProwJobClient) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, _ metav1.PatchOptions, subresources ...string) (result *prowapi.ProwJob, err error) {
 	return nil, nil
 }
 

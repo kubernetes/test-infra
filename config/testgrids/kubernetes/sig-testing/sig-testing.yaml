@@ -1,3 +1,10 @@
+# Test Groups
+
+test_groups:
+- name: ci-kubernetes-coverage-unit
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-unit
+  short_text_metric: coverage
+
 # Dashboard Group
 
 dashboard_groups:
@@ -10,14 +17,20 @@ dashboard_groups:
   - sig-testing-maintenance
   - sig-testing-prow
   - sig-testing-images
+  - sig-testing-boskos
 
 # Dashboards
 
 dashboards:
 - name: sig-testing-misc
 - name: sig-testing-canaries
+  dashboard_tab:
+  - name: ci-kubernetes-coverage-unit
+    test_group_name: ci-kubernetes-coverage-unit
+    base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-testing-fejtabot
 - name: sig-testing-kind
 - name: sig-testing-maintenance
 - name: sig-testing-prow
 - name: sig-testing-images
+- name: sig-testing-boskos

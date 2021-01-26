@@ -2,6 +2,8 @@ dashboard_groups:
 - name: wg-multi-tenancy
   dashboard_names:
     - wg-multi-tenancy-hnc
+    - wg-multi-tenancy-mtb
 
 dashboards:
 - name: wg-multi-tenancy-hnc
+- name: wg-multi-tenancy-mtb

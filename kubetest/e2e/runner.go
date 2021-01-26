@@ -62,6 +62,7 @@ type GinkgoTester struct {
 	NumNodes              int
 	ReportDir             string
 	ReportPrefix          string
+	StorageTestDriver     string
 
 	// Other ginkgo options
 	FocusRegex      string
@@ -190,6 +191,7 @@ func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
 	a.addIfNonEmpty("report-prefix", t.ReportPrefix)
 
 	a.addIfNonEmpty("systemd-services", strings.Join(t.SystemdServices, ","))
+	a.addIfNonEmpty("storage.testdriver", t.StorageTestDriver)
 
 	ginkgoArgs := append(a.values, extraArgs...)
 

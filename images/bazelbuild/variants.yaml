@@ -1,11 +1,13 @@
 variants:
-  2.2.0:
-    BAZEL_VERSION: 2.2.0
-  2.1.0:
-    BAZEL_VERSION: 2.1.0
-  2.0.0:
-    BAZEL_VERSION: 2.0.0
-  1.0.0:
-    BAZEL_VERSION: 1.0.0
-  0.29.1:
-    BAZEL_VERSION: 0.29.1
+  deprecated: # Delete after switching jobs to new variant
+    CONFIG: 2.2.0
+    BAZEL_VERSION: 3.0.0
+    OLD_BAZEL_VERSION: 2.2.0
+  test-infra:
+    CONFIG: test-infra
+    BAZEL_VERSION: 3.1.0
+    OLD_BAZEL_VERSION: 3.0.0
+  testgrid:
+    CONFIG: testgrid
+    BAZEL_VERSION: 3.3.0
+    OLD_BAZEL_VERSION: 3.0.0

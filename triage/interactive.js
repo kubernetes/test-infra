@@ -303,7 +303,12 @@ function getData() {
     setElementVisibility('btn-sig-group', false);
   }
 
-  var url = '/k8s-gubernator/triage/'
+  var url = '/k8s-gubernator/triage/';
+  if (document.location.host == 'storage.googleapis.com' && document.location.pathname.endsWith('index.html')) {
+    // Use the bucket name where available
+    var pathname = document.location.pathname;
+    url = pathname.substring(0, pathname.lastIndexOf('/')+1);
+  }
   var date = document.getElementById('date');
   if (date && date.value) {
     url += 'history/' + date.value.replace(/-/g, '') + '.json';

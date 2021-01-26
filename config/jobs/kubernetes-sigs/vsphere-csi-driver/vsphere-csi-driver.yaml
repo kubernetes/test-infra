@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - make
         args:
@@ -26,7 +26,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - make
         args:
@@ -44,7 +44,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - make
         args:
@@ -54,6 +54,24 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       testgrid-tab-name: pr-verify-vet
       description: Vets the Golang sources have been vetted
+
+  - name: pull-vsphere-csi-driver-verify-golangci-lint
+    always_run: false
+    run_if_changed: '\.go'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+        - image: golangci/golangci-lint:v1.29.0
+          command:
+            - make
+          args:
+            - golangci-lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-golangci-lint
+      description: Verifies the Golang sources are verified with golangci-lint
 
   # Runs 'shellcheck' on appropriate sources
   - name: pull-vsphere-csi-driver-verify-shell
@@ -100,7 +118,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - make
         args:
@@ -121,7 +139,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "make"
         args:
@@ -140,7 +158,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "make"
         args:
@@ -166,7 +184,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "make"
         args:
@@ -191,7 +209,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "make"
         args:

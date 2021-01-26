@@ -17,4 +17,4 @@
 # file to keep it in sync with Prow.
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-./update_config.py ./../config/prow/config.yaml ./config.yaml
+./update_config.py ../config/prow/config.yaml ../config/jobs ./config.yaml

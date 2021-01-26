@@ -27,12 +27,15 @@ def main(prow_config, prow_job_config, gubernator_config):
             if name.endswith('.yaml'):
                 configs.append(os.path.join(root, name))
 
-    print configs
+    print(configs) # pylint: disable=superfluous-parens
 
     default_presubmits = set()
     periodic_names = set()
     for config in configs:
-        prow_data = yaml.load(open(config))
+        prow_data = yaml.safe_load(open(config))
+
+        if not prow_data:
+            continue
 
         if 'presubmits' in prow_data and 'kubernetes/kubernetes' in prow_data['presubmits']:
             for job in prow_data['presubmits']['kubernetes/kubernetes']:
@@ -42,7 +45,7 @@ def main(prow_config, prow_job_config, gubernator_config):
             for job in prow_data['periodics']:
                 periodic_names.add(job['name'])
 
-    gubernator_data = yaml.load(open(gubernator_config))
+    gubernator_data = yaml.safe_load(open(gubernator_config))
 
     gubernator_data['jobs']['kubernetes-jenkins/pr-logs/directory/'] = sorted(
         default_presubmits)

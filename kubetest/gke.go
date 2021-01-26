@@ -55,16 +55,17 @@ var (
 	gkeSubnetMode                  = flag.String("gke-subnet-mode", "auto", "(gke only) subnet creation mode of the GKE cluster network.")
 	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
+	gkeInstanceGroupPrefix         = flag.String("gke-instance-group-prefix", "gke", "(gke only) Use a different instance group prefix.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 
-	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
+	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
 	// m[1]: zone
 	// m[2]: pool name (passed to e2es)
 	// m[3]: unique hash (used as nonce for firewall rules)
-	poolRe = regexp.MustCompile(`zones/([^/]+)/instanceGroupManagers/(gke-.*-([0-9a-f]{8})-grp)$`)
+	poolReTemplate = `zones/([^/]+)/instanceGroupManagers/(%s-.*-([0-9a-f]{8})-grp)$`
 
 	urlRe = regexp.MustCompile(`https://.*/`)
 )
@@ -98,6 +99,7 @@ type gkeDeployer struct {
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
 	sshProxyInstanceName        string
+	poolRe                      *regexp.Regexp
 
 	setup          bool
 	kubecfg        string
@@ -147,14 +149,17 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 	g.network = network
 
-	if image == "" {
-		return nil, fmt.Errorf("--gcp-node-image must be set for GKE deployment")
-	}
 	if strings.ToUpper(image) == "CUSTOM" {
 		if imageFamily == "" || imageProject == "" {
 			return nil, fmt.Errorf("--image-family and --image-project must be set for GKE deployment if --gcp-node-image=CUSTOM")
 		}
 	}
+
+	poolRe, err := regexp.Compile(fmt.Sprintf(poolReTemplate, *gkeInstanceGroupPrefix))
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't compile regex %v. prefix: %s", err, *gkeInstanceGroupPrefix)
+	}
+	g.poolRe = poolRe
 	g.imageFamily = imageFamily
 	g.imageProject = imageProject
 	g.image = image
@@ -165,7 +170,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.createNat = *gkeCreateNat
 	g.natMinPortsPerVm = *gkeNatMinPortsPerVm
 
-	err := json.Unmarshal([]byte(*gkeShape), &g.shape)
+	err = json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
 		return nil, fmt.Errorf("--gke-shape must be valid JSON, unmarshal error: %v, JSON: %q", err, *gkeShape)
 	}
@@ -324,11 +329,17 @@ func (g *gkeDeployer) Up() error {
 	args = append(args,
 		"--project="+g.project,
 		g.location,
-		"--machine-type="+def.MachineType,
-		"--image-type="+g.image,
-		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	if def.Nodes > 0 {
+		args = append(args, "--num-nodes="+strconv.Itoa(def.Nodes))
+	}
+	if def.MachineType != "" {
+		args = append(args, "--machine-type="+def.MachineType)
+	}
+	if g.image != "" {
+		args = append(args, "--image-type="+g.image)
+	}
 	args = append(args, def.ExtraArgs...)
 	if strings.ToUpper(g.image) == "CUSTOM" {
 		args = append(args, "--image-family="+g.imageFamily)
@@ -336,6 +347,8 @@ func (g *gkeDeployer) Up() error {
 		// gcloud enables node auto-upgrade by default, which doesn't work with CUSTOM image.
 		// We disable auto-upgrade explicitly here.
 		args = append(args, "--no-enable-autoupgrade")
+		// Custom images are not supported with shielded nodes (which is enaled by default) in GKE.
+		args = append(args, "--no-enable-shielded-nodes")
 	}
 	if g.subnetwork != "" {
 		args = append(args, "--subnetwork="+g.subnetwork)
@@ -359,9 +372,6 @@ func (g *gkeDeployer) Up() error {
 
 	if *gkeReleaseChannel != "" {
 		args = append(args, "--release-channel="+*gkeReleaseChannel)
-		if strings.EqualFold(*gkeReleaseChannel, "rapid") {
-			args = append(args, "--enable-autorepair")
-		}
 	} else {
 		// TODO(zmerlynn): The version should be plumbed through Extract
 		// or a separate flag rather than magic env variables.
@@ -382,8 +392,10 @@ func (g *gkeDeployer) Up() error {
 			"--cluster=" + g.cluster,
 			"--project=" + g.project,
 			g.location,
-			"--machine-type=" + pool.MachineType,
 			"--num-nodes=" + strconv.Itoa(pool.Nodes)}
+		if pool.MachineType != "" {
+			poolArgs = append(poolArgs, "--machine-type="+pool.MachineType)
+		}
 		poolArgs = append(poolArgs, pool.ExtraArgs...)
 		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(poolArgs...)...)); err != nil {
 			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
@@ -402,20 +414,16 @@ func (g *gkeDeployer) IsUp() error {
 //
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
-//
-// TODO(shyamjvs): Make this work with multizonal and regional clusters.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
 	// - %[2]s is the zone
-	// - %[3]s is a filter composed of the instance groups
-	// - %[4]s is the log-dump.sh command line
+	// - %[3]s is the OS distribution of nodes
+	// - %[4]s is a filter composed of the instance groups
+	// - %[5]s is the log-dump.sh command line
 	const gkeLogDumpTemplate = `
 function log_dump_custom_get_instances() {
-  if [[ $1 == "master" ]]; then
-    return 0
-  fi
-
+  if [[ $1 == "master" ]]; then return 0; fi
   gcloud compute instances list '--project=%[1]s' '--filter=%[4]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
@@ -435,17 +443,24 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	if err := g.getInstanceGroups(); err != nil {
 		return err
 	}
-	var filters []string
+	perZoneFilters := make(map[string][]string)
 	for _, ig := range g.instanceGroups {
-		filters = append(filters, fmt.Sprintf("(metadata.created-by:*%s)", ig.path))
+		filter := fmt.Sprintf("(metadata.created-by ~ %s)", ig.path)
+		perZoneFilters[ig.zone] = append(perZoneFilters[ig.zone], filter)
 	}
 
 	// Generate the log-dump.sh command-line
-	var dumpCmd string
+	dumpCmd := logDumpPath("gke")
 	if gcsPath == "" {
-		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s'", localPath)
+		dumpCmd = fmt.Sprintf("%s '%s'", dumpCmd, localPath)
 	} else {
-		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
+		dumpCmd = fmt.Sprintf("%s '%s' '%s'", dumpCmd, localPath, gcsPath)
+	}
+
+	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to
+	// GKE cluster is required for log-exporter.
+	if err := g.getKubeConfig(); err != nil {
+		log.Printf("error while setting up kubeconfig: %v", err)
 	}
 
 	// Make sure the firewall rule is created. It's needed so the log-dump.sh can ssh into nodes.
@@ -456,12 +471,22 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		log.Printf("error while ensuring firewall rule: %v", err)
 	}
 
-	return control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
-		g.project,
-		g.zone,
-		os.Getenv("NODE_OS_DISTRIBUTION"),
-		strings.Join(filters, " OR "),
-		dumpCmd)))
+	var errorMessages []string
+	for zone, filters := range perZoneFilters {
+		err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
+			g.project,
+			zone,
+			os.Getenv("NODE_OS_DISTRIBUTION"),
+			strings.Join(filters, " OR "),
+			dumpCmd)))
+		if err != nil {
+			errorMessages = append(errorMessages, err.Error())
+		}
+	}
+	if len(errorMessages) > 0 {
+		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+	}
+	return nil
 }
 
 func (g *gkeDeployer) TestSetup() error {
@@ -481,15 +506,70 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.ensureNat(); err != nil {
 		return err
 	}
+	if err := g.setupBastion(); err != nil {
+		return err
+	}
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
-	if g.sshProxyInstanceName != "" {
-		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
-			return err
-		}
-	}
 	g.setup = true
+	return nil
+}
+
+func (g *gkeDeployer) setupBastion() error {
+	if g.sshProxyInstanceName == "" {
+		return nil
+	}
+	var filtersToTry []string
+	// Use exact name first, VM does not have to belong to the cluster
+	exactFilter := "name=" + g.sshProxyInstanceName
+	filtersToTry = append(filtersToTry, exactFilter)
+	// As a fallback - use proxy instance name as a regex but check only cluster nodes
+	var igFilters []string
+	for _, ig := range g.instanceGroups {
+		igFilters = append(igFilters, fmt.Sprintf("(metadata.created-by ~ %s)", ig.path))
+	}
+	fuzzyFilter := fmt.Sprintf("(name ~ %s) AND (%s)",
+		g.sshProxyInstanceName,
+		strings.Join(igFilters, " OR "))
+	filtersToTry = append(filtersToTry, fuzzyFilter)
+
+	var bastion, zone string
+	for _, filter := range filtersToTry {
+		log.Printf("Checking for proxy instance with filter: %q", filter)
+		output, err := exec.Command("gcloud", "compute", "instances", "list",
+			"--filter="+filter,
+			"--format=value(name,zone)",
+			"--limit=1",
+			"--project="+g.project).Output()
+		if err != nil {
+			return fmt.Errorf("listing instances failed: %s", util.ExecError(err))
+		}
+		if len(output) == 0 {
+			continue
+		}
+		// Proxy instance found
+		fields := strings.Split(strings.TrimSpace(string(output)), "\t")
+		if len(fields) != 2 {
+			return fmt.Errorf("error parsing instances list output %q", output)
+		}
+		bastion, zone = fields[0], fields[1]
+		break
+	}
+	if bastion == "" {
+		return fmt.Errorf("proxy instance %q not found", g.sshProxyInstanceName)
+	}
+	log.Printf("Found proxy instance %q", bastion)
+
+	log.Printf("Adding NAT access config if not present")
+	control.NoOutput(exec.Command("gcloud", "compute", "instances", "add-access-config", bastion,
+		"--zone="+zone,
+		"--project="+g.project))
+
+	err := setKubeShhBastionEnv(g.project, zone, bastion)
+	if err != nil {
+		return fmt.Errorf("setting KUBE_SSH_BASTION variable failed: %s", util.ExecError(err))
+	}
 	return nil
 }
 
@@ -552,7 +632,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 
 	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
 		"--project="+g.project,
-		"--filter=metadata.created-by:*"+g.instanceGroups[0].path,
+		"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
 		"--limit=1",
 		"--format=get(tags.items)").Output()
 	if err != nil {
@@ -581,26 +661,45 @@ func (g *gkeDeployer) getInstanceGroups() error {
 	if len(g.instanceGroups) > 0 {
 		return nil
 	}
+	igs, err := g.getInstanceGroupsFromGcloud()
+	if err != nil {
+		return err
+	}
+
+	instanceGroups, err := g.parseInstanceGroupsFromGcloud(igs)
+	if err != nil {
+		return err
+	}
+	g.instanceGroups = instanceGroups
+	return nil
+}
+
+func (g *gkeDeployer) getInstanceGroupsFromGcloud() (string, error) {
 	igs, err := exec.Command("gcloud", g.containerArgs("clusters", "describe", g.cluster,
 		"--format=value(instanceGroupUrls)",
 		"--project="+g.project,
 		g.location)...).Output()
 	if err != nil {
-		return fmt.Errorf("instance group URL fetch failed: %s", util.ExecError(err))
+		return "", fmt.Errorf("instance group URL fetch failed: %s", util.ExecError(err))
 	}
-	igURLs := strings.Split(strings.TrimSpace(string(igs)), ";")
+	return string(igs), nil
+}
+
+func (g *gkeDeployer) parseInstanceGroupsFromGcloud(igs string) ([]*ig, error) {
+	igURLs := strings.Split(strings.TrimSpace(igs), ";")
 	if len(igURLs) == 0 {
-		return fmt.Errorf("no instance group URLs returned by gcloud, output %q", string(igs))
+		return nil, fmt.Errorf("no instance group URLs returned by gcloud, output %q", string(igs))
 	}
 	sort.Strings(igURLs)
+	var instanceGroups []*ig
 	for _, igURL := range igURLs {
-		m := poolRe.FindStringSubmatch(igURL)
+		m := g.poolRe.FindStringSubmatch(igURL)
 		if len(m) == 0 {
-			return fmt.Errorf("instanceGroupUrl %q did not match regex %v", igURL, poolRe)
+			return nil, fmt.Errorf("instanceGroupUrl %q did not match regex %v", igURL, g.poolRe)
 		}
-		g.instanceGroups = append(g.instanceGroups, &ig{path: m[0], zone: m[1], name: m[2], uniq: m[3]})
+		instanceGroups = append(instanceGroups, &ig{path: m[0], zone: m[1], name: m[2], uniq: m[3]})
 	}
-	return nil
+	return instanceGroups, nil
 }
 
 func (g *gkeDeployer) getClusterFirewall() (string, error) {

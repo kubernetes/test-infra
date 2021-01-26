@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -22,7 +22,7 @@ presubmits:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -55,7 +55,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -65,7 +65,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-sig-storage-local-static-provisioner-e2e-gke
-    always_run: false
+    always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
@@ -74,7 +74,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -136,7 +136,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:

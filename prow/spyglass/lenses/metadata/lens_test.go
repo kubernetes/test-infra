@@ -120,7 +120,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 							},
 						},
 					},
@@ -129,7 +129,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						ContainerStatuses: []v1.ContainerStatus{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 								Ready: false,
 								State: v1.ContainerState{
 									Terminated: &v1.ContainerStateTerminated{
@@ -145,7 +145,7 @@ func TestHintFromPodInfo(t *testing.T) {
 		},
 		{
 			name:     "stuck images are reported by name",
-			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master". Check your images.`,
+			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master". Check your images.`,
 			info: k8sreporter.PodReport{
 				Pod: &v1.Pod{
 					ObjectMeta: metav1.ObjectMeta{
@@ -155,7 +155,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 							},
 						},
 					},
@@ -164,7 +164,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						ContainerStatuses: []v1.ContainerStatus{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 								Ready: false,
 								State: v1.ContainerState{
 									Waiting: &v1.ContainerStateWaiting{
@@ -189,7 +189,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 								VolumeMounts: []v1.VolumeMount{
 									{
 										Name:      "some-volume",
@@ -214,7 +214,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						ContainerStatuses: []v1.ContainerStatus{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 								Ready: false,
 								State: v1.ContainerState{
 									Waiting: &v1.ContainerStateWaiting{
@@ -246,7 +246,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 							},
 						},
 					},
@@ -269,7 +269,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 							},
 						},
 					},
@@ -298,7 +298,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						Containers: []v1.Container{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 							},
 						},
 					},
@@ -307,7 +307,7 @@ func TestHintFromPodInfo(t *testing.T) {
 						ContainerStatuses: []v1.ContainerStatus{
 							{
 								Name:  "test",
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200131-0997840-master",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
 								Ready: false,
 								State: v1.ContainerState{
 									Waiting: &v1.ContainerStateWaiting{
@@ -344,13 +344,15 @@ func TestHintFromPodInfo(t *testing.T) {
 
 func TestHintFromProwJob(t *testing.T) {
 	tests := []struct {
-		name     string
-		expected string
-		pj       prowv1.ProwJob
+		name            string
+		expected        string
+		expectedErrored bool
+		pj              prowv1.ProwJob
 	}{
 		{
-			name:     "errored job has its description reported",
-			expected: "Job execution failed: this is the description",
+			name:            "errored job has its description reported",
+			expected:        "Job execution failed: this is the description",
+			expectedErrored: true,
 			pj: prowv1.ProwJob{
 				Status: prowv1.ProwJobStatus{
 					State:       prowv1.ErrorState,
@@ -416,9 +418,12 @@ func TestHintFromProwJob(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected failed to marshal prowjob to JSON (this wasn't even part of the test!): %v", err)
 			}
-			result := hintFromProwJob(b)
+			result, errored := hintFromProwJob(b)
 			if result != tc.expected {
 				t.Errorf("Expected hint %q, but got %q", tc.expected, result)
+			}
+			if errored != tc.expectedErrored {
+				t.Errorf("Expected errored to be %t, but got %t", tc.expectedErrored, errored)
 			}
 		})
 	}

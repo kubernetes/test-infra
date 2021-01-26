@@ -34,8 +34,9 @@ import (
 )
 
 type options struct {
-	configPath string
-	kubernetes prowflagutil.KubernetesOptions
+	configPath             string
+	kubernetes             prowflagutil.KubernetesOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -44,10 +45,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 
 	o.kubernetes.AddFlags(fs)
+	o.instrumentationOptions.AddFlags(fs)
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatalf("cannot parse args: '%s'", os.Args[1:])
 	}
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -76,8 +77,8 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-	health := pjutil.NewHealth()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, ""); err != nil {
@@ -92,14 +93,13 @@ func main() {
 	informerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(pjClientset, 0, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 	pjLister := informerFactory.Prow().V1().ProwJobs().Lister()
 
-	prometheus.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
-
 	go informerFactory.Start(interrupts.Context().Done())
 
 	registry := mustRegister("exporter", pjLister)
+	registry.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
 
 	// Expose prometheus metrics
-	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, registry, nil)
+	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, o.instrumentationOptions.MetricsPort, registry, nil)
 
 	logrus.Info("exporter is running ...")
 	health.ServeReady()

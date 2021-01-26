@@ -24,6 +24,8 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/spyglass/api"
 )
 
 type FakeArtifact struct {
@@ -90,11 +92,11 @@ func (dumpLens) Config() LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []Artifact, resourceDir string, config json.RawMessage) string {
+func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -107,7 +109,7 @@ func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, conf
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
@@ -125,7 +127,7 @@ func TestView(t *testing.T) {
 	testCases := []struct {
 		name      string
 		lensName  string
-		artifacts []Artifact
+		artifacts []api.Artifact
 		raw       string
 		expected  string
 		err       error
@@ -133,7 +135,7 @@ func TestView(t *testing.T) {
 		{
 			name:     "simple view",
 			lensName: "dump",
-			artifacts: []Artifact{
+			artifacts: []api.Artifact{
 				fakeLog, fakeLog,
 			},
 			raw: "",
@@ -149,7 +151,7 @@ crazy`,
 		{
 			name:      "fail on unregistered view name",
 			lensName:  "MicroverseBattery",
-			artifacts: []Artifact{},
+			artifacts: []api.Artifact{},
 			raw:       "",
 			expected:  "",
 			err:       ErrInvalidLensName,
@@ -184,7 +186,7 @@ func TestLastNLines_GCS(t *testing.T) {
 		path     string
 		contents []byte
 		n        int64
-		a        Artifact
+		a        api.Artifact
 		expected []string
 	}{
 		{

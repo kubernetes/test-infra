@@ -14,7 +14,7 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -23,6 +23,8 @@ postsubmits:
                 value: "boskos.test-pods.svc.cluster.local"
               - name: AWS_REGION
                 value: "us-west-2"
+              - name: NEW_E2E_FLOW
+                value: "1"
             securityContext:
               privileged: true
             resources:
@@ -48,10 +50,10 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
             command:
               - "runner.sh"
-              - "./scripts/ci-e2e-conformance.sh"
+              - "./scripts/ci-conformance.sh"
             env:
               - name: BOSKOS_HOST
                 value: "boskos.test-pods.svc.cluster.local"

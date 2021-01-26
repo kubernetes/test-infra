@@ -125,40 +125,6 @@ def aws_role_config(profile, arn):
              'source_profile = %s\n') %
             (arn, profile))
 
-def kubeadm_version(mode, shared_build_gcs_path):
-    """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
-    version = ''
-    if mode in ['ci', 'periodic']:
-        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
-        # current working directory at the repository root. Grab the SCM_REVISION so we
-        # can use the .debs built during the bazel-build job that should have already
-        # succeeded.
-        status = re.search(
-            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
-            check_output('hack/print-workspace-status.sh')
-        )
-        if not status:
-            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
-        version = status.group(1)
-
-        # The path given here should match ci-kubernetes-bazel-build
-        return 'gs://kubernetes-release-dev/ci/%s-bazel/bin/linux/amd64/' % version
-
-    elif mode == 'pull':
-        # The format of shared_build_gcs_path looks like:
-        # gs://kubernetes-release-dev/bazel/<git-describe-output>
-        # Add bin/linux/amd64 yet to that path so it points to the dir with the debs
-        return '%s/bin/linux/amd64/' % shared_build_gcs_path
-
-    elif mode == 'stable':
-        # This job need not run against the kubernetes repo and uses the stable version
-        # of kubeadm packages. This mode may be desired when kubeadm itself is not the
-        # SUT (System Under Test).
-        return 'stable'
-
-    else:
-        raise ValueError("Unknown kubeadm mode given: %s" % mode)
-
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""
     def __init__(self, workspace, artifacts):
@@ -570,31 +536,7 @@ def main(args):
     runner_args.extend(args.kubetest_args)
 
     if args.use_logexporter:
-        # TODO(fejta): Take the below value through a flag instead of env var.
-        runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('GCS_ARTIFACTS_DIR', ''))
-
-    if args.kubeadm:
-        version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
-        # try to look for k-a repo
-        kubeadm_path = os.path.join(workspace, 'k8s.io', 'kubernetes-anywhere')
-        go_path = os.environ.get('GOPATH', '')
-        if go_path:
-            kubeadm_in_gopath = os.path.join(go_path, 'src', 'k8s.io', 'kubernetes-anywhere')
-            if os.path.exists(kubeadm_in_gopath):
-                kubeadm_path = kubeadm_in_gopath
-        runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % kubeadm_path,
-            '--kubernetes-anywhere-phase2-provider=kubeadm',
-            '--kubernetes-anywhere-cluster=%s' % cluster,
-            '--kubernetes-anywhere-kubeadm-version=%s' % version,
-        ])
-
-        if args.kubeadm == "pull":
-            # If this is a pull job; the kubelet version should equal
-            # the kubeadm version here: we should use debs from the PR build
-            runner_args.extend([
-                '--kubernetes-anywhere-kubelet-version=%s' % version,
-            ])
+        runner_args.append('--logexporter-gcs-path=%s' % args.logexporter_gcs_path)
 
     if args.aws:
         # Legacy - prefer passing --deployment=kops, --provider=aws,
@@ -667,8 +609,6 @@ def create_parser():
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
-        '--kubeadm', choices=['ci', 'periodic', 'pull', 'stable'])
-    parser.add_argument(
         '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
@@ -683,6 +623,10 @@ def create_parser():
         '--use-logexporter',
         action='store_true',
         help='If we need to use logexporter tool to upload logs from nodes to GCS directly')
+    parser.add_argument(
+        '--logexporter-gcs-path',
+        default=os.environ.get('GCS_ARTIFACTS_DIR',''),
+        help='GCS path where logexporter tool will upload logs if enabled')
     parser.add_argument(
         '--kubetest_args',
         action='append',

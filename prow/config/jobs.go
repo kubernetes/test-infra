@@ -36,8 +36,7 @@ const (
 	schemeHTTPS = "https"
 )
 
-// Preset is intended to match the k8s' PodPreset feature, and may be removed
-// if that feature goes beta.
+// Presets can be used to re-use settings across multiple jobs.
 type Preset struct {
 	Labels       map[string]string `json:"labels"`
 	Env          []v1.EnvVar       `json:"env"`
@@ -263,10 +262,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 		baseBranches := sets.NewString(br.Branches...)
 		if len(other.Branches) > 0 {
 			otherBranches := sets.NewString(other.Branches...)
-			if baseBranches.Intersection(otherBranches).Len() > 0 {
-				return true
-			}
-			return false
+			return baseBranches.Intersection(otherBranches).Len() > 0
 		}
 
 		// Actually test our branches against the other brancher - if there are regex skip lists, simple comparison
@@ -354,12 +350,8 @@ func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, forc
 	if forced {
 		return true, nil
 	}
-	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
-		return false, err
-	} else if determined {
-		return shouldRun, nil
-	}
-	return defaults, nil
+	determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes)
+	return (determined && shouldRun) || defaults, err
 }
 
 // TriggersConditionally determines if the presubmit triggers conditionally (if it may or may not trigger).
@@ -414,7 +406,7 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 // UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
 type UtilityConfig struct {
 	// Decorate determines if we decorate the PodSpec or not
-	Decorate bool `json:"decorate,omitempty"`
+	Decorate *bool `json:"decorate,omitempty"`
 
 	// PathAlias is the location under <root-dir>/src
 	// where the repository under test is cloned. If this
@@ -431,6 +423,9 @@ type UtilityConfig struct {
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
 	CloneDepth int `json:"clone_depth,omitempty"`
+	// SkipFetchHead tells prow to avoid a git fetch <remote> call.
+	// The git fetch <remote> <BaseRef> call occurs regardless.
+	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
@@ -554,8 +549,7 @@ func (c *JobConfig) AllStaticPostsubmits(repos []string) []Postsubmit {
 
 // AllPeriodics returns all prow periodic jobs.
 func (c *JobConfig) AllPeriodics() []Periodic {
-	var listPeriodic func(ps []Periodic) []Periodic
-	listPeriodic = func(ps []Periodic) []Periodic {
+	listPeriodic := func(ps []Periodic) []Periodic {
 		var res []Periodic
 		for _, p := range ps {
 			res = append(res, p)

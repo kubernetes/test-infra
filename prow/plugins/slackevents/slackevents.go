@@ -21,6 +21,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -39,7 +41,7 @@ type slackClient interface {
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type client struct {
@@ -62,19 +64,53 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		if mw != nil {
 			configInfo[repo.String()] = fmt.Sprintf("In this repo merges are considered "+
 				"manual and trigger manual merge warnings if the user who merged is not "+
-				"a member of this universal whitelist: %s or merged to a branch they "+
-				"are not specifically whitelisted for: %#v.<br>Warnings are sent to the "+
-				"following Slack channels: %s.", strings.Join(mw.WhiteList, ", "),
-				mw.BranchWhiteList, strings.Join(mw.Channels, ", "))
+				"a member of this universal exemption list: %s or merged to a branch they "+
+				"are not specifically exempted for: %#v.<br>Warnings are sent to the "+
+				"following Slack channels: %s.", strings.Join(mw.ExemptUsers, ", "),
+				mw.ExemptBranches, strings.Join(mw.Channels, ", "))
 		} else {
 			configInfo[repo.String()] = "There are no manual merge warnings configured for this repo."
 		}
+	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Slack: plugins.Slack{
+			MentionChannels: []string{
+				"channel1",
+				"channel2",
+			},
+			MergeWarnings: []plugins.MergeWarning{
+				{
+					Repos: []string{
+						"org/repo1",
+						"org/repo2",
+					},
+					Channels: []string{
+						"channel3",
+						"channel4",
+					},
+					ExemptUsers: []string{
+						"alice",
+						"bob",
+					},
+					ExemptBranches: map[string][]string{
+						"dev": {
+							"james",
+							"joe",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	return &pluginhelp.PluginHelp{
 			Description: `The slackevents plugin reacts to various GitHub events by commenting in Slack channels.
 <ol><li>The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.</li>
 <li>The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from GitHub.</li></ol>`,
-			Config: configInfo,
+			Config:  configInfo,
+			Snippet: yamlSnippet,
 		},
 		nil
 }
@@ -100,8 +136,8 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, config.OrgRepo{Org: pe.Repo.Owner.Login, Repo: pe.Repo.Name}); mw != nil {
-		//If the MergeWarning whitelist has the merge user then no need to send a message.
-		if wl := !isWhiteListed(mw, pe); wl {
+		//If the MergeWarning exemption list has the merge user then no need to send a message.
+		if ok := isExempted(mw, pe); !ok {
 			var message string
 			switch {
 			case pe.Created:
@@ -123,13 +159,13 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
-	whitelistedLogins := sets.String{}
-	for _, login := range append(mw.WhiteList, mw.BranchWhiteList[pe.Branch()]...) {
-		whitelistedLogins.Insert(github.NormLogin(login))
+func isExempted(mw *plugins.MergeWarning, pe github.PushEvent) bool {
+	exemptedLogins := sets.String{}
+	for _, login := range append(mw.ExemptUsers, mw.ExemptBranches[pe.Branch()]...) {
+		exemptedLogins.Insert(github.NormLogin(login))
 	}
 
-	return whitelistedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
+	return exemptedLogins.HasAny(github.NormLogin(pe.Pusher.Name), github.NormLogin(pe.Sender.Login))
 }
 
 func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) *plugins.MergeWarning {
@@ -154,11 +190,11 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) 
 
 func echoToSlack(pc client, e github.GenericCommentEvent) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := pc.GitHubClient.BotName()
+	botUserChecker, err := pc.GitHubClient.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if e.User.Login == botName {
+	if botUserChecker(e.User.Login) {
 		return nil
 	}
 	if e.Action != github.GenericCommentActionCreated {

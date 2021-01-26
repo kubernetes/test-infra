@@ -27,6 +27,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/pod-utils/clone:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",

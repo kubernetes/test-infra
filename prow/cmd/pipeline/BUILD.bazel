@@ -25,6 +25,7 @@ go_library(
         "//prow/client/informers/externalversions/prowjobs/v1:go_default_library",
         "//prow/client/listers/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
@@ -70,6 +71,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",

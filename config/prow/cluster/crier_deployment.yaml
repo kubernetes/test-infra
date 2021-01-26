@@ -1,0 +1,81 @@
+# Copyright 2019 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: crier
+  labels:
+    app: crier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crier
+  template:
+    metadata:
+      labels:
+        app: crier
+    spec:
+      serviceAccountName: crier
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: crier
+        image: gcr.io/k8s-prow/crier:v20210123-aa0de54ee1
+        args:
+        - --blob-storage-workers=1
+        - --config-path=/etc/config/config.yaml
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/oauth
+        - --github-workers=5
+        - --job-config-path=/etc/job-config
+        - --kubeconfig=/etc/kubeconfig/config
+        - --kubernetes-blob-storage-workers=1
+        - --slack-token-file=/etc/slack/token
+        - --slack-workers=1
+        volumeMounts:
+        - mountPath: /etc/kubeconfig
+          name: kubeconfig
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: slack
+          mountPath: /etc/slack
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: slack
+        secret:
+          secretName: slack-token
+      - name: kubeconfig
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig

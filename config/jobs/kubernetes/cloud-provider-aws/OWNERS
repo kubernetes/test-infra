@@ -1,9 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- mcrute
+- nckturner
+- andrewsykim
+- wongma7
 approvers:
-- mcrute
+- nckturner
+- andrewsykim
+- wongma7
 labels:
 - sig/cloud-provider
 - area/provider/aws

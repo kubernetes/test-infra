@@ -180,6 +180,55 @@ func TestPerformArgReplacements(t *testing.T) {
 	}
 }
 
+func TestPerformArgDeletions(t *testing.T) {
+	tests := []struct {
+		name      string
+		args      map[string]string
+		deletions string
+		expected  map[string]string
+	}{
+		{
+			name:      "nil arguments remain nil",
+			args:      nil,
+			deletions: "",
+			expected:  nil,
+		},
+		{
+			name:      "empty arguments remain empty",
+			args:      map[string]string{},
+			deletions: "",
+			expected:  map[string]string{},
+		},
+		{
+			name:      "empty deletions do nothing",
+			args:      map[string]string{"foo": "bar"},
+			deletions: "",
+			expected:  map[string]string{"foo": "bar"},
+		},
+		{
+			name:      "simple deletion works",
+			args:      map[string]string{"foo": "bar", "baz": "baz2"},
+			deletions: "foo",
+			expected:  map[string]string{"baz": "baz2"},
+		},
+		{
+			name:      "multiple deletions work",
+			args:      map[string]string{"foo": "bar", "baz": "baz2", "hello": "world"},
+			deletions: "foo, baz",
+			expected:  map[string]string{"hello": "world"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := performDeletion(tc.args, tc.deletions)
+			if !reflect.DeepEqual(result, tc.expected) {
+				t.Errorf("Expected result %v, but got %v instead", tc.expected, result)
+			}
+		})
+	}
+}
+
 func TestFixImage(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -516,6 +565,7 @@ func TestGeneratePresubmits(t *testing.T) {
 }
 
 func TestGeneratePeriodics(t *testing.T) {
+	yes := true
 	periodics := []config.Periodic{
 		{
 			Cron: "0 * * * *",
@@ -529,6 +579,21 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-master",
 				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name: "generic-periodic-with-deletions-master",
+				Annotations: map[string]string{
+					forkAnnotation:     "true",
+					deletionAnnotation: "preset-e2e-scalability-periodics-master",
+					suffixAnnotation:   "true",
+				},
+				Labels: map[string]string{
+					"preset-e2e-scalability-periodics":        "true",
+					"preset-e2e-scalability-periodics-master": "true",
+				},
 			},
 		},
 		{
@@ -560,7 +625,7 @@ func TestGeneratePeriodics(t *testing.T) {
 					forkAnnotation: "true",
 				},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "master"}},
 				},
 			},
@@ -585,6 +650,16 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
 				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "generic-periodic-with-deletions-beta",
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+				Labels: map[string]string{
+					"preset-e2e-scalability-periodics": "true",
+				},
 			},
 		},
 		{
@@ -613,7 +688,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Name:        "decorated-periodic-1-15",
 				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
 				},
 			},

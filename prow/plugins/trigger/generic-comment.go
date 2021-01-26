@@ -37,9 +37,10 @@ var (
 	retestWithTargetRe  = regexp.MustCompile(`(?m)^/retest[ \t]+\S+`)
 	testWithAnyTargetRe = regexp.MustCompile(`(?m)^/test[ \t]+\S+`)
 
-	testWithoutTargetNote = "The `/test` command needs one or more targets.\n"
-	retestWithTargetNote  = "The `/retest` command does not accept any targets.\n"
-	targetNotFoundNote    = "The specified target(s) for `/test` were not found.\n"
+	testWithoutTargetNote     = "The `/test` command needs one or more targets.\n"
+	retestWithTargetNote      = "The `/retest` command does not accept any targets.\n"
+	targetNotFoundNote        = "The specified target(s) for `/test` were not found.\n"
+	thereAreNoTestAllJobsNote = "No jobs can be run with `/test all`.\n"
 )
 
 func mayNeedHelpComment(body string) bool {
@@ -62,11 +63,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	// Skip bot comments.
-	botName, err := c.GitHubClient.BotName()
+	botUserChecker, err := c.GitHubClient.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if commentAuthor == botName {
+
+	if botUserChecker(commentAuthor) {
 		c.Logger.Debug("Comment is made by the bot, skipping.")
 		return nil
 	}
@@ -93,10 +95,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	// Skip untrusted users comments.
-	trusted, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, commentAuthor, org, repo)
+	trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, commentAuthor, org, repo)
 	if err != nil {
 		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}
+
+	trusted := trustedResponse.IsTrusted
 	var l []github.Label
 	if !trusted {
 		// Skip untrusted PRs.
@@ -105,7 +109,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message.")
+			resp := "Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message."
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
 		}
@@ -141,14 +145,14 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		return err
 	}
 
-	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
+	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}
-	if needsHelp, note := shouldRespondWithHelp(gc.Body, len(toTest)+len(toSkip)); needsHelp {
+	if needsHelp, note := shouldRespondWithHelp(gc.Body, len(toTest)); needsHelp {
 		return addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
 	}
-	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, *trigger.ElideSkippedContexts)
+	return RunRequested(c, pr, baseSHA, toTest, gc.GUID)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {
@@ -175,7 +179,7 @@ type GitHubClient interface {
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
-func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 
 	contextGetter := func() (sets.String, sets.String, error) {
@@ -189,7 +193,7 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 
 	filter, err := pjutil.PresubmitFilter(honorOkToTest, contextGetter, body, logger)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	number, branch := pr.Number, pr.Base.Ref
@@ -197,20 +201,36 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
-func availablePresubmits(githubClient GitHubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, error) {
+// availablePresubmits returns 2 sets of presubmits:
+// 1. presubmits that can be run with '/test all' command.
+// 2. presubmits that can be run with their trigger, e.g. '/test job'
+func availablePresubmits(githubClient GitHubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, error) {
 	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
-	all := func(p config.Presubmit) (bool, bool, bool) {
-		return true, true, true
-	}
-	toTest, _, err := pjutil.FilterPresubmits(all, changes, branch, presubmits, logger)
+
+	runWithTestAll, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	var available []string
-	for _, pre := range toTest {
-		available = append(available, pre.RerunCommand)
+
+	var triggerFilters []pjutil.Filter
+	for _, ps := range presubmits {
+		triggerFilters = append(triggerFilters, pjutil.CommandFilter(ps.RerunCommand))
 	}
-	return available, nil
+	runWithTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(triggerFilters), changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var runWithTestAllNames []string
+	for _, ps := range runWithTestAll {
+		runWithTestAllNames = append(runWithTestAllNames, ps.Name)
+	}
+	var runWithTriggerNames []string
+	for _, ps := range runWithTrigger {
+		runWithTriggerNames = append(runWithTriggerNames, ps.RerunCommand)
+	}
+
+	return runWithTestAllNames, runWithTriggerNames, nil
 }
 
 func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
@@ -228,18 +248,30 @@ func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.Strin
 }
 
 func addHelpComment(githubClient githubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, HTMLURL, user, note string, logger *logrus.Entry) error {
-	available, err := availablePresubmits(githubClient, body, org, repo, branch, number, presubmits, logger)
+	testAllNames, testCommands, err := availablePresubmits(githubClient, body, org, repo, branch, number, presubmits, logger)
 	if err != nil {
 		return err
 	}
+
 	var resp string
-	if len(available) > 0 {
-		var listBuilder strings.Builder
-		for _, name := range available {
-			listBuilder.WriteString(fmt.Sprintf("\n* `%s`", name))
+	if len(testAllNames)+len(testCommands) > 0 {
+		listBuilder := func(names []string) string {
+			var list strings.Builder
+			for _, name := range names {
+				list.WriteString(fmt.Sprintf("\n* `%s`", name))
+			}
+			return list.String()
 		}
-		resp = fmt.Sprintf("%sThe following commands are available to trigger jobs:%s\n\nUse `/test all` to run all jobs.",
-			note, listBuilder.String())
+
+		var testAllNote string
+		if len(testAllNames) == len(testCommands) {
+			testAllNote = "Use `/test all` to run all jobs.\n"
+		} else if len(testAllNames) > 0 {
+			testAllNote = fmt.Sprintf("Use `/test all` to run the following jobs:%s\n\n", listBuilder(testAllNames))
+		}
+
+		resp = fmt.Sprintf("%sThe following commands are available to trigger jobs:%s\n\n%s",
+			note, listBuilder(testCommands), testAllNote)
 	} else {
 		resp = fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
 	}
@@ -254,6 +286,8 @@ func shouldRespondWithHelp(body string, toRunOrSkip int) (bool, string) {
 		return true, testWithoutTargetNote
 	case retestWithTargetRe.MatchString(body):
 		return true, retestWithTargetNote
+	case toRunOrSkip == 0 && pjutil.TestAllRe.MatchString(body):
+		return true, thereAreNoTestAllJobsNote
 	case toRunOrSkip == 0 && testWithAnyTargetRe.MatchString(body):
 		return true, targetNotFoundNote
 	default:

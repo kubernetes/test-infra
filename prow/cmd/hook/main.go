@@ -24,21 +24,25 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/interrupts"
+	jiraclient "k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
 	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
+	"k8s.io/test-infra/prow/plugins/jira"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -50,18 +54,21 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	dryRun      bool
-	gracePeriod time.Duration
-	kubernetes  prowflagutil.KubernetesOptions
-	github      prowflagutil.GitHubOptions
-	bugzilla    prowflagutil.BugzillaOptions
+	dryRun                 bool
+	gracePeriod            time.Duration
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	githubEnablement       prowflagutil.GitHubEnablementOptions
+	bugzilla               prowflagutil.BugzillaOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+	jira                   prowflagutil.JiraOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -80,14 +87,13 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement} {
 		group.AddFlags(fs)
 	}
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
 	fs.Parse(args)
-	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -107,7 +113,12 @@ func main() {
 	var tokens []string
 
 	// Append the path of hmac and github secrets.
-	tokens = append(tokens, o.github.TokenPath)
+	if o.github.TokenPath != "" {
+		tokens = append(tokens, o.github.TokenPath)
+	}
+	if o.github.AppPrivateKeyPath != "" {
+		tokens = append(tokens, o.github.AppPrivateKeyPath)
+	}
 	tokens = append(tokens, o.webhookSecretFile)
 
 	// This is necessary since slack token is optional.
@@ -145,6 +156,19 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
 		}
 		bugzillaClient = client
+	} else {
+		// we want something non-nil here with good no-op behavior,
+		// so the test fake is a cheap way to do that
+		bugzillaClient = &bugzilla.Fake{}
+	}
+
+	var jiraClient jiraclient.Client
+	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
+		client, err := o.jira.Client(secretAgent)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to construct Jira Client")
+		}
+		jiraClient = client
 	}
 
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
@@ -181,7 +205,10 @@ func main() {
 	ownersDirBlacklist := func() config.OwnersDirBlacklist {
 		return configAgent.Config().OwnersDirBlacklist
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
+	resolver := func(org, repo string) ownersconfig.Filenames {
+		return pluginAgent.Config().OwnersFilenames(org, repo)
+	}
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,
@@ -192,21 +219,23 @@ func main() {
 		SlackClient:               slackClient,
 		OwnersClient:              ownersClient,
 		BugzillaClient:            bugzillaClient,
+		JiraClient:                jiraClient,
 	}
 
-	promMetrics := hook.NewMetrics()
+	promMetrics := githubeventserver.NewMetrics()
 
 	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus metrics
-	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
-	pjutil.ServePProf()
+	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
 		ConfigAgent:    configAgent,
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
+		RepoEnabled:    o.githubEnablement.EnablementChecker(),
 		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
 	interrupts.OnInterrupt(func() {
@@ -216,7 +245,7 @@ func main() {
 		}
 	})
 
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	// TODO remove this health endpoint when the migration to health endpoint is done
 	// Return 200 on / for health checks.

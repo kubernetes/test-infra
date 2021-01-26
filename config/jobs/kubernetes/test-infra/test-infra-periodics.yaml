@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-2.0.0
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
       command:
       - hack/bazel.sh
       args:
@@ -26,6 +26,8 @@ periodics:
 
 - name: ci-test-infra-triage
   decorate: true
+  decoration_config:
+    timeout: 3h
   interval: 30m
   spec:
     containers:
@@ -34,6 +36,10 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
+      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
+      - name: NUM_WORKERS
+        value: "13"
       command:
       - "timeout"
       args:
@@ -43,6 +49,14 @@ periodics:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
+      # When changing CPUs, also change NUM_WORKERS above
+      resources:
+        requests:
+          cpu: 7
+          memory: 40Gi
+        limits:
+          cpu: 7
+          memory: 40Gi
     volumes:
     - name: service
       secret:
@@ -54,40 +68,29 @@ periodics:
     testgrid-tab-name: triage
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
+
 - name: metrics-bigquery
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --
       - test-infra/metrics/bigquery.py
       - --
       - --bucket=gs://k8s-metrics
-      - --backfill-days=90
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: VELODROME_INFLUXDB_CONFIG
-    #   value: /etc/velodrome-influxdb/config.json
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: influxdb
-    #   mountPath: /etc/velodrome-influxdb
-    #   readOnly: true
     volumes:
     - name: service
       secret:
         secretName: triage-service-account
-  # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-  # - name: influxdb
-  #   secret:
-  #     secretName: velodrome-influxdb
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
@@ -98,7 +101,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --
@@ -112,25 +115,14 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-      # - name: VELODROME_INFLUXDB_CONFIG
-      #   value: /etc/velodrome-influxdb/config.json
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
-      # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-      # - name: influxdb
-      #   mountPath: /etc/velodrome-influxdb
-      #   readOnly: true
     volumes:
     - name: service
       secret:
         secretName: triage-service-account
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: influxdb
-    #   secret:
-    #     secretName: velodrome-influxdb
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'

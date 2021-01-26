@@ -1,6 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviwers:
+reviewers:
 - m1093782566
 - sig-scheduling-leads
 approvers:

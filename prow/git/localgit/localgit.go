@@ -57,8 +57,8 @@ func New() (*LocalGit, v2.ClientFactory, error) {
 		return nil, nil, err
 	}
 
-	getSecret := func() []byte {
-		return []byte("")
+	getSecret := func(_ string) (string, error) {
+		return "", nil
 	}
 
 	c.SetCredentials("", getSecret)

@@ -21,6 +21,7 @@ package hack
 // Add tools that hack scripts depend on here, to ensure they are vendored.
 import (
 	_ "github.com/client9/misspell/cmd/misspell"
+	_ "github.com/go-bindata/go-bindata/v3"
 	_ "k8s.io/code-generator/cmd/client-gen"
 	_ "k8s.io/code-generator/cmd/deepcopy-gen"
 	_ "k8s.io/code-generator/cmd/informer-gen"

@@ -1,63 +1,134 @@
 <!DOCTYPE html>
 <!-- To "deploy": gsutil cp -Z oncall.html gs://test-infra-oncall/ -->
-<html>
+<html lang="en">
 <script>
-// extracted/modified from kubernetes/test-infra/gubernator/static/build.js
-function get(uri, callback) {
-	if (uri[0] === '/') {
-		// Matches /bucket/file/path -> [..., "bucket", "file/path"]
-		var groups = uri.match(/([^/:]+)\/(.*)/);
-		var bucket = groups[1], path = groups[2];
-		var url = 'https://www.googleapis.com/storage/v1/b/' + bucket + '/o/' +
-			encodeURIComponent(path) + '?alt=media';
-	} else {
-		var url = uri;
-	}
-	var req = new XMLHttpRequest();
-	req.open('GET', url);
-	req.onload = function(resp) {
-		callback(req);
-	}
-	req.send();
-}
+  var rotationsMetadata = {
+    "google-build-admin": {
+      "prettyName": "Google Build Admin",
+      "slack": "@google-build-admin",
+      "timezone": '<a href="https://time.is/PT">PT</a>',
+      "description": 'Debian / RPM package build & publishing for releases',
+    },
+    "testinfra": {
+      "prettyName": "Test Infra",
+      "slack": "@test-infra-oncall",
+      "timezone": '<a href="https://time.is/PT">PT</a>',
+      "description": "Prow, TestGrid, and other Google hosted infrastructure"
+    },
+    "scalability": {
+      "prettyName": "Scalability",
+      "timezone": '<a href="https://time.is/CET">CET</a>',
+      // TODO: description
+    }
+  };
+  // extracted/modified from kubernetes/test-infra/gubernator/static/build.js
+  function get(uri, callback) {
+    if (uri[0] === '/') {
+      // Matches /bucket/file/path -> [..., "bucket", "file/path"]
+      var groups = uri.match(/([^/:]+)\/(.*)/);
+      var bucket = groups[1], path = groups[2];
+      var url = 'https://www.googleapis.com/storage/v1/b/' + bucket + '/o/' +
+          encodeURIComponent(path) + '?alt=media';
+    } else {
+      var url = uri;
+    }
+    var req = new XMLHttpRequest();
+    req.open('GET', url);
+    req.onload = function (resp) {
+      callback(req);
+    };
+    req.send();
+  }
 
-function build_table(req) {
-	var data = req.response;
-	var oncall = JSON.parse(data).Oncall;
-	var keys = Object.keys(oncall).sort();
+  function build_table(req) {
+    var data = req.response;
+    var oncall = JSON.parse(data).Oncall;
+    var keys = Object.keys(oncall).sort();
 
-	var html = ''
-	for (var i = 0; i < keys.length; i++) {
-		var key = keys[i];
-		var person = oncall[key];
-		html += '<h2>' + key + ': ';
-		if (person) {
-			html += '<a href="https://github.com/' + person + '">';
-			html += person + '<img src="https://github.com/' + person + '.png?size=125"></a>';
-		} else {
-			html += 'None'
-		}
-		html += '</h2>';
-	}
+    var html = '';
+    html += '<table>';
+    html += '<thead> <tr> <th> Rotation </th> <th> Slack </th> <th colspan=2> Current </th> <th> Time Zone </th> <th> Description </th> </tr>';
+    html += '<tbody>';
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var person = oncall[key];
+      // get info about this rotation
+      var rotationInfo = rotationsMetadata[key];
+      var name = key;
+      var description = "";
+      var timezone = "";
+      var slack = "";
+      if (rotationInfo) {
+        if ("prettyName" in rotationInfo) {
+          name = rotationInfo["prettyName"];
+        }
+        if ("slack" in rotationInfo) {
+          slack = rotationInfo["slack"];
+        }
+        if ("description" in rotationInfo) {
+          description = rotationInfo["description"];
+        }
+        if ("timezone" in rotationInfo) {
+          timezone = rotationInfo["timezone"];
+        }
+      }
+      // add to table
+      html += '<tr>';
+      html += '<td style="font-weight: bold">' + name + '</td>';
+      if (person) {
+        html += '<td><code>' + slack + '</code></td>';
+        html += '<td> <a href="https://github.com/' + person + '">' + person + ' </td>';
+        html += '<td> <img src="https://github.com/' + person + '.png?size=125" alt=""></a> </td>';
+        html += '<td>' + timezone + '</td>';
+        html += '<td>' + description + '</td>';
+      } else {
+        html += 'None';
+      }
+      html += '</tr>'
+    }
+    html += '</tbody>';
+    html += '</table>';
 
-	// trivial XSS, but storage.googleapis.com is even more trivial XSS!
-	document.getElementById('oncall').innerHTML = html;
+    // trivial XSS, but storage.googleapis.com is even more trivial XSS!
+    document.getElementById('oncall').innerHTML = html;
 
-	document.getElementById('updated').innerText = req.getResponseHeader('date');
-}
+    document.getElementById('updated').innerText = req.getResponseHeader('date');
+  }
 
-get('/kubernetes-jenkins/oncall.json', build_table);
+  get('/kubernetes-jenkins/oncall.json', build_table);
 </script>
-<title>K8S Oncall Rotation</title>
+<title>K8s Oncall Rotations</title>
 <style>
-body { background-color: #eee; padding-left: 30%; }
-img { padding-left: 10px; max-width: 125px; }
+  body {
+    background-color: #eee;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+
+  img {
+    padding-left: 10px;
+    max-width: 125px;
+  }
+
+  table, th, td {
+    border: 1px solid black;
+  }
+
+  th, td {
+    padding: 5px;
+    text-align: center;
+  }
+
+  #oncall {
+    display: inline-block;
+  }
 </style>
 <body>
-<h1>Kubernetes Oncall Rotation</h1>
-<p>Updated: <span id="updated">Never</span></a>
+<h1>Kubernetes Oncall Rotations</h1>
+<p>Updated: <span id="updated">Never</span>
+<h2>NOTE: Rotations are Google-staffed, volunteer, best-effort during business-hours.</h2>
 <div id="oncall">Loading...</div>
-<div><h2>release managers: <a href="https://git.k8s.io/sig-release/release-managers.md#release-managers">on GitHub</a></h2></div>
-<sub><a href="https://storage.googleapis.com/kubernetes-jenkins/oncall.json">data source</a></sub>
+<div><a href="https://storage.googleapis.com/kubernetes-jenkins/oncall.json">data source</a></div>
 </body>
 </html>

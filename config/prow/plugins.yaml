@@ -1,13 +1,10 @@
-# Plugin repository whitelist.
-# Keys: Full repo name: "org/repo".
-# Values: List of plugins to run against the repo.
+# Plugin configuration
 ---
 triggers:
 - repos:
   - kubernetes
   - kubernetes-client
   - kubernetes-csi
-  - kubernetes-incubator
   - kubernetes-sigs
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
@@ -18,6 +15,9 @@ triggers:
 - repos:
   - containerd/cri
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
+- repos:
+  - containerd/containerd
+  join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
   - kubeflow
   join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
@@ -32,11 +32,6 @@ owners:
   - kubernetes/website
   skip_collaborators:
   - kubernetes-sigs/contributor-playground
-  - helm/charts
-
-# TODO(fejta): delete these in before April
-use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019: true
-use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019: true
 
 approve:
 - repos:
@@ -45,7 +40,6 @@ approve:
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/dns
-  - kubernetes/enhancements
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
@@ -54,7 +48,6 @@ approve:
   - kubernetes/klog
   - kubernetes/kubeadm
   - kubernetes/kubectl
-  - kubernetes/kube-deploy
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -69,6 +62,11 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/website
+  require_self_approval: true
+  lgtm_acts_as_approve: false
+- repos:
+  - kubernetes/enhancements
   - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
@@ -76,7 +74,17 @@ approve:
   - kubernetes-sigs
   require_self_approval: false
 - repos:
+  - kubernetes/cloud-provider-openstack
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-aws
+  - kubernetes-sigs/cluster-api-provider-azure
+  - kubernetes-sigs/cluster-api-provider-gcp
+  - kubernetes-sigs/cluster-api-provider-vsphere
+  require_self_approval: true
+  ignore_review_state: true
+- repos:
   - bazelbuild
+  - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
   - kubernetes-sigs/slack-infra
   - kubernetes/community
@@ -84,12 +92,12 @@ approve:
   - kubernetes/org
   - kubernetes/repo-infra
   - kubernetes/test-infra
+  - kubernetes/cloud-provider-gcp
   require_self_approval: false
   ignore_review_state: false
 - repos:
-  - helm/charts
-  require_self_approval: false
-  lgtm_acts_as_approve: true
+  - kubernetes-sigs/service-apis
+  lgtm_acts_as_approve: false
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
@@ -125,9 +133,13 @@ lgtm:
 - repos:
   - bazelbuild
   - kubernetes/repo-infra
+  - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
   - kubernetes/test-infra
   review_acts_as_lgtm: true
+- repos:
+  - kubernetes/website
+  store_tree_hash: true
 
 blockades:
 - repos:
@@ -160,19 +172,11 @@ blockades:
   blockregexps:
   - ^keps/NEXT_KEP_NUMBER$
   explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
-### DO NOT REMOVE ###
-# This blockade is intended to restrict the approval of changes to existing release tooling to k/release repo admins.
-# We should only consider removing it after all tools mentioned in the regex have been removed/replaced.
-# ref:
-# - Go refactor umbrella: https://github.com/kubernetes/release/issues/918
-# - deb/rpm refactor umbrella: https://github.com/kubernetes/release/issues/1027
-# - Initial k/release blockade PR: https://github.com/kubernetes/test-infra/pull/13328
-# - Issue on mitigating CI failures caused by k/release changes: https://github.com/kubernetes/release/issues/816
 - repos:
   - kubernetes/release
   blockregexps:
-  - ^(anago|compile-release-tools|find_green_build|gcb\/|lib\/|prin|push-build.sh|release-notify|relnotes)
-  explanation: "Changes to certain release tools can affect our ability to test, build, and release Kubernetes. This PR must be explicitly approved by SIG Release repo admins."
+  - ^push-build.sh
+  explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
 
 blunderbuss:
   max_request_count: 2
@@ -196,20 +200,22 @@ slack:
     - kubernetes/org
     channels:
     - sig-contribex
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/enhancements
     channels:
-    - sig-pm
-    whitelist:
+    - enhancements
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/utils
+    - kubernetes/component-helpers
     channels:
     - sig-architecture
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
+    - k8s-publishing-bot
   - repos:
     - kubernetes/api
     - kubernetes/apiextensions-apiserver
@@ -218,52 +224,59 @@ slack:
     - kubernetes/client-go
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/controller-manager
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/sample-apiserver
     - kubernetes/sample-controller
     channels:
     - sig-api-machinery
-    whitelist:
+    exempt_users:
     - k8s-publishing-bot
   - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
-    whitelist:
+    exempt_users:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
-    branch_whitelist:
-        release-1.15:
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - tpepper # Patch Release Team
-        release-1.16:
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - tpepper # Patch Release Team
+    exempt_branches:
         release-1.17:
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         release-1.18:
-            - cpanato # Branch Manager
-            - dougm # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - idealhack # Patch Release Team
-            - justaugustus # Patch Release Team
-            - saschagrunert # Branch Manager
-            - tpepper # Patch Release Team
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
+        release-1.19:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
+        release-1.20:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -274,21 +287,21 @@ slack:
     - kubernetes/test-infra
     channels:
     - testing-ops
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
     channels:
     - sig-release
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/release
     channels:
     - sig-release
-    whitelist:
+    exempt_users:
     - k8s-ci-robot
-    branch_whitelist:
+    exempt_branches:
         prototype:
             - justaugustus # k8s-infra prototype Branch Manager
             - tpepper # k8s-infra prototype Branch Manager
@@ -296,33 +309,52 @@ slack:
     - kubernetes/k8s.io
     channels:
     - wg-k8s-infra
-    whitelist:
+    exempt_users:
+    - k8s-ci-robot
+  - repos:
+    - kubernetes/kops
+    channels:
+    - kops-dev
+    exempt_users:
     - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.19
+    master: v1.21
   kubernetes/kubernetes:
-    master: v1.19
+    master: v1.21
+    release-1.20: v1.20
+    release-1.19: v1.19
+    release-1.18: v1.18
+    release-1.17: v1.17
+  kubernetes/release:
+    master: v1.21
+  kubernetes/sig-release:
+    master: v1.21
+  kubernetes/test-infra:
+    master: v1.21
+  kubernetes/k8s.io:
+    master: v1.21
+  kubernetes/kops:
+    master: v1.20
+    release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
-    release-1.15: v1.15
-  kubernetes/release:
-    master: v1.19
-  kubernetes/sig-release:
-    master: v1.19
-  kubernetes/test-infra:
-    master: v1.19
-  kubernetes/kops:
-    master: v1.18
-    release-1.17: v1.17
-    release-1.16: v1.16
-    release-1.15: v1.15
   kubernetes-sigs/cluster-api-provider-azure:
-    master: v0.5
+    master: v0.4.11
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    master: v0.4
+    release-0.4: v0.4
+    release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-gcp:
+    master: v0.4
+    release-0.4: v0.4
+    release-0.3: v0.3
+  kubernetes/website:
+    dev-1.21: 1.21
 
 repo_milestone:
   # Default maintainer
@@ -332,6 +364,10 @@ repo_milestone:
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
     maintainers_id: 2460384
     maintainers_team: milestone-maintainers
+  kubernetes-sigs/controller-runtime:
+    maintainers_id: 2785806
+    maintainers_team: controller-runtime-maintainers
+    maintainers_friendly_name: Controller Runtime Maintainers
   kubernetes-sigs/cluster-api:
     maintainers_id: 3058957
     maintainers_team: cluster-api-maintainers
@@ -348,10 +384,18 @@ repo_milestone:
     maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    maintainers_id: 2978501
+    maintainers_team: cluster-api-provider-digitalocean-maintainers
+    maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
   kubernetes-sigs/cluster-api-provider-docker:
     maintainers_id: 3297612
     maintainers_team: cluster-api-provider-docker-maintainers
     maintainers_friendly_name: Cluster API Provider Docker Maintainers
+  kubernetes-sigs/cluster-api-provider-gcp:
+    maintainers_id: 2829767
+    maintainers_team: cluster-api-provider-gcp-maintainers
+    maintainers_friendly_name: Cluster API Provider GCP Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
@@ -372,6 +416,14 @@ repo_milestone:
     maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
     maintainers_friendly_name: Website milestone maintainers
+  kubernetes/kubeadm:
+    maintainers_id: 2195382
+    maintainers_team: kubeadm-maintainers
+    maintainers_friendly_name: Kubeadm maintainers
+  kubernetes-sigs/kubebuilder:
+    maintainers_id: 2688053
+    maintainers_team: kubebuilder-maintainers
+    maintainers_friendly_name: Kubebuilder Maintainers
 
 project_config:
   project_org_configs:
@@ -404,34 +456,47 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
-      namespace: test-pods
+      clusters:
+        test-infra-trusted:
+          - test-pods
     config/prow/config.yaml:
       name: config
+      clusters:
+        test-infra-trusted:
+          - default
     config/prow/plugins.yaml:
       name: plugins
+      clusters:
+        test-infra-trusted:
+          - default
     config/jobs/**/*.yaml:
       name: job-config
       gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
     experiment/test-configmap.txt:
       name: test-configmap
       gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
 
 welcome:
 - repos:
   - kubernetes
   - kubernetes-client
   - kubernetes-csi
-  - kubernetes-incubator
   - kubernetes-sigs
   message_template: "Welcome @{{.AuthorLogin}}! <br><br>It looks like this is your first PR to <a href='https://github.com/{{.Org}}/{{.Repo}}'>{{.Org}}/{{.Repo}}</a> 🎉. Please refer to our [pull request process documentation](https://git.k8s.io/community/contributors/guide/pull-requests.md) to help your PR have a smooth ride to approval. <br><br>You will be prompted by a bot to use commands during the review process. Do not be afraid to follow the prompts! It is okay to experiment. [Here is the bot commands documentation](https://go.k8s.io/bot-commands). <br><br>You can also check if {{.Org}}/{{.Repo}} has [its own contribution guidelines](https://github.com/{{.Org}}/{{.Repo}}/tree/master/CONTRIBUTING.md). <br><br>You may want to refer to our [testing guide](https://git.k8s.io/community/contributors/devel/sig-testing/testing.md) if you run into trouble with your tests not passing. <br><br>If you are having difficulty getting your pull request seen, please follow the [recommended escalation practices](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#why-is-my-pull-request-not-getting-reviewed). Also, for tips and tricks in the contribution process you may want to read the [Kubernetes contributor cheat sheet](https://git.k8s.io/community/contributors/guide/contributor-cheatsheet/README.md). We want to make sure your contribution gets all the attention it needs! <br><br>Thank you, and welcome to Kubernetes. :smiley:"
 
 require_matching_label:
-- missing_label: needs-kind
+- missing_label: do-not-merge/needs-kind
   org: kubernetes
   repo: kubernetes
   prs: true
   regexp: ^kind/
-- missing_label: needs-sig
+- missing_label: do-not-merge/needs-sig
   org: kubernetes
   repo: kubernetes
   prs: true
@@ -449,6 +514,41 @@ require_matching_label:
     - `/committee <group-name>`
 
     Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+# Needs triage configuration
+- missing_label: needs-triage
+  org: kubernetes
+  repo: kubernetes
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If a SIG or subproject determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: website
+  issues: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    SIG Docs takes a lead on issue triage for this website, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: kubectl
+  issues: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-sig
   org: kubernetes
   repo: community
@@ -525,12 +625,18 @@ retitle:
 
 cherry_pick_unapproved:
   comment: |
-    This cherry pick PR is for a release branch and has not yet been approved by the Patch Release Team.
+    This cherry pick PR is for a release branch and has not yet been approved by [Release Managers](https://git.k8s.io/sig-release/release-managers.md).
     Adding the `do-not-merge/cherry-pick-not-approved` label.
 
-    To merge this cherry pick, please ping the **kubernetes/patch-release-team** in a comment, *after* it has been approved by the relevant OWNERS.
-    For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.
+    To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
 
+    **AFTER** it has been approved by code owners, please ping the **kubernetes/release-managers** team in a comment to request a cherry pick review.
+
+    (For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.)
+
+# Enabled plugins per repo.
+# Keys: Full repo name: "org/repo".
+# Values: List of plugins to run against the repo.
 plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
   # Repos that do not send prow webhooks will see no effect.
@@ -570,18 +676,75 @@ plugins:
   - skip  # Allows cleaning up stale commit statuses
   - verify-owners   # Validates OWNERS file changes in PRs.
   - wip   # Applies a label to PRs with wip in the title to block merge
+
+  kubeflow/arena:
   - trigger
 
-  helm/charts:
-  - approve
-  - assign
-  - blunderbuss
-  - cla
-  - hold
-  - lgtm
+  kubeflow/batch-predict:
   - trigger
-  - verify-owners
-  - wip
+
+  kubeflow/caffe2-operator:
+  - trigger
+
+  kubeflow/chainer-operator:
+  - trigger
+
+  kubeflow/common:
+  - trigger
+
+  kubeflow/community-infra:
+  - trigger
+
+  kubeflow/examples:
+  - trigger
+
+  kubeflow/experimental-seldon:
+  - trigger
+
+  kubeflow/fairing:
+  - trigger
+
+  kubeflow/gcp-blueprints:
+  - trigger
+
+  kubeflow/internal-acls:
+  - trigger
+
+  kubeflow/kfp-tekton:
+  - trigger
+
+  kubeflow/kfp-tekton-backend:
+  - trigger
+
+  kubeflow/kubebench:
+  - trigger
+
+  kubeflow/kubeflow:
+  - trigger
+
+  kubeflow/metadata:
+  - trigger
+
+  kubeflow/mpi-operator:
+  - trigger
+
+  kubeflow/mxnet-operator:
+  - trigger
+
+  kubeflow/reporting:
+  - trigger
+
+  kubeflow/testing:
+  - trigger
+
+  kubeflow/tf-operator:
+  - trigger
+
+  kubeflow/website:
+  - trigger
+
+  kubeflow/xgboost-operator:
+  - trigger
 
   kubernetes:
   - approve
@@ -599,6 +762,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
@@ -607,6 +771,7 @@ plugins:
   - size
   - skip
   - slackevents
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
@@ -634,20 +799,27 @@ plugins:
   kubernetes/enhancements:
   - blockade
   - milestone
-  - milestoneapplier
   - require-matching-label
   - stage
 
-  kubernetes/kops:
+  kubernetes/k8s.io:
   - milestone
-  - milestoneapplier
+
+  kubernetes/kops:
+  - mergecommitblocker
+  - milestone
+
+  kubernetes/kubeadm:
+  - milestone
+
+  kubernetes/kubectl:
+  - require-matching-label
 
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - milestonestatus
   - override
   - release-note
@@ -663,7 +835,6 @@ plugins:
   - blockade
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - release-note
   - require-matching-label
@@ -671,7 +842,6 @@ plugins:
   kubernetes/sig-release:
   - mergecommitblocker
   - milestone
-  - milestoneapplier
   - override
   - require-matching-label
 
@@ -681,7 +851,6 @@ plugins:
   kubernetes/test-infra:
   - config-updater
   - milestone
-  - milestoneapplier
   - override
   - project
 
@@ -691,6 +860,7 @@ plugins:
   kubernetes/website:
   - milestone
   - project
+  - require-matching-label
 
   kubernetes-client:
   - approve
@@ -747,33 +917,6 @@ plugins:
   - wip
   - yuks
 
-  kubernetes-incubator:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - goose
-  - heart
-  - help
-  - hold
-  - invalidcommitmsg
-  - label
-  - lgtm
-  - lifecycle
-  - owners-label
-  - pony
-  - retitle
-  - shrug
-  - size
-  - skip
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
-
   kubernetes-sigs:
   - approve
   - assign
@@ -789,12 +932,14 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestoneapplier
   - owners-label
   - pony
   - retitle
   - shrug
   - size
   - skip
+  - trick-or-treat
   - trigger
   - verify-owners
   - welcome
@@ -810,18 +955,42 @@ plugins:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note
 
+  kubernetes-sigs/gcp-filestore-csi-driver:
+  - release-note
+
+  kubernetes-sigs/boskos:
+  - override
+
   kubernetes-sigs/kind:
   - override
 
+  kubernetes-sigs/controller-runtime:
+  - milestone
+
   kubernetes-sigs/cluster-api:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
-  - milestoneapplier
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - override
+
+  kubernetes-sigs/cluster-api-provider-gcp:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - override
+
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - milestone
   - milestonestatus
   - release-note
   - require-matching-label
@@ -835,11 +1004,22 @@ plugins:
   kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
   - milestone
 
+  kubernetes-sigs/image-builder:
+  - mergecommitblocker
+
   kubernetes-sigs/etcdadm:
   - milestone
 
   kubernetes-sigs/contributor-playground:
   - require-matching-label
+
+  kubernetes-sigs/security-profiles-operator:
+  - release-note
+
+  kubernetes-sigs/k8s-container-image-promoter:
+  - mergecommitblocker
+  - override
+  - release-note
 
   containerd/cri:
   - assign
@@ -850,6 +1030,10 @@ plugins:
   - size
   - trigger
 
+  containerd/containerd:
+  - assign  # Allow /assign and /cc
+  - trigger # Allow people to configure CI jobs to /test
+
   tensorflow/k8s:
   - trigger
 
@@ -857,12 +1041,6 @@ plugins:
   - trigger
   - lgtm
   - size
-
-  spxtr/envoy:
-  - assign
-  - lgtm
-  - lifecycle
-  - trigger
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
@@ -904,15 +1082,6 @@ plugins:
   - shrug
   - size
 
-  cncf/k8s-conformance:
-  - cat # /meow replies with cat pictures
-  - dog # /bark replies with dog pictures
-  - goose
-  - wip
-  - assign
-  - hold
-  - lgtm
-
 external_plugins:
   kubernetes:
   - name: needs-rebase
@@ -930,11 +1099,6 @@ external_plugins:
       - issue_comment
       - pull_request
   kubernetes-client:
-  - name: needs-rebase
-    events:
-      - issue_comment
-      - pull_request
-  kubernetes-incubator:
   - name: needs-rebase
     events:
       - issue_comment

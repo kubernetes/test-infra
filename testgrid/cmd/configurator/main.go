@@ -35,6 +35,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 )
 
 type multiString []string
@@ -216,12 +217,12 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 	// Print proto if requested
 	if opt.printText {
 		if opt.writeYAML {
-			b, err := yamlcfg.MarshalYAML(c)
+			b, err := yaml.Marshal(&c)
 			if err != nil {
 				return fmt.Errorf("could not print yaml config: %v", err)
 			}
 			os.Stdout.Write(b)
-		} else if err := tgCfgUtil.MarshalText(c, os.Stdout); err != nil {
+		} else if err := tgCfgUtil.MarshalText(&c, os.Stdout); err != nil {
 			return fmt.Errorf("could not print config: %v", err)
 		}
 	}
@@ -231,9 +232,9 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		var b []byte
 		var err error
 		if opt.writeYAML {
-			b, err = yamlcfg.MarshalYAML(c)
+			b, err = yaml.Marshal(&c)
 		} else {
-			b, err = tgCfgUtil.MarshalBytes(c)
+			b, err = tgCfgUtil.MarshalBytes(&c)
 		}
 		if err == nil {
 			err = write(ctx, client, opt.output, b, opt.worldReadable, "")

@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-2.0.0
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -25,13 +25,13 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|config/prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:0.4
+      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -68,17 +68,18 @@ presubmits:
         - -c
         - config/jobs/.yamllint.conf
         - config/jobs
-        - prow/cluster
+        - config/prow/cluster
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-yaml
 
+  # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200417-3971a63f2
+      - image: gcr.io/k8s-prow/checkconfig:v20210123-aa0de54ee1
         command:
         - /checkconfig
         args:
@@ -93,5 +94,34 @@ presubmits:
         - --warnings=missing-trigger
         - --warnings=validate-urls
         - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-integration
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        args:
+        - prow/test/integration/test.sh
+        - --config=ci
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration

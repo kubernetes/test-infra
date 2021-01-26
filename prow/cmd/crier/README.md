@@ -40,7 +40,7 @@ You can check the reported result by [list the pubsub topic](https://cloud.googl
 
 ### [GitHub reporter](/prow/crier/reporters/github)
 
-You can enable github reporter in crier by specifying `--github-workers=1` flag. (We only support single worker for github, due to [#13306](https://github.com/kubernetes/test-infra/issues/13306))
+You can enable github reporter in crier by specifying `--github-workers=N` flag (N>0).
 
 You also need to mount a github oauth token by specifying `--github-token-path` flag, which defaults to `/etc/github/oauth`.
 
@@ -153,7 +153,7 @@ slack_reporter_configs:
     channel: istio-channel
 ```
 
-The Slack `channel` can be overridden at the ProwJob level via the `reporter_config.slack.channel` field:
+The `channel`, `job_states_to_report` and `report_template` can be overridden at the ProwJob level via the `reporter_config.slack` field:
 ```yaml
 postsubmits:
   some-org/some-repo:
@@ -162,6 +162,9 @@ postsubmits:
       reporter_config:
         slack:
           channel: 'override-channel-name'
+          job_states_to_report:
+            - success
+          report_template: "Overridden template for job {{.Spec.Job}}"
       spec:
         containers:
           - image: alpine
@@ -227,7 +230,7 @@ fb09e7d8-3abb-11e9-816a-0a580a6c0f7f	success
 
 ```
 
-You want to add a crier deployment, similar to ours [prow/cluster/crier_deployment.yaml](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/crier_deployment.yaml),
+You want to add a crier deployment, similar to ours [config/prow/cluster/crier_deployment.yaml](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/crier_deployment.yaml),
 flags need to be specified:
 - point `config-path` and `--job-config-path` to your prow config and job configs accordingly.
 - Set `--github-worker` to be number of parallel github reporting threads you need

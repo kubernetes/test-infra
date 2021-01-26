@@ -29,7 +29,7 @@
         <td colspan="2" style="padding: 0;">
           <table class="failed-layout">
             <tr class="failure-name">
-              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
               <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTest.Duration}}</td>
             </tr>
             <tr class="hidden failure-text">
@@ -49,7 +49,7 @@
         <td colspan="2" style="padding: 0;">
           <table class="failed-layout">
             <tr class="failure-name">
-              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
             </tr>
             <tr class="hidden">
               <td>
@@ -97,7 +97,7 @@
         <td colspan="2" style="padding: 0;">
           <table class="flaky-layout">
             <tr class="flaky-name">
-              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+              <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
             </tr>
             <tr class="hidden">
               <td>
@@ -141,7 +141,7 @@
       {{range .Passed}}
         {{$firstTest := index .Junit 0}}
         <tr>
-          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.Name}}</td>
+          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
           <td class="mdl-data-table__cell--non-numeric">{{$firstTest.Duration}}</td>
         </tr>
       {{end}}
@@ -156,7 +156,7 @@
       {{range .Skipped}}
         {{$firstTest := index .Junit 0}}
         <tr>
-          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.Name}}</td>
+          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
           <td class="mdl-data-table__cell--non-numeric">{{$firstTest.Duration}}</td>
         </tr>
       {{end}}

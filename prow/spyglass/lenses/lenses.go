@@ -23,9 +23,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/spyglass/api"
 )
 
 var (
@@ -40,6 +43,8 @@ var (
 	// ErrFileTooLarge will be thrown when a size-limited operation (ex. ReadAll) is called on an
 	// artifact whose size exceeds the configured limit.
 	ErrFileTooLarge = errors.New("file size over specified limit")
+	// ErrRequestSizeTooLarge will be thrown when any operation is called whose size exceeds the configured limit.
+	ErrRequestSizeTooLarge = errors.New("request size over specified limit")
 	// ErrContextUnsupported is thrown when attempting to use a context with an artifact that
 	// does not support context operations (cancel, withtimeout, etc.)
 	ErrContextUnsupported = errors.New("artifact does not support context operations")
@@ -61,31 +66,13 @@ type Lens interface {
 	// Config returns a LensConfig that describes the lens.
 	Config() LensConfig
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []Artifact, resourceDir string, config json.RawMessage) string
+	Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string
+	Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string
-}
-
-// Artifact represents some output of a prow job
-type Artifact interface {
-	// ReadAt reads len(p) bytes of the artifact at offset off. (unsupported on some compressed files)
-	ReadAt(p []byte, off int64) (n int, err error)
-	// ReadAtMost reads at most n bytes from the beginning of the artifact
-	ReadAtMost(n int64) ([]byte, error)
-	// CanonicalLink gets a link to viewing this artifact in storage
-	CanonicalLink() string
-	// JobPath is the path to the artifact within the job (i.e. without the job prefix)
-	JobPath() string
-	// ReadAll reads all bytes from the artifact up to a limit specified by the artifact
-	ReadAll() ([]byte, error)
-	// ReadTail reads the last n bytes from the artifact (unsupported on some compressed files)
-	ReadTail(n int64) ([]byte, error)
-	// Size gets the size of the artifact in bytes, may make a network call
-	Size() (int64, error)
+	Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
 }
 
 // ResourceDirForLens returns the path to a lens's public resource directory.
@@ -104,15 +91,12 @@ func RegisterLens(lens Lens) error {
 	if config.Title == "" {
 		return errors.New("empty title field in view metadata")
 	}
-	if config.Priority < 0 {
-		return errors.New("priority must be >=0")
-	}
 	lensReg[config.Name] = lens
 	logrus.Infof("Spyglass registered viewer %s with title %s.", config.Name, config.Title)
 	return nil
 }
 
-// GetLens returns a Lens by name, if it exists; otherwise it returns an error.
+// GetLens returns a Lens or a remoteLens  by name, if it exists; otherwise it returns an error.
 func GetLens(name string) (Lens, error) {
 	lens, ok := lensReg[name]
 	if !ok {
@@ -128,7 +112,7 @@ func UnregisterLens(viewerName string) {
 }
 
 // LastNLines reads the last n lines from an artifact.
-func LastNLines(a Artifact, n int64) ([]string, error) {
+func LastNLines(a api.Artifact, n int64) ([]string, error) {
 	// 300B, a reasonable log line length, probably a bit more scalable than a hard-coded value
 	return LastNLinesChunked(a, n, 300*n+1)
 }
@@ -136,7 +120,7 @@ func LastNLines(a Artifact, n int64) ([]string, error) {
 // LastNLinesChunked reads the last n lines from an artifact by reading chunks of size chunkSize
 // from the end of the artifact. Best performance is achieved by:
 // argmin 0<chunkSize<INTMAX, f(chunkSize) = chunkSize - n * avgLineLength
-func LastNLinesChunked(a Artifact, n, chunkSize int64) ([]string, error) {
+func LastNLinesChunked(a api.Artifact, n, chunkSize int64) ([]string, error) {
 	toRead := chunkSize + 1 // Add 1 for exclusive upper bound read range
 	chunks := int64(1)
 	var contents []byte

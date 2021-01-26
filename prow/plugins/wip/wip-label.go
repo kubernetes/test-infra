@@ -76,7 +76,8 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&
 		pe.Action != github.PullRequestActionEdited &&
-		pe.Action != github.PullRequestActionReadyForReview {
+		pe.Action != github.PullRequestActionReadyForReview &&
+		pe.Action != github.PullRequestActionConvertedToDraft {
 		return nil
 	}
 

@@ -24,6 +24,7 @@ FROM debian:buster
 ARG IMAGE_ARG
 # arg that specifies the bazel version to install
 ARG BAZEL_VERSION_ARG=0.23.1
+ARG GO_VERSION
 
 # add envs:
 # - so we can debug with the image name:tag
@@ -33,7 +34,8 @@ ARG BAZEL_VERSION_ARG=0.23.1
 # - hinting that we are in a docker container
 ENV IMAGE=${IMAGE_ARG} \
     BAZEL_VERSION=${BAZEL_VERSION_ARG} \
-    PATH=/google-cloud-sdk/bin:${PATH} \
+    GOPATH=/home/prow/go \
+    PATH=/home/prow/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
     CONTAINER=docker
 
@@ -52,48 +54,57 @@ COPY ["wrapper.sh", "create_bazel_cache_rcs.sh", "install-bazel.sh", \
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN echo "Installing Packages ..." \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        apt-transport-https \
-        build-essential \
-        ca-certificates \
-        curl \
-        file \
-        git \
-        gnupg2 \
-        kmod \
-        lsb-release \
-        mercurial \
-        pkg-config \
-        procps \
-        python \
-        python-dev \
-        python-pip \
-        rsync \
-        software-properties-common \
-        unzip \
-    && rm -rf /var/lib/apt/lists/* \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends \
+            apt-transport-https \
+            build-essential \
+            ca-certificates \
+            curl \
+            file \
+            git \
+            gnupg2 \
+            kmod \
+            lsb-release \
+            mercurial \
+            openssh-client \
+            pkg-config \
+            procps \
+            python \
+            python-dev \
+            python-pip \
+            rsync \
+            software-properties-common \
+            unzip \
+        && rm -rf /var/lib/apt/lists/* \
+    && echo "Installing Go ..." \
+        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
+        && curl -fsSL "https://storage.googleapis.com/golang/${GO_TARBALL}" --output "${GO_TARBALL}" \
+        && tar xzf "${GO_TARBALL}" -C /usr/local \
+        && rm "${GO_TARBALL}"\
+        && mkdir -p "${GOPATH}/bin" \
     && echo "Installing Bazel ..." \
-    && install-bazel.sh \
-    && echo "Installing gcloud SDK, kubectl ..." \
-    && curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
-    && tar xzf google-cloud-sdk.tar.gz -C / \
-    && rm google-cloud-sdk.tar.gz \
-    && /google-cloud-sdk/install.sh \
-        --disable-installation-options \
-        --bash-completion=false \
-        --path-update=false \
-        --usage-reporting=false \
-    && gcloud components install kubectl \
+        && install-bazel.sh \
+        && echo "Installing gcloud SDK, kubectl ..." \
+        && curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
+        && tar xzf google-cloud-sdk.tar.gz -C / \
+        && rm google-cloud-sdk.tar.gz \
+        && /google-cloud-sdk/install.sh \
+            --disable-installation-options \
+            --bash-completion=false \
+            --path-update=false \
+            --usage-reporting=false \
+        && gcloud components install kubectl \
+        && gcloud components install alpha \
+        && gcloud components install beta \
     && echo "Installing Docker ..." \
-    && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
-    && add-apt-repository \
-        "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-         $(lsb_release -cs) stable" \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends docker-ce \
-    && rm -rf /var/lib/apt/lists/* \
-    && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
+        && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
+        && add-apt-repository \
+            "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+            $(lsb_release -cs) stable" \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends docker-ce \
+        && rm -rf /var/lib/apt/lists/* \
+        && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && echo "Ensuring Legacy Iptables ..." \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy

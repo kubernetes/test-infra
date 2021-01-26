@@ -1,0 +1,55 @@
+metadata:
+  annotations:
+    prow.k8s.io/job: job-name
+  creationTimestamp: null
+  labels:
+    created-by-prow: "true"
+    needstobe: inherited
+    prow.k8s.io/build-id: blabla
+    prow.k8s.io/id: pod
+    prow.k8s.io/job: job-name
+    prow.k8s.io/refs.org: org-name
+    prow.k8s.io/refs.pull: "1"
+    prow.k8s.io/refs.repo: repo-name
+    prow.k8s.io/type: presubmit
+  name: pod
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - env:
+    - name: MY_ENV
+      value: rocks
+    - name: BUILD_ID
+      value: blabla
+    - name: BUILD_NUMBER
+      value: blabla
+    - name: CI
+      value: "true"
+    - name: JOB_NAME
+      value: job-name
+    - name: JOB_SPEC
+      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}'
+    - name: JOB_TYPE
+      value: presubmit
+    - name: PROW_JOB_ID
+      value: pod
+    - name: PULL_BASE_REF
+      value: base-ref
+    - name: PULL_BASE_SHA
+      value: base-sha
+    - name: PULL_NUMBER
+      value: "1"
+    - name: PULL_PULL_SHA
+      value: pull-sha
+    - name: PULL_REFS
+      value: base-ref:base-sha,1:pull-sha
+    - name: REPO_NAME
+      value: repo-name
+    - name: REPO_OWNER
+      value: org-name
+    image: tester
+    name: test
+    resources: {}
+    terminationMessagePolicy: FallbackToLogsOnError
+  restartPolicy: Never
+status: {}

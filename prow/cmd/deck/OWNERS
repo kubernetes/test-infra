@@ -1,8 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-
 reviewers:
- - Katharine
-approvers:
+- chaodaiG
+- e-blackwelder
+- michelle192837
+emeritus_approvers:
  - Katharine
 labels:
  - area/prow/deck

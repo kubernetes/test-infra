@@ -18,10 +18,13 @@ package main
 
 import (
 	"flag"
-	"k8s.io/test-infra/prow/flagutil"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+
+	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
@@ -29,8 +32,13 @@ func TestOptions(t *testing.T) {
 	var defaultGitHubOptions flagutil.GitHubOptions
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
-	defaultGerritProjects := make(map[string][]string, 0)
+	defaultGerritProjects := make(map[string][]string)
 
+	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
+		MetricsPort: prowflagutil.DefaultMetricsPort,
+		PProfPort:   prowflagutil.DefaultPProfPort,
+		HealthPort:  prowflagutil.DefaultHealthPort,
+	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -55,9 +63,10 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				k8sReportFraction: 1.0,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -72,9 +81,10 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				k8sReportFraction: 1.0,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		//PubSub Reporter
@@ -82,11 +92,12 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
-				pubsubWorkers:     7,
-				configPath:        "baz",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				pubsubWorkers:          7,
+				configPath:             "baz",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -98,12 +109,13 @@ func TestOptions(t *testing.T) {
 			name: "slack workers, sets workers",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:      13,
-				slackTokenFile:    "/bar/baz",
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				slackWorkers:           13,
+				slackTokenFile:         "/bar/baz",
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -121,9 +133,10 @@ func TestOptions(t *testing.T) {
 				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -132,24 +145,26 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "k8s-gcs enables k8s-gcs",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},
 			expected: &options{
-				k8sGCSWorkers:     3,
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 1.0,
+				k8sBlobStorageWorkers:  3,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
 			name: "k8s-gcs with report fraction sets report fraction",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
 			expected: &options{
-				k8sGCSWorkers:     3,
-				configPath:        "foo",
-				github:            defaultGitHubOptions,
-				gerritProjects:    defaultGerritProjects,
-				k8sReportFraction: 0.5,
+				k8sBlobStorageWorkers:  3,
+				configPath:             "foo",
+				github:                 defaultGitHubOptions,
+				gerritProjects:         defaultGerritProjects,
+				k8sReportFraction:      0.5,
+				instrumentationOptions: defaultInstrumentationOptions,
 			},
 		},
 		{
@@ -163,17 +178,25 @@ func TestOptions(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		var actual options
-		err := actual.parseArgs(flags, tc.args)
-		switch {
-		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to return an error", tc.name)
-		case err != nil && tc.expected != nil:
-			t.Errorf("%s: unexpected error: %v", tc.name, err)
-		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actual options
+			err := actual.parseArgs(flags, tc.args)
+			switch {
+			case err == nil && tc.expected == nil:
+				t.Fatalf("%s: failed to return an error", tc.name)
+			case err != nil && tc.expected != nil:
+				t.Fatalf("%s: unexpected error: %v", tc.name, err)
+			}
+
+			if tc.expected == nil {
+				return
+			}
+			if diff := cmp.Diff(actual, *tc.expected, cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
+				t.Errorf("Result differs from expected: %s", diff)
+			}
+
+		})
 	}
 }
 

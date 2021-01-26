@@ -28,11 +28,11 @@ spec:
         spec:
           containers:
             - name: label-sync
-              image: gcr.io/k8s-prow/label_sync:v20200417-3971a63f2
+              image: gcr.io/k8s-prow/label_sync:v20210123-aa0de54ee1
               args:
               - --config=/etc/config/labels.yaml
               - --confirm=true
-              - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-incubator,kubernetes-sigs
+              - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-sigs
               - --token=/etc/github/oauth
               volumeMounts:
               - name: oauth

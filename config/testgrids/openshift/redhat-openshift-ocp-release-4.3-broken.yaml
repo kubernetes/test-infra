@@ -23,9 +23,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-ovn-4.3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
@@ -50,9 +50,9 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-ovn-4.3
   name: redhat-openshift-ocp-release-4.3-broken
 test_groups:

@@ -32,7 +32,8 @@ import (
 )
 
 const (
-	providerS3 = "s3"
+	S3 = "s3"
+	GS = "gs"
 )
 
 // GetBucket opens and returns a gocloud blob.Bucket based on credentials and a path.
@@ -64,7 +65,7 @@ func GetBucket(ctx context.Context, s3Credentials []byte, path string) (*blob.Bu
 	if err != nil {
 		return nil, err
 	}
-	if storageProvider == providerS3 && len(s3Credentials) > 0 {
+	if storageProvider == S3 && len(s3Credentials) > 0 {
 		return getS3Bucket(ctx, s3Credentials, bucket)
 	}
 
@@ -90,20 +91,31 @@ type s3Credentials struct {
 // getS3Bucket opens a gocloud blob.Bucket based on given credentials in the format the
 // struct s3Credentials defines (see documentation of GetBucket for an example)
 func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bucket, error) {
-	s3Credentials := &s3Credentials{}
-	if err := json.Unmarshal(creds, s3Credentials); err != nil {
+	s3Creds := &s3Credentials{}
+	if err := json.Unmarshal(creds, s3Creds); err != nil {
 		return nil, fmt.Errorf("error getting S3 credentials from JSON: %v", err)
 	}
 
-	staticCredentials := credentials.NewStaticCredentials(s3Credentials.AccessKey, s3Credentials.SecretKey, "")
+	cfg := &aws.Config{}
 
-	sess, err := session.NewSession(&aws.Config{
-		Credentials:      staticCredentials,
-		Endpoint:         aws.String(s3Credentials.Endpoint),
-		DisableSSL:       aws.Bool(s3Credentials.Insecure),
-		S3ForcePathStyle: aws.Bool(s3Credentials.S3ForcePathStyle),
-		Region:           aws.String(s3Credentials.Region),
-	})
+	//  Use the default credential chain if no credentials are specified
+	if s3Creds.AccessKey != "" && s3Creds.SecretKey != "" {
+		staticCredentials := credentials.StaticProvider{
+			Value: credentials.Value{
+				AccessKeyID:     s3Creds.AccessKey,
+				SecretAccessKey: s3Creds.SecretKey,
+			},
+		}
+
+		cfg.Credentials = credentials.NewChainCredentials([]credentials.Provider{&staticCredentials})
+	}
+
+	cfg.Endpoint = aws.String(s3Creds.Endpoint)
+	cfg.DisableSSL = aws.Bool(s3Creds.Insecure)
+	cfg.S3ForcePathStyle = aws.Bool(s3Creds.S3ForcePathStyle)
+	cfg.Region = aws.String(s3Creds.Region)
+
+	sess, err := session.NewSession(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating S3 Session: %v", err)
 	}
@@ -113,6 +125,14 @@ func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bu
 		return nil, fmt.Errorf("error opening S3 bucket: %v", err)
 	}
 	return bkt, nil
+}
+
+// HasStorageProviderPrefix returns true if the given string starts with
+// any of the known storageProviders and a slash, e.g.
+// * gs/kubernetes-jenkins returns true
+// * kubernetes-jenkins returns false
+func HasStorageProviderPrefix(path string) bool {
+	return strings.HasPrefix(path, GS+"/") || strings.HasPrefix(path, S3+"/")
 }
 
 // ParseStoragePath parses storagePath and returns the storageProvider, bucket and relativePath

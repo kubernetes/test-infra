@@ -1,10 +1,2 @@
 dashboards:
 - name: conformance-kind
-  dashboard_tab:
-    - name: kind, v1.14 (dev, ARM64)
-      description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster on ARM64 platform
-      test_group_name: ci-kubernetes-kind-conformance-latest-1-14-arm64
-
-test_groups:
-- name: ci-kubernetes-kind-conformance-latest-1-14-arm64
-  gcs_prefix: k8s-conformance-kind-arm64-openlab/periodic-logs/ci-kind-integration-test-arm64

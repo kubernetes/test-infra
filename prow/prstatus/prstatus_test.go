@@ -19,20 +19,21 @@ package prstatus
 import (
 	"context"
 	"encoding/gob"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
-	"golang.org/x/oauth2"
-
+	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 	"sigs.k8s.io/yaml"
 
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 )
@@ -42,31 +43,50 @@ type MockQueryHandler struct {
 	contextMap map[int][]Context
 }
 
-func (mh *MockQueryHandler) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
+func (mh *MockQueryHandler) queryPullRequests(ctx context.Context, ghc githubQuerier, query string) ([]PullRequest, error) {
 	return mh.prs, nil
 }
 
-func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+func (mh *MockQueryHandler) getHeadContexts(ghc githubStatusFetcher, pr PullRequest) ([]Context, error) {
 	return mh.contextMap[int(pr.Number)], nil
-}
-
-func (mh *MockQueryHandler) BotName(github.Client) (*github.User, error) {
-	login := "random_user"
-	return &github.User{
-		Login: login,
-	}, nil
 }
 
 type fgc struct {
 	combinedStatus *github.CombinedStatus
+	checkruns      *github.CheckRunList
+	botName        string
 }
 
-func (c *fgc) Query(context.Context, interface{}, map[string]interface{}) error {
+func (c fgc) Query(context.Context, interface{}, map[string]interface{}) error {
 	return nil
 }
 
-func (c *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+func (c fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
 	return c.combinedStatus, nil
+}
+
+func (c fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if c.checkruns != nil {
+		return c.checkruns, nil
+	}
+	return &github.CheckRunList{}, nil
+}
+
+func (c fgc) BotUser() (*github.UserData, error) {
+	if c.botName == "error" {
+		return nil, errors.New("injected BotUser() error")
+	}
+	return &github.UserData{Login: c.botName}, nil
+}
+
+func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {
+	return func(accessToken string) GitHubClient {
+		who, ok := tokenUsers[accessToken]
+		if !ok {
+			panic("unexpected access token: " + accessToken)
+		}
+		return who
+	}
 }
 
 func newMockQueryHandler(prs []PullRequest, contextMap map[int][]Context) *MockQueryHandler {
@@ -78,10 +98,9 @@ func newMockQueryHandler(prs []PullRequest, contextMap map[int][]Context) *MockQ
 
 func createMockAgent(repos []string, config *githuboauth.Config) *DashboardAgent {
 	return &DashboardAgent{
-		repos:  repos,
-		goac:   config,
-		log:    logrus.WithField("unit-test", "dashboard-agent"),
-		github: prowflagutil.NewGitHubOptions(),
+		repos: repos,
+		goac:  config,
+		log:   logrus.WithField("unit-test", "dashboard-agent"),
 	}
 }
 
@@ -100,7 +119,9 @@ func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 
 	mockQueryHandler := newMockQueryHandler(nil, nil)
-	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+
+	ghClientCreator := newGitHubClientCreator(map[string]fgc{"should-not-find-me": {}})
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
 	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
@@ -133,7 +154,8 @@ func TestHandlePrStatusWithInvalidToken(t *testing.T) {
 	rr := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 	request.AddCookie(&http.Cookie{Name: tokenSession, Value: "garbage"})
-	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+	ghClientCreator := newGitHubClientCreator(map[string]fgc{"should-not-find-me": {}})
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
 	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
@@ -272,37 +294,43 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 		},
 	}
 	for id, testcase := range testCases {
-		t.Logf("Test %d:", id)
-		rr := httptest.NewRecorder()
-		request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
-		mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
-		if err != nil {
-			t.Errorf("Error with creating mock session: %v", err)
-		}
-		gob.Register(oauth2.Token{})
-		token := &oauth2.Token{AccessToken: "secret-token", Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
-		mockSession.Values[tokenKey] = token
-		mockSession.Values[loginKey] = "random_user"
-		mockQueryHandler := newMockQueryHandler(testcase.prs, testcase.contextMap)
-		prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
-		prHandler.ServeHTTP(rr, request)
-		if rr.Code != http.StatusOK {
-			t.Fatalf("Bad status code: %d", rr.Code)
-		}
-		response := rr.Result()
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			t.Fatalf("Error with reading response body: %v", err)
-		}
-		var dataReturned UserData
-		if err := yaml.Unmarshal(body, &dataReturned); err != nil {
-			t.Errorf("Error with unmarshaling response: %v", err)
-		}
-		if !reflect.DeepEqual(dataReturned, testcase.expectedData) {
-			t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, testcase.expectedData)
-		}
-		t.Logf("Passed")
-		response.Body.Close()
+		t.Run(strconv.Itoa(id), func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
+			mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
+			if err != nil {
+				t.Errorf("Error with creating mock session: %v", err)
+			}
+			gob.Register(oauth2.Token{})
+			const (
+				accessToken = "secret-token"
+				botName     = "random_user"
+			)
+			token := &oauth2.Token{AccessToken: accessToken, Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
+			mockSession.Values[tokenKey] = token
+			mockSession.Values[loginKey] = botName
+			mockQueryHandler := newMockQueryHandler(testcase.prs, testcase.contextMap)
+			ghClientCreator := newGitHubClientCreator(map[string]fgc{accessToken: {botName: botName}})
+			prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
+			prHandler.ServeHTTP(rr, request)
+			if rr.Code != http.StatusOK {
+				t.Fatalf("Bad status code: %d", rr.Code)
+			}
+			response := rr.Result()
+			defer response.Body.Close()
+			body, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				t.Fatalf("Error with reading response body: %v", err)
+			}
+			var dataReturned UserData
+			if err := yaml.Unmarshal(body, &dataReturned); err != nil {
+				t.Errorf("Error with unmarshaling response: %v", err)
+			}
+			if !reflect.DeepEqual(dataReturned, testcase.expectedData) {
+				t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, testcase.expectedData)
+			}
+			t.Logf("Passed")
+		})
 	}
 }
 
@@ -315,12 +343,11 @@ func TestGetHeadContexts(t *testing.T) {
 	mockAgent := createMockAgent(repos, mockConfig)
 	testCases := []struct {
 		combinedStatus   *github.CombinedStatus
-		pr               PullRequest
+		checkruns        *github.CheckRunList
 		expectedContexts []Context
 	}{
 		{
 			combinedStatus:   &github.CombinedStatus{},
-			pr:               PullRequest{},
 			expectedContexts: []Context{},
 		},
 		{
@@ -343,12 +370,11 @@ func TestGetHeadContexts(t *testing.T) {
 					},
 				},
 			},
-			pr: PullRequest{},
 			expectedContexts: []Context{
 				{
+					State:       "FAILURE",
 					Context:     "gofmt-job",
 					Description: "job failed",
-					State:       "FAILURE",
 				},
 				{
 					State:       "SUCCESS",
@@ -362,19 +388,82 @@ func TestGetHeadContexts(t *testing.T) {
 				},
 			},
 		},
+		{
+			combinedStatus: &github.CombinedStatus{
+				Statuses: []github.Status{
+					{
+						State:       "FAILURE",
+						Description: "job failed",
+						Context:     "gofmt-job",
+					},
+					{
+						State:       "SUCCESS",
+						Description: "job succeed",
+						Context:     "k8s-job",
+					},
+					{
+						State:       "PENDING",
+						Description: "triggered",
+						Context:     "test-job",
+					},
+				},
+			},
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expectedContexts: []Context{
+				{
+					State:       "FAILURE",
+					Context:     "gofmt-job",
+					Description: "job failed",
+				},
+				{
+					State:       "SUCCESS",
+					Description: "job succeed",
+					Context:     "k8s-job",
+				},
+				{
+					State:       "PENDING",
+					Description: "triggered",
+					Context:     "test-job",
+				},
+				{
+					State:   "PENDING",
+					Context: "incomplete-checkrun",
+				},
+				{
+					State:   "SUCCESS",
+					Context: "neutral-is-considered-success-checkrun",
+				},
+				{
+					State:   "SUCCESS",
+					Context: "success-checkrun",
+				},
+				{
+					State:   "FAILURE",
+					Context: "failure-checkrun",
+				},
+			},
+		},
 	}
 	for id, testcase := range testCases {
-		t.Logf("Test %d:", id)
-		contexts, err := mockAgent.GetHeadContexts(&fgc{
-			combinedStatus: testcase.combinedStatus,
-		}, testcase.pr)
-		if err != nil {
-			t.Fatalf("Error with getting head contexts")
-		}
-		if !reflect.DeepEqual(contexts, testcase.expectedContexts) {
-			t.Fatalf("Invalid user data. Got %v, expected %v.", contexts, testcase.expectedContexts)
-		}
-		t.Logf("Passed")
+		t.Run(strconv.Itoa(id), func(t *testing.T) {
+			contexts, err := mockAgent.getHeadContexts(&fgc{
+				combinedStatus: testcase.combinedStatus,
+				checkruns:      testcase.checkruns,
+			}, PullRequest{})
+			if err != nil {
+				t.Fatalf("Error with getting head contexts")
+			}
+			if diff := cmp.Diff(contexts, testcase.expectedContexts); diff != "" {
+				t.Fatalf("contexts differ from expected: %s", diff)
+			}
+		})
 	}
 }
 
