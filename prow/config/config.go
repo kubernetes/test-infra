@@ -1622,7 +1622,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if c.Plank.PodPendingTimeout == nil {
-		c.Plank.PodPendingTimeout = &metav1.Duration{Duration: 24 * time.Hour}
+		c.Plank.PodPendingTimeout = &metav1.Duration{Duration: 10 * time.Minute}
 	}
 
 	if c.Plank.PodRunningTimeout == nil {
@@ -1630,7 +1630,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if c.Plank.PodUnscheduledTimeout == nil {
-		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 24 * time.Hour}
+		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 5 * time.Minute}
 	}
 
 	if c.Gerrit.TickInterval == nil {
