@@ -137,6 +137,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -202,6 +203,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -267,6 +269,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
@@ -335,6 +338,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
+      - --metadata-sources=cl2-metadata.json
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -402,6 +406,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -473,6 +478,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -534,6 +540,7 @@ periodics:
       - --kubemark-master-size=n1-standard-32
       - --kubemark-nodes=600
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
