@@ -98,6 +98,11 @@ kubetest2_template = """
           --parallel 25 \\
           --skip-regex="{{skip_regex}}"
       image: {{e2e_image}}
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: {{kops_ssh_user}}
       resources:
         limits:
           memory: 2Gi

@@ -20489,6 +20489,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20544,6 +20549,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20599,6 +20609,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20654,6 +20669,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20709,6 +20729,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20764,6 +20789,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -20819,6 +20849,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23324,6 +23359,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23379,6 +23419,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23434,6 +23479,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23489,6 +23539,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23544,6 +23599,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23599,6 +23659,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -23654,6 +23719,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26159,6 +26229,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26214,6 +26289,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26269,6 +26349,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26324,6 +26409,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26379,6 +26469,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26434,6 +26529,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
@@ -26489,6 +26589,11 @@ periodics:
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       resources:
         limits:
           memory: 2Gi
