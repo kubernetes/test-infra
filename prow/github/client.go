@@ -3582,7 +3582,8 @@ func (c *client) EnsureFork(forkingUser, org, repo string) (string, error) {
 	if err != nil {
 		return repo, fmt.Errorf("could not fetch all existing repos: %v", err)
 	}
-	if !repoExists(fork, repos) {
+	// if the repo does not exist, or it does, but is not a fork of the repo we want
+	if forkedRepo := getFork(fork, repos); forkedRepo == nil || forkedRepo.Parent.FullName != fmt.Sprintf("%s/%s", org, repo) {
 		if name, err := c.CreateFork(org, repo); err != nil {
 			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
 		} else {
@@ -3615,7 +3616,7 @@ func (c *client) waitForRepo(owner, name string) error {
 				continue
 			}
 			ghErr = ""
-			if repoExists(owner+"/"+name, []Repo{repo.Repo}) {
+			if forkedRepo := getFork(owner+"/"+name, []Repo{repo.Repo}); forkedRepo != nil {
 				return nil
 			}
 		case <-after:
@@ -3624,16 +3625,16 @@ func (c *client) waitForRepo(owner, name string) error {
 	}
 }
 
-func repoExists(repo string, repos []Repo) bool {
+func getFork(repo string, repos []Repo) *Repo {
 	for _, r := range repos {
 		if !r.Fork {
 			continue
 		}
 		if r.FullName == repo {
-			return true
+			return &r
 		}
 	}
-	return false
+	return nil
 }
 
 // ListRepoTeams gets a list of all the teams with access to a repository

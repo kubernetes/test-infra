@@ -111,7 +111,8 @@ type Options struct {
 	ExtraFiles []string `yaml:"extraFiles"`
 	// The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
 	TargetVersion string `yaml:"targetVersion"`
-	// The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
+	// The name used in the address when creating remote. This should be the same name as the fork. If fork does not exist this will be the name of the fork that is created.
+	// If it is not the same as the fork, the robot will change the name of the fork to this. Format will be git@github.com:{GitLogin}/{RemoteName}.git
 	RemoteName string `yaml:"remoteName"`
 	// The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
 	HeadBranchName string `yaml:"headBranchName"`
@@ -288,10 +289,22 @@ func Run(o *Options) error {
 		}
 
 		// Check to see if the proper fork exists and if it does not, create one.
-		// TODO(mpherman): Handle case where account has repo of same name as one we are trying to autobump but is not a fork of it (e.g. test-infra)
-		_, err := gc.EnsureFork(o.GitHubLogin, o.GitHubOrg, o.GitHubRepo)
+		forkName, err := gc.EnsureFork(o.GitHubLogin, o.GitHubOrg, o.GitHubRepo)
 		if err != nil {
-			return fmt.Errorf("fork needed for autobump does not exist. unable to create new fork. %v", err)
+			return fmt.Errorf("fork needed for autobump does not exist. unable to create new fork. %w", err)
+		}
+		// If a new fork was created with a name other than o.RemoteName
+		if forkName != o.RemoteName {
+			var updateRequest = github.RepoUpdateRequest{
+				RepoRequest: github.RepoRequest{
+					Name: &o.RemoteName,
+				},
+			}
+			_, err := gc.UpdateRepo(o.GitHubLogin, forkName, updateRequest)
+			logrus.Infof("Fork of %s was expected to be %s but was %s. This might be because the fork was just created and there was a name overlap. Changing the name of the fork to %s.", o.GitHubRepo, o.RemoteName, forkName, o.RemoteName)
+			if err != nil {
+				return fmt.Errorf("unable to change name of forked repo from %s to %s due to error: %w. forked repo needs to be named %s. Either make this fix manually or change o.RemoteName", forkName, o.RemoteName, err, o.RemoteName)
+			}
 		}
 
 		stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}

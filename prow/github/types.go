@@ -342,6 +342,17 @@ type Repo struct {
 	// is being used, if listing a team's repos this will be for the
 	// team's privilege level in the repo
 	Permissions RepoPermissions `json:"permissions"`
+	Parent      ParentRepo      `json:"parent"`
+}
+
+// ParentRepo contains a small subsection of general repository information: it
+// just includes the information needed to confirm that a parent repo exists
+// and what the name of that repo is.
+type ParentRepo struct {
+	Owner    User   `json:"owner"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	HTMLURL  string `json:"html_url"`
 }
 
 // Repo contains detailed repository information, including items
