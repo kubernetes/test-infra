@@ -293,6 +293,9 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 			continue
 		}
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) {
+			continue
+		}
 		for _, presubmit := range presubmits {
 			log.WithFields(logrus.Fields{
 				"org":     org,
@@ -320,6 +323,9 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 			continue
 		}
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) {
+			continue
+		}
 		for _, migration := range migrations {
 			log.WithFields(logrus.Fields{
 				"org":  org,

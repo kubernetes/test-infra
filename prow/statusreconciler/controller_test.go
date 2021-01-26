@@ -867,7 +867,7 @@ func TestControllerReconcile(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name: "ignored org skips creation, still does retire and migrate",
+			name: "ignored org skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -886,13 +886,13 @@ func TestControllerReconcile(t *testing.T) {
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
 		},
 		{
-			name: "ignored org/repo skips creation, still does retire and migrate",
+			name: "ignored org/repo skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -911,7 +911,7 @@ func TestControllerReconcile(t *testing.T) {
 				}
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
