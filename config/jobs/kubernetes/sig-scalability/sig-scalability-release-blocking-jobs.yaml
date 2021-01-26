@@ -162,6 +162,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --test=false
