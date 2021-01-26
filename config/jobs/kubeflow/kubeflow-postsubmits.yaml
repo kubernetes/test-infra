@@ -81,7 +81,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/testing.
-<<<<<<< HEAD
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-postsubmit
     cluster: kubeflow
@@ -98,7 +97,6 @@ postsubmits:
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-postsubmit
     cluster: kubeflow
-=======
   kubeflow/pipelines:
   - name: kubeflow-pipeline-postsubmit-standalone-component-test
     cluster: kubeflow
@@ -144,12 +142,10 @@ postsubmits:
     branches:
     - ^master|release-.+$
     decorate: true
->>>>>>> upstream/master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-<<<<<<< HEAD
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
@@ -159,7 +155,6 @@ postsubmits:
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-postsubmit
     cluster: kubeflow
-=======
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
@@ -182,12 +177,10 @@ postsubmits:
     branches:
     - ^master|release-.+$
     decorate: true
->>>>>>> upstream/master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-<<<<<<< HEAD
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
@@ -272,7 +265,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/xgboost-operator.
-=======
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
@@ -290,4 +282,3 @@ postsubmits:
       description: Postsubmit tests for kubeflow/pipeline.
       testgrid-alert-email: kubeflow-pipelines+test@google.com
       testgrid-num-failures-to-alert: "5"
->>>>>>> upstream/master
