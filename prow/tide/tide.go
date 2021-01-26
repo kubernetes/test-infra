@@ -61,6 +61,9 @@ type githubClient interface {
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
 	Query(context.Context, interface{}, map[string]interface{}) error
+	BotUserChecker() (func(candidate string) bool, error)
+	CreateComment(string, string, int, string) error
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
 type contextChecker interface {
@@ -88,7 +91,8 @@ type Controller struct {
 	// Cache entries expire if they are not used during a sync loop.
 	changedFiles *changedFilesAgent
 
-	mergeChecker *mergeChecker
+	mergeChecker     *mergeChecker
+	failureCommenter failureCommenter
 
 	History *history.History
 }
@@ -238,6 +242,10 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
 	mergeChecker := newMergeChecker(cfg, ghcSync)
+	failureCommenter, err := newFailureCommenter(ghcSync)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing merge failure commenter: %v", err)
+	}
 
 	ctx := context.Background()
 	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker)
@@ -246,7 +254,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	go sc.run()
 
-	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker)
+	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker, failureCommenter)
 }
 
 func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
@@ -277,6 +285,7 @@ func newSyncController(
 	sc *statusController,
 	hist *history.History,
 	mergeChecker *mergeChecker,
+	failureCommenter failureCommenter,
 ) (*Controller, error) {
 	if err := mgr.GetFieldIndexer().IndexField(
 		ctx,
@@ -306,8 +315,9 @@ func newSyncController(
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
-		mergeChecker: mergeChecker,
-		History:      hist,
+		mergeChecker:     mergeChecker,
+		History:          hist,
+		failureCommenter: failureCommenter,
 	}, nil
 }
 
@@ -1135,6 +1145,20 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		if err != nil {
 			// These are user errors, shouldn't be printed as tide errors
 			log.WithError(err).Debug("Merge failed.")
+			errs = append(errs, err)
+			failed = append(failed, int(pr.Number))
+			if sp.cc[int(pr.Number)].IsOptional(statusContext) {
+				hasComment, listErr := c.failureCommenter.HasMergeFailureComment(&pr)
+				if listErr != nil {
+					log.WithError(listErr).Error("Failed to list comments")
+					errs = append(errs, listErr)
+				} else if !hasComment {
+					if err := c.failureCommenter.CreateMergeFailureComment(&pr, err, keepTrying); err != nil {
+						log.WithError(err).Error("Failed to add a comment")
+						errs = append(errs, err)
+					}
+				}
+			}
 		} else {
 			log.Info("Merged.")
 			merged = append(merged, int(pr.Number))
@@ -1982,4 +2006,65 @@ func checkRunToContext(checkRun CheckRun) Context {
 
 	context.State = githubql.StatusStateFailure
 	return context
+}
+
+type failureCommenter interface {
+	HasMergeFailureComment(*PullRequest) (bool, error)
+	CreateMergeFailureComment(*PullRequest, error, bool) error
+}
+
+type mergeFailureCommenter struct {
+	ghc   githubClient
+	isBot func(string) bool
+}
+
+func newFailureCommenter(ghc githubClient) (*mergeFailureCommenter, error) {
+	botUserChecker, err := ghc.BotUserChecker()
+	if err != nil {
+		return nil, err
+	}
+	return &mergeFailureCommenter{
+		ghc:   ghc,
+		isBot: botUserChecker,
+	}, nil
+}
+
+func mergeFailureComment(retry bool) string {
+	comment := "Attempt to merge the PR failed. This comment is generated only once for a PR."
+	if retry {
+		return fmt.Sprintf("%s Tide will retry the merge.", comment)
+	}
+	return fmt.Sprintf("%s Tide will not retry as the error is not considered transient.", comment)
+}
+
+func (a *mergeFailureCommenter) HasMergeFailureComment(pr *PullRequest) (bool, error) {
+	comments, err := a.ghc.ListIssueComments(
+		string(pr.Repository.Owner.Login),
+		string(pr.Repository.Name),
+		int(pr.Number),
+	)
+	if err != nil {
+		return false, err
+	}
+	for _, comment := range comments {
+		if a.isBot(comment.User.Login) {
+			if strings.Contains(comment.Body, mergeFailureComment(true)) || strings.Contains(comment.Body, mergeFailureComment(false)) {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+func (a *mergeFailureCommenter) CreateMergeFailureComment(pr *PullRequest, err error, retry bool) error {
+	message := mergeFailureComment(retry)
+	if err != nil {
+		message = fmt.Sprintf("%s The following are the error details:\n<code>\n%s\n</code>\n", message, err)
+	}
+	return a.ghc.CreateComment(
+		string(pr.Repository.Owner.Login),
+		string(pr.Repository.Name),
+		int(pr.Number),
+		message,
+	)
 }
