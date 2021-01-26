@@ -539,18 +539,31 @@ func isUnderPath(name string, paths []string) bool {
 	return false
 }
 
+// getVersionsAndCheckConisistency takes a list of Prefixes and a map of
+// all the images found in the code before the bump : their versions after the bump
+// For example {"gcr.io/k8s-prow/test1:tag": "newtag", "gcr.io/k8s-prow/test2:tag": "newtag"},
+// and returns a map of new versions resulted from bumping : the images using those versions.
+// It will error if one of the Prefixes was bumped inconsistently when it was not supposed to
 func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, error) {
 	// Key is tag, value is full image.
 	versions := map[string][]string{}
 	for _, prefix := range prefixes {
 		newVersions := 0
+		unbumped_found := false
 		for k, v := range images {
 			if strings.HasPrefix(k, prefix.Prefix) {
 				if _, ok := versions[v]; !ok {
 					newVersions++
 				}
-				versions[v] = append(versions[v], k)
-				if prefix.ConsistentImages && newVersions > 1 {
+				//Only add the bumped images to the new versions map
+				if !strings.Contains(k, v) {
+					versions[v] = append(versions[v], k)
+				} else {
+					unbumped_found = true
+					newVersions--
+				}
+				//If there are more than 1 new images, or an unbumped image and a new bumped image, it is not consistent
+				if prefix.ConsistentImages && (newVersions > 1 || (unbumped_found && newVersions > 0)) {
 					return nil, fmt.Errorf("%q was supposed to be bumped consistently but was not", prefix.Name)
 				}
 			}
@@ -579,6 +592,21 @@ func getPrefixesString(prefixes []Prefix) string {
 	return strings.Join(res, ", ")
 }
 
+// isBumpedPrefix takes a prefix and a map of new tags resulted from bumping : the images using those tags
+// and itterates over the map to find if the prefix is found. If it is, this means it has been bumped.
+func isBumpedPrefix(prefix Prefix, versions map[string][]string) (string, bool) {
+	for tag, imageList := range versions {
+		for _, image := range imageList {
+			if strings.HasPrefix(image, prefix.Prefix) {
+				return tag, true
+			}
+		}
+	}
+	return "", false
+}
+
+// makeCommitSummary takes a list of Prefixes and a map of new tags resulted from bumping : the images using those tags
+// and returns a summary of what was bumped for use in the commit message
 func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 	if len(versions) == 0 {
 		return fmt.Sprintf("Update %s images as necessary", getPrefixesString(prefixes))
@@ -586,16 +614,11 @@ func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 	var inconsistentBumps []string
 	var consistentBumps []string
 	for _, prefix := range prefixes {
-		if !prefix.ConsistentImages {
+		tag, bumped := isBumpedPrefix(prefix, versions)
+		if !prefix.ConsistentImages && bumped {
 			inconsistentBumps = append(inconsistentBumps, prefix.Name)
-		} else {
-			for tag, imageList := range versions {
-				//Should not be possible for tag to be in map with empty imageList
-				if strings.HasPrefix(imageList[0], prefix.Prefix) {
-					consistentBumps = append(consistentBumps, fmt.Sprintf("%s to %s", prefix.Name, tag))
-					break
-				}
-			}
+		} else if prefix.ConsistentImages && bumped {
+			consistentBumps = append(consistentBumps, fmt.Sprintf("%s to %s", prefix.Name, tag))
 		}
 	}
 	if len(inconsistentBumps) != 0 {
