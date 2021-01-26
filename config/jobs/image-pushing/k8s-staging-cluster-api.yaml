@@ -189,4 +189,5 @@ postsubmits:
               - --project=k8s-staging-scl-image-builder
               - --scratch-bucket=gs://k8s-staging-scl-image-builder-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
