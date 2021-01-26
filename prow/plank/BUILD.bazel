@@ -10,6 +10,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "controller_test.go",
+        "error_test.go",
         "reconciler_test.go",
     ],
     embed = [":go_default_library"],
@@ -49,6 +50,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
+        "error.go",
         "reconciler.go",
     ],
     importpath = "k8s.io/test-infra/prow/plank",

@@ -18,6 +18,7 @@ package plank
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -185,9 +186,11 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 		return reconcile.Result{}, nil
 	}
 
-	// TODO: Terminal errors for unfixable cases like missing build clusters
-	// and not return an error to prevent requeuing?
 	res, err := r.serializeIfNeeded(ctx, pj)
+	if errors.Is(err, ClusterClientNotExistError) {
+		// Unfixable cases like missing build clusters, do not return an error to prevent requeuing
+		return reconcile.Result{}, nil
+	}
 	if res == nil {
 		res = &reconcile.Result{}
 	}
@@ -546,12 +549,11 @@ func (r *reconciler) syncAbortedJob(ctx context.Context, pj *prowv1.ProwJob) err
 	return r.pjClient.Patch(ctx, pj, ctrlruntimeclient.MergeFrom(originalPJ))
 }
 
+// pod Gets pod for a pj, returns pod, whether pod exist, and error.
 func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
 	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
 	if !buildClientExists {
-		// TODO: Use terminal error type to prevent requeuing, this wont be fixed without
-		// a restart
-		return nil, false, fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias())
+		return nil, false, fmt.Errorf("no build client found for cluster %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
 	}
 
 	pod := &corev1.Pod{}
@@ -573,9 +575,7 @@ func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, 
 func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
 	if !buildClientExists {
-		// TODO: Use terminal error type to prevent requeuing, this wont be fixed without
-		// a restart
-		return fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias())
+		return fmt.Errorf("no build client found for cluster %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
 	}
 
 	pod := &corev1.Pod{
@@ -608,8 +608,7 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
-		// TODO: Terminal error to prevent requeuing
-		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		return "", "", fmt.Errorf("unknown cluster alias %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
 	}
 	err = client.Create(ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
