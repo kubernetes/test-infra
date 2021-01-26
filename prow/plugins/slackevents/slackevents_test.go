@@ -263,7 +263,7 @@ func TestComment(t *testing.T) {
 			commenter:        orgMember,
 		},
 		{
-			name:             "If multiple sigs mentioned, but only one channel is whitelisted, only send to one channel.",
+			name:             "If multiple sigs mentioned, but only one channel is allowed, only send to one channel.",
 			action:           github.GenericCommentActionCreated,
 			body:             "@kubernetes/sig-node-misc, @kubernetes/sig-testing-misc Message sent to multiple sigs.",
 			expectedMessages: map[string][]string{"sig-node": {"Message sent to multiple sigs."}},

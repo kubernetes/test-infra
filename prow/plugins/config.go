@@ -557,7 +557,7 @@ type ManagedColumn struct {
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
 // If a PR is pushed to any of the repos listed in the config then send messages
-// to the all the slack channels listed if pusher is NOT in the whitelist.
+// to the all the slack channels listed if pusher is NOT in the allowlist.
 type MergeWarning struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`

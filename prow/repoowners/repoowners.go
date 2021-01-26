@@ -389,24 +389,24 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
 			start = time.Now()
-			dirBlacklistPatterns := c.ownersDirBlacklist().DirBlacklist(org, repo)
-			var dirBlacklist []*regexp.Regexp
-			for _, pattern := range dirBlacklistPatterns {
+			ignoreDirPatterns := c.ownersDirBlacklist().ListIgnoredDirs(org, repo)
+			var dirIgnorelist []*regexp.Regexp
+			for _, pattern := range ignoreDirPatterns {
 				re, err := regexp.Compile(pattern)
 				if err != nil {
 					log.WithError(err).Errorf("Invalid OWNERS dir blacklist regexp %q.", pattern)
 					continue
 				}
-				dirBlacklist = append(dirBlacklist, re)
+				dirIgnorelist = append(dirIgnorelist, re)
 			}
-			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirBlacklist loading")
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirIgnorelist loading")
 
 			start = time.Now()
-			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, filenames, log)
+			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirIgnorelist, filenames, log)
 			if err != nil {
 				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 			}
-			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirBlacklist, log)", gitRepo.Directory(), mdYaml)
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirIgnorelist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
 			c.cache.setEntry(fullName, entry)
 		}
@@ -470,7 +470,7 @@ func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorelist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
@@ -484,7 +484,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
-		dirBlacklist: dirBlacklist,
+		dirBlacklist: dirIgnorelist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -579,10 +579,10 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 }
 
 // ParseFullConfig will unmarshal the content of the OWNERS file at the path into a FullConfig.
-// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// If the OWNERS directory is ignorelisted, it returns filepath.SkipDir.
 // Returns an error if the content cannot be unmarshalled.
 func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
-	// if path is in a blacklisted directory, ignore it
+	// if path is in an ignored directory, ignore it
 	dir := filepath.Dir(path)
 	for _, re := range o.dirBlacklist {
 		if re.MatchString(dir) {
@@ -598,10 +598,10 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 }
 
 // ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
-// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// If the OWNERS directory is ignorelisted, it returns filepath.SkipDir.
 // Returns an error if the content cannot be unmarshalled.
 func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
-	// if path is in a blacklisted directory, ignore it
+	// if path is in a an ignored directory, ignore it
 	dir := filepath.Dir(path)
 	for _, re := range o.dirBlacklist {
 		if re.MatchString(dir) {

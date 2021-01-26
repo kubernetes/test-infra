@@ -2687,7 +2687,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone and whitelist specified",
+			name: "allow anyone and allowed users specified",
 			prowConfig: `
 deck:
   rerun_auth_config:
@@ -2707,7 +2707,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone with empty whitelist",
+			name: "allow anyone with an empty allowlist",
 			prowConfig: `
 deck:
   rerun_auth_config:
