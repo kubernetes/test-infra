@@ -39,6 +39,11 @@ func TestDeconstructCommit(t *testing.T) {
 			expectedCommit: "deadbeef",
 		},
 		{
+			name:           "commit drops leading g",
+			commit:         "gdeadbeef",
+			expectedCommit: "deadbeef",
+		},
+		{
 			name:   "just tag works",
 			commit: "v0.0.30",
 			tag:    "v0.0.30",
@@ -65,6 +70,72 @@ func TestDeconstructCommit(t *testing.T) {
 				t.Errorf("DeconstructCommit(%s) got commit %q, want %q", tc.commit, commit, tc.expectedCommit)
 			}
 
+		})
+	}
+}
+
+func TestDeconstructTag(t *testing.T) {
+	cases := []struct {
+		tag     string
+		date    string
+		commit  string
+		variant string
+	}{
+		{
+			tag: "deadbeef",
+			// TODO(fejta): commit: "deadbeef",
+		},
+		{
+			tag: "v0.0.30",
+			// TODO(fejta): commit: "v0.0.30",
+		},
+		{
+			tag:    "v20190404-65af07d",
+			date:   "20190404",
+			commit: "65af07d",
+		},
+		{
+			tag:     "v20190330-811f79999-experimental",
+			date:    "20190330",
+			commit:  "811f79999",
+			variant: "-experimental",
+		},
+		{
+			tag:    "latest",
+			date:   "atest", // TODO(fejta): empty
+			commit: "latest",
+		},
+		{
+			tag:     "latest-experimental",
+			date:    "atest", // TODO(fejta): empty
+			commit:  "latest",
+			variant: "-experimental", // TODO(fejta): no -
+		},
+		{
+			tag:    "v20210125-v0.0.41-8-gcb960c8",
+			date:   "20210125",
+			commit: "gcb960c8", // TODO(fejta): "v0.0.41-8-gcb960c8",
+		},
+		{
+			tag:     "v20210125-v0.0.41-8-gcb960c8-fancy",
+			date:    "20210125",
+			commit:  "gcb960c8", // TODO(fejta): "v0.0.41-8-gcb960c8",
+			variant: "-fancy",   // TODO(fejta): no -
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.tag, func(t *testing.T) {
+			date, commit, variant := DeconstructTag(tc.tag)
+			if date != tc.date {
+				t.Errorf("DeconstructTag(%q) got date %s, want %s", tc.tag, date, tc.date)
+			}
+			if commit != tc.commit {
+				t.Errorf("DeconstructTag(%q) got commit %s, want %s", tc.tag, commit, tc.commit)
+			}
+			if variant != tc.variant {
+				t.Errorf("DeconstructTag(%q) got variant %s, want %s", tc.tag, variant, tc.variant)
+			}
 		})
 	}
 }
