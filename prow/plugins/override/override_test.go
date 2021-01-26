@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -55,6 +56,10 @@ func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoow
 
 type fakeOwnersClient struct {
 	topLevelApprovers sets.String
+}
+
+func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {

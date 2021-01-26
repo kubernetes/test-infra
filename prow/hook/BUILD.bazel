@@ -20,6 +20,7 @@ go_test(
         "//prow/githubeventserver:go_default_library",
         "//prow/phony:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/ownersconfig:go_default_library",
         "//prow/repoowners:go_default_library",
     ],
 )

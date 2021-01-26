@@ -364,7 +364,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
     testgrid-alert-email: release-team@kubernetes.io
-- interval: 4h
+- interval: 24h
   name: e2e-kops-aws-misc-upgrade
   always_run: false
   labels:
@@ -377,7 +377,7 @@ periodics:
     preset-e2e-platform-aws: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 2h
   extra_refs:
   - org: kubernetes
     repo: kops

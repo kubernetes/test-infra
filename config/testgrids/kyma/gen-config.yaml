@@ -66,6 +66,13 @@ dashboards:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-integration-gardener-gcp-parallel
   - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration periodic job on k3s.
+    name: kyma-integration-k3s
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-k3s
+  - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE central-connector job.
     name: post-master-kyma-gke-central-connector
@@ -148,6 +155,13 @@ dashboards:
     test_group_name: post-rel119-kyma-gke-central-connector
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job for release 1.19.
+    name: post-rel119-kyma-gke-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel119-kyma-gke-compass-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE integration job for release 1.19.
     name: post-rel119-kyma-gke-integration
     open_bug_template:
@@ -199,6 +213,13 @@ dashboards:
     test_group_name: post-rel118-kyma-gke-central-connector
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job for release 1.18.
+    name: post-rel118-kyma-gke-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel118-kyma-gke-compass-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE integration job for release 1.18.
     name: post-rel118-kyma-gke-integration
     open_bug_template:
@@ -248,6 +269,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
     test_group_name: post-rel117-kyma-gke-central-connector
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job for release 1.17.
+    name: post-rel117-kyma-gke-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel117-kyma-gke-compass-integration
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE integration job for release 1.17.
@@ -317,6 +345,8 @@ test_groups:
   name: kyma-integration-gardener-gcp
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-gcp-parallel
   name: kyma-integration-gardener-gcp-parallel
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-k3s
+  name: kyma-integration-k3s
 - gcs_prefix: kyma-prow-logs/logs/post-master-compass-gke-integration
   name: post-master-compass-gke-integration
 - days_of_results: 60
@@ -351,6 +381,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-central-connector
   name: post-rel117-kyma-gke-central-connector
+- gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-compass-integration
+  name: post-rel117-kyma-gke-compass-integration
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-integration
   name: post-rel117-kyma-gke-integration
@@ -374,6 +406,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-central-connector
   name: post-rel118-kyma-gke-central-connector
+- gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-compass-integration
+  name: post-rel118-kyma-gke-compass-integration
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-integration
   name: post-rel118-kyma-gke-integration
@@ -397,6 +431,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-gke-central-connector
   name: post-rel119-kyma-gke-central-connector
+- gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-gke-compass-integration
+  name: post-rel119-kyma-gke-compass-integration
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-gke-integration
   name: post-rel119-kyma-gke-integration

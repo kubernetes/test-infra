@@ -106,7 +106,20 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 	var errors int
 	// act like the whole repo just got committed
 	var changes []github.PullRequestChange
+	var version string
+
 	for _, sourcePath := range sourcePaths {
+
+		versionFilePath := filepath.Join(sourcePath, config.ConfigVersionFileName)
+		if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
+			content, err := ioutil.ReadFile(versionFilePath)
+			if err != nil {
+				logrus.WithError(err).Warn("failed to read versionfile")
+			} else if version == "" {
+				version = string(content)
+			}
+		}
+
 		filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
@@ -136,7 +149,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 			logrus.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := updateconfig.Update(&osFileGetter{roots: sourcePaths}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger); err != nil {
+		if err := updateconfig.Update(&osFileGetter{roots: sourcePaths}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger, version); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {

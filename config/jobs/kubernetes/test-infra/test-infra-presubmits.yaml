@@ -79,7 +79,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20210120-e5293d4053
+      - image: gcr.io/k8s-prow/checkconfig:v20210123-aa0de54ee1
         command:
         - /checkconfig
         args:
@@ -118,6 +118,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration

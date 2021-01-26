@@ -477,7 +477,7 @@ func upstreamImageVersionResolver(
 	}
 
 	return func(imageHost, imageName, currentTag string) (string, error) {
-		imageFullPath := imageHost + "/" + imageName + "/" + currentTag
+		imageFullPath := imageHost + "/" + imageName + ":" + currentTag
 		for prefix, version := range upstreamVersions {
 			if strings.HasPrefix(imageFullPath, prefix) {
 				imageBumperCli.AddToCache(imageFullPath, version)

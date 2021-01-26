@@ -8,6 +8,11 @@ presubmits:
     optional: true
     decorate: true
     path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
     skip_report: false
     labels:
       preset-service-account: "true"

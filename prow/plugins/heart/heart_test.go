@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 func TestHandlePR(t *testing.T) {
@@ -123,7 +124,7 @@ func TestHandlePR(t *testing.T) {
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
 
-		err := handlePR(fakeClient, event)
+		err := handlePR(fakeClient, event, ownersconfig.FakeResolver)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -484,9 +484,10 @@ func (d *DecorationConfig) Validate() error {
 	if d.GCSConfiguration == nil {
 		return errors.New("GCS upload configuration is not specified")
 	}
-	if d.GCSCredentialsSecret == "" && d.S3CredentialsSecret == "" {
-		return errors.New("neither GCS nor S3 credential secret are specified")
-	}
+	// Intentionally allow d.GCSCredentialsSecret and d.S3CredentialsSecret to
+	// be unset in which case we assume GCS permissions are provided by GKE
+	// Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
 	}

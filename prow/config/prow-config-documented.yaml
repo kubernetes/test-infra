@@ -219,6 +219,10 @@ branch-protection:
           - ""
         users:
           - ""
+
+
+# The git sha from which this config was generated
+config_version_sha: ' '
 deck:
     # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
     # (in addition to those listed in the GCSConfiguration).
@@ -805,6 +809,12 @@ tide:
     # mapped by org or org/repo level.
     pr_status_base_urls:
         "": ""
+
+    # Priority is an ordered list of labels that would be prioritized before other PRs
+    # PRs should match all labels contained in a list to be prioritized
+    priority:
+      - labels:
+          - ""
 
     # Queries represents a list of GitHub search queries that collectively
     # specify the set of PRs that meet merge requirements.

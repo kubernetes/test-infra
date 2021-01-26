@@ -33,6 +33,7 @@ import (
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 var (
@@ -274,6 +275,7 @@ labels:
 						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
 					}
 				},
+				filenames: ownersconfig.FakeResolver,
 			},
 		},
 		// Clean up function

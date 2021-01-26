@@ -34,7 +34,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/gofuzz"
+	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -1881,6 +1881,15 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 			OID: githubql.String("SHA"),
 		},
 	})
+	return pr
+}
+
+func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) PullRequest {
+	pr := testPR(org, repo, branch, number, mergeable)
+	for _, label := range labels {
+		labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
+		pr.Labels.Nodes = append(pr.Labels.Nodes, labelNode)
+	}
 	return pr
 }
 
@@ -3939,6 +3948,77 @@ func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
 			res := deduplicateContexts([]Context{context})
 			if diff := cmp.Diff(context, res[0]); diff != "" {
 				t.Errorf("deduplicateContexts lost data, new object differs: %s", diff)
+			}
+		})
+	}
+}
+
+func TestPickSmallestPassingNumber(t *testing.T) {
+	priorities := []config.TidePriority{
+		{Labels: []string{"kind/failing-test"}},
+		{Labels: []string{"area/deflake"}},
+		{Labels: []string{"kind/bug", "priority/critical-urgent"}},
+	}
+	testCases := []struct {
+		name     string
+		prs      []PullRequest
+		expected int
+	}{
+		{
+			name: "no label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+			},
+			expected: 3,
+		},
+		{
+			name: "deflake PR",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 7,
+		},
+		{
+			name: "same label",
+			prs: []PullRequest{
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 1,
+		},
+		{
+			name: "missing one label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+			},
+			expected: 3,
+		},
+		{
+			name: "complete",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"}),
+				testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"}),
+			},
+			expected: 9,
+		},
+	}
+	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			if int(got.Number) != tc.expected {
+				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
 			}
 		})
 	}
