@@ -16,7 +16,7 @@ linux_builders: &linux_builders
     - "permission_set=builder"
     - "platform=linux"
     - "machine_type=single"
-    - "queue=${CI_LINUX_BUILDER_QUEUE:-v4-20-05-21-134527-bk11577-85e05f62}"
+    - "queue=${CI_LINUX_BUILDER_QUEUE:-v4-20-12-01-150523-bk18037-34f04b9e-d}"
     - "scaler_version=2"
 
 steps:
