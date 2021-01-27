@@ -28,7 +28,7 @@ if [[ "${CONTEXT}" != "kind-kind-prow-integration" ]]; then
 fi
 
 echo "Pushing prow images"
-bazel run //prow:testimage-push "$@"
+bazel run //prow:testimage-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 echo "Wait until nginx is ready"
 kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
