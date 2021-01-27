@@ -539,12 +539,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 
 	var volumes []coreapi.Volume
 	var mounts []coreapi.VolumeMount
-	if dc.GCSCredentialsSecret != "" {
+	if dc.GCSCredentialsSecret != nil && *dc.GCSCredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: gcsCredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.GCSCredentialsSecret,
+					SecretName: *dc.GCSCredentialsSecret,
 				},
 			},
 		})
@@ -554,12 +554,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 		})
 		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
-	if dc.S3CredentialsSecret != "" {
+	if dc.S3CredentialsSecret != nil && *dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: s3CredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.S3CredentialsSecret,
+					SecretName: *dc.S3CredentialsSecret,
 				},
 			},
 		})
@@ -744,6 +744,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
 		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
 		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
+	}
+
+	defaultSA := pj.Spec.DecorationConfig.DefaultServiceAccountName
+	if spec.ServiceAccountName == "" && defaultSA != nil {
+		spec.ServiceAccountName = *defaultSA
 	}
 
 	return nil
