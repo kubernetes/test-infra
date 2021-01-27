@@ -48,6 +48,7 @@ bazel run //images/builder -- [options] path/to/build-directory/
 - `--build-dir`: If provided, this directory will be uploaded as the source for the Google Cloud Build run.
 - `--gcb-config`: If provided, this will be used as the name of the Google Cloud Build config file.
 - `--no-source`: If true, no source will be uploaded with this build.
+- `--with-git-dir`: If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.
 
 ### A note about logging in Prow
 

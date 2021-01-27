@@ -2,20 +2,18 @@ dashboard_groups:
 - name: sig-aws
   dashboard_names:
     - sig-aws-encryption-provider
-    - sig-aws-alb-ingress-controller
+    - sig-aws-load-balancer-controller
     - sig-aws-cloud-provider-aws
     - sig-aws-ebs-csi-driver
     - sig-aws-efs-csi-driver
-    - sig-aws-eks-periodics
     - sig-aws-eks-presubmits
     - sig-aws-fsx-csi-driver
 
 dashboards:
 - name: sig-aws-encryption-provider
-- name: sig-aws-alb-ingress-controller
+- name: sig-aws-load-balancer-controller
 - name: sig-aws-cloud-provider-aws
 - name: sig-aws-ebs-csi-driver
 - name: sig-aws-efs-csi-driver
-- name: sig-aws-eks-periodics
 - name: sig-aws-eks-presubmits
 - name: sig-aws-fsx-csi-driver

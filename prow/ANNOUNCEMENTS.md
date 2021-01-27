@@ -1,6 +1,37 @@
 # Announcements
 
+## New features
+
 New features added to each component:
+  - *November 2, 2020* Tide is now able to respect checkruns.
+  - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
+    Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
+    Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and
+    plank configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are automatically allowed access.
+    Additional buckets can be allowed by adding them to the `deck.additional_allowed_buckets` list.
+    (This feature will be enabled by default ~Jan 2021. For now, you will begin to notice violation warnings in your logs.)
+ - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
+    be deprecated in February 2021. You can now specify different values for different repositories. The
+    format should be in org, org/repo or '\*' which is the default value.
+ - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated.
+    Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
+    provider is appended automatically so multiple storage providers can be used for builds of
+    the same repository. For now we still handle the old configuration format, this will be removed
+    in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
+ - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
+    tokens for the orgs and repos integrated with your prow instance.
+ - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
+ - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+    fall back to an anonymous GCS client now, if all other options fail. This flag will
+    be removed in *July 2020*.
+ - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
+    deprecated and will be removed in *August 2020*.
+ - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+     allows to control whether jobs are decorated by default. Individual jobs
+     can use the `decorate` option to override this setting.
  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
     to specify different report templates for each organization or a specific repository.
     The `report_template` option is deprecated and it will be removed on *September 2020*
@@ -87,6 +118,8 @@ New features added to each component:
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
    cron library we are using.
 
+## Breaking changes
+
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
@@ -94,6 +127,33 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 1, 2021* Support for `whitelist` and `branch_whitelist` fields in Slack merge warning configuration is discontinued. You can use `exempt_users` and `exempt_branches` fields instead. 
+ - *November 24, 2020* The `requiresig` plugin has been removed in favor of the `require-matching-label` plugin
+    which provides equivalent functionality ([example plugin config](https://github.com/kubernetes/test-infra/blob/e42b0745404017bc71c668da0342ef6857d87fa9/config/prow/plugins.yaml#L494-L498))
+ - *November 14, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning were deprecated on *August 22, 2020* in favor of the new `exempt_users` and `exempt_branches` fields. The support for these fields shall be stopped in *January 2021*.
+ - *November 11th, 2020* The prow-controller-manager and sinker now require RBAC to be set up to manage their leader lock in the `coordination.k8s.io` group. See [here](https://github.com/kubernetes/test-infra/pull/19906/files?diff=split&w=1)
+ - *November, 2020* The deprecated `namespace` and `additional_namespaces` properties have been removed from the config updater plugin
+                       for more details.
+ - *November, 2020* The `blacklist` flag in status reconciler has been deprecated in favor of `denylist`. The support of `blacklist` will be stopped in February 2021.
+ - *October, 2020*  The `plank` binary has been deprecated in favor of the more modern implementation in the prow-controller-manager that provides the same functionality. Check out
+                  its [README](/prow//prow-controller-manager/README.md) or check out its [deployment](config/prow/cluster/prow_controller_manager_deployment.yaml) and
+                  [rbac](config/prow/cluster/prow_controller_manager_rbac.yaml) manifest. The plank binary will be removed in February, 2021.
+ - *September 14th, 2020* Sinker now requires `LIST` and `WATCH` permissions for pods
+ - *September 2, 2020* The already deprecated `namespace` and `additional_namespaces` settings in the config updater will be removed in October, 2020
+ - *August 28, 2020* `tide` now ignores archived repositories in queries.
+ - *August 28, 2020* The `Clusters` format and associated `--build-cluster` flag has been removed.
+ - *August 24, 2020* The deprecated reporting functionality has been removed from Plank, use crier with `--github-workers=1` instead
+   Use a `.kube/config` with the `--kubeconfig` flag to specify credentials for external build clusters.
+ - *August 22, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning are deprecated in favor of the new `exempt_users` and `exempt_branches` fields.
+ - *July 17, 2020* Slack reporter will no longer report all states of a Prow job if it has `Channel`
+   specified on the Prow job config. Instead, it will report the `job_states_to_report` configured in
+   the Prow job or in the Prow core config if the former does not exist.
+ - *May 18, 2020* `expiry` field has been replaced with `created_at` in the HMAC secret.
+ - *April 24, 2020* Horologium now defaults to `--dry-run=true`
+ - *April 23, 2020* Explicitly setting `--config-path` is now required.
+ - *April 23, 2020* Update the `autobump` image to at least `v20200422-8c8546d74` before June 2020.
+ - *April 23, 2020* Deleted deprecated `default_decoration_config`.
+ - *April 22, 2020* Deleted the `file_weight_count` blunderbuss option.
  - *April 16, 2020* The `docs-no-retest` prow plugin has been deleted.
    The plugin was deprecated in January 2020.
  - *April 14, 2020* GitHub reporting via plank is deprecated, set --github-workers=1 on crier before July 2020.

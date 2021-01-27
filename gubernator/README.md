@@ -43,13 +43,13 @@ are laid out in a specific manner relative to each other.
 ## Job Artifact GCS Layout
 
 Every run should upload `started.json`, `finished.json`, and `build-log.txt`, and
-can optionally upload jUnit XML and/or other files to the `artifacts/` directory.
+can optionally upload JUnit XML and/or other files to the `artifacts/` directory.
 For a single build of a job, Gubernator expects the following layout in GCS:
 
 ```
 .
 ├── artifacts         # all artifacts must be placed under this directory
-│   └── junit_00.xml  # jUnit XML reports from the build
+│   └── junit_00.xml  # JUnit XML reports from the build
 ├── build-log.txt     # std{out,err} from the build
 ├── finished.json     # metadata uploaded once the build finishes
 └── started.json      # metadata uploaded once the build starts
@@ -77,7 +77,7 @@ The following fields in `finished.json` are honored:
 }
 ```
 
-Any artifacts from the build should be placed under `./artifacts/`. Any jUnit
+Any artifacts from the build should be placed under `./artifacts/`. Any JUnit
 XML reports should be named `junit_*.xml` and placed under `./artifacts` as well.
 
 ## Test Properties [Optional]
@@ -92,14 +92,8 @@ The properties can be defined as:
 ```xml
 <testcase ...>
   <properties>
-    <property>
-        <name>key1</name>
-        <value>value1</value>
-    </property>
-    <property>
-        <name>key2</name>
-        <value>value2</value>
-    </property>
+    <property name="key1" value="value1"></property>
+    <property name="key2" value="value2"></property>
   </properties>
 </testcase>
 ```

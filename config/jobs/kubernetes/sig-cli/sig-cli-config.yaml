@@ -1,5 +1,5 @@
 periodics:
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   labels:
     preset-service-account: "true"
@@ -18,14 +18,14 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: gce-serial
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gce serial e2e tests for master branch
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gci-gce-sig-cli
   labels:
     preset-service-account: "true"
@@ -47,14 +47,14 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: gce
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gce e2e tests for master branch
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-kops-aws-sig-cli
   labels:
     preset-service-account: "true"
@@ -75,14 +75,14 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   # kubectl skew tests
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: aws
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
   labels:
     preset-service-account: "true"
@@ -103,14 +103,21 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 6Gi
+        requests:
+          cpu: 1
+          memory: 6Gi
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
   labels:
     preset-service-account: "true"
@@ -130,15 +137,16 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
-- interval: 1h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -158,21 +166,26 @@ periodics:
       - --ginkgo-parallel=25
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 6Gi
+        requests:
+          cpu: 1
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
     testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com, kubernetes-sig-cli@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com"
     description: "stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary"
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "24"
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
-- interval: 1h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   labels:
     preset-service-account: "true"
@@ -192,15 +205,15 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce-serial
     description: stable1 serial tests run against a master gce cluster using a stable1 kubectl binary
-- interval: 1h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
   labels:
     preset-service-account: "true"
@@ -220,15 +233,15 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gce
     description: stable1 e2e tests run against a stable1 gce cluster using a master kubectl binary
-- interval: 1h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
   labels:
     preset-service-account: "true"
@@ -247,15 +260,15 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gce-serial
     description: stable1 serial tests run against a stable1 gce cluster using a master kubectl binary
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
   labels:
     preset-service-account: "true"
@@ -275,14 +288,14 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew
-- interval: 2h
+- interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
   labels:
     preset-service-account: "true"
@@ -301,12 +314,12 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
@@ -329,12 +342,12 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
@@ -356,12 +369,12 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
@@ -383,12 +396,12 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
@@ -409,10 +422,10 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial

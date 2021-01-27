@@ -17,13 +17,13 @@ limitations under the License.
 package plugins
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -31,9 +31,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
@@ -57,36 +60,45 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
+	Approve              []Approve                    `json:"approve,omitempty"`
+	Blockades            []Blockade                   `json:"blockades,omitempty"`
+	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
+	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
+	Cat                  Cat                          `json:"cat,omitempty"`
+	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
+	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
+	Dco                  map[string]*Dco              `json:"dco,omitempty"`
+	Golint               Golint                       `json:"golint,omitempty"`
+	Goose                Goose                        `json:"goose,omitempty"`
+	Heart                Heart                        `json:"heart,omitempty"`
+	JiraLinker           JiraLinker                   `json:"jira_linker,omitempty"`
+	Label                Label                        `json:"label,omitempty"`
+	Lgtm                 []Lgtm                       `json:"lgtm,omitempty"`
+	MilestoneApplier     map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
+	RepoMilestone        map[string]Milestone         `json:"repo_milestone,omitempty"`
+	Project              ProjectConfig                `json:"project_config,omitempty"`
+	ProjectManager       ProjectManager               `json:"project_manager,omitempty"`
+	RequireMatchingLabel []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
+	Retitle              Retitle                      `json:"retitle,omitempty"`
+	Slack                Slack                        `json:"slack,omitempty"`
+	SigMention           SigMention                   `json:"sigmention,omitempty"`
+	Size                 Size                         `json:"size,omitempty"`
+	Triggers             []Trigger                    `json:"triggers,omitempty"`
+	Welcome              []Welcome                    `json:"welcome,omitempty"`
+	Override             Override                     `json:"override,omitempty"`
+	Help                 Help                         `json:"help,omitempty"`
+}
 
-	Approve                    []Approve                    `json:"approve,omitempty"`
-	UseDeprecatedSelfApprove   bool                         `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
-	UseDeprecatedReviewApprove bool                         `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
-	Blockades                  []Blockade                   `json:"blockades,omitempty"`
-	Blunderbuss                Blunderbuss                  `json:"blunderbuss,omitempty"`
-	Bugzilla                   Bugzilla                     `json:"bugzilla,omitempty"`
-	Cat                        Cat                          `json:"cat,omitempty"`
-	CherryPickUnapproved       CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
-	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
-	Dco                        map[string]*Dco              `json:"dco,omitempty"`
-	Golint                     Golint                       `json:"golint,omitempty"`
-	Goose                      Goose                        `json:"goose,omitempty"`
-	Heart                      Heart                        `json:"heart,omitempty"`
-	Label                      Label                        `json:"label,omitempty"`
-	Lgtm                       []Lgtm                       `json:"lgtm,omitempty"`
-	MilestoneApplier           map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
-	RepoMilestone              map[string]Milestone         `json:"repo_milestone,omitempty"`
-	Project                    ProjectConfig                `json:"project_config,omitempty"`
-	ProjectManager             ProjectManager               `json:"project_manager,omitempty"`
-	RequireMatchingLabel       []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
-	RequireSIG                 RequireSIG                   `json:"requiresig,omitempty"`
-	Retitle                    Retitle                      `json:"retitle,omitempty"`
-	Slack                      Slack                        `json:"slack,omitempty"`
-	SigMention                 SigMention                   `json:"sigmention,omitempty"`
-	Size                       Size                         `json:"size,omitempty"`
-	Triggers                   []Trigger                    `json:"triggers,omitempty"`
-	Welcome                    []Welcome                    `json:"welcome,omitempty"`
-	Override                   Override                     `json:"override"`
-	JiraLinker                 JiraLinker                   `json:"jira_linker,omitempty"`
+type Help struct {
+	// HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
+	// The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
+	HelpGuidelinesURL string `json:"help_guidelines_url,omitempty"`
+}
+
+func (h *Help) setDefaults() {
+	if h.HelpGuidelinesURL == "" {
+		h.HelpGuidelinesURL = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+	}
 }
 
 // Golint holds configuration for the golint plugin
@@ -115,15 +127,10 @@ type ExternalPlugin struct {
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
-	// if FileWeightCount is not set.
 	ReviewerCount *int `json:"request_count,omitempty"`
 	// MaxReviewerCount is the maximum number of reviewers to request
 	// reviews from. Defaults to 0 meaning no limit.
 	MaxReviewerCount int `json:"max_request_count,omitempty"`
-	// FileWeightCount is the maximum number of reviewers to request
-	// reviews from. Selects reviewers based on file weighting.
-	// This and request_count are mutually exclusive options.
-	FileWeightCount *int `json:"file_weight_count,omitempty"`
 	// ExcludeApprovers controls whether approvers are considered to be
 	// reviewers. By default, approvers are considered as reviewers if
 	// insufficient reviewers are available. If ExcludeApprovers is true,
@@ -162,6 +169,22 @@ type Owners struct {
 	// OWNERS file, preventing their automatic addition by the owners-label plugin.
 	// This check is performed by the verify-owners plugin.
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
+
+	// Filenames allows configuring repos to use a separate set of filenames for
+	// any plugin that interacts with these files. Keys are in "org/repo" format.
+	Filenames map[string]ownersconfig.Filenames `json:"filenames,omitempty"`
+}
+
+// OwnersFilenames determines which filenames to use for OWNERS and OWNERS_ALIASES for a repo.
+func (c *Configuration) OwnersFilenames(org, repo string) ownersconfig.Filenames {
+	full := fmt.Sprintf("%s/%s", org, repo)
+	if config, configured := c.Owners.Filenames[full]; configured {
+		return config
+	}
+	return ownersconfig.Filenames{
+		Owners:        ownersconfig.DefaultOwnersFile,
+		OwnersAliases: ownersconfig.DefaultOwnersAliasesFile,
+	}
 }
 
 // MDYAMLEnabled returns a boolean denoting if the passed repo supports YAML OWNERS config headers
@@ -187,12 +210,6 @@ func (c *Configuration) SkipCollaborators(org, repo string) bool {
 		}
 	}
 	return false
-}
-
-// RequireSIG specifies configuration for the require-sig plugin.
-type RequireSIG struct {
-	// GroupListURL is the URL where a list of the available SIGs can be found.
-	GroupListURL string `json:"group_list_url,omitempty"`
 }
 
 // Retitle specifies configuration for the retitle plugin.
@@ -256,47 +273,38 @@ type Approve struct {
 	// IssueRequired indicates if an associated issue is required for approval in
 	// the specified repos.
 	IssueRequired bool `json:"issue_required,omitempty"`
-
-	// TODO(fejta): delete in June 2019
-	DeprecatedImplicitSelfApprove *bool `json:"implicit_self_approve,omitempty"`
 	// RequireSelfApproval requires PR authors to explicitly approve their PRs.
 	// Otherwise the plugin assumes the author of the PR approves the changes in the PR.
 	RequireSelfApproval *bool `json:"require_self_approval,omitempty"`
-
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
 	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
-
-	// ReviewActsAsApprove should be replaced with its non-deprecated inverse: ignore_review_state.
-	// TODO(fejta): delete in June 2019
-	DeprecatedReviewActsAsApprove *bool `json:"review_acts_as_approve,omitempty"`
 	// IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
 	// * an APPROVE github review is equivalent to leaving an "/approve" message.
 	// * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
 	IgnoreReviewState *bool `json:"ignore_review_state,omitempty"`
+	// CommandHelpLink is the link to the help page which shows the available commands for each repo.
+	// The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
+	// and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
+	CommandHelpLink string `json:"commandHelpLink"`
+	// PrProcessLink is the link to the help page which explains the code review process.
+	// The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
+	PrProcessLink string `json:"pr_process_link,omitempty"`
 }
 
 var (
-	warnImplicitSelfApprove       time.Time
-	warnReviewActsAsApprove       time.Time
 	warnDependentBugTargetRelease time.Time
 )
 
 func (a Approve) HasSelfApproval() bool {
-	if a.DeprecatedImplicitSelfApprove != nil {
-		warnDeprecated(&warnImplicitSelfApprove, 5*time.Minute, "Please update plugins.yaml to use require_self_approval instead of the deprecated implicit_self_approve before June 2019")
-		return *a.DeprecatedImplicitSelfApprove
-	} else if a.RequireSelfApproval != nil {
+	if a.RequireSelfApproval != nil {
 		return !*a.RequireSelfApproval
 	}
 	return true
 }
 
 func (a Approve) ConsiderReviewState() bool {
-	if a.DeprecatedReviewActsAsApprove != nil {
-		warnDeprecated(&warnReviewActsAsApprove, 5*time.Minute, "Please update plugins.yaml to use ignore_review_state instead of the deprecated review_acts_as_approve before June 2019")
-		return *a.DeprecatedReviewActsAsApprove
-	} else if a.IgnoreReviewState != nil {
+	if a.IgnoreReviewState != nil {
 		return !*a.IgnoreReviewState
 	}
 	return true
@@ -362,10 +370,6 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
-	// ElideSkippedContexts makes trigger not post "Skipped" contexts for jobs
-	// that could run but do not run. Defaults to true.
-	// THIS FIELD IS DEPRECATED AND WILL BE REMOVED AFTER OCTOBER 2019.
-	ElideSkippedContexts *bool `json:"elide_skipped_contexts,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
@@ -412,25 +416,28 @@ type ConfigMapSpec struct {
 	// Key is the key in the ConfigMap to update with the file contents.
 	// If no explicit key is given, the basename of the file will be used.
 	Key string `json:"key,omitempty"`
-	// Namespace in which the configMap needs to be deployed. If no namespace is specified
-	// it will be deployed to the ProwJobNamespace.
-	Namespace string `json:"namespace,omitempty"`
-	// Namespaces in which the configMap needs to be deployed, in addition to the above
-	// namespace provided, or the default if it is not set.
-	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
 	// GZIP toggles whether the key's data should be GZIP'd before being stored
 	// If set to false and the global GZIP option is enabled, this file will
 	// will not be GZIP'd.
 	GZIP *bool `json:"gzip,omitempty"`
-	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
-	Namespaces []string `json:"-"`
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
 	Clusters map[string][]string `json:"clusters"`
+	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
+	ClusterGroups []string `json:"cluster_groups,omitempty"`
+}
+
+// A ClusterGroup is a list of clusters with namespaces
+type ClusterGroup struct {
+	Clusters   []string `json:"clusters,omitempty"`
+	Namespaces []string `json:"namespaces,omitempty"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
 type ConfigUpdater struct {
+	// ClusterGroups is a map of ClusterGroups that can be used as a target
+	// in the map config.
+	ClusterGroups map[string]ClusterGroup `json:"cluster_groups,omitempty"`
 	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
 	// map[string]ConfigMapSpec{ "/my/path.yaml": {Name: "foo", Namespace: "otherNamespace" }}
@@ -439,6 +446,54 @@ type ConfigUpdater struct {
 	// If GZIP is true then files will be gzipped before insertion into
 	// their corresponding configmap
 	GZIP bool `json:"gzip"`
+}
+
+type configUpdatedWithoutUnmarshaler ConfigUpdater
+
+func (cu *ConfigUpdater) UnmarshalJSON(d []byte) error {
+	var target configUpdatedWithoutUnmarshaler
+	if err := json.Unmarshal(d, &target); err != nil {
+		return err
+	}
+	*cu = ConfigUpdater(target)
+	return cu.resolve()
+}
+
+func (cu *ConfigUpdater) resolve() error {
+	var errs []error
+	for k, v := range cu.Maps {
+		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
+			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
+			continue
+		}
+
+		if len(v.Clusters) > 0 {
+			continue
+		}
+
+		clusters := map[string][]string{}
+		for idx, clusterGroupName := range v.ClusterGroups {
+			clusterGroup, hasClusterGroup := cu.ClusterGroups[clusterGroupName]
+			if !hasClusterGroup {
+				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
+				continue
+			}
+			for _, cluster := range clusterGroup.Clusters {
+				clusters[cluster] = append(clusters[cluster], clusterGroup.Namespaces...)
+			}
+		}
+
+		cu.Maps[k] = ConfigMapSpec{
+			Name:     v.Name,
+			Key:      v.Key,
+			GZIP:     v.GZIP,
+			Clusters: clusters,
+		}
+	}
+
+	cu.ClusterGroups = nil
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // ProjectConfig contains the configuration options for the project plugin
@@ -509,10 +564,10 @@ type MergeWarning struct {
 	Repos []string `json:"repos,omitempty"`
 	// List of channels on which a event is published.
 	Channels []string `json:"channels,omitempty"`
-	// A slack event is published if the user is not part of the WhiteList.
-	WhiteList []string `json:"whitelist,omitempty"`
-	// A slack event is published if the user is not on the branch whitelist
-	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
+	// A slack event is published if the user is not part of the ExemptUsers.
+	ExemptUsers []string `json:"exempt_users,omitempty"`
+	// A slack event is published if the user is not on the exempt branches.
+	ExemptBranches map[string][]string `json:"exempt_branches,omitempty"`
 }
 
 // Welcome is config for the welcome plugin.
@@ -631,29 +686,6 @@ func (r RequireMatchingLabel) validate() error {
 	return nil
 }
 
-var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
-
-// warnDeprecated prints a deprecation warning for a particular configuration
-// option.
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
-}
-
 // Describe generates a human readable description of the behavior that this
 // configuration specifies.
 func (r RequireMatchingLabel) Describe() string {
@@ -713,13 +745,11 @@ func (c *Configuration) ApproveFor(org, repo string) *Approve {
 		// Return an empty config, and use plugin defaults
 		return &Approve{}
 	}()
-	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && c.UseDeprecatedSelfApprove {
-		no := false
-		a.DeprecatedImplicitSelfApprove = &no
+	if a.CommandHelpLink == "" {
+		a.CommandHelpLink = "https://go.k8s.io/bot-commands"
 	}
-	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && c.UseDeprecatedReviewApprove {
-		no := false
-		a.DeprecatedReviewActsAsApprove = &no
+	if a.PrProcessLink == "" {
+		a.PrProcessLink = "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process"
 	}
 	return a
 }
@@ -762,16 +792,7 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 	return tr
 }
 
-var warnElideSkippedContexts time.Time
-
 func (t *Trigger) SetDefaults() {
-	truth := true
-	if t.ElideSkippedContexts == nil {
-		t.ElideSkippedContexts = &truth
-	} else {
-		warnDeprecated(&warnElideSkippedContexts, 5*time.Minute, "elide_skipped_contexts is deprecated and will be removed after Oct. 2019. Skipped contexts are now elided by default.")
-	}
-
 	if t.TrustedOrg != "" && t.JoinOrgURL == "" {
 		t.JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", t.TrustedOrg)
 	}
@@ -837,9 +858,9 @@ func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repo
 }
 
 // SetDefaults sets default options for config updating
-func (c *ConfigUpdater) SetDefaults() {
-	if len(c.Maps) == 0 {
-		c.Maps = map[string]ConfigMapSpec{
+func (cu *ConfigUpdater) SetDefaults() {
+	if len(cu.Maps) == 0 {
+		cu.Maps = map[string]ConfigMapSpec{
 			"config/prow/config.yaml": {
 				Name: "config",
 			},
@@ -849,21 +870,17 @@ func (c *ConfigUpdater) SetDefaults() {
 		}
 	}
 
-	for name, spec := range c.Maps {
-		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
-			logrus.Warnf("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin, use 'clusters' instead")
-		}
-		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
-		// and clusters will never be an empty map (map[cluster] could be am empty slice)
-		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
+	for name, spec := range cu.Maps {
 		if len(spec.Clusters) == 0 {
-			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: spec.Namespaces}
+			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: {""}}
 		}
-		c.Maps[name] = spec
+		cu.Maps[name] = spec
 	}
 }
 
 func (c *Configuration) setDefaults() {
+	c.Help.setDefaults()
+
 	c.ConfigUpdater.SetDefaults()
 
 	for repo, plugins := range c.ExternalPlugins {
@@ -874,7 +891,7 @@ func (c *Configuration) setDefaults() {
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
 	}
-	if c.Blunderbuss.ReviewerCount == nil && c.Blunderbuss.FileWeightCount == nil {
+	if c.Blunderbuss.ReviewerCount == nil {
 		c.Blunderbuss.ReviewerCount = new(int)
 		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
@@ -987,20 +1004,9 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
-var warnBlunderbussFileWeightCount time.Time
-
 func validateBlunderbuss(b *Blunderbuss) error {
-	if b.ReviewerCount != nil && b.FileWeightCount != nil {
-		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
-	}
 	if b.ReviewerCount != nil && *b.ReviewerCount < 1 {
 		return fmt.Errorf("invalid request_count: %v (needs to be positive)", *b.ReviewerCount)
-	}
-	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
-		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
-	}
-	if b.FileWeightCount != nil {
-		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }
@@ -1095,7 +1101,7 @@ var warnTriggerTrustedOrg time.Time
 func validateTrigger(triggers []Trigger) error {
 	for _, trigger := range triggers {
 		if trigger.TrustedOrg != "" {
-			warnDeprecated(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
+			logrusutil.ThrottledWarnf(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
 		}
 	}
 	return nil
@@ -1357,6 +1363,14 @@ type BugzillaBranchOptions struct {
 	// StateAfterMerge is the state to which the bug will be moved after all pull requests
 	// in the external bug tracker have been merged.
 	StateAfterMerge *BugzillaBugState `json:"state_after_merge,omitempty"`
+	// StateAfterClose is the state to which the bug will be moved if all pull requests
+	// in the external bug tracker have been closed.
+	StateAfterClose *BugzillaBugState `json:"state_after_close,omitempty"`
+
+	// AllowedGroups is a list of bugzilla bug group names that the bugzilla plugin can
+	// link to in PRs. If a bug is part of a group that is not in this list, the bugzilla
+	// plugin will not link the bug to the PR.
+	AllowedGroups []string `json:"allowed_groups,omitempty"`
 }
 
 type BugzillaBugStateSet map[BugzillaBugState]interface{}
@@ -1462,6 +1476,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 
 	if child.ExcludeDefaults == nil || !*child.ExcludeDefaults {
 		// populate with the parent
+		if parent.ExcludeDefaults != nil {
+			output.ExcludeDefaults = parent.ExcludeDefaults
+		}
 		if parent.ValidateByDefault != nil {
 			output.ValidateByDefault = parent.ValidateByDefault
 		}
@@ -1489,7 +1506,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 			output.DependentBugTargetReleases = parent.DependentBugTargetReleases
 		}
 		if parent.DeprecatedDependentBugTargetRelease != nil {
-			warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+			logrusutil.ThrottledWarnf(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
 			if parent.DependentBugTargetReleases == nil {
 				output.DependentBugTargetReleases = &[]string{*parent.DeprecatedDependentBugTargetRelease}
 			} else if !sets.NewString(*parent.DependentBugTargetReleases...).Has(*parent.DeprecatedDependentBugTargetRelease) {
@@ -1514,9 +1531,18 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		if parent.StateAfterMerge != nil {
 			output.StateAfterMerge = parent.StateAfterMerge
 		}
+		if parent.StateAfterClose != nil {
+			output.StateAfterClose = parent.StateAfterClose
+		}
+		if parent.AllowedGroups != nil {
+			output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(parent.AllowedGroups...).List()
+		}
 	}
 
 	// override with the child
+	if child.ExcludeDefaults != nil {
+		output.ExcludeDefaults = child.ExcludeDefaults
+	}
 	if child.ValidateByDefault != nil {
 		output.ValidateByDefault = child.ValidateByDefault
 	}
@@ -1552,7 +1578,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		output.DependentBugTargetReleases = child.DependentBugTargetReleases
 	}
 	if child.DeprecatedDependentBugTargetRelease != nil {
-		warnDeprecated(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
+		logrusutil.ThrottledWarnf(&warnDependentBugTargetRelease, 5*time.Minute, "Please update plugins.yaml to use dependent_bug_target_releases instead of the deprecated dependent_bug_target_release")
 		if child.DependentBugTargetReleases == nil {
 			output.DependentBugTargetReleases = &[]string{*child.DeprecatedDependentBugTargetRelease}
 		} else if !sets.NewString(*child.DependentBugTargetReleases...).Has(*child.DeprecatedDependentBugTargetRelease) {
@@ -1580,6 +1606,12 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.StateAfterMerge != nil {
 		output.StateAfterMerge = child.StateAfterMerge
+	}
+	if child.StateAfterClose != nil {
+		output.StateAfterClose = child.StateAfterClose
+	}
+	if child.AllowedGroups != nil {
+		output.AllowedGroups = sets.NewString(output.AllowedGroups...).Insert(child.AllowedGroups...).List()
 	}
 
 	// Status fields should not be used anywhere now when they were mirrored to states

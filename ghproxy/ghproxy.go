@@ -28,12 +28,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"k8s.io/test-infra/ghproxy/apptokenequalizer"
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -67,6 +68,7 @@ func init() {
 //  v ^ ghcache: downstreamTransport (coalescing, instrumentation)
 //  v ^ ghcache: httpcache layer
 //  v ^ ghcache: upstreamTransport (cache-control, instrumentation)
+//  v ^ apptokenequalizer: Make sure all clients get the same app installation token so they can share a cache
 //  v ^ http.DefaultTransport
 //  > ^   <Upstream>
 
@@ -90,6 +92,8 @@ type options struct {
 	logLevel string
 
 	serveMetrics bool
+
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 func (o *options) validate() error {
@@ -123,6 +127,7 @@ func flagOptions() *options {
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
+	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	return o
 }
 
@@ -141,21 +146,30 @@ func main() {
 
 	var cache http.RoundTripper
 	if o.redisAddress != "" {
-		cache = ghcache.NewRedisCache(http.DefaultTransport, o.redisAddress, o.maxConcurrency)
+		cache = ghcache.NewRedisCache(apptokenequalizer.New(http.DefaultTransport), o.redisAddress, o.maxConcurrency)
 	} else if o.dir == "" {
-		cache = ghcache.NewMemCache(http.DefaultTransport, o.maxConcurrency)
+		cache = ghcache.NewMemCache(apptokenequalizer.New(http.DefaultTransport), o.maxConcurrency)
 	} else {
-		cache = ghcache.NewDiskCache(http.DefaultTransport, o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning)
+		cache = ghcache.NewDiskCache(apptokenequalizer.New(http.DefaultTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning)
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	pjutil.ServePProf()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 	defer interrupts.WaitForGracefulShutdown()
 	metrics.ExposeMetrics("ghproxy", config.PushGateway{
-		Endpoint: o.pushGateway, Interval: &metav1.Duration{Duration: o.pushGatewayInterval}, ServeMetrics: o.serveMetrics})
+		Endpoint: o.pushGateway,
+		Interval: &metav1.Duration{
+			Duration: o.pushGatewayInterval,
+		},
+		ServeMetrics: o.serveMetrics,
+	}, o.instrumentationOptions.MetricsPort)
 
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
+
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	health.ServeReady()
+
 	interrupts.ListenAndServe(server, 30*time.Second)
 }
 

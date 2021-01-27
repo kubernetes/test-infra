@@ -17,6 +17,7 @@ limitations under the License.
 package pjutil
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -68,13 +69,11 @@ func AggregateFilter(filters []Filter) Filter {
 	}
 }
 
-// FilterPresubmits determines which presubmits should run and which should be skipped
-// by evaluating the user-provided filter.
-func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+// FilterPresubmits determines which presubmits should run by evaluating the user-provided filter.
+func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger logrus.FieldLogger) ([]config.Presubmit, error) {
 
 	var toTrigger []config.Presubmit
 	var namesToTrigger []string
-	var toSkipSuperset []config.Presubmit
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
@@ -82,57 +81,31 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 		}
 		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
 		if err != nil {
-			return nil, nil, err
+			return nil, fmt.Errorf("%s: should run: %w", presubmit.Name, err)
 		}
-		if shouldRun {
-			toTrigger = append(toTrigger, presubmit)
-			namesToTrigger = append(namesToTrigger, presubmit.Name)
-		} else {
-			toSkipSuperset = append(toSkipSuperset, presubmit)
-		}
-	}
-
-	toSkip := determineSkippedPresubmits(toTrigger, toSkipSuperset, logger)
-	var namesToSkip []string
-	for _, presubmit := range toSkip {
-		namesToSkip = append(namesToSkip, presubmit.Name)
-	}
-
-	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger, "to-skip": namesToSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkipSuperset))
-	return toTrigger, toSkip, nil
-}
-
-// determineSkippedPresubmits identifies the largest set of contexts we can actually
-// post skipped contexts for, given a set of presubmits we're triggering. We don't
-// want to skip a job that posts a context that will be written to by a job we just
-// identified for triggering or the skipped context will override the triggered one
-func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, logger *logrus.Entry) []config.Presubmit {
-	triggeredContexts := sets.NewString()
-	for _, presubmit := range toTrigger {
-		triggeredContexts.Insert(presubmit.Context)
-	}
-	var toSkip []config.Presubmit
-	for _, presubmit := range toSkipSuperset {
-		if triggeredContexts.Has(presubmit.Context) {
-			logger.WithFields(logrus.Fields{"context": presubmit.Context, "job": presubmit.Name}).Debug("Not skipping job as context will be created by a triggered job.")
+		if !shouldRun {
 			continue
 		}
-		toSkip = append(toSkip, presubmit)
+		toTrigger = append(toTrigger, presubmit)
+		namesToTrigger = append(namesToTrigger, presubmit.Name)
 	}
-	return toSkip
+
+	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger}).Debugf("Filtered %d jobs, found %d to trigger", len(presubmits), len(toTrigger))
+	return toTrigger, nil
 }
 
 // RetestFilter builds a filter for `/retest`
 func RetestFilter(failedContexts, allContexts sets.String) Filter {
 	return func(p config.Presubmit) (bool, bool, bool) {
-		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+		failed := failedContexts.Has(p.Context)
+		return failed || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, failed
 	}
 }
 
 type contextGetter func() (sets.String, sets.String, error)
 
 // PresubmitFilter creates a filter for presubmits
-func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger *logrus.Entry) (Filter, error) {
+func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger logrus.FieldLogger) (Filter, error) {
 	// the filters determine if we should check whether a job should run, whether
 	// it should run regardless of whether its triggering conditions match, and
 	// what the default behavior should be for that check. Multiple filters
@@ -142,7 +115,7 @@ func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body strin
 	var filters []Filter
 	filters = append(filters, CommandFilter(body))
 	if RetestRe.MatchString(body) {
-		logger.Debug("Using retest filter.")
+		logger.Info("Using retest filter.")
 		failedContexts, allContexts, err := contextGetter()
 		if err != nil {
 			return nil, err

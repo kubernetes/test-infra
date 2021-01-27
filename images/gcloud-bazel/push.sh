@@ -14,8 +14,11 @@
 # limitations under the License.
 
 
+OLD=3.0.0
+NEW=3.1.0
+
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 rm -rf rules_k8s
 git clone https://github.com/bazelbuild/rules_k8s.git
-make -C rules_k8s/images/gcloud-bazel push PROJECT=k8s-testimages
+make -C rules_k8s/images/gcloud-bazel push PROJECT=k8s-testimages "OLD=$OLD" "NEW=$NEW"
 rm -rf rules_k8s

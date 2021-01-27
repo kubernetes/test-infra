@@ -1,26 +1,39 @@
 plank:
   job_url_template: '{{if .Spec.Refs}}{{if eq .Spec.Refs.Org "kubernetes-security"}}https://console.cloud.google.com/storage/browser/kubernetes-security-prow/{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
   report_templates:
-    '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
+    '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3A{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
-    '*': https://prow.k8s.io/view/gcs/
+    '*': https://prow.k8s.io/view/
   pod_pending_timeout: 15m
-  pod_unscheduled_timeout: 1m
+  pod_unscheduled_timeout: 5m
   default_decoration_configs:
     '*':
       timeout: 2h
-      grace_period: 15s
+      grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200417-3971a63f2"
-        initupload: "gcr.io/k8s-prow/initupload:v20200417-3971a63f2"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200417-3971a63f2"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20200417-3971a63f2"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210123-aa0de54ee1"
+        initupload: "gcr.io/k8s-prow/initupload:v20210123-aa0de54ee1"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210123-aa0de54ee1"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210123-aa0de54ee1"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "service-account"
+      resources:
+        clonerefs:
+          requests:
+            cpu: 100m
+        initupload:
+          requests:
+            cpu: 100m
+        place_entrypoint:
+          requests:
+            cpu: 100m
+        sidecar:
+          requests:
+            cpu: 100m
 
 sinker:
   resync_period: 1m
@@ -30,7 +43,7 @@ sinker:
 
 deck:
   spyglass:
-    size_limit: 500000000 # 500MB
+    size_limit: 100000000 # 100MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
@@ -38,27 +51,36 @@ deck:
     - lens:
         name: metadata
       required_files:
-      - started.json|finished.json
+      - ^(?:started|finished)\.json$
       optional_files:
-      - podinfo.json
+      - ^(?:podinfo|prowjob)\.json$
     - lens:
         name: buildlog
+        config:
+          highlight_regexes:
+          - timed out
+          - "ERROR:"
+          - (FAIL|Failure \[)\b
+          - panic\b
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+          # This highlights the start of bazel tests/runs to skip go importing noise.
+          - "^INFO: Analyzed \\d+ targets"
       required_files:
-        - build-log.txt
+        - ^.*build-log\.txt$
     - lens:
         name: junit
       required_files:
-        - artifacts/junit.*\.xml
+        - ^artifacts(/.*/|/)junit.*\.xml$ # https://regex101.com/r/vCSegS/1
     - lens:
         name: coverage
       required_files:
-        - artifacts/filtered.cov
+        - ^artifacts/filtered\.cov$
       optional_files:
-        - artifacts/filtered.html
+        - ^artifacts/filtered\.html$
     - lens:
         name: podinfo
       required_files:
-        - podinfo.json
+        - ^podinfo\.json$
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
@@ -67,10 +89,31 @@ deck:
     '*':
       github_team_ids:
       - 2009231 # test-infra-admins
+      - 2460384 # milestone-maintainers
 
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
+
+managed_webhooks:
+  # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.
+  respect_legacy_global_token: true
+  # Config for orgs and repos that have been onboarded to this Prow instance.
+  org_repo_config:
+    bazelbuild/rules_k8s:
+      token_created_after: 2020-06-24T00:10:00Z
+    kubernetes:
+      token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-client:
+      token_created_after: 2020-07-24T00:00:00Z
+    kubernetes-csi:
+      token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-sigs:
+      token_created_after: 2020-08-12T00:00:00Z
+    containerd/containerd:
+      token_created_after: 2020-09-17T00:00:00Z
+    cncf/apisnoop:
+      token_created_after: 2020-09-22T00:00:00Z
 
 slack_reporter_configs:
   '*':
@@ -118,6 +161,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        autoscaler:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci/pr
         client-go:
           restrictions:
             users: []
@@ -133,6 +180,14 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cloud-provider-aws:
+          branches:
+            gh-pages:
+              protect: false
+        cloud-provider-openstack:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
@@ -148,6 +203,16 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        component-helpers:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         cri-api:
           restrictions:
             users: []
@@ -159,9 +224,6 @@ branch-protection:
             teams:
             - stage-bots
         dashboard:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci/pr
           required_pull_request_reviews:
             required_approving_review_count: 1
         dns:
@@ -175,12 +237,23 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        ingress-nginx:
+          branches:
+            gh-pages:
+              protect: false
         kompose:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        kops:
+          required_status_checks:
+            contexts:
+            - build-linux-amd64
+            - build-macos-amd64
+            - build-windows-amd64
+            - verify
         kubelet:
           restrictions:
             users: []
@@ -205,6 +278,20 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        kube-state-metrics:
+          required_status_checks:
+            contexts:
+            - ci-benchmark-tests
+            - ci-build-kube-state-metrics
+            - ci-e2e-tests
+            - ci-go-lint
+            - ci-unit-tests
+            - ci-validate-docs
+            - ci-validate-go-modules
+            - ci-validate-manifests
+          branches:
+            gh-pages:
+              protect: false
         kube-scheduler:
           restrictions:
             users: []
@@ -225,7 +312,17 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        mount-utils:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         node-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        noderesourcetopology-api:
           restrictions:
             users: []
             teams:
@@ -258,8 +355,6 @@ branch-protection:
           branches:
             master:
               protect: true
-            dev-1.18:
-              protect: true
             release-1.4:
               protect: true
             release-1.5:
@@ -288,6 +383,12 @@ branch-protection:
               protect: true
             release-1.17:
               protect: true
+            release-1.18:
+              protect: true
+            release-1.19:
+              protect: true
+            release-1.20:
+              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
@@ -315,40 +416,6 @@ branch-protection:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
-    kubernetes-incubator:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/linuxfoundation
-      exclude:
-        - "^revert-" # don't protect revert branches
-        - "^dependabot/" # don't protect branches created by dependabot
-        - "^greenkeeper/" # don't protect branches created by greenkeeper
-      repos:
-        apiserver-builder:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        bootkube:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        cluster-proportional-autoscaler:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        external-storage:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        kube-aws:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        metrics-server:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
     kubernetes-sigs:
       protect: true
       required_status_checks:
@@ -359,6 +426,18 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        aws-ebs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-efs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-fsx-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
@@ -367,34 +446,36 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-subdir-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         node-feature-discovery:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
+          branches:
+            gh-pages:
+              protect: false
+    kubeflow:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/google
+      exclude:
+      - "^revert-" # don't protect revert branches
+      - "^dependabot/" # don't protect branches created by dependabot
+      - "-patch-" # don't protect branches created by editing on GitHub UI
 
 tide:
   sync_period: 2m
   queries:
   - orgs:
     - kubeflow
+    excludedRepos: # TODO(Bobgy): move entire Kubeflow org to oss prow.
+    - kubeflow/pipelines
     labels:
     - lgtm
     - approved
     missingLabels:
     - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-rebase
-  - repos:
-    - helm/charts
-    labels:
-    - lgtm
-    - approved
-    - "Contribution Allowed"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
@@ -403,7 +484,6 @@ tide:
     - kubernetes
     - kubernetes-client
     - kubernetes-csi
-    - kubernetes-incubator
     - kubernetes-sigs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
@@ -419,6 +499,8 @@ tide:
     - kubernetes/cluster-bootstrap
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/component-helpers
+    - kubernetes/controller-manager
     - kubernetes/cri-api
     - kubernetes/csi-api
     - kubernetes/csi-translation-lib
@@ -430,7 +512,9 @@ tide:
     - kubernetes/kubelet
     - kubernetes/legacy-cloud-providers
     - kubernetes/metrics
+    - kubernetes/mount-utils
     - kubernetes/node-api
+    - kubernetes/noderesourcetopology-api
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
@@ -462,11 +546,11 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-commit-message
     - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-kind
     - needs-rebase
-    - needs-sig
   - repos:
     - GoogleCloudPlatform/netd
     labels:
@@ -480,7 +564,6 @@ tide:
     - do-not-merge/work-in-progress
 
   merge_method:
-    helm/charts: squash
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
@@ -489,12 +572,15 @@ tide:
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
+    kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/go-open-service-broker-client: squash
     kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
-    kubernetes/kube-deploy: squash
+  merge_commit_template:
+    kubeflow:
+      title: "{{ .Title }} (#{{ .Number }})"
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -506,7 +592,6 @@ tide:
       kubernetes:
         repos:
           dashboard:
-            skip-unknown-contexts: true
             from-branch-protection: true
       kubernetes-sigs:
         repos:
@@ -514,6 +599,13 @@ tide:
             skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+#  TODO uncomment after merging #20468
+#  priority:
+#  # prioritize PRs fixing flaking/failing tests
+#  - labels: [ "kind/failing-test" ]
+#  - labels: [ "area/deflake" ]
+#  # prioritize critical bugfixes
+#  - labels: [ "kind/bug", "priority/critical-urgent" ]
 
 push_gateway:
   endpoint: pushgateway
@@ -541,44 +633,6 @@ presets:
   - name: service
     secret:
       secretName: service-account
-  volumeMounts:
-  - name: service
-    mountPath: /etc/service-account
-    readOnly: true
-- labels:
-    preset-gke-alpha-service: "true"
-  env:
-  - name: GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
-    value: "Migrate to workload identity, contact sig-testing"
-  # storage e2e tests borrow this as a preconfigured key instead of creating and
-  # injecting a new key. this allows us to avoid mass key download warnings
-  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  volumes:
-  - name: service
-    secret:
-      secretName: gke-alpha-service-account
-  volumeMounts:
-  - name: service
-    mountPath: /etc/service-account
-    readOnly: true
-- labels:
-    preset-istio-service: "true"
-  env:
-  - name: GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/istio-service-account.json
-  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
-    value: "Migrate to workload identity, contact sig-testing"
-  # storage e2e tests borrow this as a preconfigured key instead of creating and
-  # injecting a new key. this allows us to avoid mass key download warnings
-  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  volumes:
-  - name: service
-    secret:
-      secretName: istio-service-account
   volumeMounts:
   - name: service
     mountPath: /etc/service-account
@@ -620,6 +674,19 @@ presets:
     mountPath: /etc/aws-ssh
     readOnly: true
 - labels:
+    preset-windows-private-registry-cred: "true"
+  env:
+  - name: DOCKER_CONFIG_FILE
+    value: /etc/docker-cred/config.json
+  volumes:
+  - name: windows-private-registry-cred
+    secret:
+      secretName: windows-private-registry-docker-config
+  volumeMounts:
+  - name: windows-private-registry-cred
+    mountPath: /etc/docker-cred/
+    readOnly: true
+- labels:
     preset-azure-cred: "true"
   env:
   - name: AZURE_CREDENTIALS
@@ -646,6 +713,24 @@ presets:
   - name: azure-ssh
     mountPath: /etc/azure-ssh
     readOnly: true
+- labels:
+    preset-azure-anonymous-pull: "true"
+  env:
+    - name: REGISTRY
+      value: capzci.azurecr.io
+- labels:
+    preset-azure-cred-only: "true"
+  env:
+    - name: AZURE_CREDENTIALS
+      value: /etc/azure-cred/credentials
+  volumes:
+    - name: azure-cred
+      secret:
+        secretName: azure-cred
+  volumeMounts:
+    - name: azure-cred
+      mountPath: /etc/azure-cred
+      readOnly: true
 # storage / caching presets
 - labels:
     preset-bazel-scratch-dir: "true"

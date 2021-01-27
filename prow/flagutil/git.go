@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 // GitOptions holds options for interacting with git.
@@ -86,5 +87,13 @@ func (o *GitOptions) GitClient(userClient github.UserClient, token func() []byte
 		}
 		return user.Login, nil
 	}
-	return git.NewClientFactory(o.host, o.useSSH, username, token, gitUser, censor)
+	opts := git.ClientFactoryOpts{
+		Host:     o.host,
+		UseSSH:   utilpointer.BoolPtr(o.useSSH),
+		Username: username,
+		Token:    token,
+		GitUser:  gitUser,
+		Censor:   censor,
+	}
+	return git.NewClientFactory(opts.Apply)
 }

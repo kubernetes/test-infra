@@ -9,12 +9,12 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         command:
         - ./hack/ci-check-everything.sh
         resources:
           requests:
-            cpu: 4000m
+            cpu: "7000m"
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-runtime-master
@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         command:
         - ./hack/apidiff.sh
     annotations:

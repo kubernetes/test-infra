@@ -18,6 +18,19 @@ to the user-provided `PodSpec`, as well as by overwriting the `Container` entryp
  - [`sidecar`](./cmd/sidecar/README.md): runs alongside the test `Container`, uploads status, logs
    and test artifacts to cloud storage once the test is finished
 
+### Why use Pod Utilities?
+
+Writing a ProwJob that uses the Pod Utilities is much easier than writing one
+that doesn't because the Pod Utilities will transparently handle many of the
+tasks the job would otherwise need to do in order to prepare its environment
+and output more than pass/fail. Historically, this was achieved by wrapping
+every job with a [bootstrap.py](/jenkins/bootstrap.py) script that handled cloning
+source code, preparing the test environment, and uploading job metadata, logs,
+and artifacts. This was cumbersome to configure and required every job to be
+wrapped with the script in the job image. The pod utilities achieve the same goals
+with less configuration and much simpler job images that are easier to develop
+and less coupled to Prow.
+
 ## Writing a ProwJob that uses Pod Utilities
 
 ### What the test container can expect
@@ -108,15 +121,7 @@ the `exta_refs` field. If the cloned path of this repo must be used as a default
 
 ```
 
-### Why use Pod Utilities?
+### Migrating from bootstrap.py to Pod Utilities
 
-Writing a ProwJob that uses the Pod Utilities is much easier than writing one
-that doesn't because the Pod Utilities will transparently handle many of the
-tasks the job would otherwise need to do in order to prepare its environment
-and output more than pass/fail. Historically, this was achieved by wrapping
-every job with a [bootstrap.py](jenkins/bootstrap.py) script that handled cloning
-source code, preparing the test environment, and uploading job metadata, logs,
-and artifacts. This was cumbersome to configure and required every job to be
-wrapped with the script in the job image. The pod utilities achieve the same goals
-with less configuration and much simpler job images that are easier to develop
-and less coupled to Prow.
+Jobs using the deprecated [bootstrap.py](/jenkins/bootstrap.py) should switch to the Pod Utilities at
+their earliest convenience. @dims has created a handy [migration guide](https://gist.github.com/dims/c1296f8ed42238baea0a5fcae45f4cf4).

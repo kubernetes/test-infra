@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -295,7 +296,7 @@ func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 
 func (c *controller) patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
 	logrus.Debugf("patchProwJob(%s)", pj.Name)
-	return pjutil.PatchProwjob(c.pjc.ProwV1().ProwJobs(c.pjNamespace()), logrus.NewEntry(logrus.StandardLogger()), *pj, *newpj)
+	return pjutil.PatchProwjob(context.TODO(), c.pjc.ProwV1().ProwJobs(c.pjNamespace()), logrus.NewEntry(logrus.StandardLogger()), *pj, *newpj)
 }
 
 func (c *controller) getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error) {
@@ -306,28 +307,28 @@ func (c *controller) getPipelineRun(context, namespace, name string) (*pipelinev
 	return p.informer.Lister().PipelineRuns(namespace).Get(name)
 }
 
-func (c *controller) deletePipelineRun(context, namespace, name string) error {
-	logrus.Debugf("deletePipeline(%s,%s,%s)", context, namespace, name)
-	p, err := c.getPipelineConfig(context)
+func (c *controller) deletePipelineRun(pContext, namespace, name string) error {
+	logrus.Debugf("deletePipeline(%s,%s,%s)", pContext, namespace, name)
+	p, err := c.getPipelineConfig(pContext)
 	if err != nil {
 		return err
 	}
-	return p.client.TektonV1alpha1().PipelineRuns(namespace).Delete(name, &metav1.DeleteOptions{})
+	return p.client.TektonV1alpha1().PipelineRuns(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
-func (c *controller) createPipelineRun(context, namespace string, p *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error) {
-	logrus.Debugf("createPipelineRun(%s,%s,%s)", context, namespace, p.Name)
-	pc, err := c.getPipelineConfig(context)
+func (c *controller) createPipelineRun(pContext, namespace string, p *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error) {
+	logrus.Debugf("createPipelineRun(%s,%s,%s)", pContext, namespace, p.Name)
+	pc, err := c.getPipelineConfig(pContext)
 	if err != nil {
 		return nil, err
 	}
-	p, err = pc.client.TektonV1alpha1().PipelineRuns(namespace).Create(p)
+	p, err = pc.client.TektonV1alpha1().PipelineRuns(namespace).Create(context.TODO(), p, metav1.CreateOptions{})
 	if err != nil {
 		return p, err
 	}
 	// Block until the pipelinerun is in the lister, otherwise we may attempt to create it again
 	err = wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
-		_, err := c.getPipelineRun(context, namespace, p.Name)
+		_, err := c.getPipelineRun(pContext, namespace, p.Name)
 		return err == nil, err
 	})
 	return p, err
@@ -343,7 +344,10 @@ func (c *controller) pipelineID(pj prowjobv1.ProwJob) (string, string, error) {
 		return "", "", err
 	}
 	pj.Status.BuildID = id
-	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
+	url, err := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
+	if err != nil {
+		logrus.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Error("Error calculating job status url")
+	}
 	return id, url, nil
 }
 

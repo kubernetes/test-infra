@@ -15,12 +15,13 @@
 # This file builds an image for the log exporter tool. For more info,
 # have a look at the tool's README.md file.
 
-# Base image must have 'journalctl' binary.
-FROM fedora
+FROM debian:stretch-20201209-slim
+# systemd is needed as journalctl is used to fetch logs from
+# k8s components that are run on nodes as systemd services.
+RUN apt-get update && \
+    apt-get install -y systemd python3
 
 # Setup gcloud SDK for using gsutil.
-RUN dnf -y -q install which
-RUN dnf -y -q install python27
 ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
      "/workspace/"]
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \

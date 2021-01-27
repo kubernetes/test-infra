@@ -3,12 +3,14 @@ presubmits:
   - name: pull-cloud-provider-aws-check
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -22,12 +24,14 @@ presubmits:
   - name: pull-cloud-provider-aws-test
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:

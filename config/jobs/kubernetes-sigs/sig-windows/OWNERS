@@ -1,20 +1,22 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- PatrickLang
 - adelina-t
 - andyzhangx
-- claudiubelu
 - benmoss
 - chewong
+- claudiubelu
 - feiskyer
+- jsturtevant
 - marosset
-- PatrickLang
 approvers:
+- PatrickLang
 - adelina-t
 - andyzhangx
-- claudiubelu
 - benmoss
 - chewong
+- claudiubelu
 - feiskyer
+- jsturtevant
 - marosset
-- PatrickLang

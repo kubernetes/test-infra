@@ -35,13 +35,13 @@ periodics:
       - name: GH_REPO
         value: test-infra
       # Repo relative path of the `plank` component k8s deployment file.
-      - name: PLANK_DEPLOYMENT_FILE
-        value: prow/cluster/plank_deployment.yaml
+      - name: PROW_CONTROLLER_MANAGER_FILE
+        value: config/prow/cluster/prow_controller_manager_deployment.yaml
     # bump.sh args
       # Directory (or comma-delimited list of directories) containing k8s deployment YAMLs for Prow components.
       - name: COMPONENT_FILE_DIR
-        value: prow/cluster
-        # value: prow/cluster,prow/config/jobs
+        value: config/prow/cluster
+        # value: config/prow/cluster,prow/config/jobs
       # Repo relative path of the core Prow config file (config.yaml).
       - name: CONFIG_PATH
         value: config/prow/config.yaml

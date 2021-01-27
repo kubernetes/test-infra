@@ -219,6 +219,9 @@ func Test_logDumperNode_dump(t *testing.T) {
 			command: "sudo journalctl --output=short-precise",
 		},
 		&mockCommand{
+			command: "sudo sysctl --all",
+		},
+		&mockCommand{
 			command: "sudo systemctl list-units -t service --no-pager --no-legend --all",
 			stdout: []byte(
 				"kubelet.service                      loaded active running kubelet daemon\n" +
@@ -262,6 +265,7 @@ func Test_logDumperNode_dump(t *testing.T) {
 	if err != nil {
 		t.Errorf("error building logDumper: %v", err)
 	}
+	dumper.DumpSysctls = true
 
 	n, err := dumper.connectToNode(context.Background(), "nodename1", "host1")
 	if err != nil {
@@ -299,6 +303,7 @@ func Test_logDumperNode_dump(t *testing.T) {
 		"nodename1/kern.log",
 		"nodename1/journal.log",
 		"nodename1/kubelet.log",
+		"nodename1/sysctl.conf",
 		"nodename1/kube-controller-manager.log",
 		"nodename1/kube-controller-manager.log.1",
 		"nodename1/kube-controller-manager.log.2.gz",

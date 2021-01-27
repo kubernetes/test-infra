@@ -13,6 +13,7 @@ config-forker forks presubmit, periodic, and postsubmit job configs with the `fo
 
 - `fork-per-release`: only jobs with this set to `"true"` will be forked.
 - `fork-per-release-replacements`: allows replacing values in job `tags` (periodics only) and container `args` (see [Custom replacements](#custom-replacements)).
+- `fork-per-release-deletions`: allows deleting values in job `labels` in periodics (see [Custom deletions](#custom-deletions)).
 - `fork-per-release-periodic-interval`: if set, forked jobs will use this value for `interval`. If multiple space-separated values are provided, the first will be used.
 - `fork-per-release-cron`: if set, forked jobs will use this value for `cron`. If multiple values separated with `, ` are provided, the first will be used.
 
@@ -68,3 +69,15 @@ by the version currently being forked (e.g. `1.15`). For example:
 ```
 fork-per-release-replacements: "--version=stable -> --version={{.Version}"
 ```
+
+## Custom deletions
+
+The `fork-per-release-deletions` annotation can be used for custom deletions in your `labels` (periodic jobs only).
+This is a comma-separated list of keys of labels you would like to remove on forking, for instance:
+
+```
+fork-per-release-deletions: "label-key-to-delete1, label-key-to-delete2"
+```
+
+This is useful for getting rid of a specific preset in the forked job. For instance, one can have a master branch job that
+has a label corresponding to a master-specific preset which is undesired for forked release jobs.

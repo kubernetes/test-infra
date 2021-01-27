@@ -25,8 +25,8 @@ import (
 	"path"
 	"regexp"
 	"strconv"
-	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
@@ -35,6 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
+
+var re = regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
 
 func TestWait(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
@@ -148,6 +150,160 @@ func TestWait(t *testing.T) {
 	}
 }
 
+func TestWaitParallelContainers(t *testing.T) {
+	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
+	skip := strconv.Itoa(entrypoint.PreviousErrorCode)
+	const (
+		pass                 = "0"
+		fail                 = "1"
+		missingMarkerTimeout = time.Second
+	)
+	cases := []struct {
+		name         string
+		markers      []string
+		abort        bool
+		pass         bool
+		accessDenied bool
+		missing      bool
+		failures     int
+	}{
+		{
+			name:    "pass, not abort when 1 item passes",
+			markers: []string{pass},
+			pass:    true,
+		},
+		{
+			name:    "pass when all items pass",
+			markers: []string{pass, pass, pass},
+			pass:    true,
+		},
+		{
+			name:     "fail, not abort when 1 item fails",
+			markers:  []string{fail},
+			failures: 1,
+		},
+		{
+			name:     "fail when any item fails",
+			markers:  []string{pass, fail, pass},
+			failures: 1,
+		},
+		{
+			name:     "abort and fail when 1 item aborts",
+			markers:  []string{aborted},
+			abort:    true,
+			failures: 1,
+		},
+		{
+			name:     "abort when any item aborts",
+			markers:  []string{pass, aborted, fail},
+			abort:    true,
+			failures: 2,
+		},
+		{
+			name:     "fail when marker does not exist",
+			markers:  []string{pass},
+			missing:  true,
+			failures: 1,
+		},
+		{
+			name:     "count all failures",
+			markers:  []string{pass, fail, aborted, skip, fail, pass},
+			abort:    true,
+			failures: 3,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tmpDir, err := ioutil.TempDir("", tc.name)
+			if err != nil {
+				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
+			}
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
+				}
+			}()
+
+			var entries []wrapper.Options
+
+			for i := range tc.markers {
+				p := path.Join(tmpDir, fmt.Sprintf("marker-%d.txt", i))
+				var opt wrapper.Options
+				opt.MarkerFile = p
+				entries = append(entries, opt)
+			}
+
+			if tc.missing {
+				missingPath := path.Join(tmpDir, "missing-marker.txt")
+				entries = append(entries, wrapper.Options{MarkerFile: missingPath})
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+
+			type WaitResult struct {
+				pass     bool
+				abort    bool
+				failures int
+			}
+
+			waitResultsCh := make(chan WaitResult)
+
+			go func() {
+				pass, abort, failures := wait(ctx, entries)
+				waitResultsCh <- WaitResult{pass, abort, failures}
+			}()
+
+			errCh := make(chan error, len(tc.markers))
+			for i, m := range tc.markers {
+
+				options := entries[i]
+
+				entrypointOptions := entrypoint.Options{
+					Options: &options,
+				}
+				marker, err := strconv.Atoi(m)
+				if err != nil {
+					errCh <- fmt.Errorf("invalid exit code: %v", err)
+				}
+				go func() {
+					errCh <- entrypointOptions.Mark(marker)
+				}()
+
+			}
+
+			if tc.missing {
+				go func() {
+					select {
+					case <-time.After(missingMarkerTimeout):
+						cancel()
+						errCh <- nil
+					}
+				}()
+			}
+
+			for range tc.markers {
+				if err := <-errCh; err != nil {
+					t.Fatalf("could not create marker: %v", err)
+				}
+			}
+
+			waitRes := <-waitResultsCh
+
+			cancel()
+			if waitRes.pass != tc.pass {
+				t.Errorf("expected pass %t != actual %t", tc.pass, waitRes.pass)
+			}
+			if waitRes.abort != tc.abort {
+				t.Errorf("expected abort %t != actual %t", tc.abort, waitRes.abort)
+			}
+			if waitRes.failures != tc.failures {
+				t.Errorf("expected failures %d != actual %d", tc.failures, waitRes.failures)
+			}
+		})
+	}
+}
+
 func TestCombineMetadata(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -250,42 +406,72 @@ func name(idx int) string {
 	return nameEntry(idx, wrapper.Options{})
 }
 
-func TestLogReader(t *testing.T) {
+func TestLogReaders(t *testing.T) {
 	cases := []struct {
-		name     string
-		pieces   []string
-		expected []string
+		name           string
+		containerNames []string
+		processLogs    map[string]string
+		expected       map[string]string
 	}{
 		{
-			name:     "basically works",
-			pieces:   []string{"hello world"},
-			expected: []string{"hello world"},
-		},
-		{
-			name:   "multiple logging works",
-			pieces: []string{"first", "second"},
-			expected: []string{
-				start(name(0)),
-				"first",
-				start(name(1)),
-				"second",
+			name: "works with 1 container",
+			containerNames: []string{
+				"test",
+			},
+			processLogs: map[string]string{
+				"process-log.txt": "hello world",
+			},
+			expected: map[string]string{
+				"build-log.txt": "hello world",
 			},
 		},
 		{
-			name:   "note when a part has aproblem",
-			pieces: []string{"first", "missing", "third"},
-			expected: []string{
-				start(name(0)),
-				"first",
-				start(name(1)),
-				"Failed to open log-1.txt: whatever\n",
-				start(name(2)),
-				"third",
+			name: "works with 1 container with no name",
+			containerNames: []string{
+				"",
+			},
+			processLogs: map[string]string{
+				"process-log.txt": "hello world",
+			},
+			expected: map[string]string{
+				"build-log.txt": "hello world",
+			},
+		},
+		{
+			name: "multiple logs works",
+			containerNames: []string{
+				"test1",
+				"test2",
+			},
+			processLogs: map[string]string{
+				"test1-log.txt": "hello",
+				"test2-log.txt": "world",
+			},
+			expected: map[string]string{
+				"test1-build-log.txt": "hello",
+				"test2-build-log.txt": "world",
+			},
+		},
+		{
+			name: "note when a part has a problem",
+			containerNames: []string{
+				"test1",
+				"test2",
+				"test3",
+			},
+			processLogs: map[string]string{
+				"test1-log.txt": "hello",
+				"test2-log.txt": "missing",
+				"test3-log.txt": "world",
+			},
+			expected: map[string]string{
+				"test1-build-log.txt": "hello",
+				"test2-build-log.txt": "Failed to open test2-log.txt: whatever\n",
+				"test3-build-log.txt": "world",
 			},
 		},
 	}
 
-	re := regexp.MustCompile(`(?m)(Failed to open) .*log-\d.txt: .*$`)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tmpDir, err := ioutil.TempDir("", tc.name)
@@ -297,30 +483,48 @@ func TestLogReader(t *testing.T) {
 					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
 				}
 			}()
-			var entries []wrapper.Options
 
-			for i, m := range tc.pieces {
-				p := path.Join(tmpDir, fmt.Sprintf("log-%d.txt", i))
-				var opt wrapper.Options
-				opt.ProcessLog = p
-				entries = append(entries, opt)
-				if m == "missing" {
+			for name, log := range tc.processLogs {
+				p := path.Join(tmpDir, name)
+				if log == "missing" {
 					continue
 				}
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
-					t.Fatalf("could not create log %d: %v", i, err)
+				if err := ioutil.WriteFile(p, []byte(log), 0600); err != nil {
+					t.Fatalf("could not create log %s: %v", name, err)
 				}
 			}
 
-			buf, err := ioutil.ReadAll(logReader(entries))
-			if err != nil {
-				t.Fatalf("failed to read all: %v", err)
+			var entries []wrapper.Options
+
+			for _, containerName := range tc.containerNames {
+				log := "process-log.txt"
+				if len(tc.containerNames) > 1 {
+					log = fmt.Sprintf("%s-log.txt", containerName)
+				}
+				p := path.Join(tmpDir, log)
+				var opt wrapper.Options
+				opt.ProcessLog = p
+				opt.ContainerName = containerName
+				entries = append(entries, opt)
 			}
+
+			readers := logReaders(entries)
 			const repl = "$1 <SNIP>"
-			actual := re.ReplaceAllString(string(buf), repl)
-			expected := re.ReplaceAllString(strings.Join(tc.expected, ""), repl)
-			if !equality.Semantic.DeepEqual(expected, actual) {
-				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(expected, actual))
+			actual := make(map[string]string)
+			for name, reader := range readers {
+				buf, err := ioutil.ReadAll(reader)
+				if err != nil {
+					t.Fatalf("failed to read all: %v", err)
+				}
+				actual[name] = re.ReplaceAllString(string(buf), repl)
+			}
+
+			for name, log := range tc.expected {
+				tc.expected[name] = re.ReplaceAllString(log, repl)
+			}
+
+			if !equality.Semantic.DeepEqual(tc.expected, actual) {
+				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 		})
 	}

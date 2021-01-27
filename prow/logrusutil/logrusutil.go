@@ -20,6 +20,8 @@ package logrusutil
 import (
 	"bytes"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -63,7 +65,9 @@ func ComponentInit() {
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
 func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields))
+	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields)+1)
+	// GCP's log collection expects a "severity" field instead of "level"
+	data["severity"] = entry.Level
 	for k, v := range f.DefaultFields {
 		data[k] = v
 	}
@@ -99,7 +103,7 @@ const censored = "CENSORED"
 
 var (
 	censoredBytes = []byte(censored)
-	standardLog   = logrus.NewEntry(logrus.StandardLogger())
+	standardLog   = logrus.NewEntry(logrus.New())
 )
 
 // Censor replaces sensitive parts of the content with a placeholder.
@@ -126,4 +130,34 @@ func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.String) Ce
 		getSecrets: getSecrets,
 		delegate:   f,
 	}
+}
+
+// ThrottledWarnf prints a warning the first time called and if at most `period` has elapsed since the last time.
+func ThrottledWarnf(last *time.Time, period time.Duration, format string, args ...interface{}) {
+	if throttleCheck(last, period) {
+		logrus.Warnf(format, args...)
+	}
+}
+
+var throttleLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// throttleCheck returns true when first called or if
+// at least `period` has elapsed since the last time it returned true.
+func throttleCheck(last *time.Time, period time.Duration) bool {
+	// has it been at least `period` since we won the race?
+	throttleLock.RLock()
+	fresh := time.Since(*last) <= period
+	throttleLock.RUnlock()
+	if fresh { // event occurred too recently
+		return false
+	}
+	// Event is stale, will we win the race?
+	throttleLock.Lock()
+	defer throttleLock.Unlock()
+	now := time.Now()             // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= period { // Nope, we lost
+		return false
+	}
+	*last = now
+	return true
 }

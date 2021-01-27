@@ -57,9 +57,6 @@ const (
 	bothTarget              = "both"
 )
 
-// LabelTargets is a slice of options: pr, issue, both
-var LabelTargets = []LabelTarget{prTarget, issueTarget, bothTarget}
-
 // Label holds declarative data about the label.
 type Label struct {
 	// Name is the current name of the label
@@ -72,6 +69,8 @@ type Label struct {
 	Target LabelTarget `json:"target"`
 	// ProwPlugin specifies which prow plugin add/removes this label
 	ProwPlugin string `json:"prowPlugin"`
+	// IsExternalPlugin specifies if the prow plugin is external or not
+	IsExternalPlugin bool `json:"isExternalPlugin"`
 	// AddedBy specifies whether human/munger/bot adds the label
 	AddedBy string `json:"addedBy"`
 	// Previously lists deprecated names for this label
@@ -93,9 +92,6 @@ type RepoConfig struct {
 	Labels []Label `json:"labels"`
 }
 
-// RepoList holds a slice of repos.
-type RepoList []github.Repo
-
 // RepoLabels holds a repo => []github.Label mapping.
 type RepoLabels map[string][]github.Label
 
@@ -115,28 +111,47 @@ const (
 	defaultBurst  = 100
 )
 
-// TODO(fejta): rewrite this to use an option struct which we can unit test, like everything else.
-var (
-	debug           = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	confirm         = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint        = flagutil.NewStrings(github.DefaultAPIEndpoint)
-	graphqlEndpoint = flag.String("graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
-	labelsPath      = flag.String("config", "", "Path to labels.yaml")
-	onlyRepos       = flag.String("only", "", "Only look at the following comma separated org/repos")
-	orgs            = flag.String("orgs", "", "Comma separated list of orgs to sync")
-	skipRepos       = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
-	token           = flag.String("token", "", "Path to github oauth secret")
-	action          = flag.String("action", "sync", "One of: sync, docs")
-	cssTemplate     = flag.String("css-template", "", "Path to template file for label css")
-	cssOutput       = flag.String("css-output", "", "Path to output file for css")
-	docsTemplate    = flag.String("docs-template", "", "Path to template file for label docs")
-	docsOutput      = flag.String("docs-output", "", "Path to output file for docs")
-	tokens          = flag.Int("tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	tokenBurst      = flag.Int("token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-)
+type options struct {
+	debug           bool
+	confirm         bool
+	endpoint        flagutil.Strings
+	graphqlEndpoint string
+	labelsPath      string
+	onlyRepos       string
+	orgs            string
+	skipRepos       string
+	token           string
+	action          string
+	cssTemplate     string
+	cssOutput       string
+	docsTemplate    string
+	docsOutput      string
+	tokens          int
+	tokenBurst      int
+}
 
-func init() {
-	flag.Var(&endpoint, "endpoint", "GitHub's API endpoint")
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.BoolVar(&o.debug, "debug", false, "Turn on debug to be more verbose")
+	fs.BoolVar(&o.confirm, "confirm", false, "Make mutating API calls to GitHub.")
+	o.endpoint = flagutil.NewStrings(github.DefaultAPIEndpoint)
+	fs.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
+	fs.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
+	fs.StringVar(&o.labelsPath, "config", "", "Path to labels.yaml")
+	fs.StringVar(&o.onlyRepos, "only", "", "Only look at the following comma separated org/repos")
+	fs.StringVar(&o.orgs, "orgs", "", "Comma separated list of orgs to sync")
+	fs.StringVar(&o.skipRepos, "skip", "", "Comma separated list of org/repos to skip syncing")
+	fs.StringVar(&o.token, "token", "", "Path to github oauth secret")
+	fs.StringVar(&o.action, "action", "sync", "One of: sync, docs")
+	fs.StringVar(&o.cssTemplate, "css-template", "", "Path to template file for label css")
+	fs.StringVar(&o.cssOutput, "css-output", "", "Path to output file for css")
+	fs.StringVar(&o.docsTemplate, "docs-template", "", "Path to template file for label docs")
+	fs.StringVar(&o.docsOutput, "docs-output", "", "Path to output file for docs")
+	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	fs.Parse(os.Args[1:])
+	return o
 }
 
 func pathExists(path string) bool {
@@ -687,51 +702,51 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEnd
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
 	logrusutil.ComponentInit()
+	o := gatherOptions()
 
-	flag.Parse()
-	if *debug {
+	if o.debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	config, err := LoadConfig(*labelsPath, *orgs)
+	config, err := LoadConfig(o.labelsPath, o.orgs)
 	if err != nil {
-		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
+		logrus.WithError(err).Fatalf("failed to load --config=%s", o.labelsPath)
 	}
 
-	if *onlyRepos != "" && *skipRepos != "" {
+	if o.onlyRepos != "" && o.skipRepos != "" {
 		logrus.Fatalf("--only and --skip cannot both be set")
 	}
 
-	if *onlyRepos != "" && *orgs != "" {
+	if o.onlyRepos != "" && o.orgs != "" {
 		logrus.Fatalf("--only and --orgs cannot both be set")
 	}
 
 	switch {
-	case *action == "docs":
-		if err := writeDocs(*docsTemplate, *docsOutput, *config); err != nil {
-			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
+	case o.action == "docs":
+		if err := writeDocs(o.docsTemplate, o.docsOutput, *config); err != nil {
+			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", o.docsTemplate, o.docsOutput)
 		}
-	case *action == "css":
-		if err := writeCSS(*cssTemplate, *cssOutput, *config); err != nil {
-			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", *cssTemplate, *cssOutput)
+	case o.action == "css":
+		if err := writeCSS(o.cssTemplate, o.cssOutput, *config); err != nil {
+			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", o.cssTemplate, o.cssOutput)
 		}
-	case *action == "sync":
-		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, *graphqlEndpoint, endpoint.Strings()...)
+	case o.action == "sync":
+		githubClient, err := newClient(o.token, o.tokens, o.tokenBurst, !o.confirm, o.graphqlEndpoint, o.endpoint.Strings()...)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}
 
 		// there are three ways to configure which repos to sync:
-		//  - a whitelist of org/repo values
+		//  - a list of org/repo values
 		//  - a list of orgs for which we sync all repos
-		//  - a list of orgs with a blacklist of org/repo values
-		if *onlyRepos != "" {
-			reposToSync, parseError := parseCommaDelimitedList(*onlyRepos)
+		//  - a list of orgs to sync with a list of org/repo values to skip
+		if o.onlyRepos != "" {
+			reposToSync, parseError := parseCommaDelimitedList(o.onlyRepos)
 			if parseError != nil {
 				logrus.WithError(err).Fatal("invalid value for --only")
 			}
 			for org := range reposToSync {
-				if err = syncOrg(org, githubClient, *config, reposToSync[org]); err != nil {
+				if err = syncOrg(org, githubClient, *config, reposToSync[org], o.confirm); err != nil {
 					logrus.WithError(err).Fatalf("failed to update %s", org)
 				}
 			}
@@ -739,15 +754,15 @@ func main() {
 		}
 
 		skippedRepos := map[string][]string{}
-		if *skipRepos != "" {
-			reposToSkip, parseError := parseCommaDelimitedList(*skipRepos)
+		if o.skipRepos != "" {
+			reposToSkip, parseError := parseCommaDelimitedList(o.skipRepos)
 			if parseError != nil {
 				logrus.WithError(err).Fatal("invalid value for --skip")
 			}
 			skippedRepos = reposToSkip
 		}
 
-		for _, org := range strings.Split(*orgs, ",") {
+		for _, org := range strings.Split(o.orgs, ",") {
 			org = strings.TrimSpace(org)
 			logger := logrus.WithField("org", org)
 			logger.Info("Reading repos")
@@ -758,12 +773,12 @@ func main() {
 			if skipped, exist := skippedRepos[org]; exist {
 				repos = sets.NewString(repos...).Difference(sets.NewString(skipped...)).UnsortedList()
 			}
-			if err = syncOrg(org, githubClient, *config, repos); err != nil {
+			if err = syncOrg(org, githubClient, *config, repos, o.confirm); err != nil {
 				logrus.WithError(err).Fatalf("failed to update %s", org)
 			}
 		}
 	default:
-		logrus.Fatalf("unrecognized action: %s", *action)
+		logrus.Fatalf("unrecognized action: %s", o.action)
 	}
 }
 
@@ -795,7 +810,7 @@ type labelData struct {
 
 func writeDocs(template string, output string, config Configuration) error {
 	var desc string
-	data := []labelData{}
+	var data []labelData
 	desc = "all repos, for both issues and PRs"
 	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, bothTarget)})
 	desc = "all repos, only for issues"
@@ -823,7 +838,7 @@ func writeDocs(template string, output string, config Configuration) error {
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
 	}
-	if err := writeTemplate(*docsTemplate, *docsOutput, data); err != nil {
+	if err := writeTemplate(template, output, data); err != nil {
 		return err
 	}
 	return nil
@@ -841,7 +856,7 @@ func linkify(text string) string {
 	return strings.ToLower(link)
 }
 
-func syncOrg(org string, githubClient client, config Configuration, repos []string) error {
+func syncOrg(org string, githubClient client, config Configuration, repos []string, confirm bool) error {
 	logger := logrus.WithField("org", org)
 	logger.Infof("Found %d repos", len(repos))
 	currLabels, err := loadLabels(githubClient, org, repos)
@@ -858,7 +873,7 @@ func syncOrg(org string, githubClient client, config Configuration, repos []stri
 	y, _ := yaml.Marshal(updates)
 	logger.Debug(string(y))
 
-	if !*confirm {
+	if !confirm {
 		logger.Infof("Running without --confirm, no mutations made")
 		return nil
 	}

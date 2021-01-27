@@ -75,10 +75,22 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Dco: map[string]*plugins.Dco{
+			"org/repo": {
+				SkipDCOCheckForMembers:       true,
+				TrustedOrg:                   "org",
+				SkipDCOCheckForCollaborators: true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The dco plugin checks pull request commits for 'DCO sign off' and maintains the '" + dcoContextName + "' status context, as well as the 'dco' label.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/check-dco",
@@ -91,7 +103,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 }
 
 type gitHubClient interface {
-	BotName() (string, error)
 	IsMember(org, user string) (bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
@@ -113,11 +124,11 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
-		trusted, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
+		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("Error checking is member trusted: %v", err)
 		}
-		if !trusted {
+		if !trustedResponse.IsTrusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
 			untrustedCommits = append(untrustedCommits, commit)
 		}

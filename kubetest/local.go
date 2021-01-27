@@ -222,7 +222,7 @@ func (n localCluster) Down() error {
 		"kubelet",
 	}
 	// create docker client
-	cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Printf("Docker containers cleanup, unable to create Docker client: %v", err)
 	}

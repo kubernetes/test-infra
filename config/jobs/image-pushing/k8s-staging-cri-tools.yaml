@@ -1,0 +1,124 @@
+postsubmits:
+  kubernetes-sigs/cri-tools:
+    - name: post-cri-tools-push-image-user-uid
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools
+      decorate: true
+      run_if_changed: '^images\/image-user\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild-images.yaml
+              - --env-passthrough=IMAGE_TYPE
+              - images/image-user
+            env:
+              - name: IMAGE_TYPE
+                value: "uid"
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-cri-tools-push-image-user-username
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools
+      decorate: true
+      run_if_changed: '^images\/image-user\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild-images.yaml
+              - --env-passthrough=IMAGE_TYPE
+              - images/image-user
+            env:
+              - name: IMAGE_TYPE
+                value: "username"
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-cri-tools-push-image-user-uid-group
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools
+      decorate: true
+      run_if_changed: '^images\/image-user\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild-images.yaml
+              - --env-passthrough=IMAGE_TYPE
+              - images/image-user
+            env:
+              - name: IMAGE_TYPE
+                value: "uid-group"
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-cri-tools-push-image-user-username-group
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools
+      decorate: true
+      run_if_changed: '^images\/image-user\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild-images.yaml
+              - --env-passthrough=IMAGE_TYPE
+              - images/image-user
+            env:
+              - name: IMAGE_TYPE
+                value: "username-group"
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-cri-tools-push-image-user-multi-arch
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools
+      decorate: true
+      run_if_changed: '^images\/image-user\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild-manifests.yaml
+              - images/image-user
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

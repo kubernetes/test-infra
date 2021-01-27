@@ -1,17 +1,32 @@
 dashboard_groups:
 - name: sig-node
   dashboard_names:
+    - sig-node-release-blocking # This is a replica of sig-node jobs that are release blocking.
+    - sig-node-critical # This dashboard contains jobs that sig-node has deemed critical to the greater operation of the sig. They should always be green.
     - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
+    - sig-node-containerd-io # jobs in containerd/containerd repository
     - sig-node-ppc64le
     - sig-node-cri-o
     - sig-node-cri
+    - sig-node-cri-tools
     - sig-node-arm64
-    - sig-node-docker
+    - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
+    - sig-node-security-profiles-operator
+    - sig-node-cos
 
 dashboards:
+- name: sig-node-containerd-io
+- name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
+- name: sig-node-critical
+  dashboard_tab:
+    - name: kubelet-NodeConformance
+      test_group_name: ci-kubernetes-node-kubelet-conformance
+    - name: containerd-NodeConformance
+      test_group_name: ci-containerd-node-e2e
+
 - name: sig-node-cadvisor
 - name: sig-node-kubelet
   dashboard_tab:
@@ -27,6 +42,9 @@ dashboards:
       base_options: width=10
     - name: pull-e2e-gci
       test_group_name: pull-kubernetes-e2e-containerd-gce
+      base_options: width=10
+    - name: pull-e2e-podutil
+      test_group_name: pull-kubernetes-node-e2e-podutil
       base_options: width=10
 
 - name: sig-node-ppc64le
@@ -56,6 +74,7 @@ dashboards:
       base_options: width=10
 
 - name: sig-node-cri
+- name: sig-node-cri-tools
 - name: sig-node-arm64
   dashboard_tab:
     - name: conformance
@@ -82,37 +101,89 @@ dashboards:
     - name: nodeconformance
       test_group_name: arm64-nodeconformance
       description: Runs NodeConformance test by using kubetest against latest version of kubernetes on arm64
+    - name: conformance-containerd-stable
+      test_group_name: arm64-conformance-cntainerd-stable
+      description: Runs conformance test by using kubetest against latest stable version of kubernetes with containerd on arm64
 
-  #Docker node conformance dashboard
-- name: sig-node-docker
-  dashboard_tab:
-    - name: ce18.09-node-ubuntu16.04-k8s1.13
-      test_group_name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
-      description: k8s1.13.x node conformance test results for docker ce-18.09 on ubuntu16.04
-    - name: ce19.03-node-ubuntu16.04-k8s1.14
-      test_group_name: ce19.03-ubuntu16.04-k8s1.14.x-conformance
-      description: k8s1.14.x node conformance test results for ce-19.03 on ubuntu16.04
-    - name: ee17.06-node-rhel7.5-k8s1.12
-      test_group_name: ee17.06-rhel7.5-k8s1.12.x-conformance
-      description: k8s1.12.x node conformance test results for ee-17.06 on rhel7.5
-    - name: ee17.06-node-ubuntu16.04-k8s1.12
-      test_group_name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
-      description: k8s1.12.x node conformance test results for ee-17.06 on ubuntu16.04
-    - name: ee18.09-node-rhel7.5-k8s1.13
-      test_group_name: ee18.09-rhel7.5-k8s1.13.x-conformance
-      description: k8s1.13.x node conformance test results for ee-18.09 on rhel7.5
-    - name: ee18.09-node-ubuntu16.04-k8s1.14
-      test_group_name: ee18.09-ubuntu16.04-k8s1.14.x-conformance
-      description: k8s1.14.x node conformance test results for ee-18.09 on ubuntu16.04
-    - name: ee19.03-node-ubuntu16.04-k8s1.14
-      test_group_name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
-      description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
+- name: sig-node-node-feature-discovery
 
 - name: sig-node-node-problem-detector
 
+- name: sig-node-security-profiles-operator
+  dashboard_tab:
+  - name: build
+    test_group_name: pull-security-profiles-operator-build
+    base_options: width=10
+  - name: build-image
+    test_group_name: pull-security-profiles-operator-build-image
+    base_options: width=10
+  - name: verify
+    test_group_name: pull-security-profiles-operator-verify
+    base_options: width=10
+  - name: test-unit
+    test_group_name: pull-security-profiles-operator-test-unit
+    base_options: width=10
+  - name: test-e2e
+    test_group_name: pull-security-profiles-operator-test-e2e
+    base_options: width=10
+  - name: push-image
+    test_group_name: post-security-profiles-operator-push-image
+    base_options: width=10
+
+- name: sig-node-cos
+
 test_groups:
-- name: ci-kubernetes-node-kubelet-serial-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-alpha
+- name: ci-kubernetes-node-kubelet-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-orphans
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial-topology-manager
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-topology-manager
   test_name_config:
     name_elements:
     - target_config: Tests name

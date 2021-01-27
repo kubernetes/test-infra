@@ -27,13 +27,12 @@ import (
 func TestMergeConfigs(t *testing.T) {
 	fakeConfig := func(u string) *rest.Config { return &rest.Config{Username: u} }
 	cases := []struct {
-		name          string
-		local         *rest.Config
-		foreign       map[string]rest.Config
-		current       string
-		buildClusters map[string]rest.Config
-		expected      map[string]rest.Config
-		err           bool
+		name     string
+		local    *rest.Config
+		foreign  map[string]rest.Config
+		current  string
+		expected map[string]rest.Config
+		err      bool
 	}{
 		{
 			name: "require at least one cluster",
@@ -45,32 +44,6 @@ func TestMergeConfigs(t *testing.T) {
 			expected: map[string]rest.Config{
 				InClusterContext:    *fakeConfig("local"),
 				DefaultClusterAlias: *fakeConfig("local"),
-			},
-		},
-		{
-			name: "fail buildClusters without local",
-			buildClusters: map[string]rest.Config{
-				DefaultClusterAlias: *fakeConfig("default"),
-			},
-			err: true,
-		},
-		{
-			name:  "fail buildClusters without a default context",
-			local: fakeConfig("local"),
-			buildClusters: map[string]rest.Config{
-				"random-context": *fakeConfig("random"),
-			},
-			err: true,
-		},
-		{
-			name:  "accept local + buildCluster with default",
-			local: fakeConfig("local"),
-			buildClusters: map[string]rest.Config{
-				DefaultClusterAlias: *fakeConfig("default"),
-			},
-			expected: map[string]rest.Config{
-				InClusterContext:    *fakeConfig("local"),
-				DefaultClusterAlias: *fakeConfig("default"),
 			},
 		},
 		{
@@ -118,29 +91,11 @@ func TestMergeConfigs(t *testing.T) {
 				"random-context":    *fakeConfig("random"),
 			},
 		},
-		{
-			name:  "merge local, foreign, buildClusters",
-			local: fakeConfig("local"),
-			foreign: map[string]rest.Config{
-				"random-context": *fakeConfig("random"),
-			},
-			current: "random-context",
-			buildClusters: map[string]rest.Config{
-				DefaultClusterAlias: *fakeConfig("default"),
-				"other-build":       *fakeConfig("other-build"),
-			},
-			expected: map[string]rest.Config{
-				InClusterContext:    *fakeConfig("local"),
-				DefaultClusterAlias: *fakeConfig("default"),
-				"random-context":    *fakeConfig("random"),
-				"other-build":       *fakeConfig("other-build"),
-			},
-		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := mergeConfigs(tc.local, tc.foreign, tc.current, tc.buildClusters)
+			actual, err := mergeConfigs(tc.local, tc.foreign, tc.current)
 			switch {
 			case err != nil:
 				if !tc.err {

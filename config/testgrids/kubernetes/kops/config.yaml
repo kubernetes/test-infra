@@ -1,0 +1,53 @@
+dashboard_groups:
+- name: kops
+  dashboard_names:
+  - kops-presubmits
+  - kops-distros
+  - kops-network-plugins
+  - kops-versions
+  - kops-misc
+  - kops-kubetest2
+  - kops-gce
+  - kops-grid
+  - kops-distro-amzn2
+  - kops-distro-deb9
+  - kops-distro-deb10
+  - kops-distro-flatcar
+  - kops-distro-rhel7
+  - kops-distro-rhel8
+  - kops-distro-u1804
+  - kops-distro-u2004
+  - kops-k8s-1.17
+  - kops-k8s-1.18
+  - kops-k8s-1.19
+  - kops-k8s-1.20
+  - kops-k8s-latest
+  - kops-1.18
+  - kops-1.19
+  - kops-latest
+
+dashboards:
+- name: kops-presubmits
+- name: kops-distros
+- name: kops-network-plugins
+- name: kops-versions
+- name: kops-misc
+- name: kops-kubetest2
+- name: kops-gce
+- name: kops-grid
+- name: kops-distro-amzn2
+- name: kops-distro-deb9
+- name: kops-distro-deb10
+- name: kops-distro-flatcar
+- name: kops-distro-rhel7
+- name: kops-distro-rhel8
+- name: kops-distro-u1804
+- name: kops-distro-u2004
+- name: kops-k8s-1.17
+- name: kops-k8s-1.18
+- name: kops-k8s-1.19
+- name: kops-k8s-1.20
+- name: kops-k8s-latest
+- name: kops-1.18
+- name: kops-1.19
+- name: kops-latest

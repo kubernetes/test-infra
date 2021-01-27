@@ -36,7 +36,7 @@ const (
 // GitHubClient provides a client interface to report job status updates
 // through GitHub comments.
 type GitHubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -144,7 +144,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 	}
 
 	if err := reportStatus(ghc, pj); err != nil {
-		return fmt.Errorf("error setting status: %v", err)
+		return fmt.Errorf("error setting status: %w", err)
 	}
 
 	// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
@@ -161,11 +161,11 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	botName, err := ghc.BotName()
+	botNameChecker, err := ghc.BotUserChecker()
 	if err != nil {
-		return fmt.Errorf("error getting bot name: %v", err)
+		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
-	deletes, entries, updateID := parseIssueComments(pj, botName, ics)
+	deletes, entries, updateID := parseIssueComments(pj, botNameChecker, ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)
@@ -193,14 +193,14 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
 	var entries []string
 	// First accumulate result entries and comment IDs
 	for _, ic := range ics {
-		if ic.User.Login != botName {
+		if !isBot(ic.User.Login) {
 			continue
 		}
 		// Old report comments started with the context. Delete them.

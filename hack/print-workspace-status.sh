@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This takes in environment variables and outputs data used by Bazel
+# to set key-value pairs
+
 set -o errexit
 set -o nounset
 set -o pipefail

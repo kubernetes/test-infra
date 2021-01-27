@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes-sigs/k8s-gsm-tools:
+    - name: post-k8s-gsm-tools-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+        testgrid-tab-name: k8s-gsm-tools
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-k8s-gsm-tools
+              - --scratch-bucket=gs://k8s-staging-k8s-gsm-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --build-dir=.
+              - images/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

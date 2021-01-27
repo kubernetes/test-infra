@@ -25,13 +25,15 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
@@ -443,25 +445,28 @@ triggers:
   - kube/kubez`),
 			expectedErr: "repoz",
 		},
-		{
-			name:     "invalid map entry",
-			filename: "map.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - config-updater
-config_updater:
-  maps:
-    # Update the plugins configmap whenever plugins.yaml changes
-    kube/plugins.yaml:
-      name: plugins
-    kube/config.yaml:
-      validation: config
-size:
-  s: 1`),
-			expectedErr: "validation",
-		},
+		// Options like DisallowUnknownFields can not be passed when using
+		// a custon json.Unmarshaler like we do here for defaulting:
+		// https://github.com/golang/go/issues/41144
+		//		{
+		//			name:     "invalid map entry",
+		//			filename: "map.yaml",
+		//			cfg:      &plugins.Configuration{},
+		//			configBytes: []byte(`plugins:
+		//  kube/kube:
+		//  - size
+		//  - config-updater
+		//config_updater:
+		//  maps:
+		//    # Update the plugins configmap whenever plugins.yaml changes
+		//    kube/plugins.yaml:
+		//      name: plugins
+		//    kube/config.yaml:
+		//      validation: config
+		//size:
+		//  s: 1`),
+		//			expectedErr: "validation",
+		//		},
 		{
 			//only one invalid element is printed in the error
 			name:     "multiple invalid elements",
@@ -542,9 +547,13 @@ size:
 					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
 				}
 			} else { // check substrings in case yaml lib changes err fmt
+				var errMsg string
+				if got != nil {
+					errMsg = got.Error()
+				}
 				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
-					if !strings.Contains(got.Error(), s) {
-						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%s", tc.name, s, got)
+					if !strings.Contains(errMsg, s) {
+						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%v", tc.name, s, got)
 					}
 				}
 			}
@@ -902,6 +911,80 @@ func TestValidateStrictBranches(t *testing.T) {
 	}
 }
 
+func TestValidateManagedWebhooks(t *testing.T) {
+	testCases := []struct {
+		name      string
+		config    config.ProwConfig
+		expectErr bool
+	}{
+		{
+			name:      "empty config",
+			config:    config.ProwConfig{},
+			expectErr: false,
+		},
+		{
+			name: "no duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: false,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name: "has duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":      {TokenCreatedAfter: time.Now()},
+						"foo1":     {TokenCreatedAfter: time.Now()},
+						"foo2":     {TokenCreatedAfter: time.Now()},
+						"foo/bar":  {TokenCreatedAfter: time.Now()},
+						"foo/bar1": {TokenCreatedAfter: time.Now()},
+						"foo/bar2": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "has multiple duplicate webhooks",
+			config: config.ProwConfig{
+				ManagedWebhooks: config.ManagedWebhooks{
+					RespectLegacyGlobalToken: true,
+					OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+						"foo":       {TokenCreatedAfter: time.Now()},
+						"foo1":      {TokenCreatedAfter: time.Now()},
+						"foo2":      {TokenCreatedAfter: time.Now()},
+						"foo/bar":   {TokenCreatedAfter: time.Now()},
+						"foo/bar1":  {TokenCreatedAfter: time.Now()},
+						"foo1/bar1": {TokenCreatedAfter: time.Now()},
+					},
+				},
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := validateManagedWebhooks(&config.Config{ProwConfig: testCase.config})
+		if testCase.expectErr && err == nil {
+			t.Errorf("%s: expected the config %+v to have errors but not", testCase.name, testCase.config)
+		}
+		if !testCase.expectErr && err != nil {
+			t.Errorf("%s: expected the config %+v to be correct but got an error in validation: %v",
+				testCase.name, testCase.config, err)
+		}
+	}
+}
+
 func TestWarningEnabled(t *testing.T) {
 	var testCases = []struct {
 		name      string
@@ -1063,7 +1146,8 @@ func TestVerifyOwnersPresence(t *testing.T) {
 func TestOptions(t *testing.T) {
 
 	var defaultGitHubOptions flagutil.GitHubOptions
-	defaultGitHubOptions.AddFlagsWithoutDefaultGitHubTokenPath(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AllowAnonymous = true
 
 	StringsFlag := func(vals []string) flagutil.Strings {
 		var flag flagutil.Strings
@@ -1303,5 +1387,196 @@ func TestValidateInRepoConfig(t *testing.T) {
 		if errString != tc.expectedErr {
 			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
 		}
+	}
+}
+
+func TestValidateTideContextPolicy(t *testing.T) {
+	cfg := func(m ...func(*config.Config)) *config.Config {
+		cfg := &config.Config{}
+		cfg.PresubmitsStatic = map[string][]config.Presubmit{}
+		for _, mod := range m {
+			mod(cfg)
+		}
+		return cfg
+	}
+
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "overlapping branch config, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config with empty branch configs, error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for master branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "overlapping branch config, inrepoconfig enabled, error",
+			cfg: cfg(func(c *config.Config) {
+				c.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
+				}
+			}),
+			expectedError: "context policy for a branch in a/b is invalid: contexts a are defined as required and required if present",
+		},
+		{
+			name: "no overlapping branch config, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["a/b"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
+		{
+			name: "repo key is not in org/repo format, no error",
+			cfg: cfg(func(c *config.Config) {
+				c.PresubmitsStatic["https://kunit-review.googlesource.com/linux"] = []config.Presubmit{
+					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"b"}}},
+				}
+			}),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Needed so regexes get compiled
+			tc.cfg.SetPresubmits(tc.cfg.PresubmitsStatic)
+
+			errMsg := ""
+			if err := validateTideContextPolicy(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		name string
+		opts options
+	}{
+		{
+			name: "combined config",
+			opts: options{
+				configPath: "testdata/combined.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validate(tc.opts); err != nil {
+				t.Fatalf("validation failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateClusterField(t *testing.T) {
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "Jenkins job with unset cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent: "jenkins",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job with defaulted cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "default",
+									Name:    "some-job",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job must not set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "build1",
+									Name:    "some-job",
+								},
+							}}}}},
+			expectedError: "org1/repo1: some-job: cannot set cluster field if agent is jenkins",
+		},
+		{
+			name: "k8s job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "kubernetes",
+									Cluster: "default",
+								},
+							}}}}},
+		},
+		{
+			name: "empty agent job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "default",
+								},
+							}}}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			errMsg := ""
+			if err := validateCluster(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
+			}
+		})
 	}
 }

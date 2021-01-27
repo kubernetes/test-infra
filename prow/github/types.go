@@ -109,13 +109,15 @@ func unmarshalClientError(b []byte) error {
 
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
-	Message string `json:"message"`
-	Errors  []struct {
-		Resource string `json:"resource"`
-		Field    string `json:"field"`
-		Code     string `json:"code"`
-		Message  string `json:"message,omitempty"`
-	} `json:"errors,omitempty"`
+	Message string                `json:"message"`
+	Errors  []clientErrorSubError `json:"errors,omitempty"`
+}
+
+type clientErrorSubError struct {
+	Resource string `json:"resource"`
+	Field    string `json:"field"`
+	Code     string `json:"code"`
+	Message  string `json:"message,omitempty"`
 }
 
 func (r ClientError) Error() string {
@@ -207,13 +209,21 @@ const (
 	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
 	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
 	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
+	// PullRequestActionConvertedToDraft means the PR is now a draft PR.
+	PullRequestActionConvertedToDraft PullRequestEventAction = "converted_to_draft"
+	// PullRequestActionLocked means labels were added.
+	PullRequestActionLocked PullRequestEventAction = "locked"
+	// PullRequestActionUnlocked means labels were removed
+	PullRequestActionUnlocked PullRequestEventAction = "unlocked"
 )
 
-// GenericEvent is a lightweight struct containing just Sender and Repo as all events are expected to have this information.
-// https://developer.github.com/webhooks/#payloads
+// GenericEvent is a lightweight struct containing just Sender, Organization and Repo as
+// they are allWebhook payload object common properties:
+// https://developer.github.com/webhooks/event-payloads/#webhook-payload-object-common-properties
 type GenericEvent struct {
-	Sender User `json:"sender"`
-	Repo   Repo `json:"repository"`
+	Sender User         `json:"sender"`
+	Org    Organization `json:"organization"`
+	Repo   Repo         `json:"repository"`
 }
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -290,6 +300,7 @@ type PullRequest struct {
 	MergeableState MergeableState `json:"mergeable_state,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
 	Milestone *Milestone `json:"milestone,omitempty"`
+	Commits   int        `json:"commits"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -760,7 +771,7 @@ func (i Issue) IsPullRequest() bool {
 // HasLabel checks if an issue has a given label.
 func (i Issue) HasLabel(labelToFind string) bool {
 	for _, label := range i.Labels {
-		if strings.ToLower(label.Name) == strings.ToLower(labelToFind) {
+		if strings.EqualFold(label.Name, labelToFind) {
 			return true
 		}
 	}
@@ -837,14 +848,9 @@ type Commit struct {
 	Modified []string `json:"modified"`
 }
 
-// SingleCommit is the commit part received when requesting a single commit
-// https://developer.github.com/v3/repos/commits/#get-a-single-commit
-type SingleCommit struct {
-	Commit struct {
-		Tree struct {
-			SHA string `json:"sha"`
-		} `json:"tree"`
-	} `json:"commit"`
+// Tree represents a GitHub tree.
+type Tree struct {
+	SHA string `json:"sha,omitempty"`
 }
 
 // ReviewEventAction enumerates the triggers for this
@@ -964,6 +970,9 @@ type DraftReviewComment struct {
 }
 
 // Content is some base64 encoded github file content
+// It include selected fields available in content record returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
@@ -1018,6 +1027,9 @@ type Membership struct {
 
 // Organization stores metadata information about an organization
 type Organization struct {
+	// Login has the same meaning as Name, but it's more reliable to use as Name can sometimes be empty,
+	// see https://developer.github.com/v3/orgs/#list-organizations
+	Login string `json:"login"`
 	// BillingEmail holds private billing address
 	BillingEmail string `json:"billing_email"`
 	Company      string `json:"company"`
@@ -1075,6 +1087,7 @@ const (
 // a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
 	ID           int `json:"id"`
+	CommentID    *int
 	IsPR         bool
 	Action       GenericCommentEventAction
 	Body         string
@@ -1085,6 +1098,7 @@ type GenericCommentEvent struct {
 	IssueAuthor  User
 	Assignees    []User
 	IssueState   string
+	IssueTitle   string
 	IssueBody    string
 	IssueHTMLURL string
 	GUID         string
@@ -1099,21 +1113,83 @@ type Milestone struct {
 // RepositoryCommit represents a commit in a repo.
 // Note that it's wrapping a GitCommit, so author/committer information is in two places,
 // but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+// Get single commit also use it, see: https://developer.github.com/v3/repos/commits/#get-a-single-commit.
 type RepositoryCommit struct {
-	SHA         string    `json:"sha"`
-	Commit      GitCommit `json:"commit"`
-	Author      User      `json:"author"`
-	Committer   User      `json:"committer"`
-	Parents     []Commit  `json:"parents,omitempty"`
-	HTMLURL     string    `json:"html_url"`
-	URL         string    `json:"url"`
-	CommentsURL string    `json:"comments_url"`
+	NodeID      string      `json:"node_id,omitempty"`
+	SHA         string      `json:"sha,omitempty"`
+	Commit      GitCommit   `json:"commit,omitempty"`
+	Author      User        `json:"author,omitempty"`
+	Committer   User        `json:"committer,omitempty"`
+	Parents     []GitCommit `json:"parents,omitempty"`
+	HTMLURL     string      `json:"html_url,omitempty"`
+	URL         string      `json:"url,omitempty"`
+	CommentsURL string      `json:"comments_url,omitempty"`
+
+	// Details about how many changes were made in this commit. Only filled in during GetCommit!
+	Stats *CommitStats `json:"stats,omitempty"`
+	// Details about which files, and how this commit touched. Only filled in during GetCommit!
+	Files []CommitFile `json:"files,omitempty"`
+}
+
+// CommitStats represents the number of additions / deletions from a file in a given RepositoryCommit or GistCommit.
+type CommitStats struct {
+	Additions int `json:"additions,omitempty"`
+	Deletions int `json:"deletions,omitempty"`
+	Total     int `json:"total,omitempty"`
+}
+
+// CommitFile represents a file modified in a commit.
+type CommitFile struct {
+	SHA              string `json:"sha,omitempty"`
+	Filename         string `json:"filename,omitempty"`
+	Additions        int    `json:"additions,omitempty"`
+	Deletions        int    `json:"deletions,omitempty"`
+	Changes          int    `json:"changes,omitempty"`
+	Status           string `json:"status,omitempty"`
+	Patch            string `json:"patch,omitempty"`
+	BlobURL          string `json:"blob_url,omitempty"`
+	RawURL           string `json:"raw_url,omitempty"`
+	ContentsURL      string `json:"contents_url,omitempty"`
+	PreviousFilename string `json:"previous_filename,omitempty"`
 }
 
 // GitCommit represents a GitHub commit.
 type GitCommit struct {
-	SHA     string `json:"sha,omitempty"`
-	Message string `json:"message,omitempty"`
+	SHA          string                 `json:"sha,omitempty"`
+	Author       CommitAuthor           `json:"author,omitempty"`
+	Committer    CommitAuthor           `json:"committer,omitempty"`
+	Message      string                 `json:"message,omitempty"`
+	Tree         Tree                   `json:"tree,omitempty"`
+	Parents      []GitCommit            `json:"parents,omitempty"`
+	Stats        *CommitStats           `json:"stats,omitempty"`
+	HTMLURL      string                 `json:"html_url,omitempty"`
+	URL          string                 `json:"url,omitempty"`
+	Verification *SignatureVerification `json:"verification,omitempty"`
+	NodeID       string                 `json:"node_id,omitempty"`
+
+	// CommentCount is the number of GitHub comments on the commit. This
+	// is only populated for requests that fetch GitHub data like
+	// Pulls.ListCommits, Repositories.ListCommits, etc.
+	CommentCount *int `json:"comment_count,omitempty"`
+}
+
+// CommitAuthor represents the author or committer of a commit. The commit
+// author may not correspond to a GitHub User.
+type CommitAuthor struct {
+	Date  time.Time `json:"date,omitempty"`
+	Name  string    `json:"name,omitempty"`
+	Email string    `json:"email,omitempty"`
+
+	// The following fields are only populated by Webhook events.
+	Login *string `json:"username,omitempty"`
+}
+
+// SignatureVerification represents GPG signature verification.
+type SignatureVerification struct {
+	Verified  bool   `json:"verified,omitempty"`
+	Reason    string `json:"reason,omitempty"`
+	Signature string `json:"signature,omitempty"`
+	Payload   string `json:"payload,omitempty"`
 }
 
 // Project is a github project
@@ -1134,4 +1210,158 @@ type ProjectCard struct {
 	ContentID   int    `json:"content_id"`
 	ContentType string `json:"content_type"`
 	ContentURL  string `json:"content_url"`
+}
+
+type CheckRunList struct {
+	Total     int        `json:"total_count,omitempty"`
+	CheckRuns []CheckRun `json:"check_runs,omitempty"`
+}
+
+type CheckRun struct {
+	ID           int64          `json:"id,omitempty"`
+	NodeID       string         `json:"node_id,omitempty"`
+	HeadSHA      string         `json:"head_sha,omitempty"`
+	ExternalID   string         `json:"external_id,omitempty"`
+	URL          string         `json:"url,omitempty"`
+	HTMLURL      string         `json:"html_url,omitempty"`
+	DetailsURL   string         `json:"details_url,omitempty"`
+	Status       string         `json:"status,omitempty"`
+	Conclusion   string         `json:"conclusion,omitempty"`
+	StartedAt    string         `json:"started_at,omitempty"`
+	CompletedAt  string         `json:"completed_at,omitempty"`
+	Output       CheckRunOutput `json:"output,omitempty"`
+	Name         string         `json:"name,omitempty"`
+	CheckSuite   CheckSuite     `json:"check_suite,omitempty"`
+	App          App            `json:"app,omitempty"`
+	PullRequests []PullRequest  `json:"pull_requests,omitempty"`
+}
+
+type CheckRunOutput struct {
+	Title            string               `json:"title,omitempty"`
+	Summary          string               `json:"summary,omitempty"`
+	Text             string               `json:"text,omitempty"`
+	AnnotationsCount int                  `json:"annotations_count,omitempty"`
+	AnnotationsURL   string               `json:"annotations_url,omitempty"`
+	Annotations      []CheckRunAnnotation `json:"annotations,omitempty"`
+	Images           []CheckRunImage      `json:"images,omitempty"`
+}
+
+type CheckRunAnnotation struct {
+	Path            string `json:"path,omitempty"`
+	StartLine       int    `json:"start_line,omitempty"`
+	EndLine         int    `json:"end_line,omitempty"`
+	StartColumn     int    `json:"start_column,omitempty"`
+	EndColumn       int    `json:"end_column,omitempty"`
+	AnnotationLevel string `json:"annotation_level,omitempty"`
+	Message         string `json:"message,omitempty"`
+	Title           string `json:"title,omitempty"`
+	RawDetails      string `json:"raw_details,omitempty"`
+}
+
+type CheckRunImage struct {
+	Alt      string `json:"alt,omitempty"`
+	ImageURL string `json:"image_url,omitempty"`
+	Caption  string `json:"caption,omitempty"`
+}
+
+type CheckSuite struct {
+	ID           int64         `json:"id,omitempty"`
+	NodeID       string        `json:"node_id,omitempty"`
+	HeadBranch   string        `json:"head_branch,omitempty"`
+	HeadSHA      string        `json:"head_sha,omitempty"`
+	URL          string        `json:"url,omitempty"`
+	BeforeSHA    string        `json:"before,omitempty"`
+	AfterSHA     string        `json:"after,omitempty"`
+	Status       string        `json:"status,omitempty"`
+	Conclusion   string        `json:"conclusion,omitempty"`
+	App          *App          `json:"app,omitempty"`
+	Repository   *Repo         `json:"repository,omitempty"`
+	PullRequests []PullRequest `json:"pull_requests,omitempty"`
+
+	// The following fields are only populated by Webhook events.
+	HeadCommit *Commit `json:"head_commit,omitempty"`
+}
+
+type App struct {
+	ID          int64                    `json:"id,omitempty"`
+	Slug        string                   `json:"slug,omitempty"`
+	NodeID      string                   `json:"node_id,omitempty"`
+	Owner       User                     `json:"owner,omitempty"`
+	Name        string                   `json:"name,omitempty"`
+	Description string                   `json:"description,omitempty"`
+	ExternalURL string                   `json:"external_url,omitempty"`
+	HTMLURL     string                   `json:"html_url,omitempty"`
+	CreatedAt   string                   `json:"created_at,omitempty"`
+	UpdatedAt   string                   `json:"updated_at,omitempty"`
+	Permissions *InstallationPermissions `json:"permissions,omitempty"`
+	Events      []string                 `json:"events,omitempty"`
+}
+
+type InstallationPermissions struct {
+	Administration              string `json:"administration,omitempty"`
+	Blocking                    string `json:"blocking,omitempty"`
+	Checks                      string `json:"checks,omitempty"`
+	Contents                    string `json:"contents,omitempty"`
+	ContentReferences           string `json:"content_references,omitempty"`
+	Deployments                 string `json:"deployments,omitempty"`
+	Emails                      string `json:"emails,omitempty"`
+	Followers                   string `json:"followers,omitempty"`
+	Issues                      string `json:"issues,omitempty"`
+	Metadata                    string `json:"metadata,omitempty"`
+	Members                     string `json:"members,omitempty"`
+	OrganizationAdministration  string `json:"organization_administration,omitempty"`
+	OrganizationHooks           string `json:"organization_hooks,omitempty"`
+	OrganizationPlan            string `json:"organization_plan,omitempty"`
+	OrganizationPreReceiveHooks string `json:"organization_pre_receive_hooks,omitempty"`
+	OrganizationProjects        string `json:"organization_projects,omitempty"`
+	OrganizationUserBlocking    string `json:"organization_user_blocking,omitempty"`
+	Packages                    string `json:"packages,omitempty"`
+	Pages                       string `json:"pages,omitempty"`
+	PullRequests                string `json:"pull_requests,omitempty"`
+	RepositoryHooks             string `json:"repository_hooks,omitempty"`
+	RepositoryProjects          string `json:"repository_projects,omitempty"`
+	RepositoryPreReceiveHooks   string `json:"repository_pre_receive_hooks,omitempty"`
+	SingleFile                  string `json:"single_file,omitempty"`
+	Statuses                    string `json:"statuses,omitempty"`
+	TeamDiscussions             string `json:"team_discussions,omitempty"`
+	VulnerabilityAlerts         string `json:"vulnerability_alerts,omitempty"`
+}
+
+// AppInstallation represents a GitHub Apps installation.
+type AppInstallation struct {
+	ID                  int64                   `json:"id,omitempty"`
+	NodeID              string                  `json:"node_id,omitempty"`
+	AppID               int64                   `json:"app_id,omitempty"`
+	TargetID            int64                   `json:"target_id,omitempty"`
+	Account             User                    `json:"account,omitempty"`
+	AccessTokensURL     string                  `json:"access_tokens_url,omitempty"`
+	RepositoriesURL     string                  `json:"repositories_url,omitempty"`
+	HTMLURL             string                  `json:"html_url,omitempty"`
+	TargetType          string                  `json:"target_type,omitempty"`
+	SingleFileName      string                  `json:"single_file_name,omitempty"`
+	RepositorySelection string                  `json:"repository_selection,omitempty"`
+	Events              []string                `json:"events,omitempty"`
+	Permissions         InstallationPermissions `json:"permissions,omitempty"`
+	CreatedAt           string                  `json:"created_at,omitempty"`
+	UpdatedAt           string                  `json:"updated_at,omitempty"`
+}
+
+// AppInstallationToken is the response when retrieving an app installation
+// token.
+type AppInstallationToken struct {
+	Token        string                  `json:"token,omitempty"`
+	ExpiresAt    time.Time               `json:"expires_at,omitempty"`
+	Permissions  InstallationPermissions `json:"permissions,omitempty"`
+	Repositories []Repo                  `json:"repositories,omitempty"`
+}
+
+// DirectoryContent contains information about a github directory.
+// It include selected fields available in content records returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
+type DirectoryContent struct {
+	SHA  string `json:"sha"`
+	Type string `json:"type"`
+	Name string `json:"name"`
+	Path string `json:"path"`
 }

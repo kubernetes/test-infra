@@ -72,7 +72,7 @@ The tool produces & stores coverage profile for later presubmit jobs to compare 
       An example of how these git attribute is used can be found [here](https://github.com/knative/serving/blob/master/.gitattributes)
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
       - The XML should be a valid JUnit XML file. See [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
-      - In addition to being a valid jUnit XML file, the file needs to have the properties specified [here](https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-layout) to be readable by TestGrid
+      - In addition to being a valid JUnit XML file, the file needs to have the properties specified [here](https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-layout) to be readable by TestGrid
       - For each file that has a coverage level lower than the threshold, the corresponding entry in the XML should have a \<failure\> tag
 
 ## Pre-submit workflow

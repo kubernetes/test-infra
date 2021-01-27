@@ -90,22 +90,6 @@ presets:
 
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
-  - name: pull-cluster-api-provider-vsphere-verify-fmt
-    always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-format\.sh)'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-        - hack/check-format.sh
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-fmt
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
-      description: Verifies the Golang sources have been formatted
-
   - name: pull-cluster-api-provider-vsphere-verify-lint
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-lint\.sh)'
@@ -113,7 +97,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
         command:
         - hack/check-lint.sh
     annotations:
@@ -121,22 +105,6 @@ presubmits:
       testgrid-tab-name: pr-verify-lint
       testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
       description: Verifies the Golang sources are linted
-
-  - name: pull-cluster-api-provider-vsphere-verify-vet
-    always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-vet\.sh)'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-        - hack/check-vet.sh
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-vet
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
-      description: Vets the Golang sources have been vetted
 
   - name: pull-cluster-api-provider-vsphere-verify-markdown
     always_run: false
@@ -184,7 +152,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
         command:
         - hack/verify-crds.sh
     annotations:
@@ -200,7 +168,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
         resources:
           requests:
             cpu: "500m"
@@ -228,7 +196,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
         command:
         - runner.sh
         args:

@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes-sigs/boskos:
+    - name: ci-boskos-build-test-verify
+      decorate: true
+      always_run: true
+      path_alias: sigs.k8s.io/boskos
+      spec:
+        containers:
+          - image: golang:1.15
+            imagePullPolicy: Always
+            command:
+              - make
+            args:
+              - build
+              - test
+              - verify
+            resources:
+              requests:
+                cpu: 4000m
+      annotations:
+        testgrid-dashboards: sig-testing-boskos
+        testgrid-tab-name: ci-build-test-verify
+        testgrid-alert-email: jgrafton@google.com

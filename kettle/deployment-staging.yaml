@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kettle-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kettle-staging
+  template:
+    metadata:
+      labels:
+        app: kettle-staging
+    spec:
+      containers:
+      - name: kettle-staging
+        image: gcr.io/k8s-testimages/kettle:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: BUILD_LIMIT
+          value: "1000"
+        - name: DEPLOYMENT
+          value: staging
+        - name: SUBSCRIPTION_PATH
+          value: kubernetes-jenkins/gcs-changes/kettle-staging
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: service
+        secret:
+          secretName: kettle-service-account
+      - name: data
+        persistentVolumeClaim:
+          claimName: kettle-data-staging

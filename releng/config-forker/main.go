@@ -39,6 +39,7 @@ const (
 	periodicIntervalAnnotation   = "fork-per-release-periodic-interval"
 	cronAnnotation               = "fork-per-release-cron"
 	replacementAnnotation        = "fork-per-release-replacements"
+	deletionAnnotation           = "fork-per-release-deletions"
 	testgridDashboardsAnnotation = "testgrid-dashboards"
 	testgridTabNameAnnotation    = "testgrid-tab-name"
 	descriptionAnnotation        = "description"
@@ -103,9 +104,9 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 	return newPresubmits, nil
 }
 
-func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, error) {
+func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
-	for _, periodic := range c.Periodics {
+	for _, periodic := range conf.Periodics {
 		if periodic.Annotations[forkAnnotation] != "true" {
 			continue
 		}
@@ -116,7 +117,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				c := &p.Spec.Containers[i]
 				c.Image = fixImage(c.Image, version)
 				c.Env = fixEnvVars(c.Env, version)
-				if !p.Decorate {
+				if !config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
 					c.Command = fixBootstrapArgs(c.Command, version)
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
@@ -127,7 +128,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				}
 			}
 		}
-		if p.Decorate {
+		if config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
 			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {
@@ -154,6 +155,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
 		}
+		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 		newPeriodics = append(newPeriodics, p)
 	}
@@ -163,7 +165,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 func cleanAnnotations(annotations map[string]string) map[string]string {
 	result := map[string]string{}
 	for k, v := range annotations {
-		if k == forkAnnotation || k == replacementAnnotation {
+		if k == forkAnnotation || k == replacementAnnotation || k == deletionAnnotation {
 			continue
 		}
 		if k == periodicIntervalAnnotation && v == "" {
@@ -219,6 +221,30 @@ func performReplacement(args []string, version, replacements string) ([]string, 
 	}
 
 	return newArgs, nil
+}
+
+func performDeletion(args map[string]string, deletions string) map[string]string {
+	if args == nil {
+		return nil
+	}
+	if deletions == "" {
+		return args
+	}
+
+	deletionsSet := make(map[string]bool)
+	for _, s := range strings.Split(deletions, ", ") {
+		deletionsSet[s] = true
+	}
+
+	result := map[string]string{}
+
+	for k, v := range args {
+		if !deletionsSet[k] {
+			result[k] = v
+		}
+	}
+
+	return result
 }
 
 func fixImage(image, version string) string {

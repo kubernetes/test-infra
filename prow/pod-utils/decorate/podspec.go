@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -66,14 +67,24 @@ func Labels() []string {
 	return []string{kube.ProwJobTypeLabel, kube.CreatedByProw, kube.ProwJobIDLabel}
 }
 
-// VolumeMounts returns a string slice with *MountName consts in it.
-func VolumeMounts() []string {
-	return []string{logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName}
+// VolumeMounts returns a string set with *MountName consts in it.
+func VolumeMounts() sets.String {
+	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
 }
 
-// VolumeMountPaths returns a string slice with *MountPath consts in it.
-func VolumeMountPaths() []string {
-	return []string{logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath}
+// VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
+func VolumeMountsOnTestContainer() sets.String {
+	return sets.NewString(logMountName, codeMountName, toolsMountName)
+}
+
+// VolumeMountPathsOnTestContainer returns a string set with *MountPath consts in it which are applied to the test container.
+func VolumeMountPathsOnTestContainer() sets.String {
+	return sets.NewString(logMountPath, codeMountPath, toolsMountPath)
+}
+
+// PodUtilsContainerNames returns a string set with pod utility container name consts in it.
+func PodUtilsContainerNames() sets.String {
+	return sets.NewString(cloneRefsName, initUploadName, entrypointName, sidecarName)
 }
 
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
@@ -152,26 +163,28 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
-	return ProwJobToPodLocal(pj, buildID, "")
+func ProwJobToPod(pj prowapi.ProwJob) (*coreapi.Pod, error) {
+	return ProwJobToPodLocal(pj, "")
 }
 
 // ProwJobToPodLocal converts a ProwJob to a Pod that will run the tests.
 // If an output directory is specified, files are copied to the dir instead of uploading to GCS if
 // decoration is configured.
-func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*coreapi.Pod, error) {
+func ProwJobToPodLocal(pj prowapi.ProwJob, outputDir string) (*coreapi.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
 
-	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, buildID, pj.Name))
+	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name))
 	if err != nil {
 		return nil, err
 	}
 
 	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
-	spec.Containers[0].Name = kube.TestContainerName
+	if len(spec.Containers) == 1 {
+		spec.Containers[0].Name = kube.TestContainerName
+	}
 
 	// if the user has not provided a serviceaccount to use or explicitly
 	// requested mounting the default token, we treat the unset value as
@@ -183,7 +196,9 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 	}
 
 	if pj.Spec.DecorationConfig == nil {
-		spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
+		for i, container := range spec.Containers {
+			spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
+		}
 	} else {
 		if err := decorate(spec, &pj, rawEnv, outputDir); err != nil {
 			return nil, fmt.Errorf("error decorating podspec: %v", err)
@@ -225,6 +240,9 @@ func CloneLogPath(logMount coreapi.VolumeMount) string {
 
 // Exposed for testing
 const (
+	entrypointName   = "place-entrypoint"
+	initUploadName   = "initupload"
+	sidecarName      = "sidecar"
 	cloneRefsName    = "clonerefs"
 	cloneRefsCommand = "/clonerefs"
 )
@@ -466,10 +484,11 @@ func entrypointLocation(tools coreapi.VolumeMount) string {
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
 func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
-		Args:         append(c.Command, c.Args...),
-		ProcessLog:   processLog(log, prefix),
-		MarkerFile:   markerFile(log, prefix),
-		MetadataFile: metadataFile(log, prefix),
+		Args:          append(c.Command, c.Args...),
+		ContainerName: c.Name,
+		ProcessLog:    processLog(log, prefix),
+		MarkerFile:    markerFile(log, prefix),
+		MetadataFile:  metadataFile(log, prefix),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
@@ -494,7 +513,7 @@ func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, 
 // PlaceEntrypoint will copy entrypoint from the entrypoint image to the tools volume
 func PlaceEntrypoint(config *prowapi.DecorationConfig, toolsMount coreapi.VolumeMount) coreapi.Container {
 	container := coreapi.Container{
-		Name:         "place-entrypoint",
+		Name:         entrypointName,
 		Image:        config.UtilityImages.Entrypoint,
 		Command:      []string{"/bin/cp"},
 		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
@@ -533,7 +552,7 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 			Name:      gcsCredentialsMountName,
 			MountPath: gcsCredentialsMountPath,
 		})
-		opt.GcsCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
+		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
 	if dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
@@ -548,7 +567,7 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 			Name:      s3CredentialsMountName,
 			MountPath: s3CredentialsMountPath,
 		})
-		opt.S3CredentialsFile = fmt.Sprintf("%s/service-account.json", s3CredentialsMountPath)
+		opt.StorageClientOptions.S3CredentialsFile = fmt.Sprintf("%s/service-account.json", s3CredentialsMountPath)
 	}
 
 	return volumes, mounts, opt
@@ -574,7 +593,7 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
 	}
 	container := &coreapi.Container{
-		Name:    "initupload",
+		Name:    initUploadName,
 		Image:   config.UtilityImages.InitUpload,
 		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
 		Env: KubeEnv(map[string]string{
@@ -589,43 +608,53 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 	return container, nil
 }
 
+// LogMountAndVolume returns the canonical volume and mount used to persist container logs.
+func LogMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      logMountName,
+			MountPath: logMountPath,
+		}, coreapi.Volume{
+			Name: logMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// CodeMountAndVolume returns the canonical volume and mount used to share code under test
+func CodeMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      codeMountName,
+			MountPath: codeMountPath,
+		}, coreapi.Volume{
+			Name: codeMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// ToolsMountAndVolume returns the canonical volume and mount used to propagate the entrypoint
+func ToolsMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      toolsMountName,
+			MountPath: toolsMountPath,
+		}, coreapi.Volume{
+			Name: toolsMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
 func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]string, outputDir string) error {
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath
 	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
-	logMount := coreapi.VolumeMount{
-		Name:      logMountName,
-		MountPath: logMountPath,
-	}
-	logVolume := coreapi.Volume{
-		Name: logMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	codeMount := coreapi.VolumeMount{
-		Name:      codeMountName,
-		MountPath: codeMountPath,
-	}
-	codeVolume := coreapi.Volume{
-		Name: codeMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	toolsMount := coreapi.VolumeMount{
-		Name:      toolsMountName,
-		MountPath: toolsMountPath,
-	}
-	toolsVolume := coreapi.Volume{
-		Name: toolsMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
+	logMount, logVolume := LogMountAndVolume()
+	codeMount, codeVolume := CodeMountAndVolume()
+	toolsMount, toolsVolume := ToolsMountAndVolume()
 
 	// The output volume is only used if outputDir is specified, indicating the pod-utils should
 	// copy files instead of uploading to GCS.
@@ -669,24 +698,32 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		*initUpload,
 		PlaceEntrypoint(pj.Spec.DecorationConfig, toolsMount),
 	)
-	spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
+	for i, container := range spec.Containers {
+		spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
+	}
 
-	const ( // these values may change when/if we support multiple containers
-		prefix   = "" // unique per container
+	const (
 		previous = ""
 		exitZero = false
 	)
-	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
-	if err != nil {
-		return fmt.Errorf("wrap container: %v", err)
+	var wrappers []wrapper.Options
+
+	for i, container := range spec.Containers {
+		prefix := container.Name
+		if len(spec.Containers) == 1 {
+			prefix = ""
+		}
+		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
+		if err != nil {
+			return fmt.Errorf("wrap container: %v", err)
+		}
+		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, *wrapperOptions)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
-
-	spec.Containers = append(spec.Containers, *sidecar)
 
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume)
 	spec.Volumes = append(spec.Volumes, blobStorageVolumes...)
@@ -695,10 +732,14 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	}
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
-		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
+		for i, container := range spec.Containers {
+			spec.Containers[i].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
+			spec.Containers[i].VolumeMounts = append(container.VolumeMounts, codeMount)
+		}
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
+
+	spec.Containers = append(spec.Containers, *sidecar)
 
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
 		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
@@ -721,14 +762,17 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
+	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
+	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions: &gcsOptions,
-		Entries:    wrappers,
-		EntryError: requirePassingEntries,
+		GcsOptions:       &gcsOptions,
+		Entries:          wrappers,
+		EntryError:       requirePassingEntries,
+		IgnoreInterrupts: ignoreInterrupts,
 	})
 	if err != nil {
 		return nil, err
@@ -740,7 +784,7 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 
 	container := &coreapi.Container{
-		Name:    "sidecar",
+		Name:    sidecarName,
 		Image:   config.UtilityImages.Sidecar,
 		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
 		Env: KubeEnv(map[string]string{

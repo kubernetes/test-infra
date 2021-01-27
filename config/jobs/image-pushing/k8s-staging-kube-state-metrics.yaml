@@ -1,0 +1,21 @@
+postsubmits:
+  kubernetes/kube-state-metrics:
+    - name: post-kube-state-metrics-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-instrumentation-image-pushes
+      decorate: true
+      branches:
+        - ^master$
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kube-state-metrics
+              - --scratch-bucket=gs://k8s-staging-kube-state-metrics-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - .

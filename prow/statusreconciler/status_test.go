@@ -27,9 +27,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
-	"sigs.k8s.io/yaml"
 )
 
 type testOpener struct{}
@@ -269,7 +270,7 @@ func getPresubmits(names []string) []config.Presubmit {
 				Spec: spec,
 			},
 			AlwaysRun: true,
-			Reporter:  config.Reporter{Context: "boo"},
+			Reporter:  config.Reporter{Context: name},
 		}
 		presubmits = append(presubmits, ps)
 	}

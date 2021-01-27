@@ -7,8 +7,10 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-master-scale-correctness
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
@@ -21,11 +23,12 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=CONCURRENT_SERVICE_SYNCS=5
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
-      - --extract=ci/latest
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-node-size=g1-small
+      - --gcp-node-size=e2-small
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
@@ -35,72 +38,91 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       resources:
         requests:
           cpu: 6
-          memory: "16Gi"
+          memory: "48Gi"
+        limits:
+          cpu: 6
+          memory: "48Gi"
 
 # This is a sig-release-master-blocking job.
-- cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
+- cron: '1 5,17,23 * * *' # In UTC
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-master-scale-performance
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
     - args:
-      - --timeout=1080
+      - --timeout=360
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
+      # TODO(mborsz): Revert or merge MASTER_MIN_CPU_ARCHITECTURE with preset.
+      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Skylake
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-      - --extract=ci/latest
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
+      - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
+      - --env=CL2_LOAD_TEST_THROUGHPUT=50
+      - --env=CL2_DELETE_TEST_THROUGHPUT=30
+      # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=5000
+      - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1050m
+      - --timeout=330m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       resources:
         requests:
           cpu: 6
           memory: "16Gi"
+        limits:
+          cpu: 6
+          memory: "16Gi"
 
 - interval: 30m
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-gci-gce-scalability
   tags:
   - "perfDashPrefix: gce-100Nodes-master"
@@ -110,11 +132,13 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
-    fork-per-release-generic-suffix: "true"
-    fork-per-release-replacements: "gce-100Nodes-master -> gce-100Nodes-{{.Version}}, --repo=k8s.io/perf-tests=master -> --repo=k8s.io/perf-tests=release-{{.Version}}"
+    fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
+    fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}, --repo=k8s.io/perf-tests=master -> --repo=k8s.io/perf-tests=release-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-scalability-100
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
@@ -122,7 +146,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -131,15 +155,17 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      # TODO(oxddr): remove once debugging is finished
-      - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
       - --cluster=e2e-big
-      - --extract=ci/latest
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -149,16 +175,21 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi

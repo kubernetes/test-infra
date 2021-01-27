@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
+
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -54,15 +54,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.configPath = "/random/value"
-			},
-		},
-		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
 			},
 		},
 		{
@@ -102,9 +93,15 @@ func Test_gatherOptions(t *testing.T) {
 				gracePeriod:       180 * time.Second,
 				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile: "/etc/webhook/hmac",
+				instrumentationOptions: flagutil.InstrumentationOptions{
+					MetricsPort: flagutil.DefaultMetricsPort,
+					PProfPort:   flagutil.DefaultPProfPort,
+					HealthPort:  flagutil.DefaultHealthPort,
+				},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
+			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}

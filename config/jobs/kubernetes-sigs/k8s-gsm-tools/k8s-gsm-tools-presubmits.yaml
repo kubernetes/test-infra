@@ -1,0 +1,17 @@
+presubmits:
+  kubernetes-sigs/k8s-gsm-tools:
+  - name: pull-k8s-gsm-tools-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/k8s-gsm-tools
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - go
+        args:
+        - test
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: pull-k8s-gsm-tools-test

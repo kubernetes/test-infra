@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boskos-reaper
+  labels:
+    app: boskos-reaper
+  namespace: test-pods
+spec:
+  selector:
+    matchLabels:
+      app: boskos-reaper
+  replicas: 1  # one canonical source of resources
+  template:
+    metadata:
+      labels:
+        app: boskos-reaper
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: boskos-reaper
+        image: gcr.io/k8s-staging-boskos/reaper:v20200819-984516e
+        args:
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        # TODO(chizhg): add them when there are real resources.
+        - --resource-type=

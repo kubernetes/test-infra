@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 )
 
@@ -52,7 +53,7 @@ func TestExposeMetrics(t *testing.T) {
 	defer cancel()
 	fls := fakeListenAndServer{ctx: ctx}
 
-	ExposeMetricsWithRegistry("my-component", config.PushGateway{}, nil, fls.CreateServer)
+	ExposeMetricsWithRegistry("my-component", config.PushGateway{}, flagutil.DefaultMetricsPort, nil, fls.CreateServer)
 	resp, err := http.Get(fls.server.URL + "/metrics")
 	if err != nil {
 		t.Fatalf("failed getting metrics: %v", err)

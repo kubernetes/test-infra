@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -39,7 +41,7 @@ var prowjobsResource = schema.GroupVersionResource{Group: "prow.k8s.io", Version
 var prowjobsKind = schema.GroupVersionKind{Group: "prow.k8s.io", Version: "v1", Kind: "ProwJob"}
 
 // Get takes name of the prowJob, and returns the corresponding prowJob object, and an error if there is any.
-func (c *FakeProwJobs) Get(name string, options v1.GetOptions) (result *prowjobsv1.ProwJob, err error) {
+func (c *FakeProwJobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(prowjobsResource, c.ns, name), &prowjobsv1.ProwJob{})
 
@@ -50,7 +52,7 @@ func (c *FakeProwJobs) Get(name string, options v1.GetOptions) (result *prowjobs
 }
 
 // List takes label and field selectors, and returns the list of ProwJobs that match those selectors.
-func (c *FakeProwJobs) List(opts v1.ListOptions) (result *prowjobsv1.ProwJobList, err error) {
+func (c *FakeProwJobs) List(ctx context.Context, opts v1.ListOptions) (result *prowjobsv1.ProwJobList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(prowjobsResource, prowjobsKind, c.ns, opts), &prowjobsv1.ProwJobList{})
 
@@ -72,14 +74,14 @@ func (c *FakeProwJobs) List(opts v1.ListOptions) (result *prowjobsv1.ProwJobList
 }
 
 // Watch returns a watch.Interface that watches the requested prowJobs.
-func (c *FakeProwJobs) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeProwJobs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(prowjobsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a prowJob and creates it.  Returns the server's representation of the prowJob, and an error, if there is any.
-func (c *FakeProwJobs) Create(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.ProwJob, err error) {
+func (c *FakeProwJobs) Create(ctx context.Context, prowJob *prowjobsv1.ProwJob, opts v1.CreateOptions) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(prowjobsResource, c.ns, prowJob), &prowjobsv1.ProwJob{})
 
@@ -90,7 +92,7 @@ func (c *FakeProwJobs) Create(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.P
 }
 
 // Update takes the representation of a prowJob and updates it. Returns the server's representation of the prowJob, and an error, if there is any.
-func (c *FakeProwJobs) Update(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.ProwJob, err error) {
+func (c *FakeProwJobs) Update(ctx context.Context, prowJob *prowjobsv1.ProwJob, opts v1.UpdateOptions) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(prowjobsResource, c.ns, prowJob), &prowjobsv1.ProwJob{})
 
@@ -102,7 +104,7 @@ func (c *FakeProwJobs) Update(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.P
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProwJobs) UpdateStatus(prowJob *prowjobsv1.ProwJob) (*prowjobsv1.ProwJob, error) {
+func (c *FakeProwJobs) UpdateStatus(ctx context.Context, prowJob *prowjobsv1.ProwJob, opts v1.UpdateOptions) (*prowjobsv1.ProwJob, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(prowjobsResource, "status", c.ns, prowJob), &prowjobsv1.ProwJob{})
 
@@ -113,7 +115,7 @@ func (c *FakeProwJobs) UpdateStatus(prowJob *prowjobsv1.ProwJob) (*prowjobsv1.Pr
 }
 
 // Delete takes name of the prowJob and deletes it. Returns an error if one occurs.
-func (c *FakeProwJobs) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeProwJobs) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(prowjobsResource, c.ns, name), &prowjobsv1.ProwJob{})
 
@@ -121,15 +123,15 @@ func (c *FakeProwJobs) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeProwJobs) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(prowjobsResource, c.ns, listOptions)
+func (c *FakeProwJobs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(prowjobsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &prowjobsv1.ProwJobList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched prowJob.
-func (c *FakeProwJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *prowjobsv1.ProwJob, err error) {
+func (c *FakeProwJobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, pt, data, subresources...), &prowjobsv1.ProwJob{})
 

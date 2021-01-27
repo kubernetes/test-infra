@@ -36,7 +36,7 @@ The `spyglass` block has the following properties:
 
 | Name | Required | Example | Description |
 |---|---|---|---|
-| `size_limit` | Yes | `500000000` | The maximum size of an artifact to download, in bytes. Larger values will be omitted or truncated. |
+| `size_limit` | Yes | `100000000` | The maximum size of an artifact to download, in bytes. Larger values will be omitted or truncated. |
 | `gcs_browser_prefix` | No | `https://gcsweb.k8s.io/gcs/` | If you have a GCS browser available, the bucket and path to the artifact directory will be appended to `gcs_browser_prefix` and linked from Spyglass pages. If left unset, no artifacts link will be visible. The provided URL should have a trailing slash |
 | `testgrid_config` | No | `gs://k8s-testgrid/config` | If you have a TestGrid instance available, `testgrid_config` should point to the TestGrid config proto on GCS. If omitted, no TestGrid link will be visible.
 | `testgrid_root` | No | `https://testgrid.k8s.io/` | If you have a TestGrid instance available, `testgrid_root` should point to the root of the TestGrid web interface. If omitted, no TestGrid link will be visible.
@@ -63,8 +63,9 @@ The following lenses are available:
 - `junit`: parses junit files and displays their content. It has no configuration
 - `buildlog`: displays the build log (or any other log file), highlighting interesting parts and
   hiding the rest behind expandable folders. You can configure what it considers "interesting" by
-  providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses defaults
-  optimised for highlighting Kubernetes test results.
+  providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses [defaults
+  optimised for highlighting Kubernetes test results](https://github.com/kubernetes/test-infra/blob/370da51e0f051504be2e97305e8536ab06b3f0df/prow/spyglass/lenses/buildlog/lens.go#L76). The optional `hide_raw_log` boolean field can be used to omit the link to the raw `build-log.txt` source.
+- `podinfo`: displays info about ProwJob pods including the events and details about containers and volumes. The [`gcsk8sreporter` Crier reporter](https://github.com/kubernetes/test-infra/tree/b6180c95b3383919711cfc97436a2d082281d284/prow/crier/reporters/gcs/kubernetes) must be enabled to upload the required `podinfo.json` file.
 - `coverage`: displays go coverage content
 - `restcoverage`: displays REST API statistics
 
@@ -73,7 +74,7 @@ The following lenses are available:
 ```yaml
 deck:
   spyglass:
-    size_limit: 500000000  # 500 MB
+    size_limit: 100000000  # 100 MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
@@ -82,9 +83,9 @@ deck:
     - lens:
         name: metadata
       required_files:
-      - started.json
+      - ^(?:started|finished)\.json$
       optional_files:
-      - finished.json
+      - ^(?:podinfo|prowjob)\.json$
     - lens:
         name: buildlog
         config:
@@ -95,9 +96,19 @@ deck:
           - panic\b
           - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
       required_files:
-      - build-log.txt
+      - ^build-log\.txt$
     - lens:
         name: junit
       required_files:
-      - artifacts/junit.*\.xml
+      - ^artifacts/junit.*\.xml$
+    - lens:
+        name: podinfo
+      required_files:
+        - ^podinfo\.json$
 ```
+
+### Accessing custom storage buckets
+
+By default, spyglass has access to all storage buckets defined globally
+(`plank.default_decoration_configs[...].gcs_configuration`) or on individual jobs (`<path-to-job>.gcs_configuration.bucket`).
+In order to access additional/custom storage buckets, those buckets must be listed in `deck.additional_storage_buckets`.

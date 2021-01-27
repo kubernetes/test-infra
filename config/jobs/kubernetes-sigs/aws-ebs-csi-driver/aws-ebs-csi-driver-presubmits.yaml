@@ -3,11 +3,13 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -21,11 +23,13 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -36,34 +40,18 @@ presubmits:
       testgrid-tab-name: unit-test
       description: aws ebs csi driver unit test
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-sanity
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - test-sanity
-    annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: sanity-test
-      description: aws ebs csi driver sanity test
-      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -79,13 +67,15 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - runner.sh
         args:
@@ -101,13 +91,15 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-migration-test-latest
     always_run: false
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
           command:
             - runner.sh
           args:

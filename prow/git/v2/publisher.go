@@ -26,16 +26,23 @@ import (
 type Publisher interface {
 	// Commit stages all changes and commits them with the message
 	Commit(title, body string) error
-	// ForcePush runs `git push -f` to the publish remote
-	ForcePush(branch string) error
+	// PushToFork pushes the local state to the fork remote
+	PushToFork(branch string, force bool) error
+	// PushToCentral pushes the local state to the central remote
+	PushToCentral(branch string, force bool) error
 }
 
 // GitUserGetter fetches a name and email for us in git commits on-demand
 type GitUserGetter func() (name, email string, err error)
 
+type remotes struct {
+	publishRemote RemoteResolver
+	centralRemote RemoteResolver
+}
+
 type publisher struct {
-	executor Executor
-	remote   RemoteResolver
+	executor executor
+	remotes  remotes
 	info     GitUserGetter
 	logger   *logrus.Entry
 }
@@ -59,14 +66,41 @@ func (p *publisher) Commit(title, body string) error {
 	return nil
 }
 
-// ForcePush pushes the local state to the remote
-func (p *publisher) ForcePush(branch string) error {
-	p.logger.Infof("Pushing branch %q", branch)
-	remote, err := p.remote()
+// PublishPush pushes the local state to the publish remote
+func (p *publisher) PushToFork(branch string, force bool) error {
+	remote, err := p.remotes.publishRemote()
 	if err != nil {
 		return err
 	}
-	if out, err := p.executor.Run("push", "--force", remote, branch); err != nil {
+
+	args := []string{"push"}
+	if force {
+		args = append(args, "--force")
+	}
+	args = append(args, []string{remote, branch}...)
+
+	p.logger.Infof("Pushing branch %q to %q", branch, remote)
+	if out, err := p.executor.Run(args...); err != nil {
+		return fmt.Errorf("error pushing %q: %v %v", branch, err, string(out))
+	}
+	return nil
+}
+
+// CentralPush pushes the local state to the central remote
+func (p *publisher) PushToCentral(branch string, force bool) error {
+	remote, err := p.remotes.centralRemote()
+	if err != nil {
+		return err
+	}
+
+	args := []string{"push"}
+	if force {
+		args = append(args, "--force")
+	}
+	args = append(args, []string{remote, branch}...)
+
+	p.logger.Infof("Pushing branch %q to %q", branch, remote)
+	if out, err := p.executor.Run(args...); err != nil {
 		return fmt.Errorf("error pushing %q: %v %v", branch, err, string(out))
 	}
 	return nil

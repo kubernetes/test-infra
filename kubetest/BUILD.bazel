@@ -5,8 +5,7 @@ go_library(
     srcs = [
         "aks.go",
         "aksengine.go",
-        "anywhere.go",
-        "azure_helpers.go",
+        "aksengine_helpers.go",
         "bash.go",
         "build.go",
         "dump.go",
@@ -25,7 +24,6 @@ go_library(
     importpath = "k8s.io/test-infra/kubetest",
     visibility = ["//visibility:private"],
     deps = [
-        "//boskos/client:go_default_library",
         "//kubetest/conformance:go_default_library",
         "//kubetest/e2e:go_default_library",
         "//kubetest/kind:go_default_library",
@@ -47,6 +45,8 @@ go_library(
         "@com_github_pelletier_go_toml//:go_default_library",
         "@com_github_satori_go_uuid//:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
+        "@com_google_cloud_go_storage//:go_default_library",
+        "@io_k8s_sigs_boskos//client:go_default_library",
         "@org_golang_x_crypto//ssh:go_default_library",
     ],
 )
@@ -60,10 +60,10 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = [
-        "anywhere_test.go",
-        "azure_test.go",
+        "aksengine_test.go",
         "dump_test.go",
         "extract_test.go",
+        "gke_test.go",
         "kubernetes_test.go",
         "main_test.go",
         "util_test.go",

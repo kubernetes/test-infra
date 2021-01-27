@@ -11,12 +11,12 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.13
         command:
         - bash
         args:
         - -c
-        - "cd groups && go test ./..."
+        - "cd groups && go test"
         env:
         - name: GO111MODULE
           value: "on"

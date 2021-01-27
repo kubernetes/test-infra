@@ -19,25 +19,25 @@ def repositories():
     if not native.existing_rule("io_k8s_repo_infra"):
         http_archive(
             name = "io_k8s_repo_infra",
-            strip_prefix = "repo-infra-0.0.3",
-            sha256 = "a6ca952e365600a17f56f0fc8e41016e1d13cfb2b74c0c29bad6bdba3e3d8a4d",
+            strip_prefix = "repo-infra-0.1.3",
+            sha256 = "46933bedbd22bc6a26ec6116d0d3e1475ad6b23447648d19abd6493241323311",
             urls = [
-                "https://github.com/kubernetes/repo-infra/archive/v0.0.3.tar.gz",
+                "https://github.com/kubernetes/repo-infra/archive/v0.1.3.tar.gz",
             ],
         )
 
     http_archive(
         name = "io_bazel_rules_docker",
-        sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
-        strip_prefix = "rules_docker-0.14.1",
-        urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
+        sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
+        strip_prefix = "rules_docker-0.14.4",
+        urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
     )
 
     http_archive(
         name = "io_bazel_rules_k8s",
-        sha256 = "cc75cf0d86312e1327d226e980efd3599704e01099b58b3c2fc4efe5e321fcd9",
-        strip_prefix = "rules_k8s-0.3.1",
-        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3.1/rules_k8s-v0.3.1.tar.gz"],
+        strip_prefix = "rules_k8s-0.6",
+        urls = ["https://github.com/bazelbuild/rules_k8s/archive/v0.6.tar.gz"],
+        sha256 = "51f0977294699cd547e139ceff2396c32588575588678d2054da167691a227ef",
     )
 
     # https://github.com/bazelbuild/rules_nodejs

@@ -45,7 +45,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -79,7 +79,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=125
+        - --timeout=150
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -91,11 +91,11 @@ presubmits:
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
         - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
-        - --timeout=80m
+        - --timeout=120m
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -136,7 +136,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
@@ -195,7 +195,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -227,8 +227,9 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
-        - --image-project=ubuntu-os-gke-cloud
+        - --image-family=ubuntu-2004-lts
+        - --image-project=ubuntu-os-cloud
+        - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --ginkgo-parallel=30
@@ -236,7 +237,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -268,15 +269,16 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-gke-1804-lts-1
-        - --image-project=ubuntu-os-gke-cloud
+        - --image-family=ubuntu-2004-lts
+        - --image-project=ubuntu-os-cloud
+        - --env=KUBE_CONTAINER_RUNTIME=docker
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -313,7 +315,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=240m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
@@ -335,14 +337,15 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
-      - --image-project=ubuntu-os-gke-cloud
+      - --image-family=ubuntu-2004-lts
+      - --image-project=ubuntu-os-cloud
+      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -360,13 +363,14 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-gke-1804-lts-1
-      - --image-project=ubuntu-os-gke-cloud
+      - --image-family=ubuntu-2004-lts
+      - --image-project=ubuntu-os-cloud
+      - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -388,7 +392,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-num-columns-recent: '20'
     testgrid-num-failures-to-alert: '6'

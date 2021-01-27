@@ -24,6 +24,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -46,35 +47,47 @@ func TestPostsubmitSpec(t *testing.T) {
 		expected prowapi.ProwJobSpec
 	}{
 		{
-			name: "can override path alias and cloneuri",
+			name: "can override fields",
 			p: config.Postsubmit{
 				JobBase: config.JobBase{
 					UtilityConfig: config.UtilityConfig{
-						PathAlias: "foo",
-						CloneURI:  "bar",
+						PathAlias:      "foo",
+						CloneURI:       "bar",
+						SkipSubmodules: true,
+						CloneDepth:     7,
+						SkipFetchHead:  true,
 					},
 				},
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+					PathAlias:      "foo",
+					CloneURI:       "bar",
+					SkipSubmodules: true,
+					CloneDepth:     7,
+					SkipFetchHead:  true,
 				},
 				Report: true,
 			},
 		},
 		{
-			name: "controller can default path alias and cloneuri",
+			name: "controller can default fields",
 			refs: prowapi.Refs{
-				PathAlias: "fancy",
-				CloneURI:  "cats",
+				PathAlias:      "fancy",
+				CloneURI:       "cats",
+				SkipSubmodules: true,
+				CloneDepth:     8,
+				SkipFetchHead:  true,
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "fancy",
-					CloneURI:  "cats",
+					PathAlias:      "fancy",
+					CloneURI:       "cats",
+					SkipSubmodules: true,
+					CloneDepth:     8,
+					SkipFetchHead:  true,
 				},
 				Report: true,
 			},
@@ -84,20 +97,23 @@ func TestPostsubmitSpec(t *testing.T) {
 			p: config.Postsubmit{
 				JobBase: config.JobBase{
 					UtilityConfig: config.UtilityConfig{
-						PathAlias: "foo",
-						CloneURI:  "bar",
+						PathAlias:  "foo",
+						CloneDepth: 3,
+						CloneURI:   "bar",
 					},
 				},
 			},
 			refs: prowapi.Refs{
-				PathAlias: "fancy",
-				CloneURI:  "cats",
+				PathAlias:  "fancy",
+				CloneDepth: 1,
+				CloneURI:   "cats",
 			},
 			expected: prowapi.ProwJobSpec{
 				Type: prowapi.PostsubmitJob,
 				Refs: &prowapi.Refs{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+					PathAlias:  "foo",
+					CloneDepth: 3,
+					CloneURI:   "bar",
 				},
 				Report: true,
 			},
@@ -105,10 +121,12 @@ func TestPostsubmitSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := PostsubmitSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := PostsubmitSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("PostsubmitSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -179,10 +197,12 @@ func TestPresubmitSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := PresubmitSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := PresubmitSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("PresubmitSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -250,10 +270,90 @@ func TestBatchSpec(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		actual := BatchSpec(tc.p, tc.refs)
-		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			actual := BatchSpec(tc.p, tc.refs)
+			if diff := cmp.Diff(actual, tc.expected); diff != "" {
+				t.Errorf("BatchSpec() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCompletePrimaryRefs(t *testing.T) {
+	cases := []struct {
+		name     string
+		refs     prowapi.Refs
+		jobBase  config.JobBase
+		expected prowapi.Refs
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name: "use values from refs",
+			refs: prowapi.Refs{
+				PathAlias:      "this",
+				CloneURI:       "that",
+				SkipSubmodules: true,
+				CloneDepth:     1,
+				SkipFetchHead:  true,
+			},
+			expected: prowapi.Refs{
+				PathAlias:      "this",
+				CloneURI:       "that",
+				SkipSubmodules: true,
+				CloneDepth:     1,
+				SkipFetchHead:  true,
+			},
+		},
+		{
+			name: "use values from job base",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias:      "more",
+					CloneURI:       "fun",
+					SkipSubmodules: true,
+					CloneDepth:     2,
+					SkipFetchHead:  true,
+				},
+			},
+			expected: prowapi.Refs{
+				PathAlias:      "more",
+				CloneURI:       "fun",
+				SkipSubmodules: true,
+				CloneDepth:     2,
+				SkipFetchHead:  true,
+			},
+		},
+		{
+			name: "prefer job base values",
+			refs: prowapi.Refs{
+				PathAlias:  "this",
+				CloneURI:   "that",
+				CloneDepth: 1,
+			},
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias:  "more",
+					CloneURI:   "fun",
+					CloneDepth: 2,
+				},
+			},
+			expected: prowapi.Refs{
+				PathAlias:  "more",
+				CloneURI:   "fun",
+				CloneDepth: 2,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := CompletePrimaryRefs(tc.refs, tc.jobBase)
+			if diff := cmp.Diff(actual, &tc.expected); diff != "" {
+				t.Errorf("CompletePrimaryRefs() got unexpected diff (-have, +want):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -697,10 +797,11 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 
 func TestJobURL(t *testing.T) {
 	var testCases = []struct {
-		name     string
-		plank    config.Plank
-		pj       prowapi.ProwJob
-		expected string
+		name        string
+		plank       config.Plank
+		pj          prowapi.ProwJob
+		expected    string
+		expectedErr string
 	}{
 		{
 			name: "non-decorated job uses template",
@@ -733,9 +834,10 @@ func TestJobURL(t *testing.T) {
 			expected: "periodic",
 		},
 		{
-			name: "decorated job with prefix uses gcslib",
+			name: "decorated job with prefix uses gcsupload",
 			plank: config.Plank{
-				JobURLPrefixConfig: map[string]string{"*": "https://gubernator.com/build"},
+				JobURLPrefixConfig:                       map[string]string{"*": "https://gubernator.com/build"},
+				JobURLPrefixDisableAppendStorageProvider: true,
 			},
 			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
 				Type: prowapi.PresubmitJob,
@@ -751,13 +853,117 @@ func TestJobURL(t *testing.T) {
 			}},
 			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
 		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format with trailing slash)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (new job url format)",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload and new bucket format with s3",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "s3://bucket",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/s3/bucket/pr-logs/pull/org_repo/1",
+		},
+		{
+			name: "decorated job with prefix uses gcsupload with valid bucket with multiple separators",
+			plank: config.Plank{
+				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
+			},
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []prowapi.Pull{{Number: 1}},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "gs://my-floppy-backup/a://doom2.wad.006",
+					PathStrategy: prowapi.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://prow.k8s.io/view/gs/my-floppy-backup/a:/doom2.wad.006/pr-logs/pull/org_repo/1",
+		},
 	}
 
 	logger := logrus.New()
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name)), testCase.expected; actual != expected {
-				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
+			actual, actualErr := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name))
+			var actualErrStr string
+			if actualErr != nil {
+				actualErrStr = actualErr.Error()
+			}
+
+			if actualErrStr != testCase.expectedErr {
+				t.Errorf("%s: expectedErr = %v, but got %v", testCase.name, testCase.expectedErr, actualErrStr)
+			}
+			if actual != testCase.expected {
+				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, testCase.expected, actual)
 			}
 		})
 	}

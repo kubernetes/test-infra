@@ -1,10 +1,21 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- yujuhong
-- Random-Liu
+- bart0sh
 - dchen1107
+- derekwaynecarr
+- karan
+- MHBauer
+- Random-Liu
+- vpickard
+- sjenning
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
+- derekwaynecarr
+- sjenning
+emeritus_approvers:
+- dashpole
+labels:
+- sig/node

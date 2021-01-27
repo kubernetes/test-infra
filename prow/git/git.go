@@ -48,7 +48,7 @@ type Client struct {
 	user string
 
 	// needed to generate the token.
-	tokenGenerator func() []byte
+	tokenGenerator GitTokenGenerator
 
 	// dir is the location of the git cache.
 	dir string
@@ -92,12 +92,13 @@ func NewClientWithHost(host string) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		logger:    logrus.WithField("client", "git"),
-		dir:       t,
-		git:       g,
-		base:      fmt.Sprintf("https://%s", host),
-		host:      host,
-		repoLocks: make(map[string]*sync.Mutex),
+		logger:         logrus.WithField("client", "git"),
+		tokenGenerator: func(_ string) (string, error) { return "", nil },
+		dir:            t,
+		git:            g,
+		base:           fmt.Sprintf("https://%s", host),
+		host:           host,
+		repoLocks:      make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -109,19 +110,22 @@ func (c *Client) SetRemote(remote string) {
 	c.base = remote
 }
 
+type GitTokenGenerator func(org string) (string, error)
+
 // SetCredentials sets credentials in the client to be used for pushing to
 // or pulling from remote repositories.
-func (c *Client) SetCredentials(user string, tokenGenerator func() []byte) {
+func (c *Client) SetCredentials(user string, tokenGenerator GitTokenGenerator) {
 	c.credLock.Lock()
 	defer c.credLock.Unlock()
 	c.user = user
 	c.tokenGenerator = tokenGenerator
 }
 
-func (c *Client) getCredentials() (string, string) {
+func (c *Client) getCredentials(org string) (string, string, error) {
 	c.credLock.RLock()
 	defer c.credLock.RUnlock()
-	return c.user, string(c.tokenGenerator())
+	token, err := c.tokenGenerator(org)
+	return c.user, token, err
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -152,7 +156,10 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	defer c.unlockRepo(repo)
 
 	base := c.base
-	user, pass := c.getCredentials()
+	user, pass, err := c.getCredentials(organization)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
 	if user != "" && pass != "" {
 		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
 	}
@@ -172,7 +179,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
+		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -183,16 +190,22 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	if b, err := exec.Command(c.git, "clone", cache, t).CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
-	return &Repo{
+	r := &Repo{
 		dir:    t,
 		logger: c.logger,
 		git:    c.git,
+		host:   c.host,
 		base:   base,
 		org:    organization,
 		repo:   repository,
 		user:   user,
 		pass:   pass,
-	}, nil
+	}
+	// disable git GC
+	if err := r.Config("gc.auto", "0"); err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
@@ -203,6 +216,8 @@ type Repo struct {
 
 	// git is the path to the git binary.
 	git string
+	// host is the git host.
+	host string
 	// base is the base path for remote git fetch calls.
 	base string
 	// org is the organization name: "org" in "org/repo".
@@ -269,10 +284,7 @@ func (r *Repo) BranchExists(branch string) bool {
 	heads := "origin"
 	r.logger.Infof("Checking if branch %s exists in %s.", branch, heads)
 	co := r.gitCommand("ls-remote", "--exit-code", "--heads", heads, branch)
-	if co.Run() == nil {
-		return true
-	}
-	return false
+	return co.Run() == nil
 }
 
 // CheckoutNewBranch creates a new branch and checks it out.
@@ -383,22 +395,30 @@ func (r *Repo) Am(path string) error {
 		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
 	}
 	applyMsg := "The copy of the patch that failed is found in: .git/rebase-apply/patch"
+	msg := ""
 	if strings.Contains(output, applyMsg) {
 		i := strings.Index(output, applyMsg)
-		err = fmt.Errorf("%s", output[:i])
+		msg = string(output[:i])
+	} else {
+		msg = string(output)
 	}
-	return err
+	return errors.New(msg)
 }
 
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
-func (r *Repo) Push(branch string) error {
+func (r *Repo) Push(branch string, force bool) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
-	co := r.gitCommand("push", remote, branch)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, r.repo)
+	var co *exec.Cmd
+	if !force {
+		co = r.gitCommand("push", remote, branch)
+	} else {
+		co = r.gitCommand("push", "--force", remote, branch)
+	}
 	out, err := co.CombinedOutput()
 	if err != nil {
 		r.logger.Errorf("Pushing failed with error: %v and output: %q", err, string(out))
@@ -440,7 +460,8 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 		c.Dir = dir
 		b, err = c.CombinedOutput()
 		if err != nil {
-			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
+			err = fmt.Errorf("running %q %v returned error %w with output %q", cmd, arg, err, string(b))
+			l.WithError(err).Debugf("Retrying #%d, if this is not the 3rd try then this will be retried", i+1)
 			time.Sleep(sleepyTime)
 			sleepyTime *= 2
 			continue
@@ -450,6 +471,8 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	return b, err
 }
 
+// Diff runs 'git diff HEAD <sha> --name-only' and returns a list
+// of file names with upcoming changes
 func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 	r.logger.Infof("Diff head with %s'.", sha)
 	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()
@@ -473,4 +496,14 @@ func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
 		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
 	}
 	return len(b) != 0, nil
+}
+
+// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
+func (i *Repo) ShowRef(commitlike string) (string, error) {
+	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
+	out, err := i.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }

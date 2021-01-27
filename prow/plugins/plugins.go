@@ -37,9 +37,11 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+	"k8s.io/test-infra/prow/version"
 )
 
 var (
@@ -52,8 +54,23 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
-	CommentMap                 = genyaml.NewCommentMap("prow/plugins/config.go")
+	CommentMap, _              = genyaml.NewCommentMap()
 )
+
+func init() {
+	// This requires the source code to be present and to be in the right relative
+	// location to the working directory. Don't even bother to try outside of the
+	// hook binary, otherwise all components that load the plugin config initially
+	// show an error which is confusing.
+	if version.Name != "hook" {
+		return
+	}
+	if cm, err := genyaml.NewCommentMap("prow/plugins/config.go"); err == nil {
+		CommentMap = cm
+	} else {
+		logrus.WithError(err).Error("Failed to initialize commentMap")
+	}
+}
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
 // plugins. It takes into account the plugins configuration and enabled repositories.
@@ -145,6 +162,7 @@ type Agent struct {
 	GitClient                 git.ClientFactory
 	SlackClient               *slack.Client
 	BugzillaClient            bugzilla.Client
+	JiraClient                jira.Client
 
 	OwnersClient repoowners.Interface
 
@@ -177,7 +195,8 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		GitClient:                 clientAgent.GitClient,
 		SlackClient:               clientAgent.SlackClient,
 		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient),
-		BugzillaClient:            clientAgent.BugzillaClient,
+		BugzillaClient:            clientAgent.BugzillaClient.WithFields(logger.Data).ForPlugin(plugin),
+		JiraClient:                clientAgent.JiraClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,
 		PluginConfig:              pluginConfig,
@@ -213,6 +232,7 @@ type ClientAgent struct {
 	SlackClient               *slack.Client
 	OwnersClient              repoowners.Interface
 	BugzillaClient            bugzilla.Client
+	JiraClient                jira.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.
@@ -238,6 +258,7 @@ func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 	if err := yaml.Unmarshal(b, np); err != nil {
 		return err
 	}
+
 	if err := np.Validate(); err != nil {
 		return err
 	}

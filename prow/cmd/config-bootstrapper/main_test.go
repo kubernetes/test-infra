@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -68,6 +69,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.AddCommit("openshift", "release", map[string][]byte{
 		"config/foo.yaml": []byte(`#foo.yaml`),
 		"config/bar.yaml": []byte(`#bar.yaml`),
+		"VERSION":         []byte("some-git-sha"),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -80,8 +82,8 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := lg.AddCommit("openshift", "other", map[string][]byte{
-		"config/FOO.yaml": []byte(`#FOO.yaml`),
-		"config/BAR.yaml": []byte(`#BAR.yaml`),
+		"config/other-foo.yaml": []byte(`#other-foo.yaml`),
+		"config/other-bar.yaml": []byte(`#other-bar.yaml`),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -130,6 +132,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -151,13 +154,13 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					"config/bar.yaml": {
 						Name: "multikey-config",
 					},
-					"config/FOO.yaml": {
+					"config/other-foo.yaml": {
 						Name: "other",
 						Clusters: map[string][]string{
 							"default": {defaultNamespace},
 						},
 					},
-					"config/BAR.yaml": {
+					"config/other-bar.yaml": {
 						Name: "bar",
 					},
 				},
@@ -178,6 +181,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -188,7 +192,8 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"FOO.yaml": "#FOO.yaml",
+						"VERSION":        "some-git-sha",
+						"other-foo.yaml": "#other-foo.yaml",
 					},
 				},
 				{
@@ -197,7 +202,8 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"BAR.yaml": "#BAR.yaml",
+						"VERSION":        "some-git-sha",
+						"other-bar.yaml": "#other-bar.yaml",
 					},
 				},
 			},
@@ -230,7 +236,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 			}
 
 			for _, expected := range tc.expectedConfigMaps {
-				actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(expected.Name, metav1.GetOptions{})
+				actual, err := fkc.CoreV1().ConfigMaps(expected.Namespace).Get(context.TODO(), expected.Name, metav1.GetOptions{})
 				if err != nil && errors.IsNotFound(err) {
 					t.Errorf("%s: Should have updated or created configmap for '%s'", tc.name, expected)
 				} else if !equality.Semantic.DeepEqual(expected, actual) {

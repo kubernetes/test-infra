@@ -17,6 +17,7 @@ limitations under the License.
 package certificate
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -96,7 +97,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 	client := clientset.CertificatesV1beta1().CertificateSigningRequests()
 
 	// Create CSR.
-	csrObj, err := client.Create(csrObj)
+	csrObj, err := client.Create(context.TODO(), csrObj, metav1.CreateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("create CSR: %v", err)
 	}
@@ -106,7 +107,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 
 	// Approve CSR.
 	err = wait.Poll(waitInterval, waitTimeout, func() (bool, error) {
-		_, err = client.UpdateApproval(csrObj)
+		_, err = client.UpdateApproval(context.TODO(), csrObj, metav1.UpdateOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -119,7 +120,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 
 	// Get CSR.
 	err = wait.Poll(waitInterval, waitTimeout, func() (bool, error) {
-		csrObj, err = client.Get(csrName, metav1.GetOptions{})
+		csrObj, err = client.Get(context.TODO(), csrName, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -135,7 +136,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 
 // getRootCA fetches the service account root certificate authority (CA).
 func getRootCA(clientset kubernetes.Interface) ([]byte, error) {
-	secrets, err := clientset.CoreV1().Secrets(metav1.NamespaceSystem).List(metav1.ListOptions{})
+	secrets, err := clientset.CoreV1().Secrets(metav1.NamespaceSystem).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

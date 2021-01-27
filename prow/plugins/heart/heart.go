@@ -29,12 +29,11 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
-	pluginName            = "heart"
-	ownersFilename        = "OWNERS"
-	ownersAliasesFilename = "OWNERS_ALIASES"
+	pluginName = "heart"
 )
 
 var reactions = []string{
@@ -50,6 +49,15 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Heart: plugins.Heart{
+			Adorees:       []string{"alice", "bob"},
+			CommentRegexp: ".*",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: "The heart plugin celebrates certain GitHub actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
 			Config: map[string]string{
@@ -59,6 +67,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 					strings.Join(config.Heart.Adorees, ", "),
 				),
 			},
+			Snippet: yamlSnippet,
 		},
 		nil
 }
@@ -89,7 +98,7 @@ func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre)
+	return handlePR(getClient(pc), pre, pc.PluginConfig.OwnersFilenames)
 }
 
 func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.IssueCommentEvent) error {
@@ -120,7 +129,7 @@ func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.Is
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(c client, pre github.PullRequestEvent) error {
+func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resolver) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
@@ -137,7 +146,8 @@ func handlePR(c client, pre github.PullRequestEvent) error {
 	// Smile at any change that adds to OWNERS files
 	for _, change := range changes {
 		_, filename := filepath.Split(change.Filename)
-		if (filename == ownersFilename || filename == ownersAliasesFilename) && change.Additions > 0 {
+		filenames := resolver(org, repo)
+		if (filename == filenames.Owners || filename == filenames.OwnersAliases) && change.Additions > 0 {
 			c.Logger.Info("Adding new OWNERS makes me happy!")
 			return c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,

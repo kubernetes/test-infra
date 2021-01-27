@@ -12,9 +12,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
       command:
-      - runner.sh
+      - wrapper.sh
       - make
       - unit
       # we need privileged mode in order to do docker in docker
@@ -34,23 +34,28 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
+      - name: BUILD_TYPE
+        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -76,9 +81,22 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -89,16 +107,8 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      - name: BUILD_TYPE
+        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -125,9 +135,15 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -135,16 +151,13 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      - name: BUILD_TYPE
+        value: bazel
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -170,9 +183,15 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -186,16 +205,13 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      - name: BUILD_TYPE
+        value: bazel
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -212,172 +228,3 @@ periodics:
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '3'
-# conformance test against kubernetes release-1.12 branch with `kind`
-- interval: 1h
-  name: ci-kubernetes-kind-conformance-latest-1-12
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.12
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.12"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      env:
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: kind, v1.12 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
-    testgrid-num-columns-recent: '3'
-# conformance test against kubernetes release-1.13 branch with `kind`
-- interval: 1h
-  name: ci-kubernetes-kind-conformance-latest-1-13
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.13"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      env:
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: kind, v1.13 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
-    testgrid-num-columns-recent: '3'
-# conformance test against kubernetes release-1.14 branch with `kind`
-- interval: 1h
-  name: ci-kubernetes-kind-conformance-latest-1-14
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.14"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      env:
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: kind, v1.14 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
-    testgrid-num-columns-recent: '3'
-# conformance test against kubernetes release-1.15 branch with `kind`
-- interval: 1h
-  name: ci-kubernetes-kind-conformance-latest-1-15
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.15"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      env:
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: kind, v1.15 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.15 with a kubernetes-in-docker cluster
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
-    testgrid-num-columns-recent: '3'
-#

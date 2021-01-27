@@ -17,12 +17,16 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
+	"strconv"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/gofuzz"
 )
 
-func TestDecorationDefaulting(t *testing.T) {
+func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
 	lies := false
 
@@ -91,12 +95,22 @@ func TestDecorationDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "secret name provided",
+			name: "gcs secret name provided",
 			provided: &DecorationConfig{
 				GCSCredentialsSecret: "somethingSecret",
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name provided",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: "overwritten",
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
 				return def
 			},
 		},
@@ -162,6 +176,7 @@ func TestDecorationDefaulting(t *testing.T) {
 	for _, testCase := range testCases {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			defaults := &DecorationConfig{
 				Timeout:     &Duration{Duration: 1 * time.Minute},
 				GracePeriod: &Duration{Duration: 10 * time.Second},
@@ -179,15 +194,50 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				S3CredentialsSecret:  "s3-secret",
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
 				SkipCloning:          &truth,
 			}
-			t.Parallel()
 
 			expected := tc.expected(tc.provided, defaults)
-			if actual := tc.provided.ApplyDefault(defaults); !reflect.DeepEqual(actual, expected) {
-				t.Errorf("expected defaulted config %v but got %v", expected, actual)
+			actual := tc.provided.ApplyDefault(defaults)
+			if diff := cmp.Diff(actual, expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
+func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			def := &DecorationConfig{}
+			fuzz.New().Fuzz(def)
+
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &DecorationConfig{
+				UtilityImages:    &UtilityImages{},
+				Resources:        &Resources{},
+				GCSConfiguration: &GCSConfiguration{},
+			}
+			if def.UtilityImages == nil {
+				def.UtilityImages = &UtilityImages{}
+			}
+			if def.Resources == nil {
+				def.Resources = &Resources{}
+			}
+			if def.GCSConfiguration == nil {
+				def.GCSConfiguration = &GCSConfiguration{}
+			}
+			defaulted := toDefault.ApplyDefault(def)
+
+			if diff := cmp.Diff(def, defaulted); diff != "" {
+				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
 			}
 		})
 	}
@@ -340,7 +390,7 @@ func TestRerunAuthConfigIsAuthorized(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			if actual, _ := tc.config.IsAuthorized(tc.user, nil); actual != tc.authorized {
+			if actual, _ := tc.config.IsAuthorized("", tc.user, nil); actual != tc.authorized {
 				t.Errorf("Expected %v, got %v", tc.authorized, actual)
 			}
 		})
@@ -380,6 +430,79 @@ func TestRerunAuthConfigIsAllowAnyone(t *testing.T) {
 
 			if actual := tc.config.IsAllowAnyone(); actual != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestParsePath(t *testing.T) {
+	type args struct {
+		bucket string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantStorageProvider string
+		wantBucket          string
+		wantFullPath        string
+		wantErr             string
+	}{
+		{
+			name: "valid gcs bucket",
+			args: args{
+				bucket: "prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with storage provider prefix",
+			args: args{
+				bucket: "gs://prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+		{
+			name: "valid gcs bucket with multiple separator with storage provider prefix",
+			args: args{
+				bucket: "gs://my-floppy-backup/a://doom2.wad.006",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "my-floppy-backup",
+			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+		},
+		{
+			name: "valid s3 bucket with storage provider prefix",
+			args: args{
+				bucket: "s3://prow-artifacts",
+			},
+			wantStorageProvider: "s3",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prowPath, err := ParsePath(tt.args.bucket)
+			var gotErr string
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if gotErr != tt.wantErr {
+				t.Errorf("ParsePath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if prowPath.StorageProvider() != tt.wantStorageProvider {
+				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
+			}
+			if prowPath.Bucket() != tt.wantBucket {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", prowPath.Bucket(), tt.wantBucket)
+			}
+			if prowPath.FullPath() != tt.wantFullPath {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", prowPath.FullPath(), tt.wantBucket)
 			}
 		})
 	}

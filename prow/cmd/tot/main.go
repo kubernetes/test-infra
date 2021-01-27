@@ -32,9 +32,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -48,9 +49,10 @@ type options struct {
 	useFallback bool
 	fallbackURI string
 
-	configPath     string
-	jobConfigPath  string
-	fallbackBucket string
+	configPath             string
+	jobConfigPath          string
+	fallbackBucket         string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions() options {
@@ -69,7 +71,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
 		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
-
+	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
 	return o
 }
@@ -279,8 +281,8 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-	health := pjutil.NewHealth()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	s, err := newStore(o.storagePath)
 	if err != nil {

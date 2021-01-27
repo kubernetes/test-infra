@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "@com_github_klauspost_pgzip//:go_default_library",
-        "@com_google_cloud_go//storage:go_default_library",
+        "@com_google_cloud_go_storage//:go_default_library",
         "@io_k8s_klog//:go_default_library",
         "@org_golang_google_api//option:go_default_library",
     ],

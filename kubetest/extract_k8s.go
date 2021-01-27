@@ -40,10 +40,11 @@ const (
 	none       extractMode = iota
 	localBazel             // local bazel
 	local                  // local
-	gci                    // gci/FAMILY
+	gci                    // gci/FAMILY, gci/FAMILY?project=IMAGE_PROJECT:k8s-map-bucket=BUCKET_NAME
 	gciCi                  // gci/FAMILY/CI_VERSION
 	gke                    // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
 	ci                     // ci/latest, ci/latest-1.5
+	ciFast                 // ci/latest-fast, ci/latest-1.19-fast
 	rc                     // release/latest, release/latest-1.5
 	stable                 // release/stable, release/stable-1.5
 	version                // v1.5.0, v1.5.0-beta.2
@@ -75,9 +76,10 @@ func (l *extractStrategies) Set(value string) error {
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+)$`:              gci,
-		`^gci/([\w-]+)/(.+)$`:         gciCi,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
 		`^ci/(.+)$`:                   ci,
+		`^ci/(.+)-fast$`:              ciFast,
 		`^release/(latest.*)$`:        rc,
 		`^release/(stable.*)$`:        stable,
 		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
@@ -94,6 +96,10 @@ func (l *extractStrategies) Set(value string) error {
 		if mat == nil {
 			continue
 		}
+		if mode == ci && strings.HasSuffix(value, "-fast") {
+			// do not match ci mode if will also match ciFast
+			continue
+		}
 		e := extractStrategy{
 			mode:   mode,
 			option: mat[1],
@@ -103,6 +109,7 @@ func (l *extractStrategies) Set(value string) error {
 			e.ciVersion = mat[2]
 		}
 		*l = append(*l, e)
+		log.Printf("Matched extraction strategy: %s", search)
 		return nil
 	}
 	return fmt.Errorf("Unknown extraction strategy: %v", value)
@@ -122,7 +129,7 @@ func (e extractStrategy) name() string {
 	return filepath.Base(e.option)
 }
 
-func (l extractStrategies) Extract(project, zone, region string, extractSrc bool) error {
+func (l extractStrategies) Extract(project, zone, region, ciBucket, releaseBucket string, extractSrc bool) error {
 	// rm -rf kubernetes*
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -146,7 +153,7 @@ func (l extractStrategies) Extract(project, zone, region string, extractSrc bool
 				return err
 			}
 		}
-		if err := e.Extract(project, zone, region, extractSrc); err != nil {
+		if err := e.Extract(project, zone, region, ciBucket, releaseBucket, extractSrc); err != nil {
 			return err
 		}
 	}
@@ -286,20 +293,17 @@ var getKube = func(url, version string, getSrc bool) error {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		err = control.FinishRunning(exec.Command(k))
 		if err == nil {
 			break
 		}
 		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
-		if i == 2 {
-			return err
-		}
 		log.Println(err)
 		sleep(time.Duration(i) * time.Second)
 	}
 
-	return nil
+	return err
 }
 
 // wrapper for gsutil cat
@@ -309,9 +313,10 @@ var gsutilCat = func(url string) ([]byte, error) {
 
 func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
-	release, err := gsutilCat(fmt.Sprintf("gs://%v/%v.txt", prefix, suffix))
+	catURL := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
+	release, err := gsutilCat(catURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
 	return getKube(url, strings.TrimSpace(string(release)), getSrc)
 }
@@ -336,19 +341,40 @@ var httpCat = func(url string) ([]byte, error) {
 	return release, nil
 }
 
-func setReleaseFromHTTP(prefix, suffix string, getSrc bool) error {
+func setReleaseFromHTTP(prefix, suffix string) (string, string, error) {
 	url := fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
-	release, err := httpCat(fmt.Sprintf("%s/%s.txt", url, suffix))
+	catURL := fmt.Sprintf("%s/%s.txt", url, suffix)
+	release, err := httpCat(catURL)
 	if err != nil {
-		return err
+		return "", "", fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
-
-	return getKube(url, strings.TrimSpace(string(release)), getSrc)
+	return url, strings.TrimSpace(string(release)), nil
 }
 
-func setupGciVars(family string) (string, error) {
-	p := "container-vm-image-staging"
-	b, err := control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
+var parseGciExtractOption = func(option string) (string, map[string]string) {
+	tokens := strings.Split(option, "?")
+	family := tokens[0]
+	paramsMap := map[string]string{
+		// default values
+		"project":        "container-vm-image-staging",
+		"k8s-map-bucket": "container-vm-image-staging",
+	}
+	if len(tokens) == 2 {
+		params := strings.Split(tokens[1], ":")
+		for _, param := range params {
+			kv := strings.Split(param, "=")
+			paramsMap[kv[0]] = kv[1]
+		}
+	}
+	return family, paramsMap
+}
+
+var gcloudGetImageName = func(family string, project string) ([]byte, error) {
+	return control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", project), "--format=value(name)"))
+}
+
+func setupGciVars(f string, p string) (string, error) {
+	b, err := gcloudGetImageName(f, p)
 	if err != nil {
 		return "", err
 	}
@@ -368,7 +394,7 @@ func setupGciVars(family string) (string, error) {
 
 		"KUBE_OS_DISTRIBUTION": g,
 	}
-	if family == "gci-canary-test" {
+	if f == "gci-canary-test" {
 		var b bytes.Buffer
 		if err := httpRead("https://api.github.com/repos/docker/docker/releases", &b); err != nil {
 			return "", err
@@ -389,16 +415,17 @@ func setupGciVars(family string) (string, error) {
 	return i, nil
 }
 
-func setReleaseFromGci(image string, getSrc bool) error {
-	b, err := gsutilCat(fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image))
+func setReleaseFromGci(image, k8sMapBucket, releaseBucket string, getSrc bool) error {
+	catURL := fmt.Sprintf("gs://%s/k8s-version-map/%s", k8sMapBucket, image)
+	b, err := gsutilCat(catURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to set release from %s (%v)", catURL, err)
 	}
 	r := fmt.Sprintf("v%s", b)
-	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r), getSrc)
+	return getKube(fmt.Sprintf("https://storage.googleapis.com/%s/release", releaseBucket), strings.TrimSpace(r), getSrc)
 }
 
-func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) error {
+func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket string, extractSrc bool) error {
 	switch e.mode {
 	case localBazel:
 		vFile := util.K8s("kubernetes", "bazel-bin", "version")
@@ -435,12 +462,15 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		}
 		return getKube(fmt.Sprintf("file://%s", url), release, extractSrc)
 	case gci, gciCi:
-		if i, err := setupGciVars(e.option); err != nil {
+		family, gciExtractParams := parseGciExtractOption(e.option)
+		project := gciExtractParams["project"]
+		k8sMapBucket := gciExtractParams["k8s-map-bucket"]
+		if i, err := setupGciVars(family, project); err != nil {
 			return err
 		} else if e.ciVersion != "" {
-			return setReleaseFromGcs("kubernetes-release-dev/ci", e.ciVersion, extractSrc)
+			return setReleaseFromGcs(fmt.Sprintf("%s/ci", ciBucket), e.ciVersion, extractSrc)
 		} else {
-			return setReleaseFromGci(i, extractSrc)
+			return setReleaseFromGci(i, k8sMapBucket, releaseBucket, extractSrc)
 		}
 	case gke:
 		// TODO(fejta): prod v staging v test
@@ -494,15 +524,32 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		// launch the default.
 		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
 		defer os.Unsetenv("CLUSTER_API_VERSION")
-		return setReleaseFromGcs("kubernetes-release-dev/ci", "latest-"+mat[1], extractSrc)
+		return setReleaseFromGcs(fmt.Sprintf("%s/ci", ciBucket), "latest-"+mat[1], extractSrc)
 	case ci:
 		if strings.HasPrefix(e.option, "gke-") {
 			return setReleaseFromGcs("gke-release-staging/kubernetes/release", e.option, extractSrc)
 		}
 
-		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
+		url, release, err := setReleaseFromHTTP(fmt.Sprintf("%s/ci", ciBucket), e.option)
+		if err != nil {
+			return err
+		}
+		return getKube(url, release, extractSrc)
+	case ciFast:
+		// ciFast latest version marker is published to
+		// '<ciBucket>/ci/<version>-fast.txt' but the actual source
+		// is at '<ciBucket>/ci/fast/<version>/kubernetes.tar.gz'
+		url, release, err := setReleaseFromHTTP(fmt.Sprintf("%s/ci", ciBucket), fmt.Sprintf("%s-fast", e.option))
+		if err != nil {
+			return err
+		}
+		return getKube(fmt.Sprintf("%s/fast", url), release, extractSrc)
 	case rc, stable:
-		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
+		url, release, err := setReleaseFromHTTP(fmt.Sprintf("%s/release", releaseBucket), e.option)
+		if err != nil {
+			return err
+		}
+		return getKube(url, release, extractSrc)
 	case version:
 		var url string
 		release := e.option
@@ -510,9 +557,9 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		if re.FindStringSubmatch(release) != nil {
 			url = "https://storage.googleapis.com/gke-release-staging/kubernetes/release"
 		} else if strings.Contains(release, "+") {
-			url = "https://storage.googleapis.com/kubernetes-release-dev/ci"
+			url = fmt.Sprintf("https://storage.googleapis.com/%s/ci", ciBucket)
 		} else {
-			url = "https://storage.googleapis.com/kubernetes-release/release"
+			url = fmt.Sprintf("https://storage.googleapis.com/%s/release", releaseBucket)
 		}
 		return getKube(url, release, extractSrc)
 	case gcs:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,11 +66,12 @@ gzip -df triage_tests/*.gz
 
 mkdir -p slices
 
-pypy3 summarize.py \
-  triage_builds.json \
-  triage_tests/*.json \
+/triage \
+  --builds triage_builds.json \
   --output failure_data.json \
-  --output_slices slices/failure_data_PREFIX.json
+  --output_slices slices/failure_data_PREFIX.json \
+  ${NUM_WORKERS:+"--num_workers=${NUM_WORKERS}"} \
+  triage_tests/*.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"

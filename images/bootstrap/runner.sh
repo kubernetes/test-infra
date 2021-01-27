@@ -26,13 +26,15 @@ fi
 
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
-    if [[ "{DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
+    if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
         echo "Cleaning up after docker"
         docker ps -aq | xargs -r docker rm -f || true
         service docker stop || true
     fi
-    # cleanup binfmt_misc
-    echo "Cleaning up binfmt_misc ..."
+}
+
+early_exit_handler() {
+    cleanup_dind
 }
 
 # optionally enable ipv6 docker
@@ -76,10 +78,11 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
             break
         fi
     done
-    cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 fi
+
+trap early_exit_handler INT TERM
 
 # disable error exit so we can run post-command cleanup
 set +o errexit

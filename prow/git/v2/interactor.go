@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -44,7 +45,7 @@ type Interactor interface {
 	// Merge merges the commitlike into the current HEAD
 	Merge(commitlike string) (bool, error)
 	// MergeWithStrategy merges the commitlike into the current HEAD with the strategy
-	MergeWithStrategy(commitlike, mergeStrategy string) (bool, error)
+	MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error)
 	// MergeAndCheckout merges all commitlikes into the current HEAD with the appropriate strategy
 	MergeAndCheckout(baseSHA string, mergeStrategy string, headSHAs ...string) error
 	// Am calls `git am`
@@ -53,6 +54,8 @@ type Interactor interface {
 	Fetch() error
 	// FetchRef fetches the refspec
 	FetchRef(refspec string) error
+	// FetchFromRemote fetches the branch of the given remote
+	FetchFromRemote(remote RemoteResolver, branch string) error
 	// CheckoutPullRequest fetches and checks out the synthetic refspec from GitHub for a pull request HEAD
 	CheckoutPullRequest(number int) error
 	// Config runs `git config`
@@ -61,6 +64,8 @@ type Interactor interface {
 	Diff(head, sha string) (changes []string, err error)
 	// MergeCommitsExistBetween determines if merge commits exist between target and HEAD
 	MergeCommitsExistBetween(target, head string) (bool, error)
+	// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
+	ShowRef(commitlike string) (string, error)
 }
 
 // cacher knows how to cache and update repositories in a central cache
@@ -77,8 +82,14 @@ type cloner interface {
 	Clone(from string) error
 }
 
+// MergeOpt holds options for git merge operations.
+// Currently only commit message option is supported.
+type MergeOpt struct {
+	CommitMessage string
+}
+
 type interactor struct {
-	executor Executor
+	executor executor
 	remote   RemoteResolver
 	dir      string
 	logger   *logrus.Entry
@@ -161,11 +172,11 @@ func (i *interactor) Merge(commitlike string) (bool, error) {
 // MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
 // It returns true if the merge completes. if the merge does not complete successfully, we try to
 // abort it and return an error if the abort fails.
-func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string) (bool, error) {
+func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
 	i.logger.Infof("Merging %q using the %q strategy", commitlike, mergeStrategy)
 	switch mergeStrategy {
 	case "merge":
-		return i.mergeMerge(commitlike)
+		return i.mergeMerge(commitlike, opts...)
 	case "squash":
 		return i.squashMerge(commitlike)
 	default:
@@ -173,8 +184,20 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string) (bool, 
 	}
 }
 
-func (i *interactor) mergeMerge(commitlike string) (bool, error) {
-	out, err := i.executor.Run("merge", "--no-ff", "--no-stat", "-m", "merge", commitlike)
+func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--no-ff", "--no-stat"}
+
+	if len(opts) == 0 {
+		args = append(args, []string{"-m", "merge"}...)
+	} else {
+		for _, opt := range opts {
+			args = append(args, []string{"-m", opt.CommitMessage}...)
+		}
+	}
+
+	args = append(args, commitlike)
+
+	out, err := i.executor.Run(args...)
 	if err == nil {
 		return true, nil
 	}
@@ -243,7 +266,7 @@ func (i *interactor) Am(path string) error {
 // RemoteUpdate fetches all updates from the remote.
 func (i *interactor) RemoteUpdate() error {
 	i.logger.Info("Updating from remote")
-	if out, err := i.executor.Run("remote", "update"); err != nil {
+	if out, err := i.executor.Run("remote", "update", "--prune"); err != nil {
 		return fmt.Errorf("error updating: %v %v", err, string(out))
 	}
 	return nil
@@ -271,6 +294,20 @@ func (i *interactor) FetchRef(refspec string) error {
 	i.logger.Infof("Fetching %q from %s", refspec, remote)
 	if out, err := i.executor.Run("fetch", remote, refspec); err != nil {
 		return fmt.Errorf("error fetching %q: %v %v", refspec, err, string(out))
+	}
+	return nil
+}
+
+// FetchFromRemote fetches all update from a specific remote and branch and leaves it as FETCH_HEAD.
+func (i *interactor) FetchFromRemote(remote RemoteResolver, branch string) error {
+	r, err := remote()
+	if err != nil {
+		return fmt.Errorf("couldn't get remote: %v", err)
+	}
+
+	i.logger.Infof("Fetching %s from %s", branch, r)
+	if out, err := i.executor.Run("fetch", r, branch); err != nil {
+		return fmt.Errorf("error fetching %s from %s: %v %v", branch, r, err, string(out))
 	}
 	return nil
 }
@@ -326,4 +363,13 @@ func (i *interactor) MergeCommitsExistBetween(target, head string) (bool, error)
 		return false, fmt.Errorf("error verifying if merge commits exist between %q and %q: %v %s", target, head, err, string(out))
 	}
 	return len(out) != 0, nil
+}
+
+func (i *interactor) ShowRef(commitlike string) (string, error) {
+	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
+	out, err := i.executor.Run("show-ref", "-s", commitlike)
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }

@@ -3,10 +3,10 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-1804-d1703-0-v20181113 # docker 17.03
+    image: ubuntu-gke-1804-1-16-v20200330 # docker 17.03
     project: ubuntu-os-gke-cloud
   cos-stable2:
-    image_regex: cos-stable-73-11647-510-0 # docker v18.09.7, deprecated after 2020-06-19
+    image_family: cos-81-lts # deprecated after 2021-06-24
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/gci-init-gpu.yaml,gci-update-strategy=update_disabled"
     resources:
@@ -14,6 +14,6 @@ images:
         - type: nvidia-tesla-k80
           count: 2
   cos-stable1:
-    image_regex: cos-stable-77-12371-227-0 # docker v19.03.1, deprecated after 2020-12-17
+    image_family: cos-85-lts # deprecated after 2021-12-17
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"

@@ -26,14 +26,17 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	cert       string
-	privateKey string
+	cert                   string
+	privateKey             string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func parseOptions() options {
@@ -47,6 +50,7 @@ func parseOptions() options {
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
 	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
+	o.instrumentationOptions.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -63,8 +67,8 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-	health := pjutil.NewHealth()
+	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	http.HandleFunc("/validate", handle)
 	s := http.Server{

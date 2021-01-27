@@ -1,0 +1,47 @@
+plank:
+  pod_pending_timeout: 15m
+  pod_unscheduled_timeout: 5m
+  default_decoration_configs:
+    '*':
+      utility_images: # using the tag we identified above
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20200630-1dca612287"
+        initupload: "gcr.io/k8s-prow/initupload:v20200630-1dca612287"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20200630-1dca612287"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20200630-1dca612287"
+      gcs_configuration:
+        bucket: k8s-staging-prow # the bucket holding the artifacts
+        path_strategy: explicit
+      gcs_credentials_secret: gcs-credentials
+
+sinker:
+  resync_period: 1m
+  max_prowjob_age: 1h
+  max_pod_age: 1h
+  terminated_pod_ttl: 30m
+
+deck:
+  spyglass:
+    size_limit: 500000000 # 500MB
+    lenses:
+    - lens:
+        name: metadata
+      required_files:
+      - started.json|finished.json
+      optional_files:
+      - podinfo.json
+    - lens:
+        name: buildlog
+      required_files:
+      - build-log.txt
+    - lens:
+        name: junit
+      required_files:
+      - artifacts/junit.*\.xml
+    - lens:
+        name: podinfo
+      required_files:
+      - podinfo.json
+
+prowjob_namespace: default
+pod_namespace: test-pods
+log_level: debug

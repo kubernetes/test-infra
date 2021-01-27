@@ -7,10 +7,7 @@ py_test(
         "make_db_test.py",
         "model.py",
     ],
-    # Remove when these are fixed.
-    # https://github.com/bazelbuild/bazel/issues/1973
-    # https://github.com/bazelbuild/bazel/issues/2056
-    local = True,
+    data = [":buckets.yaml"],
     python_version = "PY3",
     deps = [
         requirement("certifi"),
@@ -84,11 +81,15 @@ py_test(
         "model.py",
         ":package-srcs",
     ],
-    data = [":buckets.yaml"],
-    # idem
-    local = True,
+    data = [
+        ":buckets.yaml",
+        ":xml_data",
+    ],
     python_version = "PY3",
-    deps = [requirement("ruamel.yaml")],
+    deps = [
+        requirement("ruamel.yaml"),
+        requirement("parameterized"),
+    ],
 )
 
 filegroup(
@@ -114,4 +115,11 @@ filegroup(
     name = "buckets",
     srcs = ["buckets.yaml"],
     visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "xml_data",
+    srcs = glob([
+        "testdata/*.xml",
+    ]),
 )

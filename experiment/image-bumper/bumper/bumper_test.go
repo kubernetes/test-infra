@@ -22,6 +22,124 @@ import (
 	"testing"
 )
 
+func TestDeconstructCommit(t *testing.T) {
+	cases := []struct {
+		name           string
+		commit         string
+		tag            string
+		num            int
+		expectedCommit string
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name:           "just commit works",
+			commit:         "deadbeef",
+			expectedCommit: "deadbeef",
+		},
+		{
+			name:           "commit drops leading g",
+			commit:         "gdeadbeef",
+			expectedCommit: "deadbeef",
+		},
+		{
+			name:   "just tag works",
+			commit: "v0.0.30",
+			tag:    "v0.0.30",
+		},
+		{
+			name:           "commits past tags work",
+			commit:         "v0.0.30-14-gdeadbeef",
+			tag:            "v0.0.30",
+			num:            14,
+			expectedCommit: "deadbeef",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tag, num, commit := DeconstructCommit(tc.commit)
+			if tag != tc.tag {
+				t.Errorf("DeconstructCommit(%s) got tag %q, want %q", tc.commit, tag, tc.tag)
+			}
+			if num != tc.num {
+				t.Errorf("DeconstructCommit(%s) got tag %d, want %d", tc.commit, num, tc.num)
+			}
+			if commit != tc.expectedCommit {
+				t.Errorf("DeconstructCommit(%s) got commit %q, want %q", tc.commit, commit, tc.expectedCommit)
+			}
+
+		})
+	}
+}
+
+func TestDeconstructTag(t *testing.T) {
+	cases := []struct {
+		tag     string
+		date    string
+		commit  string
+		variant string
+	}{
+		{
+			tag: "deadbeef",
+			// TODO(fejta): commit: "deadbeef",
+		},
+		{
+			tag: "v0.0.30",
+			// TODO(fejta): commit: "v0.0.30",
+		},
+		{
+			tag:    "v20190404-65af07d",
+			date:   "20190404",
+			commit: "65af07d",
+		},
+		{
+			tag:     "v20190330-811f79999-experimental",
+			date:    "20190330",
+			commit:  "811f79999",
+			variant: "-experimental",
+		},
+		{
+			tag:    "latest",
+			date:   "atest", // TODO(fejta): empty
+			commit: "latest",
+		},
+		{
+			tag:     "latest-experimental",
+			date:    "atest", // TODO(fejta): empty
+			commit:  "latest",
+			variant: "-experimental", // TODO(fejta): no -
+		},
+		{
+			tag:    "v20210125-v0.0.41-8-gcb960c8",
+			date:   "20210125",
+			commit: "gcb960c8", // TODO(fejta): "v0.0.41-8-gcb960c8",
+		},
+		{
+			tag:     "v20210125-v0.0.41-8-gcb960c8-fancy",
+			date:    "20210125",
+			commit:  "gcb960c8", // TODO(fejta): "v0.0.41-8-gcb960c8",
+			variant: "-fancy",   // TODO(fejta): no -
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.tag, func(t *testing.T) {
+			date, commit, variant := DeconstructTag(tc.tag)
+			if date != tc.date {
+				t.Errorf("DeconstructTag(%q) got date %s, want %s", tc.tag, date, tc.date)
+			}
+			if commit != tc.commit {
+				t.Errorf("DeconstructTag(%q) got commit %s, want %s", tc.tag, commit, tc.commit)
+			}
+			if variant != tc.variant {
+				t.Errorf("DeconstructTag(%q) got variant %s, want %s", tc.tag, variant, tc.variant)
+			}
+		})
+	}
+}
+
 func TestPickBestTag(t *testing.T) {
 	tests := []struct {
 		name      string

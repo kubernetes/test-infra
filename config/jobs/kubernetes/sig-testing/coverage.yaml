@@ -23,7 +23,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       - bash
@@ -84,7 +84,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       - bash
@@ -127,27 +127,33 @@ periodics:
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
 - interval: 1h
   name: ci-kubernetes-coverage-unit
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
   decorate: true
   extra_refs:
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       - bash
       args:
       - -c
       - |
-        local result=0
-        GO111MODULE=off go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        result=0
+        ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
         make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
-        grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
+        ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
         exit $result
       securityContext:
         privileged: true

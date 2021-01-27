@@ -1,8 +1,6 @@
 presubmits:
   kubernetes/kops:
   - name: pull-kops-bazel-build
-    branches:
-    - master
     always_run: true
     skip_report: false
     labels:
@@ -15,7 +13,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
@@ -25,11 +23,9 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-build
   - name: pull-kops-bazel-test
-    branches:
-    - master
     always_run: true
     skip_report: false
     labels:
@@ -42,7 +38,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
@@ -52,7 +48,7 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-test
   - name: pull-kops-e2e-kubernetes-aws
     branches:
@@ -82,12 +78,15 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/stable
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
+        - --kops-args=--container-runtime=docker
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -99,11 +98,45 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
-      testgrid-tab-name: e2e
-  - name: pull-kops-e2e-kubernetes-aws-1-15
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-docker
+  - name: pull-kops-e2e-kubernetes-aws-kubetest2
     branches:
-    - release-1.15
+    - master
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-e2e-aws-simple-1-20
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
+      testgrid-tab-name: e2e-kubetest2
+  - name: pull-kops-e2e-k8s-containerd
+    branches:
+    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -129,14 +162,18 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-        - --extract=release/stable-1.15
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
+        - --kops-args=--container-runtime=containerd --networking=calico
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -145,54 +182,8 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
-      testgrid-tab-name: e2e-1-15
-  - name: pull-kops-e2e-kubernetes-aws-1-16
-    branches:
-    - release-1.16
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --aws
-        - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --check-leaked-resources=false
-        - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
-        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-        - --extract=release/stable-1.16
-        - --ginkgo-parallel
-        - --kops-build
-        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
-        - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|In-tree.*Volumes.*\[Driver:.*aws\]
-        - --timeout=55m
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: presubmits-kops
-      testgrid-tab-name: e2e-1-16
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-containerd
   - name: pull-kops-e2e-kubernetes-aws-1-17
     branches:
     - release-1.17
@@ -221,6 +212,8 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
+        - --kops-ssh-user=admin
+        - --env=KUBE_SSH_USER=admin
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --extract=release/stable-1.17
@@ -237,8 +230,104 @@ presubmits:
           requests:
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-1-17
+  - name: pull-kops-e2e-kubernetes-aws-1-18
+    branches:
+    - release-1.18
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.18
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-1-18
+  - name: pull-kops-e2e-kubernetes-aws-1-19
+    branches:
+    - release-1.19
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.19
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-1-19
   - name: pull-kops-verify-bazel
     branches:
     - master
@@ -251,18 +340,16 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "verify-bazel"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-bazel
   - name: pull-kops-verify-generated
-    branches:
-    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -270,16 +357,19 @@ presubmits:
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/kops
+    skip_branches:
+    - release-1.17
+    - release-1.16
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "verify-generate"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-generated
   - name: pull-kops-verify-gomod
     branches:
@@ -293,18 +383,16 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "verify-gomod"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gomod
   - name: pull-kops-verify-boilerplate
-    branches:
-    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -314,18 +402,16 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "verify-boilerplate"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
-    branches:
-    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -337,7 +423,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
@@ -347,11 +433,9 @@ presubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt
   - name: pull-kops-verify-govet
-    branches:
-    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -361,36 +445,15 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "govet"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-govet
-  - name: pull-kops-verify-packages
-    branches:
-    - master
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-packages"
-    annotations:
-      testgrid-dashboards: presubmits-kops
-      testgrid-tab-name: verify-packages
   - name: pull-kops-verify-staticcheck
     branches:
       - master
@@ -403,70 +466,91 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "verify-staticcheck"
     annotations:
-      testgrid-dashboards: presubmits-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-staticcheck
-  - name: pull-kops-verify
-    branches:
-    - master
-    optional: true
+  - name: pull-kops-verify-hashes
+    skip_report: false
+    run_if_changed: '^upup\/pkg\/fi\/cloudup\/(containerd|docker)'
     labels:
-      preset-dind-enabled: "true"
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 15m
+      timeout: 10m
     path_alias: k8s.io/kops
+    skip_branches:
+    - release-1.17
+    - release-1.16
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
         - "make"
-        - "verify"
-        resources:
-          requests:
-            memory: "2Gi"
+        - "verify-hashes"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-hashes
+  - name: pull-kops-verify-terraform
+    skip_report: false
+    run_if_changed: '^tests\/integration\/update_cluster\/'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: k8s.io/kops
+    skip_branches:
+    - release-1.17
+    - release-1.16
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-terraform"
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: presubmits-kops
-      testgrid-tab-name: verify
-periodics:
-- interval: 30m
-  name: ci-kops-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
-      args:
-      - --repo=k8s.io/kops
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=execute
-      - --
-      - make
-      - gcs-publish-ci
-      - GCS_LOCATION=gs://kops-ci/bin
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-build
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-terraform
+  - name: pull-kops-verify-cloudformation
+    skip_report: false
+    run_if_changed: '^tests\/integration\/update_cluster\/'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: k8s.io/kops
+    skip_branches:
+    - release-1.18
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-cloudformation"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-cloudformation
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
@@ -478,11 +562,11 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 15m
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental
         command:
         - runner.sh
         args:
@@ -493,4 +577,4 @@ postsubmits:
           requests:
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops
+      testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits

@@ -29,43 +29,66 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         resources:
           requests:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-cluster-up
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-test
     always_run: true
     decorate: true
     path_alias: k8s.io/release
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci-bazel:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
         command:
-        - ../test-infra/hack/bazel.sh
-        args:
+        - make
         - test
-        - //...
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-test
-      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-integration-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - test-go-integration
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-integration-test
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-verify
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-verify
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
 periodics:
 # package tests
 - name: periodic-release-verify-packages-debs
   interval: 6h
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: verify-packages-debs
   decorate: true
@@ -87,7 +110,7 @@ periodics:
 - name: periodic-release-verify-packages-rpms
   interval: 6h
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: verify-packages-rpms
   decorate: true

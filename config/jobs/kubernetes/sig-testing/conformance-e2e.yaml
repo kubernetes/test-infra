@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -144,90 +144,9 @@ periodics:
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     testgrid-alert-email: davanum@gmail.com
     testgrid-num-columns-recent: '3'
-- interval: 3h
-  name: ci-kubernetes-conformance-image-1-15-test
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.15
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/test-infra=master"
-      - "--repo=k8s.io/kubernetes=release-1.15"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      # the script must run from kubernetes, but we're checking out kind
-      - "bash"
-      - "--"
-      - "-c"
-      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: conformance-image, 1.15 (dev)
-    description: Runs conformance tests using image against kubernetes 1.15 branch with a kubernetes-in-docker cluster
-    testgrid-alert-email: davanum@gmail.com
-    testgrid-num-columns-recent: '3'
-- interval: 3h
-  name: ci-kubernetes-conformance-image-1-14-test
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200218-a445c54-1.14
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/test-infra=master"
-      - "--repo=k8s.io/kubernetes=release-1.14"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      # the script must run from kubernetes, but we're checking out kind
-      - "bash"
-      - "--"
-      - "-c"
-      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    testgrid-tab-name: conformance-image, 1.14 (dev)
-    description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
-    testgrid-alert-email: davanum@gmail.com
-    testgrid-num-columns-recent: '3'
 
 - name: ci-kubernetes-conformance-kind-ga-only
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   skip_branches:
@@ -243,10 +162,10 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 2h # allow plenty of time for a serial conformance run
+    timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
       command:
       - wrapper.sh
       - bash
@@ -261,17 +180,16 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: 12Gi
+          cpu: 7
         requests:
-          # TODO(BenTheElder): adjust these everywhere
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: 12Gi
+          cpu: 7
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '48'
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance-ga-only
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com, kubernetes-sig-architecture@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-architecture@googlegroups.com"
     description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"

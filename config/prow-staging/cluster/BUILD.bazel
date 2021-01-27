@@ -1,0 +1,57 @@
+package(default_visibility = ["//prow:__subpackages__"])
+
+load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
+load("//def:configmap.bzl", "k8s_configmap")
+
+# Usage:
+#   bazel run //config/prow-staging/cluster:foo.apply
+
+release(
+    "staging",
+    component(
+        "boskos",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-janitor",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-reaper",
+        "deployment",
+        cluster = BUILD_CLUSTER,
+    ),
+    component("crier", "deployment", "rbac"),
+    component("deck", "service", "deployment", "rbac"),
+    component("gce-ssd-retain", "storageclass"),
+    component("ghproxy", MULTI_KIND),
+    component("hook", "service", "deployment", "rbac"),
+    component("horologium", "deployment", "rbac"),
+    component("ing", "ingress"),
+    component(
+        "mem-limit-range",
+        "limitrange",
+    ),
+    component("plank", "service", "deployment", "rbac"),
+    component("prow-staging-k8s-io", "managedcertificate"),
+    component("prowjob", "customresourcedefinition"),
+    component("sinker", "service", "deployment", "rbac"),
+    component("tide", "service", "deployment", "rbac"),
+    component("tls-ing", "ingress"),
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

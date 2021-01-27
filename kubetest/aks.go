@@ -345,32 +345,7 @@ func newSSHKeypair(bits int) (private, public []byte, err error) {
 	return privBytes, pubBytes, nil
 }
 
-func installAzureCLI() error {
-	if err := control.FinishRunning(exec.Command("curl", "-sL", "https://packages.microsoft.com/keys/microsoft.asc", "-o", "msft.asc")); err != nil {
-		return err
-	}
-
-	if err := control.FinishRunning(exec.Command("gpg", "--batch", "--yes", "-o", "/etc/apt/trusted.gpg.d/microsoft.asc.gpg", "--dearmor", "msft.asc")); err != nil {
-		return err
-	}
-
-	if err := control.FinishRunning(exec.Command("bash", "-c", "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli $(lsb_release -cs) main\" | tee /etc/apt/sources.list.d/azure-cli.list")); err != nil {
-		return err
-	}
-
-	if err := control.FinishRunning(exec.Command("apt-get", "update")); err != nil {
-		return err
-	}
-
-	if err := control.FinishRunning(exec.Command("apt-get", "install", "-y", "azure-cli")); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (a *aksDeployer) dockerLogin() error {
-	cmd := &exec.Cmd{}
 	username := ""
 	pwd := ""
 	server := ""
@@ -392,7 +367,7 @@ func (a *aksDeployer) dockerLogin() error {
 		pwd = a.azureCreds.ClientSecret
 		server = imageRegistry
 	}
-	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed Docker login with output %s\n error: %v", out, err)
 	}

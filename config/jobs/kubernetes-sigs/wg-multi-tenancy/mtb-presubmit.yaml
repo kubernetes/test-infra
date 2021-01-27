@@ -1,0 +1,20 @@
+presubmits:
+    kubernetes-sigs/multi-tenancy:
+    - name: pull-mtb-test
+      annotations:
+        testgrid-dashboards: wg-multi-tenancy-mtb
+        testgrid-tab-name: presubmit-tests
+      decorate: true
+      labels:
+        preset-kind-volume-mounts: "true"
+        preset-dind-enabled: "true"
+      path_alias: sigs.k8s.io/multi-tenancy
+      run_if_changed: "benchmarks/kubectl-mtb/.*"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+          command:
+            - wrapper.sh
+            - ./benchmarks/kubectl-mtb/hack/ci-test.sh
+        securityContext:
+           privileged: true

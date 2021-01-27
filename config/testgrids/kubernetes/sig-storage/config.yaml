@@ -13,6 +13,11 @@ dashboard_groups:
     - sig-storage-csi-livenessprobe
     - sig-storage-csi-node-driver-registrar
     - sig-storage-csi-other
+    - sig-storage-image-build
+    - sig-storage-container-object-storage-interface-api
+    - sig-storage-container-object-storage-interface-controller
+    - sig-storage-container-object-storage-interface-provisioner-sidecar
+    - sig-storage-container-object-storage-interface-csi-adapter
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -83,6 +88,12 @@ dashboards:
       description: storage snapshot e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+    - name: kops-selinux
+      test_group_name: ci-kubernetes-e2e-storage-selinux
+      base_options: include-filter-by-regex=Volume%7Cstorage
+      description: storage selinux e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:
@@ -107,3 +118,8 @@ dashboards:
 - name: sig-storage-csi-node-driver-registrar
 - name: sig-storage-csi-other
 - name: sig-storage-lib-external-provisioner
+- name: sig-storage-image-build
+- name: sig-storage-container-object-storage-interface-api
+- name: sig-storage-container-object-storage-interface-controller
+- name: sig-storage-container-object-storage-interface-provisioner-sidecar
+- name: sig-storage-container-object-storage-interface-csi-adapter

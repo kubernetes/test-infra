@@ -1,0 +1,43 @@
+periodics:
+- interval: 3h
+  cluster: k8s-infra-prow-build
+  name: ci-cloud-provider-gcp-conformance-latest
+  decorate: true
+  annotations:
+    testgrid-tab-name: Conformance - Cloud Provider GCP - master
+    testgrid-dashboards: provider-gcp-periodics
+    description: Runs conformance tests using kubetest2 against cloud-provider-gcp master on GCE
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-gcp
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-gcp
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
+      resources:
+        limits:
+          cpu: 4
+          memory: 14Gi
+        requests:
+          cpu: 4
+          memory: 14Gi
+      command:
+      - wrapper.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      # TODO: Use published release tars for cloud-provider-gcp if/once they exist
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
+        cd;
+        export GO111MODULE=on;
+        go get sigs.k8s.io/kubetest2@latest;
+        go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+        go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.19.0 --focus-regex='\[Conformance\]'

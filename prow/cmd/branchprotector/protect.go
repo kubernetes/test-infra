@@ -205,7 +205,7 @@ func (p *protector) protect() {
 	// know which repos exist. Repos that use in-repo config will appear here,
 	// because we generate a verification job for them
 	for repo := range p.cfg.PresubmitsStatic {
-		if p.completedRepos[repo] == true {
+		if p.completedRepos[repo] {
 			continue
 		}
 		parts := strings.Split(repo, "/")
@@ -494,7 +494,7 @@ func equalAdminEnforcement(state github.EnforceAdmins, request *bool) bool {
 		// bound by the branch protection rules. Therefore, making no
 		// request is equivalent to making a request to not enforce
 		// rules on admins.
-		return state.Enabled == false
+		return !state.Enabled
 	default:
 		return state.Enabled == *request
 	}

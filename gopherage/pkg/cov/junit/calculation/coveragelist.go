@@ -53,16 +53,16 @@ func (covList *CoverageList) summarize() {
 
 // Subset returns the subset obtained through applying filter
 func (covList *CoverageList) Subset(prefix string) *CoverageList {
-	s := newCoverageList("Filtered Summary")
+	s := newCoverageList("Filtered Summary: " + prefix)
 	for _, c := range covList.Group {
 		if strings.HasPrefix(c.Name, prefix) {
-			covList.Group = append(covList.Group, c)
+			s.Group = append(s.Group, c)
 		}
 	}
 	return s
 }
 
-// ListDirectories gets a list a sub-directories that contains source code.
+// ListDirectories gets a list of sub-directories that contains source code.
 func (covList CoverageList) ListDirectories() []string {
 	dirSet := map[string]bool{}
 	for _, cov := range covList.Group {

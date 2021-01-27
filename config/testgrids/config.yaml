@@ -20,20 +20,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-cri-containerd-node-e2e-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-cri-containerd-node-e2e-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-benchmark
   test_name_config:
@@ -43,13 +29,6 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-2
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -110,20 +89,6 @@ test_groups:
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
 
-# Flannel CNI on Windows test groups
-- name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
-  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
-- name: ci-kubernetes-e2e-flannel-overlay-master-windows
-  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-overlay-master-windows
-- name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
-  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
-- name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
-  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
-
-# OVN-OVS CNI on Windows test groups
-- name: ci-kubernetes-e2e-ovn-ovs-master-windows
-  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
-
 #
 # Start dashboards
 #
@@ -151,6 +116,8 @@ dashboards:
   dashboard_tab:
   - name: ci-daisy-e2e
     test_group_name: ci-daisy-e2e
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com    
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -160,6 +127,8 @@ dashboards:
         value: <test-url>
   - name: ci-daisy-e2e-daily
     test_group_name: ci-daisy-e2e-daily
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com       
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -167,17 +136,10 @@ dashboards:
         value: 'ci-daisy-e2e-daily issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: ci-daisy-e2e-weekly
-    test_group_name: ci-daisy-e2e-weekly
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-daisy-e2e-weekly issue: <test-name>'
-      - key: body
-        value: <test-url>
   - name: ci-images-import-export-cli-e2e-tests
     test_group_name: ci-images-import-export-cli-e2e-tests
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com   
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -187,6 +149,8 @@ dashboards:
         value: <test-url>
   - name: ci-ovf-import-e2e-tests-daily
     test_group_name: ci-ovf-import-e2e-tests-daily
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -194,22 +158,22 @@ dashboards:
         value: 'ci-ovf-import-e2e-tests-daily issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: linux-image-tests
-    test_group_name: linux-image-tests
+  - name: ci-windows-upgrade-e2e-tests
+    test_group_name: ci-windows-upgrade-e2e-tests
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
       - key: title
-        value: 'linux-image-tests issue: <test-name>'
+        value: 'ci-windows-upgrade-e2e-tests issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: windows-image-tests
-    test_group_name: windows-image-tests
+  - name: ci-v2v-adapt-e2e
+    test_group_name: ci-v2v-adapt-e2e
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
       - key: title
-        value: 'windows-image-tests issue: <test-name>'
+        value: 'ci-v2v-adapt-e2e issue: <test-name>'
       - key: body
         value: <test-url>
 
@@ -259,62 +223,6 @@ dashboards:
 - name: google-unit
 - name: google-windows
 
-- name: wg-resource-management
-  dashboard_tab:
-  - name: gce-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-beta
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-stable1
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-beta-gpu-master-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-beta-gpu-cluster-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-master-gpu-master-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-master-gpu-cluster-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-beta-stable1-gpu-cluster-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-master-stable1-gpu-cluster-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-cri-containerd
-    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: kubelet-serial-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-serial
-    base_options: include-filter-by-regex=GPU|DevicePlugin
-
 - name: sig-auth-gce
   dashboard_tab:
   - name: gce
@@ -331,189 +239,13 @@ dashboards:
     description: apps gce serial e2e tests for master branch
 
 - name: sig-big-data
-- name: presubmits-cloud-provider-alibaba
-- name: presubmits-alibaba-cloud-csi-driver
 - name: sig-multicluster-kubemci
 - name: sig-auth-secrets-store-csi-driver
-
-- name: presubmits-kubernetes-blocking
-  dashboard_tab:
-  - name: pull-kubernetes-e2e-kind
-    test_group_name: pull-kubernetes-e2e-kind
-    base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-bazel-build
-    test_group_name: pull-kubernetes-bazel-build
-    base_options: width=10
-  - name: pull-kubernetes-bazel-test
-    test_group_name: pull-kubernetes-bazel-test
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce
-    test_group_name: pull-kubernetes-e2e-gce
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-100-performance
-    test_group_name: pull-kubernetes-e2e-gce-100-performance
-    base_options: width=10
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
-    base_options: width=10
-  - name: pull-kubernetes-node-e2e
-    test_group_name: pull-kubernetes-node-e2e
-    base_options: width=10
-  - name: pull-kubernetes-integration
-    test_group_name: pull-kubernetes-integration
-    base_options: width=10
-  - name: pull-kubernetes-verify
-    test_group_name: pull-kubernetes-verify
-    base_options: width=10
-  - name: pull-kubernetes-typecheck
-    test_group_name: pull-kubernetes-typecheck
-    base_options: width=10
-  - name: pull-kubernetes-dependencies
-    test_group_name: pull-kubernetes-dependencies
-    base_options: width=10
-  - name: pull-kubernetes-godeps
-    test_group_name: pull-kubernetes-godeps
-    base_options: width=10
-  - name: pull-kubernetes-cross
-    test_group_name: pull-kubernetes-cross
-    base_options: width=10
-
-- name: presubmits-kubernetes-nonblocking
-  dashboard_tab:
-  - name: pull-kubernetes-e2e-gce-rbe
-    test_group_name: pull-kubernetes-e2e-gce-rbe
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-canary
-    test_group_name: pull-kubernetes-e2e-gce-canary
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-ubuntu
-    test_group_name: pull-kubernetes-e2e-gce-ubuntu
-    base_options: width=10
-  - name: pull-kubernetes-e2e-kind-canary
-    test_group_name: pull-kubernetes-e2e-kind-canary
-    base_options: width=10
-  - name: pull-kubernetes-e2e-kind-ipv6-canary
-    test_group_name: pull-kubernetes-e2e-kind-ipv6-canary
-    base_options: width=10
-  - name: pull-kubernetes-e2e-kind-ipv6
-    test_group_name: pull-kubernetes-e2e-kind-ipv6
-    base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-e2e-aks-engine-azure
-    test_group_name: pull-kubernetes-e2e-aks-engine-azure
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-alpha-features
-    test_group_name: pull-kubernetes-e2e-gce-alpha-features
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-slow
-    test_group_name: pull-kubernetes-e2e-gce-storage-slow
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-snapshot
-    test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-slow-rbe
-    test_group_name: pull-kubernetes-e2e-gce-storage-slow-rbe
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-csi-serial
-    test_group_name: pull-kubernetes-e2e-gce-csi-serial
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    base_options: width=10
-  - name: pull-kubernetes-node-e2e-alpha
-    test_group_name: pull-kubernetes-node-e2e-alpha
-    base_options: width=10
-  - name: pull-kubernetes-e2e-kops-aws
-    test_group_name: pull-kubernetes-e2e-kops-aws
-    base_options: width=10
-  - name: pull-canaries
-    test_group_name: pull-kubernetes-dependencies-canary
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-iscsi
-    test_group_name: pull-kubernetes-e2e-gce-iscsi
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-iscsi-serial
-    test_group_name: pull-kubernetes-e2e-gce-iscsi-serial
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-disruptive
-    test_group_name: pull-kubernetes-e2e-gce-storage-disruptive
-    base_options: width=10
-
-- name: presubmits-cloud-provider-vsphere-blocking
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
-
-- name: presubmits-kubernetes-scalability
-  dashboard_tab:
-  - name: pull-kubernetes-e2e-gce-100-performance
-    test_group_name: pull-kubernetes-e2e-gce-100-performance
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-big-performance
-    test_group_name: pull-kubernetes-e2e-gce-big-performance
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-large-performance
-    test_group_name: pull-kubernetes-e2e-gce-large-performance
-    base_options: width=10
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
-    base_options: width=10
-  - name: pull-kubernetes-kubemark-e2e-gce-scale
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2
-    test_group_name: pull-perf-tests-clusterloader2
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2-nodekiller-experimental
-    test_group_name: pull-perf-tests-clusterloader2-nodekiller-experimental
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2-kubemark
-    test_group_name: pull-perf-tests-clusterloader2-kubemark
-    base_options: width=10
-
-- name: presubmits-cluster-registry
-  dashboard_tab:
-  - name: verify-gensrc
-    test_group_name: pull-cluster-registry-verify-gensrc
-    base_options: width=10
-  - name: verify-gosrc
-    test_group_name: pull-cluster-registry-verify-gosrc
-    base_options: width=10
-
-- name: presubmits-misc
-- name: presubmits-kops
-- name: presubmits-poseidon
-- name: presubmits-kube-batch
-- name: presubmits-node-problem-detector
 - name: google-rules_k8s
-
-# sig-windows dashboard
-- name: sig-windows
-  dashboard_tab:
-  - name: flannel-l2bridge-windows-master
-    description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
-  - name: flannel-overlay-windows-master
-    description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-flannel-overlay-master-windows
-  - name: containerd-l2bridge-windows-master
-    description: Runs Windows e2e tests on K8s clusters with Containerd and Flannel CNI in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
-  - name: containerd-overlay-windows-master
-    description: Runs Windows e2e tests on K8s clusters with Containerd and Flannel CNI in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
-  - name: ovn-ovs-windows-master
-    description: Runs Windows e2e tests on K8s clusters on Openstack vms with OVN-OVS CNI.
-    test_group_name: ci-kubernetes-e2e-ovn-ovs-master-windows
-
-- name: google-cel
-  dashboard_tab:
-  - name: cel-go
-    test_group_name: cel-go-conformance-tests
 
 #
 # Start dashboard groups
@@ -549,21 +281,7 @@ dashboard_groups:
   - google-unit
   - google-windows
 
-- name: presubmits
-  dashboard_names:
-  - presubmits-cluster-registry
-  - presubmits-cloud-provider-vsphere-blocking
-  - presubmits-kubernetes-blocking
-  - presubmits-kubernetes-nonblocking
-  - presubmits-kubernetes-scalability
-  - presubmits-test-infra
-  - presubmits-kops
-  - presubmits-node-problem-detector
-  - presubmits-poseidon
-  - presubmits-kube-batch
-  - presubmits-misc
-  - presubmits-cloud-provider-alibaba
-  - presubmits-alibaba-cloud-csi-driver
+
 
 - name: sig-multicluster
   dashboard_names:

@@ -57,9 +57,24 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	}
 
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Welcome: []plugins.Welcome{
+			{
+				Repos: []string{
+					"org/repo1",
+					"org/repo2",
+				},
+				MessageTemplate: "Welcome @{{.AuthorLogin}}!",
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: "The welcome plugin posts a welcoming message when it detects a user's first contribution to a repo.",
 			Config:      welcomeConfig,
+			Snippet:     yamlSnippet,
 		},
 		nil
 }
@@ -103,11 +118,11 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 	repo := pre.PullRequest.Base.Repo.Name
 	user := pre.PullRequest.User.Login
 
-	trusted, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
+	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
 	if err != nil {
 		return fmt.Errorf("check if user %s is trusted: %v", user, err)
 	}
-	if trusted {
+	if trustedResponse.IsTrusted {
 		return nil
 	}
 

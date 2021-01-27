@@ -1,8 +1,7 @@
 # kubernetes/test-infra dependency management
 
 test-infra uses [go modules] for Go dependency management.
-Usage requires [bazel], which can be accessed through
-[`planter`] if not locally installed.
+Usage requires [bazel].
 
 ## Usage
 
@@ -40,4 +39,3 @@ Note that using this path does not otherwise require golang to be installed on y
 [go.mod]: https://github.com/golang/go/wiki/Modules#gomod
 [go modules]: https://github.com/golang/go/wiki/Modules
 [`hack/update-deps.sh`]: /hack/update-deps.sh
-[`planter`]: /planter

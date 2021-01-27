@@ -57,7 +57,7 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 	}
 
 	if o.LocalOutputDir == "" {
-		if err := gcs.Upload(o.Bucket, o.GcsCredentialsFile, o.S3CredentialsFile, uploadTargets); err != nil {
+		if err := gcs.Upload(o.Bucket, o.StorageClientOptions.GCSCredentialsFile, o.StorageClientOptions.S3CredentialsFile, uploadTargets); err != nil {
 			return fmt.Errorf("failed to upload to blob storage: %w", err)
 		}
 		logrus.Info("Finished upload to blob storage")

@@ -1,0 +1,35 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes-sigs/node-feature-discovery:
+    # The name should be changed to match the repo name above
+    - name: post-node-feature-discovery-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        # If this is the first one for your sig, you may need to create one
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: push-image
+      decorate: true
+      # this causes the job to only run on the master branch. Remove it if your
+      # job makes sense on every branch (unless it's setting a `latest` tag it
+      # probably does).
+      branches:
+        - ^master$
+        - ^release-
+        # Build semver tags, too
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-nfd
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-nfd-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - .

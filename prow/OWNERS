@@ -14,10 +14,9 @@ reviewers:
   - cjwagner
   - clarketm
   - fejta
-  - Katharine
-  - krzyzacy
   - matthyx
   - michelle192837
+  - petr-muller
   - stevekuznetsov
 labels:
   - area/prow

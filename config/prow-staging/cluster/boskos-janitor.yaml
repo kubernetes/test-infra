@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boskos-janitor
+  labels:
+    app: boskos-janitor
+  namespace: test-pods
+spec:
+  replicas: 4  # 4 distributed janitor instances for gke
+  selector:
+    matchLabels:
+      app: boskos-janitor
+  template:
+    metadata:
+      labels:
+        app: boskos-janitor
+    spec:
+      terminationGracePeriodSeconds: 300
+      serviceAccountName: boskos-janitor
+      containers:
+      - name: boskos-janitor
+        image: gcr.io/k8s-staging-boskos/janitor:v20200819-984516e
+        args:
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        # TODO(chizhg): add them when there are real resources.
+        - --resource-type=
+        - --pool-size=20
+        - --
+        - --hours=0
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    # TODO(chizhg): this is copied over from production boskos, change it to a working one.
+    iam.gke.io/gcp-service-account: pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+  name: boskos-janitor
+  namespace: test-pods

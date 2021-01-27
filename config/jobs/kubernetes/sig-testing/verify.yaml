@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -16,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -24,6 +25,9 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         env:
         - name: EXCLUDE_TYPECHECK
+          value: "y"
+        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
+        - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
@@ -35,10 +39,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
           requests:
-            cpu: 4
+            cpu: 7
+            memory: 12Gi
 periodics:
 - interval: 1h
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
@@ -46,10 +57,9 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: verify-master
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
     description: "Ends up running: make verify"
   decorate: true
   extra_refs:
@@ -59,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -76,5 +86,9 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 6
+          memory: 24Gi
         requests:
           cpu: 6
+          memory: 24Gi

@@ -44,17 +44,13 @@ var sleep = time.Sleep
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	CreateComment(org, repo string, number int, comment string) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	Query(context.Context, interface{}, map[string]interface{}) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-}
-
-type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
 // HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
@@ -197,18 +193,18 @@ func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, 
 		if err := ghc.RemoveLabel(org, repo, num, labels.NeedsRebase); err != nil {
 			log.WithError(err).Errorf("Failed to remove %q label.", labels.NeedsRebase)
 		}
-		botName, err := ghc.BotName()
+		botUserChecker, err := ghc.BotUserChecker()
 		if err != nil {
 			return err
 		}
-		return ghc.DeleteStaleComments(org, repo, num, nil, shouldPrune(botName))
+		return ghc.DeleteStaleComments(org, repo, num, nil, shouldPrune(botUserChecker))
 	}
 	return nil
 }
 
-func shouldPrune(botName string) func(github.IssueComment) bool {
+func shouldPrune(isBot func(string) bool) func(github.IssueComment) bool {
 	return func(ic github.IssueComment) bool {
-		return github.NormLogin(botName) == github.NormLogin(ic.User.Login) &&
+		return isBot(ic.User.Login) &&
 			strings.Contains(ic.Body, needsRebaseMessage)
 	}
 }
@@ -240,7 +236,7 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 	return ret, nil
 }
 
-// TODO(spxtr): Add useful information for frontend stuff such as links.
+// See: https://developer.github.com/v4/object/pullrequest/.
 type pullRequest struct {
 	Number githubql.Int
 	Author struct {
@@ -260,6 +256,7 @@ type pullRequest struct {
 	Mergeable githubql.MergeableState
 }
 
+// See: https://developer.github.com/v4/query/.
 type searchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int

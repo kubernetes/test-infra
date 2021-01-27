@@ -19,7 +19,7 @@ _repo_infra_repos()
 load("@io_k8s_repo_infra//:repos.bzl", "configure")
 
 configure(
-    go_version = "1.13",
+    go_version = "1.15",
     nogo = "@//:nogo_vet",
 )
 
@@ -38,6 +38,10 @@ _container_repositories()
 load("@io_bazel_rules_docker//repositories:deps.bzl", _container_deps = "deps")
 
 _container_deps()
+
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", _pip_deps = "pip_deps")
+
+_pip_deps()
 
 load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 

@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "prow_push", "tags")
+load("//def:image.bzl", image_tags = "tags")
 
 prow_push(
     name = "release-push",
@@ -23,6 +24,7 @@ prow_push(
             "grandmatriarch",
             "gcsupload",
             "hook",
+            "hmac",
             "horologium",
             "initupload",
             "jenkins-operator",
@@ -37,6 +39,7 @@ prow_push(
             "tide",
             "tot",
             "pipeline",
+            "prow-controller-manager",
         ],
         targets = {
             "needs-rebase": "//prow/external-plugins/needs-rebase:image",
@@ -47,8 +50,20 @@ prow_push(
             "commenter": "//robots/commenter:image",
             "pr-creator": "//robots/pr-creator:image",
             "issue-creator": "//robots/issue-creator:image",
+            "configurator": "//testgrid/cmd/configurator:image",
             "transfigure": "//testgrid/cmd/transfigure:image",
             "gcsweb": "//gcsweb/cmd/gcsweb:image",
+        },
+    ),
+)
+
+prow_push(
+    name = "testimage-push",
+    bundle_name = "testimage",
+    images = image_tags(
+        targets = {
+            # Local registry as documented: https://kind.sigs.k8s.io/docs/user/local-registry/
+            "localhost:5000/sinker": "//prow/cmd/sinker:image",
         },
     ),
 )
@@ -70,7 +85,6 @@ filegroup(
         "//prow/client/informers/externalversions:all-srcs",
         "//prow/client/listers/prowjobs/v1:all-srcs",
         "//prow/clonerefs:all-srcs",
-        "//prow/cluster:all-srcs",
         "//prow/cmd/admission:all-srcs",
         "//prow/cmd/autobump:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
@@ -85,11 +99,11 @@ filegroup(
         "//prow/cmd/gcsupload:all-srcs",
         "//prow/cmd/gerrit:all-srcs",
         "//prow/cmd/grandmatriarch:all-srcs",
+        "//prow/cmd/hmac:all-srcs",
         "//prow/cmd/hook:all-srcs",
         "//prow/cmd/horologium:all-srcs",
         "//prow/cmd/initupload:all-srcs",
         "//prow/cmd/jenkins-operator:all-srcs",
-        "//prow/cmd/mkbuild-cluster:all-srcs",
         "//prow/cmd/mkpj:all-srcs",
         "//prow/cmd/mkpod:all-srcs",
         "//prow/cmd/peribolos:all-srcs",
@@ -97,6 +111,7 @@ filegroup(
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/pipeline:all-srcs",
         "//prow/cmd/plank:all-srcs",
+        "//prow/cmd/prow-controller-manager:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/status-reconciler:all-srcs",
@@ -118,15 +133,18 @@ filegroup(
         "//prow/genfiles:all-srcs",
         "//prow/gerrit/adapter:all-srcs",
         "//prow/gerrit/client:all-srcs",
+        "//prow/ghhook:all-srcs",
         "//prow/git:all-srcs",
         "//prow/gitattributes:all-srcs",
         "//prow/github:all-srcs",
+        "//prow/githubeventserver:all-srcs",
         "//prow/githuboauth:all-srcs",
         "//prow/hook:all-srcs",
         "//prow/initupload:all-srcs",
         "//prow/interrupts:all-srcs",
         "//prow/io:all-srcs",
         "//prow/jenkins:all-srcs",
+        "//prow/jira:all-srcs",
         "//prow/kube:all-srcs",
         "//prow/labels:all-srcs",
         "//prow/logrusutil:all-srcs",
@@ -136,6 +154,7 @@ filegroup(
         "//prow/pipeline/informers/externalversions:all-srcs",
         "//prow/pipeline/listers/pipeline/v1alpha1:all-srcs",
         "//prow/pjutil:all-srcs",
+        "//prow/pkg/layeredsets:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/pluginhelp:all-srcs",
         "//prow/plugins:all-srcs",

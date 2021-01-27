@@ -673,7 +673,7 @@ func TestHandlePR(t *testing.T) {
 				repo:   c.pe.Repo.Name,
 				state:  c.pe.Issue.State,
 				labels: c.pe.Issue.Labels,
-				remove: (c.pe.Action == github.IssueActionUnlabeled),
+				remove: c.pe.Action == github.IssueActionUnlabeled,
 			}
 
 			err := handle(c.gc, c.projectManager, logrus.NewEntry(logrus.New()), eData)
@@ -684,7 +684,7 @@ func TestHandlePR(t *testing.T) {
 					t.Fatalf("%s: handlePR error: %v", c.name, err)
 				}
 			}
-			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap, true)
+			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap)
 			if err != nil {
 				t.Fatalf("%s: %v", c.name, err)
 			}
@@ -707,7 +707,7 @@ func TestHandlePR(t *testing.T) {
 				repo:   c.ie.Repo.Name,
 				state:  c.ie.Issue.State,
 				labels: c.ie.Issue.Labels,
-				remove: (c.ie.Action == github.IssueActionUnlabeled),
+				remove: c.ie.Action == github.IssueActionUnlabeled,
 			}
 
 			err := handle(c.gc, c.projectManager, logrus.NewEntry(logrus.New()), eData)
@@ -718,7 +718,7 @@ func TestHandlePR(t *testing.T) {
 					t.Fatalf("%s: handleIssue error: %v", c.name, err)
 				}
 			}
-			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap, false)
+			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap)
 			if err != nil {
 				t.Fatalf("%s: %v", c.name, err)
 			}
@@ -726,8 +726,8 @@ func TestHandlePR(t *testing.T) {
 	}
 }
 
-func checkCards(expectedColumnCards, projectColumnCards map[int][]github.ProjectCard, isPR bool) error {
-	if expectedColumnCards == nil || len(expectedColumnCards) == 0 {
+func checkCards(expectedColumnCards, projectColumnCards map[int][]github.ProjectCard) error {
+	if len(expectedColumnCards) == 0 {
 		return nil
 	}
 
@@ -747,7 +747,7 @@ func checkCards(expectedColumnCards, projectColumnCards map[int][]github.Project
 				}
 			}
 			if !found {
-				return fmt.Errorf("Unable to find project card: %v under column: %d", card, columnID)
+				return fmt.Errorf("unable to find project card: %v under column: %d", card, columnID)
 			}
 		}
 	}
@@ -755,7 +755,7 @@ func checkCards(expectedColumnCards, projectColumnCards map[int][]github.Project
 }
 
 func TestHelpProvider(t *testing.T) {
-	var i int = 0
+	i := 0
 	enabledRepos := []config.OrgRepo{
 		{Org: "org1", Repo: "repo"},
 		{Org: "org2", Repo: "repo"},

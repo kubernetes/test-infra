@@ -13,10 +13,12 @@ go_library(
         "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
+        "//prow/external-plugins/cherrypicker/lib:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/interrupts:go_default_library",
+        "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/plugins:go_default_library",
@@ -48,7 +50,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/external-plugins/cherrypicker/lib:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

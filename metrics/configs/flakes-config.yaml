@@ -55,33 +55,26 @@ query: |
           SELECT
             job,
             if(substr(job, 0, 3) = 'pr:', 'pull', 'ci') kind,  /* pull or ci */
-            version, /* bootstrap git version, empty for ci  */
+            ifnull(repo_commit, version) version, /* git version, empty for ci  */
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                (
-                  select i.value
-                  from t.metadata i
-                  where i.key = 'repos'
-                ),
+                repo,
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
-              version
+              ifnull(repo_commit, version)
             ) commit,  /* repo commit for PR or version for CI */
             result,  /* SUCCESS if the build passed */
             test  /* repeated tuple of tests */
-          FROM `k8s-gubernator.build.week` as t
+          from (
+                select *,
+                       ifnull(b.repos, (select i.value from b.metadata i where i.key = 'repos')) repo from `k8s-gubernator.build.week` as b
+          ) as t
           where
             datetime(started) > datetime_sub(current_datetime(), interval 7 DAY)
-            and version != 'unknown'
+            and (version != 'unknown' or repo_commit is not null)
             and (
-              (substr(job, 0, 3) = 'ci-' and version != 'unknown') or
-              exists(
-                select as struct
-                  i
-                from t.metadata i
-                where i.key = 'repos' and
-                array_length(split(replace(i.value,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
-              )
+              substr(job, 0, 3) = 'ci-' or
+              array_length(split(replace(t.repo,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
             )
         )
         group by job, commit
@@ -92,26 +85,9 @@ query: |
   order by flakes desc, commit_consistency, build_consistency, job /* flakiest jobs first */
 
 jqfilter: |
-  [(.[] | select(.job | contains("pr:")) | {(.job): {
+  [(.[] | {(.job): {
       consistency: (.commit_consistency|tonumber),
       flakes: (.flakes|tonumber),
-      flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 4) | {
+      test_flakes: ([(.flakiest[] | {
         (.name): (.flakes|tonumber)}) ])| add
   }})] | add
-
-# No backfilling is used since this metric is only used to display a table with the currently flaky jobs/tests.
-measurements:
-  jq: |
-    [(.[] | {
-      measurement: "flakes",
-      tags: {
-        job: (.job)
-      },
-      fields: {
-        consistency: (.commit_consistency|tonumber),
-        flakes: (.flakes|tonumber),
-        flakiest: (if (.flakiest | has(0)) then (.flakiest[0].flakes + " flakes: " + .flakiest[0].name) else ("") end),
-        flakier: (if (.flakiest | has(1)) then (.flakiest[1].flakes + " flakes: " + .flakiest[1].name) else ("") end),
-        flaky: (if (.flakiest | has(2)) then (.flakiest[2].flakes + " flakes: " + .flakiest[2].name) else ("") end)
-      }
-    })]

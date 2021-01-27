@@ -2,7 +2,7 @@ postsubmits:
   # this is the github repo we'll build from; this block needs to be repeated for each repo.
   kubernetes/node-problem-detector:
     - name: node-problem-detector-push-images
-      cluster: test-infra-trusted
+      cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-node-node-problem-detector
@@ -10,8 +10,9 @@ postsubmits:
       branches:
         - ^master$
       spec:
+        serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200213-0032cdb
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
             command:
               - /run.sh
             args:
@@ -20,13 +21,3 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-npd-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-            env:
-              - name: GOOGLE_APPLICATION_CREDENTIALS
-                value: /creds/service-account.json
-            volumeMounts:
-              - name: creds
-                mountPath: /creds
-        volumes:
-          - name: creds
-            secret:
-              secretName: deployer-service-account

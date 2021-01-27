@@ -79,7 +79,11 @@ type authenticatedUserIdentifier struct {
 }
 
 func (a *authenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
-	return a.clientFactory(token).ForSubcomponent(requester).BotName()
+	user, err := a.clientFactory(token).ForSubcomponent(requester).BotUser()
+	if err != nil {
+		return "", err
+	}
+	return user.Login, nil
 }
 
 // OAuthClient is an interface for a GitHub OAuth client.

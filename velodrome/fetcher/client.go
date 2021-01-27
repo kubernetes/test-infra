@@ -87,7 +87,7 @@ func (client *Client) getGitHubClient() (*github.Client, error) {
 
 	if len(token) > 0 {
 		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-		tc := oauth2.NewClient(oauth2.NoContext, ts)
+		tc := oauth2.NewClient(context.Background(), ts)
 		client.githubClient = github.NewClient(tc)
 	} else {
 		client.githubClient = github.NewClient(nil)

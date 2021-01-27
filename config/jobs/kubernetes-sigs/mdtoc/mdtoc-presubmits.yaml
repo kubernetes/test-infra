@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/mdtoc:
+  - name: pull-mdtoc-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/mdtoc
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: mdtoc-test
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-mdtoc-verify
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/mdtoc
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: mdtoc-verify
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'

@@ -1,6 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-
+reviewers:
+- chaodaiG
+- cjwagner
+- fejta
 approvers:
+- cjwagner
+- fejta
+emeritus_approvers:
 - krzyzacy
 labels:
 - area/prow/crier

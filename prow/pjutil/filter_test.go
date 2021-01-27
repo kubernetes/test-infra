@@ -172,12 +172,12 @@ func fakeChangedFilesProvider(shouldError bool) config.ChangedFilesProvider {
 
 func TestFilterPresubmits(t *testing.T) {
 	var testCases = []struct {
-		name                              string
-		filter                            Filter
-		presubmits                        []config.Presubmit
-		changesError                      bool
-		expectedToTrigger, expectedToSkip []config.Presubmit
-		expectErr                         bool
+		name              string
+		filter            Filter
+		presubmits        []config.Presubmit
+		changesError      bool
+		expectedToTrigger []config.Presubmit
+		expectErr         bool
 	}{
 		{
 			name: "nothing matches, nothing to run or skip",
@@ -193,7 +193,6 @@ func TestFilterPresubmits(t *testing.T) {
 			}},
 			changesError:      false,
 			expectedToTrigger: nil,
-			expectedToSkip:    nil,
 			expectErr:         false,
 		},
 		{
@@ -216,8 +215,7 @@ func TestFilterPresubmits(t *testing.T) {
 				JobBase:  config.JobBase{Name: "should-trigger"},
 				Reporter: config.Reporter{Context: "second"},
 			}},
-			expectedToSkip: nil,
-			expectErr:      false,
+			expectErr: false,
 		},
 		{
 			name: "error detecting if something should run, nothing to run or skip",
@@ -234,7 +232,6 @@ func TestFilterPresubmits(t *testing.T) {
 			}},
 			changesError:      true,
 			expectedToTrigger: nil,
-			expectedToSkip:    nil,
 			expectErr:         true,
 		},
 		{
@@ -254,8 +251,7 @@ func TestFilterPresubmits(t *testing.T) {
 				JobBase:  config.JobBase{Name: "should-trigger"},
 				Reporter: config.Reporter{Context: "first"},
 			}},
-			expectedToSkip: nil,
-			expectErr:      false,
+			expectErr: false,
 		},
 		{
 			name: "everything matches and some things are forced to run, others should be skipped",
@@ -282,13 +278,6 @@ func TestFilterPresubmits(t *testing.T) {
 			}, {
 				JobBase:  config.JobBase{Name: "should-trigger"},
 				Reporter: config.Reporter{Context: "second"},
-			}},
-			expectedToSkip: []config.Presubmit{{
-				JobBase:  config.JobBase{Name: "should-skip"},
-				Reporter: config.Reporter{Context: "third"},
-			}, {
-				JobBase:  config.JobBase{Name: "should-skip"},
-				Reporter: config.Reporter{Context: "fourth"},
 			}},
 			expectErr: false,
 		},
@@ -318,10 +307,6 @@ func TestFilterPresubmits(t *testing.T) {
 				JobBase:  config.JobBase{Name: "should-trigger"},
 				Reporter: config.Reporter{Context: "second"},
 			}},
-			expectedToSkip: []config.Presubmit{{
-				JobBase:  config.JobBase{Name: "should-skip"},
-				Reporter: config.Reporter{Context: "third"},
-			}},
 			expectErr: false,
 		},
 	}
@@ -330,7 +315,7 @@ func TestFilterPresubmits(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actualToTrigger, actualToSkip, err := FilterPresubmits(testCase.filter, fakeChangedFilesProvider(testCase.changesError), branch, testCase.presubmits, logrus.WithField("test-case", testCase.name))
+			actualToTrigger, err := FilterPresubmits(testCase.filter, fakeChangedFilesProvider(testCase.changesError), branch, testCase.presubmits, logrus.WithField("test-case", testCase.name))
 			if testCase.expectErr && err == nil {
 				t.Errorf("%s: expected an error filtering presubmits, but got none", testCase.name)
 			}
@@ -339,55 +324,6 @@ func TestFilterPresubmits(t *testing.T) {
 			}
 			if !reflect.DeepEqual(actualToTrigger, testCase.expectedToTrigger) {
 				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToTrigger, testCase.expectedToTrigger))
-			}
-			if !reflect.DeepEqual(actualToSkip, testCase.expectedToSkip) {
-				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToSkip, testCase.expectedToSkip))
-			}
-		})
-	}
-}
-
-func TestDetermineSkippedPresubmits(t *testing.T) {
-	var testCases = []struct {
-		name                      string
-		toTrigger, toSkipSuperset []config.Presubmit
-		expectedToSkip            []config.Presubmit
-	}{
-		{
-			name:           "no inputs leads to no output",
-			toTrigger:      []config.Presubmit{},
-			toSkipSuperset: []config.Presubmit{},
-			expectedToSkip: nil,
-		},
-		{
-			name:           "no superset of skips to choose from leads to no output",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}},
-			toSkipSuperset: []config.Presubmit{},
-			expectedToSkip: nil,
-		},
-		{
-			name:           "disjoint sets of contexts leads to full skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
-			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
-		},
-		{
-			name:           "overlaps on context removes from skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "rab"}}},
-			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "rab"}}},
-		},
-		{
-			name:           "full set of overlaps on context removes everything from skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			expectedToSkip: nil,
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset, logrus.WithField("test-case", testCase.name)), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: incorrect skipped presubmits determined: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 			}
 		})
 	}
@@ -641,7 +577,7 @@ func TestPresubmitFilter(t *testing.T) {
 					AlwaysRun: true,
 				},
 			},
-			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, false}},
 		},
 		{
 			name: "explicit test command filters for jobs that match",
@@ -806,7 +742,7 @@ func TestPresubmitFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {true, true, true}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, true, true}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, false}},
 		},
 	}
 

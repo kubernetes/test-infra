@@ -18,9 +18,11 @@ package git
 
 import (
 	"errors"
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/diff"
 )
@@ -515,6 +517,7 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 		name          string
 		commitlike    string
 		strategy      string
+		opts          []MergeOpt
 		remote        RemoteResolver
 		responses     map[string]execResponse
 		expectedCalls [][]string
@@ -532,6 +535,58 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 			},
 			expectedCalls: [][]string{
 				{"merge", "--no-ff", "--no-stat", "-m", "merge", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with options",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts:       []MergeOpt{{CommitMessage: "message"}},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m message shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "message", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with multi words message",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts:       []MergeOpt{{CommitMessage: "my happy merge message"}},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m my happy merge message shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "my happy merge message", "shasum"},
+			},
+			expectedMerge: true,
+			expectedErr:   false,
+		},
+		{
+			name:       "happy merge case with multiple options with single/multi words message",
+			commitlike: "shasum",
+			strategy:   "merge",
+			opts: []MergeOpt{
+				{CommitMessage: "my"},
+				{CommitMessage: "happy merge"},
+				{CommitMessage: "message"},
+			},
+			responses: map[string]execResponse{
+				"merge --no-ff --no-stat -m my -m happy merge -m message shasum": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"merge", "--no-ff", "--no-stat", "-m", "my", "-m", "happy merge", "-m", "message", "shasum"},
 			},
 			expectedMerge: true,
 			expectedErr:   false,
@@ -699,7 +754,7 @@ func TestInteractor_MergeWithStrategy(t *testing.T) {
 				remote:   testCase.remote,
 				logger:   logrus.WithField("test", testCase.name),
 			}
-			actualMerge, actualErr := i.MergeWithStrategy(testCase.commitlike, testCase.strategy)
+			actualMerge, actualErr := i.MergeWithStrategy(testCase.commitlike, testCase.strategy, testCase.opts...)
 			if testCase.expectedMerge != actualMerge {
 				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedMerge, actualMerge)
 			}
@@ -982,24 +1037,24 @@ func TestInteractor_RemoteUpdate(t *testing.T) {
 		{
 			name: "happy case",
 			responses: map[string]execResponse{
-				"remote update": {
+				"remote update --prune": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"remote", "update"},
+				{"remote", "update", "--prune"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "update fails",
 			responses: map[string]execResponse{
-				"remote update": {
+				"remote update --prune": {
 					err: errors.New("oops"),
 				},
 			},
 			expectedCalls: [][]string{
-				{"remote", "update"},
+				{"remote", "update", "--prune"},
 			},
 			expectedErr: true,
 		},
@@ -1168,6 +1223,94 @@ func TestInteractor_FetchRef(t *testing.T) {
 				logger:   logrus.WithField("test", testCase.name),
 			}
 			actualErr := i.FetchRef(testCase.refspec)
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestInteractor_FetchFromRemote(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		remote        RemoteResolver
+		toRemote      RemoteResolver
+		branch        string
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedErr   bool
+	}{
+		{
+			name: "fetch from different remote without token",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
+			toRemote: func() (string, error) {
+				return "https://github.com/kubernetes/test-infra-fork", nil
+			},
+			branch: "test-branch",
+			responses: map[string]execResponse{
+				"fetch https://github.com/kubernetes/test-infra-fork test-branch": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"fetch", "https://github.com/kubernetes/test-infra-fork", "test-branch"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "fetch from different remote with token",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
+			toRemote: func() (string, error) {
+				return "https://user:pass@github.com/kubernetes/test-infra-fork", nil
+			},
+			branch: "test-branch",
+			responses: map[string]execResponse{
+				"fetch https://user:pass@github.com/kubernetes/test-infra-fork test-branch": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"fetch", "https://user:pass@github.com/kubernetes/test-infra-fork", "test-branch"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "passing non-valid remote",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
+			toRemote: func() (string, error) {
+				return "", fmt.Errorf("non-valid URL")
+			},
+			branch:        "test-branch",
+			expectedCalls: [][]string{},
+			expectedErr:   true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				remote:   testCase.remote,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+
+			actualErr := i.FetchFromRemote(testCase.toRemote, testCase.branch)
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -1533,6 +1676,59 @@ func TestInteractor_MergeCommitsExistBetween(t *testing.T) {
 			if testCase.expectedOut != actualOut {
 				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedOut, actualOut)
 			}
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestInteractor_ShowRef(t *testing.T) {
+	const target = "some-branch"
+	var testCases = []struct {
+		name          string
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedErr   bool
+	}{
+		{
+			name: "happy case",
+			responses: map[string]execResponse{
+				"show-ref -s some-branch": {out: []byte("32d3f5a6826109c625527f18a59f2e7144a330b6\n")},
+			},
+			expectedCalls: [][]string{
+				{"show-ref", "-s", target},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "unhappy case",
+			responses: map[string]execResponse{
+				"git show-ref -s some-undef-branch": {err: errors.New("some-err")},
+			},
+			expectedCalls: [][]string{
+				{"show-ref", "-s", target},
+			},
+			expectedErr: true,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			_, actualErr := i.ShowRef(target)
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

@@ -18,6 +18,7 @@ package jenkins
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strconv"
 	"sync"
@@ -38,9 +39,9 @@ import (
 )
 
 type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
-	Patch(name string, pt ktypes.PatchType, data []byte, subresources ...string) (result *prowapi.ProwJob, err error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
+	List(context.Context, metav1.ListOptions) (*prowapi.ProwJobList, error)
+	Patch(ctx context.Context, name string, pt ktypes.PatchType, data []byte, o metav1.PatchOptions, subresources ...string) (result *prowapi.ProwJob, err error)
 }
 
 type jenkinsClient interface {
@@ -50,7 +51,7 @@ type jenkinsClient interface {
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -171,7 +172,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
+	pjs, err := c.prowJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: c.selector})
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
@@ -245,7 +246,7 @@ func (c *Controller) Sync() error {
 func (c *Controller) SyncMetrics() {
 	c.pjLock.RLock()
 	defer c.pjLock.RUnlock()
-	kube.GatherProwJobMetrics(c.pjs)
+	kube.GatherProwJobMetrics(c.log, c.pjs)
 }
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
@@ -310,7 +311,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *srcPJ, toCancel)
+		npj, err := pjutil.PatchProwjob(context.TODO(), c.prowJobClient, c.log, *srcPJ, toCancel)
 		if err != nil {
 			return err
 		}
@@ -407,7 +408,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			WithField("from", prevPJ.Status.State).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *prevPJ, pj)
+	_, err := pjutil.PatchProwjob(context.TODO(), c.prowJobClient, c.log, *prevPJ, pj)
 	return err
 }
 
@@ -424,7 +425,7 @@ func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, _ chan<- prowapi.ProwJob
 
 	originalPJ := pj.DeepCopy()
 	pj.SetComplete()
-	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *originalPJ, pj)
+	_, err := pjutil.PatchProwjob(context.TODO(), c.prowJobClient, c.log, *originalPJ, pj)
 	return err
 }
 
@@ -472,7 +473,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			WithField("from", prevPJ.Status.State).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, *prevPJ, pj)
+	_, err := pjutil.PatchProwjob(context.TODO(), c.prowJobClient, c.log, *prevPJ, pj)
 	return err
 }
 

@@ -1,0 +1,19 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - build
+    - -t
+    - gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - .
+    dir: .
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - tag
+    - gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - gcr.io/$PROJECT_ID/alpine:latest
+substitutions:
+  _GIT_TAG: '12345'
+images:
+  - 'gcr.io/$PROJECT_ID/alpine:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/alpine:latest'

@@ -1,0 +1,57 @@
+periodics:
+- name: periodic-cluster-api-provider-digitalocean-janitor
+  decorate: true
+  decoration_config:
+    timeout: 1h
+  interval: 12h
+  labels:
+    preset-do-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-digitalocean
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      command:
+        - "runner.sh"
+        - "./scripts/ci-janitor.sh"
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+    testgrid-tab-name: periodic-do-janitor
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+- name: periodic-cluster-api-provider-digitalocean-conformance-v1alpha3
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-do-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-digitalocean
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+    testgrid-tab-name: periodic-conformance-v1alpha3
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com

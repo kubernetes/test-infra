@@ -1,0 +1,60 @@
+postsubmits:
+  kubernetes-sigs/ingress-controller-conformance:
+    - name: post-ingress-conformance-push-echoserver-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+      decorate: true
+      run_if_changed: "^images/echoserver/"
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingressconformance
+              - --scratch-bucket=gs://k8s-staging-ingressconformance-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/echoserver
+
+    - name: post-ingress-conformance-push-reports-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+      decorate: true
+      run_if_changed: "^images/reports/"
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingressconformance
+              - --scratch-bucket=gs://k8s-staging-ingressconformance-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/reports
+
+    - name: post-ingress-conformance-push-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingressconformance
+              - --scratch-bucket=gs://k8s-staging-ingressconformance-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

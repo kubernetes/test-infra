@@ -1,0 +1,36 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-files-remake
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    optional: true
+    run_if_changed: 'Makefile.generated_files|make-rules'
+    always_run: false
+    skip_report: false
+    # branched per release (older go versions)
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+    spec:
+      containers:
+      - name: main
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: generated-files-remake
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 7Gi
+          requests:
+            cpu: 1500m
+            memory: 7Gi

@@ -194,7 +194,7 @@ K8s-bot updates comment:
 	You can indicate your approval by writing `/approve` in a comment
 	You can cancel your approval by writing `/approve cancel` in a comment
 
-The PR is now unblocked from merging. If [Tide](../../cmd/tide) is configured, the K8s-bot merges the PR, because it has both the **lgtm** and **approved**. It K8s-bot still needs to wait its turn in submit queue and pass tests.
+The PR is now unblocked from merging. If [Tide](/prow/cmd/tide) is configured, the K8s-bot merges the PR, because it has both the **lgtm** and **approved**. It K8s-bot still needs to wait its turn in submit queue and pass tests.
 
 ![Bot Notification for Approval Mechanism](images/bot_notification_for_approval_selection_mechanism.png)
 

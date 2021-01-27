@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/kubetest2:
+  - name: pull-kubetest2-verify
+    decorate: true
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+        command:
+        - wrapper.sh
+        args:
+        - make
+        - verify
+        securityContext:
+          privileged: true
+  - name: pull-kubetest2-build
+    decorate: true
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+        command:
+        - wrapper.sh
+        args:
+        - make
+        - build-all
+        securityContext:
+          privileged: true

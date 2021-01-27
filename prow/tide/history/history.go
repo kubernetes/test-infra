@@ -45,11 +45,17 @@ type History struct {
 	sync.Mutex
 	logSizeLimit int
 
-	opener io.Opener
+	opener opener
 	path   string
 }
 
-func readHistory(maxRecordsPerKey int, opener io.Opener, path string) (map[string]*recordLog, error) {
+// opener has methods to read and write paths
+type opener interface {
+	Reader(ctx context.Context, path string) (io.ReadCloser, error)
+	Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error)
+}
+
+func readHistory(maxRecordsPerKey int, opener opener, path string) (map[string]*recordLog, error) {
 	reader, err := opener.Reader(context.Background(), path)
 	if io.IsNotExist(err) { // No history exists yet. This is not an error.
 		return map[string]*recordLog{}, nil
@@ -82,7 +88,7 @@ func readHistory(maxRecordsPerKey int, opener io.Opener, path string) (map[strin
 	return logsByPool, nil
 }
 
-func writeHistory(opener io.Opener, path string, hist map[string][]*Record) error {
+func writeHistory(opener opener, path string, hist map[string][]*Record) error {
 	// a write's duration will scale with the volume of data to write but large
 	// data sets can finish in about 500ms; a timeout of 30s should not evict
 	// well-behaved writes
@@ -174,7 +180,7 @@ func (h *History) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		b = []byte("{}")
 	}
 	if _, err = w.Write(b); err != nil {
-		logrus.WithError(err).Error("Writing JSON history response.")
+		logrus.WithError(err).Debug("Writing JSON history response.")
 	}
 }
 

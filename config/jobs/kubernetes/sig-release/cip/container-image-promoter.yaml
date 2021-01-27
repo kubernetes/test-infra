@@ -13,7 +13,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200328-v2.3.1-172-gfeb5dc0
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
         command:
         - cip
         args:
@@ -21,6 +21,27 @@ presubmits:
         # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
         # suffice, but it's nice to be explicit.
         - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+  # Check that images to be promoted are free of fixable vulnerabilities
+  - name: pull-k8sio-cip-vuln
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-k8sio
+    decorate: true
+    optional: true
+    skip_report: false
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    max_concurrency: 10
+    branches:
+    - ^vuln-check-test$
+    spec:
+      serviceAccountName: k8s-infra-gcr-vuln-scanning
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+        command:
+        - cip
+        args:
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -vuln-severity-threshold=1
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     annotations:
@@ -34,7 +55,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.17
         command:
         - infra/gcp/backup_tools/backup_test.sh
         env:
@@ -57,7 +78,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
@@ -73,6 +94,8 @@ presubmits:
           secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-auditor-e2e
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
@@ -85,7 +108,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -101,6 +124,8 @@ presubmits:
           secretName: k8s-gcr-audit-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -111,15 +136,17 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         - "make"
         args:
         - "test-ci"
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
   # Run linter.
-  - name: pull-cip-lint
+  - name: pull-cip-verify
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
     skip_report: false
@@ -128,10 +155,11 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golangci/golangci-lint:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
         command:
-        - "make"
-        args:
-        - "lint-ci"
+        - make
+        - verify
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io

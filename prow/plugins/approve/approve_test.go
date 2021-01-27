@@ -31,12 +31,15 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -100,13 +103,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{
-		{
-			Event: github.IssueActionLabeled,
-			Label: github.Label{Name: "approved"},
-			Actor: github.User{Login: "k8s-merge-robot"},
-		},
-	}
+	events := []github.ListedIssueEvent{}
 	if humanApproved {
 		events = append(
 			events,
@@ -132,12 +129,17 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 }
 
 type fakeRepo struct {
-	approvers, leafApprovers map[string]sets.String
-	approverOwners           map[string]string
-	dirBlacklist             []*regexp.Regexp
+	approvers      map[string]layeredsets.String
+	leafApprovers  map[string]sets.String
+	approverOwners map[string]string
+	dirBlacklist   []*regexp.Regexp
 }
 
-func (fr fakeRepo) Approvers(path string) sets.String {
+func (fr fakeRepo) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
+}
+
+func (fr fakeRepo) Approvers(path string) layeredsets.String {
 	return fr.approvers[path]
 }
 func (fr fakeRepo) LeafApprovers(path string) sets.String {
@@ -267,7 +269,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -433,7 +435,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
@@ -635,7 +637,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
 You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -713,7 +715,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -783,7 +785,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -821,7 +823,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -897,7 +899,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -932,7 +934,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
@@ -1051,10 +1053,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	}
 
 	fr := fakeRepo{
-		approvers: map[string]sets.String{
-			"a":   sets.NewString("alice"),
-			"a/b": sets.NewString("alice", "bob"),
-			"c":   sets.NewString("cblecker", "cjwagner"),
+		approvers: map[string]layeredsets.String{
+			"a":   layeredsets.NewString("alice"),
+			"a/b": layeredsets.NewString("alice", "bob"),
+			"c":   layeredsets.NewString("cblecker", "cjwagner"),
 		},
 		leafApprovers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
@@ -1091,6 +1093,8 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				IssueRequired:       test.needsIssue,
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 				IgnoreReviewState:   &irs,
+				CommandHelpLink:     "https://go.k8s.io/bot-commands",
+				PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
 			},
 			&state{
 				org:       "org",
@@ -1204,8 +1208,8 @@ func (fro fakeRepoOwners) LeafReviewers(path string) sets.String {
 	return sets.NewString()
 }
 
-func (fro fakeRepoOwners) Reviewers(path string) sets.String {
-	return sets.NewString()
+func (fro fakeRepoOwners) Reviewers(path string) layeredsets.String {
+	return layeredsets.NewString()
 }
 
 func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {

@@ -6,13 +6,15 @@ approvers:
 - brendandburns
 - CecileRobertMichon
 - feiskyer
+- devigned
 - justaugustus
 - karataliu
 - khenidak
+- nader-ziada
 reviewers:
+- alexeldeib
+- cpanato
 - juan-lee
-- serbrech
-- vincepri
 
 labels:
 - sig/cluster-lifecycle

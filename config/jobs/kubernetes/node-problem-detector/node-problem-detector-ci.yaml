@@ -12,7 +12,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -39,7 +39,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -75,7 +75,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -113,7 +113,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -150,7 +150,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -187,7 +187,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -224,7 +224,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - runner.sh
       args:
@@ -261,12 +261,12 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200417-6b47d16-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       env:
       - name: ZONE
         value: us-central1-a
       - name: IMAGE_FAMILY
-        value: cos-73-lts
+        value: cos-85-lts
       - name: IMAGE_PROJECT
         value: cos-cloud
       - name: BOSKOS_PROJECT_TYPE

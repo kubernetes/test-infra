@@ -17,9 +17,15 @@ limitations under the License.
 package plugins
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/pkg/genyaml"
 )
 
 func TestHasSelfApproval(t *testing.T) {
@@ -31,15 +37,6 @@ func TestHasSelfApproval(t *testing.T) {
 		{
 			name:     "self approval by default",
 			expected: true,
-		},
-		{
-			name:     "has approval when implicit_self_approve true",
-			cfg:      `{"implicit_self_approve": true}`,
-			expected: true,
-		},
-		{
-			name: "reject approval when implicit_self_approve false",
-			cfg:  `{"implicit_self_approve": false}`,
 		},
 		{
 			name:     "reject approval when require_self_approval set",
@@ -74,15 +71,6 @@ func TestConsiderReviewState(t *testing.T) {
 		{
 			name:     "consider by default",
 			expected: true,
-		},
-		{
-			name:     "consider when draaa = true",
-			cfg:      `{"review_acts_as_approve": true}`,
-			expected: true,
-		},
-		{
-			name: "do not consider when draaa = false",
-			cfg:  `{"review_acts_as_approve": false}`,
 		},
 		{
 			name: "do not consider when irs = true",
@@ -169,5 +157,34 @@ func TestGetPlugins(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestGenYamlDocs(t *testing.T) {
+	const fixtureName = "./plugin-config-documented.yaml"
+	inputFiles, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatalf("filepath.Glob: %v", err)
+	}
+
+	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	if err != nil {
+		t.Fatalf("failed to construct commentMap: %v", err)
+	}
+	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&Configuration{}))
+	if err != nil {
+		t.Fatalf("genyaml errored: %v", err)
+	}
+	if os.Getenv("UPDATE") != "" {
+		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
+			t.Fatalf("failed to write fixture: %v", err)
+		}
+	}
+	expectedYaml, err := ioutil.ReadFile(fixtureName)
+	if err != nil {
+		t.Fatalf("failed to read fixture: %v", err)
+	}
+	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
+		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
 	}
 }

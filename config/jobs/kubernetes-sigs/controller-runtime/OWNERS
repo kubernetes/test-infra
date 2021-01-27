@@ -1,7 +1,10 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/devel/owners.md
-reviewers:
-  - directxman12
-  - pwittrock
 approvers:
-  - directxman12
-  - pwittrock
+  - controller-runtime-admins
+  - controller-runtime-maintainers
+  - controller-runtime-approvers
+  - controller-runtime-emeritus-maintainers
+reviewers:
+  - controller-runtime-admins
+  - controller-runtime-reviewers
+  - controller-runtime-approvers

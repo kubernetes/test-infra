@@ -2,4 +2,4 @@ webtest
 nosegae
 pylint==1.6.4
 coverage
-pyyaml
+PyYAML==5.1.1

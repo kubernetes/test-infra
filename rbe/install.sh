@@ -22,9 +22,9 @@ if [[ $# -lt 6 ]]; then
     exit 1
 fi
 
-# Note: this currently requires your project to be whitelisted
+# Note: this currently requires your project to be added to a private list
 # Contact fejta on #sig-testing or #prow on kubernetes slack to get on the
-# whitelist.
+# list
 # More info: https://cloud.google.com/remote-build-execution/docs/overview
 
 proj=$1

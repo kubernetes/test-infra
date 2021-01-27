@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 )
 
-func TestSimpleAuthResolver(t *testing.T) {
+func TestHTTPResolver(t *testing.T) {
 	var testCases = []struct {
 		name        string
 		remote      func() (*url.URL, error)
@@ -73,7 +73,7 @@ func TestSimpleAuthResolver(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actual, actualErr := simpleAuthResolver(testCase.remote, testCase.username, testCase.token)()
+			actual, actualErr := HttpResolver(testCase.remote, testCase.username, testCase.token)()
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -153,8 +153,29 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 	}
 }
 
-func TestSimpleAuthRemoteResolverFactory(t *testing.T) {
-	factory := simpleAuthResolverFactory{
+func TestHTTPResolverFactory_NoAuth(t *testing.T) {
+	t.Run("CentralRemote", func(t *testing.T) {
+		expected := "https://some-host.com/org/repo"
+		res, err := (&httpResolverFactory{host: "some-host.com"}).CentralRemote("org", "repo")()
+		if err != nil {
+			t.Fatalf("CentralRemote: %v", err)
+		}
+		if res != expected {
+			t.Errorf("Expected result to be %s, was %s", expected, res)
+		}
+	})
+
+	t.Run("PublishRemote", func(t *testing.T) {
+		expectedErr := "could not resolve remote: username not configured, no publish repo available"
+		_, err := (&httpResolverFactory{host: "some-host.com"}).PublishRemote("org", "repo")()
+		if err == nil || err.Error() != expectedErr {
+			t.Errorf("expectedErr to be %s, was %v", expectedErr, err)
+		}
+	})
+}
+
+func TestHTTPResolverFactory(t *testing.T) {
+	factory := httpResolverFactory{
 		host: "host.com",
 		username: usernameVendor([]stringWithError{
 			{str: "first", err: nil},

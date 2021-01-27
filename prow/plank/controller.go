@@ -28,14 +28,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/test-infra/prow/version"
 )
 
 // PodStatus constants
@@ -79,6 +83,7 @@ func NewController(pjClient ctrlruntimeclient.Client, buildClients map[string]ct
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
+		ctx:           context.Background(),
 		prowJobClient: pjClient,
 		buildClients:  buildClients,
 		log:           logger,
@@ -152,11 +157,11 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 	c.pendingJobs[job]++
 }
 
-func (c *Controller) Start(stopChan <-chan struct{}) error {
+func (c *Controller) Start(ctx context.Context) error {
 	ticker := time.NewTicker(30 * time.Second)
 	for {
 		select {
-		case <-stopChan:
+		case <-ctx.Done():
 			c.log.Info("Stop signal received, quitting.")
 			return nil
 		case <-ticker.C:
@@ -218,7 +223,7 @@ func (c *Controller) Sync() error {
 		return k8sJobs[i].CreationTimestamp.Before(&k8sJobs[j].CreationTimestamp)
 	})
 
-	if err := c.terminateDupes(k8sJobs, pm); err != nil {
+	if err := c.terminateDupes(k8sJobs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -259,26 +264,14 @@ func (c *Controller) Sync() error {
 func (c *Controller) SyncMetrics() {
 	c.pjLock.RLock()
 	defer c.pjLock.RUnlock()
-	kube.GatherProwJobMetrics(c.pjs)
+	kube.GatherProwJobMetrics(c.log, c.pjs)
+	version.GatherProwVersion(c.log)
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-// TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]corev1.Pod) error {
-	log := c.log.WithField("aborter", "pod")
-	return pjutil.TerminateOlderJobs(c.prowJobClient, log, pjs, func(toCancel prowapi.ProwJob) error {
-		// Abort presubmit jobs for commits that have been superseded by newer commits
-		if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-			c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
-			if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
-				return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
-			} else if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("deleting pod: %v", err)
-			}
-		}
-		return nil
-	})
+func (c *Controller) terminateDupes(pjs []prowapi.ProwJob) error {
+	return pjutil.TerminateOlderJobs(c.prowJobClient, c.log.WithField("aborter", "pod"), pjs)
 }
 
 // TODO: Dry this out
@@ -320,18 +313,15 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 		c.incrementNumPendingJobs(pj.Spec.Job)
 		// Pod is missing. This can happen in case the previous pod was deleted manually or by
 		// a rescheduler. Start a new pod.
-		id, pn, err := c.startPod(pj)
-		if err != nil {
+		if err := c.startPod(&pj); err != nil {
 			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Request error starting pod.")
 		} else {
-			pj.Status.BuildID = id
-			pj.Status.PodName = pn
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
@@ -347,14 +337,29 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
+			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+				oldPod := pod.DeepCopy()
+				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+				if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+					return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				}
+			}
 			c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(c.ctx, &pod)
 
 		case corev1.PodSucceeded:
-			// Pod succeeded. Update ProwJob, and start next jobs.
 			pj.SetComplete()
-			pj.Status.State = prowapi.SuccessState
-			pj.Status.Description = "Job succeeded."
+			// There were bugs around this in the past so be paranoid and verify each container
+			// https://github.com/kubernetes/kubernetes/issues/58711 is only fixed in 1.18+
+			if didPodSucceed(&pod) {
+				// Pod succeeded. Update ProwJob and talk to GitHub.
+				pj.Status.State = prowapi.SuccessState
+				pj.Status.Description = "Job succeeded."
+			} else {
+				pj.Status.State = prowapi.ErrorState
+				pj.Status.Description = "Pod was in succeeded phase but some containers didn't finish"
+			}
 
 		case corev1.PodFailed:
 			if pod.Status.Reason == Evicted {
@@ -372,6 +377,14 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				client, ok := c.buildClients[pj.ClusterAlias()]
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+				}
+				if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+					// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+					oldPod := pod.DeepCopy()
+					pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+					if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+						return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+					}
 				}
 				c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(c.ctx, &pod)
@@ -392,6 +405,9 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 					pj.Status.State = prowapi.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
 					c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale unscheduled pod as errored.")
+					if err := c.deletePod(&pj); err != nil {
+						return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+					}
 					break
 				}
 			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
@@ -401,12 +417,20 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 				pj.Status.State = prowapi.ErrorState
 				pj.Status.Description = "Pod pending timeout."
 				c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Marked job for stale pending pod as errored.")
+				if err := c.deletePod(&pj); err != nil {
+					return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+				}
 				break
 			}
-			// Pod is running. Do nothing.
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// Pod is running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
 		case corev1.PodRunning:
+			if pod.DeletionTimestamp != nil {
+				break
+			}
 			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
@@ -419,22 +443,52 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]corev1.Pod
 			pj.SetComplete()
 			pj.Status.State = prowapi.AbortedState
 			pj.Status.Description = "Pod running timeout."
-			client, ok := c.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return fmt.Errorf("running pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			if err := c.deletePod(&pj); err != nil {
+				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
-			if err := client.Delete(c.ctx, &pod); err != nil {
-				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
-			}
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale running pod.")
 		default:
-			// other states, ignore
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
+			if pod.DeletionTimestamp == nil {
+				// other states, ignore
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
 		}
 	}
 
-	pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
+	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+	// vanishes and we will silently re-create it in the next iteration.
+	if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pods Node got lost, deleting & restarting pod")
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
+
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(c.ctx, &pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil
+	}
+
+	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
+	// we complete the job if the kubernetes reporter is used, because it sets a finalizer.
+	if !pj.Complete() && pod.DeletionTimestamp != nil {
+		pj.SetComplete()
+		pj.Status.State = prowapi.ErrorState
+		pj.Status.Description = "Pod got deleted unexpectedly"
+	}
+
+	var err error
+	pj.Status.URL, err = pjutil.JobURL(c.config().Plank, pj, c.log)
+	if err != nil {
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Error("Error calculating job status url")
+	}
 
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
@@ -470,7 +524,6 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 	prevState := pj.Status.State
 	prevPJ := pj
 
-	var id, pn string
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	// We may end up in a state where the pod exists but the prowjob is not
 	// updated to pending if we successfully create a new pod in a previous
@@ -482,31 +535,31 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 			return nil
 		}
 		// We haven't started the pod yet. Do so.
-		var err error
-		id, pn, err = c.startPod(pj)
-		if err != nil {
+		if err := c.startPod(&pj); err != nil {
 			if !isRequestError(err) {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = fmt.Sprintf("Job cannot be started: %v", err)
+			pj.Status.Description = fmt.Sprintf("Pod can not be created: %v", err)
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Request error starting pod.")
 		}
 	} else {
-		id = getPodBuildID(&pod)
-		pn = pod.ObjectMeta.Name
+		// BuildID needs to be set before we execute the job url template.
+		pj.Status.BuildID = getPodBuildID(&pod)
+		pj.Status.PodName = pod.ObjectMeta.Name
 	}
 
 	if pj.Status.State == prowapi.TriggeredState {
-		// BuildID needs to be set before we execute the job url template.
-		pj.Status.BuildID = id
 		now := metav1.NewTime(c.clock.Now())
 		pj.Status.PendingTime = &now
 		pj.Status.State = prowapi.PendingState
-		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
-		pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
+		var err error
+		pj.Status.URL, err = pjutil.JobURL(c.config().Plank, pj, c.log)
+		if err != nil {
+			return err
+		}
 	}
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
@@ -516,30 +569,51 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]corev1.P
 	return c.prowJobClient.Patch(c.ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(&prevPJ))
 }
 
-// TODO: No need to return the pod name since we already have the
-// prowjob in the call site.
-func (c *Controller) startPod(pj prowapi.ProwJob) (string, string, error) {
+func (c *Controller) startPod(pj *prowapi.ProwJob) error {
 	buildID, err := c.getBuildID(pj.Spec.Job)
 	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+		return fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod, err := decorate.ProwJobToPod(pj, buildID)
+	pj.Status.BuildID = buildID
+	pod, err := decorate.ProwJobToPod(*pj)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 	pod.Namespace = c.config().PodNamespace
 
 	client, ok := c.buildClients[pj.ClusterAlias()]
 	if !ok {
-		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+		return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
 	err = client.Create(c.ctx, pod)
-	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Create Pod.")
+	c.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
 	if err != nil {
-		return "", "", err
+		return err
 	}
-	return buildID, pod.ObjectMeta.Name, nil
+	pj.Status.PodName = pod.ObjectMeta.Name
+	return nil
+}
+
+func (c *Controller) deletePod(pj *prowapi.ProwJob) error {
+	client, ok := c.buildClients[pj.ClusterAlias()]
+	if !ok {
+		return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+	}
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: c.config().PodNamespace,
+			Name:      pj.Name,
+		},
+	}
+
+	if err := client.Delete(c.ctx, pod); err != nil && !kerrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete pod: %w", err)
+	}
+
+	c.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
+	return nil
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
@@ -547,11 +621,17 @@ func (c *Controller) getBuildID(name string) (string, error) {
 }
 
 func getPodBuildID(pod *corev1.Pod) string {
+	if buildID, ok := pod.ObjectMeta.Labels[kube.ProwBuildIDLabel]; ok && buildID != "" {
+		return buildID
+	}
+
+	// For backwards compatibility: existing pods may not have the buildID label.
 	for _, env := range pod.Spec.Containers[0].Env {
 		if env.Name == "BUILD_ID" {
 			return env.Value
 		}
 	}
+
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
 }

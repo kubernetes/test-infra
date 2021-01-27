@@ -1,0 +1,144 @@
+# sigs.k8s.io/descheduler presubmits
+presubmits:
+  kubernetes-sigs/descheduler:
+  - name: pull-descheduler-verify-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.15.5
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-descheduler-verify-build-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-build-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.15.5
+        command:
+        - make
+        args:
+        - build
+  - name: pull-descheduler-unit-test-master-master
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-unit-test-master
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.15.5
+        command:
+        - make
+        args:
+        - test-unit
+  - name: pull-descheduler-test-e2e-k8s-master-1-20
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.20
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.20.0"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-descheduler-test-e2e-k8s-master-1-19
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.19
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.19.1"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-descheduler-test-e2e-k8s-master-1-18
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.18
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.18.8"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

@@ -38,6 +38,10 @@ type Options struct {
 	// Args is the process and args to run
 	Args []string `json:"args,omitempty"`
 
+	// ContainerName will contain the name of the container
+	// for the wrapped test process
+	ContainerName string `json:"container_name,omitempty"`
+
 	// ProcessLog will contain std{out,err} from the
 	// wrapped test process
 	ProcessLog string `json:"process_log"`
@@ -54,6 +58,11 @@ type Options struct {
 	// Prow will parse the file and merge it into
 	// the `metadata` field in finished.json
 	MetadataFile string `json:"metadata_file"`
+}
+
+type MarkerResult struct {
+	ReturnCode int
+	Err        error
 }
 
 // AddFlags adds flags to the FlagSet that populate
@@ -78,49 +87,85 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func WaitForMarker(ctx context.Context, path string) (int, error) {
-	// Only start watching file events if the file doesn't exist
-	// If the file exists, it means the main process already completed.
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			return -1, fmt.Errorf("new fsnotify watch: %v", err)
-		}
-		defer watcher.Close()
-		dir := filepath.Dir(path)
-		if err := watcher.Add(dir); err != nil {
-			return -1, fmt.Errorf("add %s to fsnotify watch: %v", dir, err)
-		}
+func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResult {
 
-		ticker := time.NewTicker(10 * time.Second)
-		defer ticker.Stop()
-		missing := true
-		for missing {
-			select {
-			case <-ctx.Done():
-				return -1, fmt.Errorf("cancelled: %v", ctx.Err())
-			case event := <-watcher.Events:
+	results := make(map[string]MarkerResult)
+
+	if len(paths) == 0 {
+		return results
+	}
+
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			results[path] = readMarkerFile(path)
+		}
+	}
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		populateMapWithError(results, fmt.Errorf("new fsnotify watch: %v", err), paths...)
+		return results
+	}
+	defer watcher.Close()
+
+	// we are assuming that all marker files will be written to the same directory.
+	// this should be the case since all marker files are written to the "logs" VolumeMount
+	dir := filepath.Dir(paths[0])
+	for _, path := range paths {
+		if filepath.Dir(path) != dir {
+			populateMapWithError(results, fmt.Errorf("marker files are not all written to the same directory"), paths...)
+			return results
+		}
+	}
+
+	if err := watcher.Add(dir); err != nil {
+		populateMapWithError(results, fmt.Errorf("add %s to fsnotify watch: %v", dir, err), paths...)
+		return results
+	}
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for len(results) < len(paths) {
+		select {
+		case <-ctx.Done():
+			populateMapWithError(results, fmt.Errorf("cancelled: %v", ctx.Err()), paths...)
+			return results
+		case event := <-watcher.Events:
+			for _, path := range paths {
 				if event.Name == path && event.Op&fsnotify.Create == fsnotify.Create {
-					missing = false
+					results[path] = readMarkerFile(path)
 				}
-			case err := <-watcher.Errors:
-				logrus.WithError(err).Info("fsnotify watch error")
-			case <-ticker.C:
-				switch _, err := os.Stat(path); {
-				case err == nil, !os.IsNotExist(err):
-					missing = false
+			}
+		case err := <-watcher.Errors:
+			logrus.WithError(err).Warn("fsnotify watch error")
+		case <-ticker.C:
+			for _, path := range paths {
+				if _, err := os.Stat(path); !os.IsNotExist(err) {
+					results[path] = readMarkerFile(path)
 				}
 			}
 		}
 	}
+	return results
 
+}
+
+func populateMapWithError(markerMap map[string]MarkerResult, err error, paths ...string) {
+	for _, path := range paths {
+		if _, exists := markerMap[path]; !exists {
+			markerMap[path] = MarkerResult{-1, err}
+		}
+	}
+}
+
+func readMarkerFile(path string) MarkerResult {
 	returnCodeData, err := ioutil.ReadFile(path)
 	if err != nil {
-		return -1, fmt.Errorf("bad read: %v", err)
+		return MarkerResult{-1, fmt.Errorf("bad read: %v", err)}
 	}
 	returnCode, err := strconv.Atoi(strings.TrimSpace(string(returnCodeData)))
 	if err != nil {
-		return -1, fmt.Errorf("invalid return code: %v", err)
+		return MarkerResult{-1, fmt.Errorf("invalid return code: %v", err)}
 	}
-	return returnCode, nil
+	return MarkerResult{returnCode, nil}
 }
