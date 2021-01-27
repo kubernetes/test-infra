@@ -16,16 +16,29 @@ limitations under the License.
 
 package plank
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
-var ClusterClientNotExistError *clusterClientNotExistError
-
-type clusterClientNotExistError struct{}
-
-func (ce *clusterClientNotExistError) Error() string {
-	return "Cluster client not exist"
+type nonRetryableError struct {
+	err error
 }
 
-func (ce *clusterClientNotExistError) Unwrap() error {
-	return errors.New("Cluster client not exist")
+func (ne nonRetryableError) Error() string {
+	return fmt.Sprintf("nonretryable error: %s", ne.err.Error())
+}
+
+func (nonRetryableError) Is(err error) bool {
+	_, ok := err.(nonRetryableError)
+	return ok
+}
+
+// TerminalError wraps an error and return a nonRetryableError error
+func TerminalError(err error) error {
+	return &nonRetryableError{err: err}
+}
+
+func IsTerminalError(err error) bool {
+	return errors.Is(err, nonRetryableError{})
 }

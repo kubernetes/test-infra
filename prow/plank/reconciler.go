@@ -18,7 +18,6 @@ package plank
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -187,7 +186,7 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	}
 
 	res, err := r.serializeIfNeeded(ctx, pj)
-	if errors.Is(err, ClusterClientNotExistError) {
+	if IsTerminalError(err) {
 		// Unfixable cases like missing build clusters, do not return an error to prevent requeuing
 		return reconcile.Result{}, nil
 	}
@@ -553,7 +552,7 @@ func (r *reconciler) syncAbortedJob(ctx context.Context, pj *prowv1.ProwJob) err
 func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, bool, error) {
 	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
 	if !buildClientExists {
-		return nil, false, fmt.Errorf("no build client found for cluster %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
+		return nil, false, TerminalError(fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias()))
 	}
 
 	pod := &corev1.Pod{}
@@ -575,7 +574,7 @@ func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, 
 func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
 	if !buildClientExists {
-		return fmt.Errorf("no build client found for cluster %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
+		return TerminalError(fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias()))
 	}
 
 	pod := &corev1.Pod{
@@ -608,7 +607,7 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
-		return "", "", fmt.Errorf("unknown cluster alias %q: %w", pj.ClusterAlias(), ClusterClientNotExistError)
+		return "", "", TerminalError(fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias()))
 	}
 	err = client.Create(ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")

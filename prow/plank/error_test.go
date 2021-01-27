@@ -18,46 +18,40 @@ package plank
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 )
 
-func TestCustomError(t *testing.T) {
+func TestTerminalError(t *testing.T) {
 	tests := []struct {
-		name      string
-		gotErr    error
-		wantErr   error
-		wantMatch bool
+		name       string
+		gotErr     error
+		isTerminal bool
 	}{
 		{
-			name:      "same error",
-			gotErr:    ClusterClientNotExistError,
-			wantErr:   ClusterClientNotExistError,
-			wantMatch: true,
+			name:       "nil",
+			gotErr:     TerminalError(nil),
+			isTerminal: true,
 		},
 		{
-			name:      "wrap error",
-			gotErr:    fmt.Errorf("wrapping %w", ClusterClientNotExistError),
-			wantErr:   ClusterClientNotExistError,
-			wantMatch: true,
+			name:       "wrap error",
+			gotErr:     TerminalError(errors.New("ramdom error")),
+			isTerminal: true,
 		},
 		{
-			name:      "not random error",
-			gotErr:    errors.New("random error"),
-			wantErr:   ClusterClientNotExistError,
-			wantMatch: false,
+			name:       "not nil",
+			gotErr:     nil,
+			isTerminal: false,
 		},
 		{
-			name:      "not nil",
-			gotErr:    nil,
-			wantErr:   ClusterClientNotExistError,
-			wantMatch: false,
+			name:       "not random error",
+			gotErr:     errors.New("random error"),
+			isTerminal: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, want := errors.Is(tt.gotErr, tt.wantErr), tt.wantMatch
+			got, want := IsTerminalError(tt.gotErr), tt.isTerminal
 			if got != want {
 				t.Fatalf("Error matching not expected. want match: %v. got match: %v", want, got)
 			}
