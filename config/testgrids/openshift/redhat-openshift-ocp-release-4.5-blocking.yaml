@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-aws-4.5
+    name: periodic-ci-openshift-release-master-ocp-4.5-e2e-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-4.5
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.5-e2e-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -110,8 +110,8 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-gcp-serial-4.5
   name: redhat-openshift-ocp-release-4.5-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.5
-  name: release-openshift-ocp-installer-e2e-aws-4.5
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.5-e2e-aws
+  name: periodic-ci-openshift-release-master-ocp-4.5-e2e-aws
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.5
   name: release-openshift-ocp-installer-e2e-aws-serial-4.5
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-4.5
