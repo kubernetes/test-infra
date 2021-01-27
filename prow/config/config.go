@@ -902,14 +902,14 @@ type ManagedWebhookInfo struct {
 // ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
 type ManagedWebhooks struct {
 	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
-	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config"`
+	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
-	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report"`
-	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`
+	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
+	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
 	Channel           string                 `json:"channel"`
 	ReportTemplate    string                 `json:"report_template"`
 }

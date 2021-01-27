@@ -81,8 +81,8 @@ type ReviewPolicy struct {
 // Restrictions limits who can merge
 // Users and Teams items are appended to parent lists.
 type Restrictions struct {
-	Users []string `json:"users"`
-	Teams []string `json:"teams"`
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
 }
 
 // selectInt returns the child if set, else parent
