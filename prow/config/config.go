@@ -391,20 +391,20 @@ type OwnersDirBlacklist struct {
 	IgnorePreconfiguredDefaults bool `json:"ignore_preconfigured_defaults,omitempty"`
 }
 
-// DirBlacklist returns regular expressions matching directories to ignore when
+// ListIgnoredDirs returns regular expressions matching directories to ignore when
 // searching for OWNERS{,_ALIAS} files in a repo.
-func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (blacklist []string) {
-	blacklist = append(blacklist, ownersDirBlacklist.Default...)
+func (ownersDirBlacklist OwnersDirBlacklist) ListIgnoredDirs(org, repo string) (ignorelist []string) {
+	ignorelist = append(ignorelist, ownersDirBlacklist.Default...)
 	if bl, ok := ownersDirBlacklist.Repos[org]; ok {
-		blacklist = append(blacklist, bl...)
+		ignorelist = append(ignorelist, bl...)
 	}
 	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
-		blacklist = append(blacklist, bl...)
+		ignorelist = append(ignorelist, bl...)
 	}
 
 	preconfiguredDefaults := []string{"\\.git$", "_output$", "vendor/.*/.*"}
 	if !ownersDirBlacklist.IgnorePreconfiguredDefaults {
-		blacklist = append(blacklist, preconfiguredDefaults...)
+		ignorelist = append(ignorelist, preconfiguredDefaults...)
 	}
 	return
 }

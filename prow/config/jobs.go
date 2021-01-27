@@ -237,7 +237,7 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+// ShouldRun returns true if the input branch matches, given the allow/deny list.
 func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true

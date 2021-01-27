@@ -213,7 +213,7 @@ type fakeOwnersClient struct {
 	reviewers         map[string]layeredsets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
-	dirBlacklist      []*regexp.Regexp
+	dirIgnorelist     []*regexp.Regexp
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -258,7 +258,7 @@ func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
 
 func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirIgnorelist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -275,7 +275,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 
 func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirIgnorelist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
@@ -711,7 +711,7 @@ func TestHelpProvider(t *testing.T) {
 			expected: &pluginhelp.PluginHelp{
 				Description: "The verify-owners plugin validates OWNERS and OWNERS_ALIASES files (by default) and ensures that they always contain collaborators of the org, if they are modified in a PR. On validation failure it automatically adds the 'do-not-merge/invalid-owners-file' label to the PR, and a review comment on the incriminating file(s). Per-repo configuration for filenames is possible.",
 				Config: map[string]string{
-					"default": "OWNERS and OWNERS_ALIASES files are validated. The verify-owners plugin will complain if OWNERS files contain any of the following blacklisted labels: label1, label2.",
+					"default": "OWNERS and OWNERS_ALIASES files are validated. The verify-owners plugin will complain if OWNERS files contain any of the following banned labels: label1, label2.",
 				},
 				Commands: []pluginhelp.Command{{
 					Usage:       "/verify-owners",
@@ -1093,13 +1093,13 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 
 			froc := makeFakeRepoOwnersClient()
 			if !test.includeVendorOwners {
-				var blacklist []*regexp.Regexp
+				var ignorePatterns []*regexp.Regexp
 				re, err := regexp.Compile("vendor/.*/.*$")
 				if err != nil {
 					t.Fatalf("error compiling regex: %v", err)
 				}
-				blacklist = append(blacklist, re)
-				froc.foc.dirBlacklist = blacklist
+				ignorePatterns = append(ignorePatterns, re)
+				froc.foc.dirIgnorelist = ignorePatterns
 			}
 
 			prInfo := info{
