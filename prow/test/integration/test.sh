@@ -14,6 +14,8 @@
 # limitations under the License.
 
 set -o errexit
+set -o nounset
+set -o pipefail
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 
@@ -35,12 +37,12 @@ if ! which kind >/dev/null 2>&1; then
 fi
 
 # TODO(chaodaiG): remove this once bazel is installed in test image
-if ! which bazel >/dev/null 2>&1 || [[ "$(bazel --version)" != "bazel 3.0.0" ]]; then
+if ! which bazel >/dev/null 2>&1 || [[ "$(bazel --version)" != "bazel 3.1.0" ]]; then
   echo "Install bazel for prow"
   mkdir -p "/usr/local/lib/bazel/bin"
   pushd "/usr/local/lib/bazel/bin" >/dev/null
-  curl -LO https://releases.bazel.build/3.0.0/release/bazel-3.0.0-linux-x86_64
-  chmod +x bazel-3.0.0-linux-x86_64
+  curl -LO https://releases.bazel.build/3.1.0/release/bazel-3.1.0-linux-x86_64
+  chmod +x bazel-3.1.0-linux-x86_64
   popd
 fi
 
