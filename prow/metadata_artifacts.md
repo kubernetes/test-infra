@@ -52,12 +52,12 @@ Decorated PR (finished): "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
 |result|'SUCCESS' or "FAILURE' depending on passed|
 |job-version (dep)|If not existing and not 'unknown'... from metadata, try 'job-version' then 'version'|
 |metadata|exact same as `repo-version`|
-|- repo-commit|Git rev-parse HEAD (for k8s)|
-|- repos|Same as started 'comes from --repo= args'|
-|- infra-commit|Git rev-parse HEAD (for test-infra)|
-|- repo|main repo for job|
-|- job-version| Same as job version from above|
-|- revision| Same as job-version|
+| metadata.repo-commit|Git rev-parse HEAD (for k8s)|
+| metadata.repos|Same as started 'comes from --repo= args'|
+| metadata.infra-commit|Git rev-parse HEAD (for test-infra)|
+| metadata.repo|main repo for job|
+| metadata.job-version| Same as job version from above|
+| metadata.revision| Same as job-version|
 *[Ex](https://prow.k8s.io/view/gcs/kubernetes-jenkins/pr-logs/pull/93714/pull-kubernetes-node-e2e/1291409525907132416/)*
 ```
 {
@@ -92,16 +92,23 @@ Decorated PR (finished): "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
 |metadata| *misc*|
 *Ex*
 ```
-{"timestamp":1595277241,
-"pull":"93264",
-"repos":{"kubernetes/kubernetes":"master:5feab0aa1e592ab413b461bc3ad08a6b74a427b4,93264:5dd9241d43f256984358354d1fec468f274f9ac4"},
-"metadata":
-   {"links":
-      {"resultstore":
-         {"url":"https://source.cloud.google.com/results/invocations/20688dbb-eb32-47e6-8a49-34734e714f81/targets/test"}},
-    "resultstore":"https://source.cloud.google.com/results/invocations/20688dbb-eb32-47e6-8a49-34734e714f81/targets/test"},
-      "repo-version":"30f64c5b1fc57a3beb1476f9beb29280166954d1",
-      "Pending":false}
+{
+  "timestamp": 1595277241,
+  "pull": "93264",
+  "repos": {
+    "kubernetes/kubernetes": "master:5feab0aa1e592ab413b461bc3ad08a6b74a427b4,93264:5dd9241d43f256984358354d1fec468f274f9ac4"
+  },
+  "metadata": {
+    "links": {
+      "resultstore": {
+        "url": "https://source.cloud.google.com/results/invocations/20688dbb-eb32-47e6-8a49-34734e714f81/targets/test"
+      }
+    },
+    "resultstore": "https://source.cloud.google.com/results/invocations/20688dbb-eb32-47e6-8a49-34734e714f81/targets/test"
+  },
+  "repo-version": "30f64c5b1fc57a3beb1476f9beb29280166954d1",
+  "Pending": false
+}
 ```
 
 [`Finished.json` *PodUtils*](https://github.com/kubernetes/test-infra/blob/016edc15b8271c7528993cea0615cb11ecff201c/prow/sidecar/run.go#L209)
@@ -116,8 +123,10 @@ Decorated PR (finished): "revision":"5dd9241d43f256984358354d1fec468f274f9ac4"
 |metadata| *unset*|
 *Ex*
 ```
-{"timestamp":1595279434,
-"passed":true,
-"result":"SUCCESS",
-"revision":"5dd9241d43f256984358354d1fec468f274f9ac4"}
+{
+  "timestamp": 1595279434,
+  "passed": true,
+  "result": "SUCCESS",
+  "revision": "5dd9241d43f256984358354d1fec468f274f9ac4"
+}
 ```
