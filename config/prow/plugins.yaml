@@ -975,6 +975,7 @@ plugins:
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
   - override
+  - release-note
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
