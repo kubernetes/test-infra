@@ -3,8 +3,8 @@ build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
 
 # https://github.com/kubernetes/test-infra/issues/13140
-build --incompatible_disable_deprecated_attr_params=false
-query --incompatible_disable_deprecated_attr_params=false
+build --incompatible_restrict_string_escapes=false
+query --incompatible_restrict_string_escapes=false
 
 # enable data race detection
 test --features=race --test_output=errors
