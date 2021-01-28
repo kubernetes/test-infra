@@ -62,7 +62,7 @@ fi
 # connect the registry to the cluster network
 # (the network may already be connected)
 echo "Set up local registry for cluster"
-docker network connect "kind" "${reg_name}" || true
+docker network connect "kind" "${reg_name}" 2>/dev/null || true
 
 # Ensure working on kind cluster
 CONTEXT="$(kubectl config current-context)"
@@ -91,7 +91,7 @@ EOF
 
 # Install nginx
 echo "Install nginx on kind cluster"
-# Pin the ingress-nginx manifest to 9bf4155724d8396a70129c8d06eb970d79795d92 on 01/13/2021.
-kubectl --context=${CONTEXT} apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/9bf4155724d8396a70129c8d06eb970d79795d92/deploy/static/provider/kind/deploy.yaml
+# Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020.
+kubectl --context=${CONTEXT} apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
 
 exit 0

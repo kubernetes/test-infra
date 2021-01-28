@@ -186,12 +186,12 @@ func newFakeGitHubClient(changed map[string]string, removed []string, pr int) *f
 	for _, file := range removed {
 		changes = append(changes, github.PullRequestChange{Filename: file, Status: github.PullRequestFileRemoved})
 	}
-	return &fakegithub.FakeClient{
-		PullRequestChanges: map[int][]github.PullRequestChange{pr: changes},
-		Reviews:            map[int][]github.Review{},
-		Collaborators:      []string{"alice", "bob", "jdoe"},
-		IssueComments:      map[int][]github.IssueComment{},
-	}
+	fgc := fakegithub.NewFakeClient()
+	fgc.PullRequestChanges = map[int][]github.PullRequestChange{pr: changes}
+	fgc.Reviews = map[int][]github.Review{}
+	fgc.Collaborators = []string{"alice", "bob", "jdoe"}
+	fgc.IssueComments = map[int][]github.IssueComment{}
+	return fgc
 }
 
 type fakePruner struct{}

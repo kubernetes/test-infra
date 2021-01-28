@@ -91,10 +91,9 @@ func TestWipLabel(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			PullRequests:  make(map[int]*github.PullRequest),
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.PullRequests = make(map[int]*github.PullRequest)
+		fc.IssueComments = make(map[int][]github.IssueComment)
 		org, repo, number := "org", "repo", 5
 		e := &event{
 			org:      org,

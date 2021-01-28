@@ -139,9 +139,7 @@ func TestAll(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
 		e := &github.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,

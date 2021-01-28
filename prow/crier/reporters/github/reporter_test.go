@@ -115,7 +115,7 @@ func TestShouldReport(t *testing.T) {
 // threadsafe.
 func TestPresumitReportingLocks(t *testing.T) {
 	reporter := NewReporter(
-		&fakegithub.FakeClient{},
+		fakegithub.NewFakeClient(),
 		func() *config.Config {
 			return &config.Config{
 				ProwConfig: config.ProwConfig{
@@ -201,8 +201,10 @@ func TestReport(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			fghc := fakegithub.NewFakeClient()
+			fghc.Error = tc.githubError
 			c := Client{
-				gc: &fakegithub.FakeClient{Error: tc.githubError},
+				gc: fghc,
 				config: func() *config.Config {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{

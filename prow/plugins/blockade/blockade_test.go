@@ -295,14 +295,9 @@ func TestHandle(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		expectAdded := []string{}
-		fakeClient := &fakegithub.FakeClient{
-			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
-			IssueComments:      make(map[int][]github.IssueComment),
-			PullRequestChanges: make(map[int][]github.PullRequestChange),
-			IssueLabelsAdded:   []string{},
-			IssueLabelsRemoved: []string{},
-		}
+		var expectAdded []string
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.RepoLabelsExisting = []string{labels.BlockedPaths, otherLabel}
 		if tc.hasLabel {
 			label := formatLabel(labels.BlockedPaths)
 			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)
@@ -337,7 +332,7 @@ func TestHandle(t *testing.T) {
 		if !reflect.DeepEqual(expectAdded, fakeClient.IssueLabelsAdded) {
 			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.IssueLabelsAdded)
 		}
-		expectRemoved := []string{}
+		var expectRemoved []string
 		if tc.labelRemoved != "" {
 			expectRemoved = append(expectRemoved, formatLabel(tc.labelRemoved))
 		}

@@ -5,6 +5,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_test(
     name = "go_default_test",
     srcs = [
+        "crier_test.go",
         "overall_test.go",
         "sinker_test.go",
     ],
@@ -18,6 +19,7 @@ go_test(
     ],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/github:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/wait:go_default_library",

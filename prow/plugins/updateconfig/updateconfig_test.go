@@ -1136,15 +1136,14 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			event.PullRequest.MergeSHA = &tc.mergeCommit
 		}
 
-		fgc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				basicPR.Number: &basicPR,
-			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				basicPR.Number: tc.changes,
-			},
-			IssueComments: map[int][]github.IssueComment{},
+		fgc := fakegithub.NewFakeClient()
+		fgc.PullRequests = map[int]*github.PullRequest{
+			basicPR.Number: &basicPR,
 		}
+		fgc.PullRequestChanges = map[int][]github.PullRequestChange{
+			basicPR.Number: tc.changes,
+		}
+		fgc.IssueComments = map[int][]github.IssueComment{}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
 		m := tc.config

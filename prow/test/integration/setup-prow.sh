@@ -27,8 +27,25 @@ if [[ "${CONTEXT}" != "kind-kind-prow-integration" ]]; then
   exit 1
 fi
 
+for app in sinker crier fakeghserver; do
+  kubectl delete deployment -l app=${app}
+  kubectl delete pods -l app=${app}
+done
+
 echo "Pushing prow images"
-bazel run //prow:testimage-push "$@"
+for retry_count in 1 2 3; do
+  if bazel run //prow:testimage-push "$@"; then
+    echo "Succeeded pushing test images"
+    break
+  fi
+  echo "*************** Test Image Push Failed, Retrying ${retry_count} ***************"
+done
+
+echo "Deploy prow components"
+# An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
+kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_DIR}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
+kubectl --context=${CONTEXT} apply -f ${CURRENT_DIR}/prow/cluster
 
 echo "Wait until nginx is ready"
 kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
@@ -36,15 +53,11 @@ kubectl --context=${CONTEXT} wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=180s
 
-echo "Deploy prow components"
-kubectl --context=${CONTEXT} create configmap config --from-file=config.yaml=${CURRENT_DIR}/prow/config.yaml --dry-run -oyaml | kubectl apply -f -
-kubectl --context=${CONTEXT} apply -f ${CURRENT_DIR}/prow/cluster
-
 echo "Waiting for prow components"
-for pod in sinker; do
+for app in sinker crier fakeghserver; do
   kubectl --context=${CONTEXT} wait pod \
     --for=condition=ready \
-    --selector=app=${pod} \
+    --selector=app=${app} \
     --timeout=180s
 done
 
