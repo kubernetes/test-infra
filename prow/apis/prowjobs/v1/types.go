@@ -344,10 +344,13 @@ type DecorationConfig struct {
 	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials.
-	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+	GCSCredentialsSecret *string `json:"gcs_credentials_secret,omitempty"`
 	// S3CredentialsSecret is the name of the Kubernetes secret
 	// that holds blob storage push credentials.
-	S3CredentialsSecret string `json:"s3_credentials_secret,omitempty"`
+	S3CredentialsSecret *string `json:"s3_credentials_secret,omitempty"`
+	// DefaultServiceAccountName is the name of the Kubernetes service account
+	// that should be used by the pod if one is not specified in the podspec.
+	DefaultServiceAccountName *string `json:"default_service_account_name,omitempty"`
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process.
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
@@ -434,11 +437,14 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
 	}
-	if merged.GCSCredentialsSecret == "" {
+	if merged.GCSCredentialsSecret == nil {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret
 	}
-	if merged.S3CredentialsSecret == "" {
+	if merged.S3CredentialsSecret == nil {
 		merged.S3CredentialsSecret = def.S3CredentialsSecret
+	}
+	if merged.DefaultServiceAccountName == nil {
+		merged.DefaultServiceAccountName = def.DefaultServiceAccountName
 	}
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = def.SSHKeySecrets

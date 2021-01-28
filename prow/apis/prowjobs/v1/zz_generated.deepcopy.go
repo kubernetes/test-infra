@@ -56,6 +56,21 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(GCSConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.GCSCredentialsSecret != nil {
+		in, out := &in.GCSCredentialsSecret, &out.GCSCredentialsSecret
+		*out = new(string)
+		**out = **in
+	}
+	if in.S3CredentialsSecret != nil {
+		in, out := &in.S3CredentialsSecret, &out.S3CredentialsSecret
+		*out = new(string)
+		**out = **in
+	}
+	if in.DefaultServiceAccountName != nil {
+		in, out := &in.DefaultServiceAccountName, &out.DefaultServiceAccountName
+		*out = new(string)
+		**out = **in
+	}
 	if in.SSHKeySecrets != nil {
 		in, out := &in.SSHKeySecrets, &out.SSHKeySecrets
 		*out = make([]string, len(*in))

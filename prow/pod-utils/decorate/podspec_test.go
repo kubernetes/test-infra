@@ -40,6 +40,10 @@ import (
 	"k8s.io/test-infra/prow/sidecar"
 )
 
+func pStr(str string) *string {
+	return &str
+}
+
 func cookieVolumeOnly(secret string) coreapi.Volume {
 	v, _, _ := cookiefileVolume(secret)
 	return v
@@ -490,7 +494,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 						MediaTypes:   map[string]string{"log": "text/plain"},
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					CookiefileSecret:     "yummy/.gitcookies",
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -543,7 +547,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					CookiefileSecret:     "yummy",
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -596,7 +600,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SSHHostFingerprints:  []string{"hello", "world"},
 				},
@@ -651,7 +655,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -704,7 +708,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -744,7 +748,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          &truth,
 				},
@@ -803,7 +807,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					CookiefileSecret:     "yummy",
 				},
@@ -844,6 +848,61 @@ func TestProwJobToPod(t *testing.T) {
 							Args:    []string{"other", "args"},
 							Env: []coreapi.EnvVar{
 								{Name: "MY_ENV", Value: "stones"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			podName: "pod",
+			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "job-name",
+				DecorationConfig: &prowapi.DecorationConfig{
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
+					UtilityImages: &prowapi.UtilityImages{
+						CloneRefs:  "clonerefs:tag",
+						InitUpload: "initupload:tag",
+						Entrypoint: "entrypoint:tag",
+						Sidecar:    "sidecar:tag",
+					},
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket:       "my-bucket",
+						PathStrategy: "legacy",
+						DefaultOrg:   "kubernetes",
+						DefaultRepo:  "kubernetes",
+						MediaTypes:   map[string]string{"log": "text/plain"},
+					},
+					// Specify K8s SA rather than cloud storage secret key.
+					DefaultServiceAccountName: pStr("default-SA"),
+					CookiefileSecret:          "yummy/.gitcookies",
+				},
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
+					Pulls: []prowapi.Pull{{
+						Number: 1,
+						Author: "author-name",
+						SHA:    "pull-sha",
+					}},
+					PathAlias: "somewhere/else",
+				},
+				ExtraRefs: []prowapi.Refs{},
+				PodSpec: &coreapi.PodSpec{
+					Containers: []coreapi.Container{
+						{
+							Image:   "tester",
+							Command: []string{"/bin/thing"},
+							Args:    []string{"some", "args"},
+							Env: []coreapi.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
