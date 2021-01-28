@@ -20480,6 +20480,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -20540,6 +20541,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -20600,6 +20602,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -20660,6 +20663,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -20720,6 +20724,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -20780,6 +20785,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -20840,6 +20846,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=calico \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
@@ -23350,6 +23357,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -23410,6 +23418,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -23470,6 +23479,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -23530,6 +23540,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -23590,6 +23601,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -23650,6 +23662,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -23710,6 +23723,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=cilium \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
@@ -26220,6 +26234,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -26280,6 +26295,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
@@ -26340,6 +26356,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -26400,6 +26417,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
@@ -26460,6 +26478,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -26520,6 +26539,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.19/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -26580,6 +26600,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --networking=flannel \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \

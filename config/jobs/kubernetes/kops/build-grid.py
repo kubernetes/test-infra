@@ -89,6 +89,7 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
+          --create-args="--image={{kops_image}}" \\
           --kops-version-marker={{kops_deploy_url}} \\
           --networking={{networking}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
@@ -218,7 +219,7 @@ def build_test(cloud='aws',
 
     if distro is None:
         kops_ssh_user = 'ubuntu'
-        kops_image = None
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1'
     elif distro == 'amzn2':
         kops_ssh_user = 'ec2-user'
         kops_image = '137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2'
@@ -359,11 +360,6 @@ def build_test(cloud='aws',
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
     else:
-        if kops_image:
-            y = y.replace('{{kops_image}}', kops_image)
-        else:
-            y = remove_line_with_prefix(y, "- --kops-image=")
-
         if kops_zones:
             y = y.replace('{{kops_zones}}', ','.join(kops_zones))
         else:
@@ -373,6 +369,13 @@ def build_test(cloud='aws',
             y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
         else:
             y = remove_line_with_prefix(y, "- --kops-feature-flags=")
+
+    if kops_image:
+        y = y.replace('{{kops_image}}', kops_image)
+    elif use_kubetest2:
+        y = remove_line_with_prefix(y, "--create-args")
+    else:
+        y = remove_line_with_prefix(y, "- --kops-image=")
 
     if kops_version:
         y = y.replace('{{kops_version}}', kops_version)
