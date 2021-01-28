@@ -156,6 +156,7 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.20-blocking
     testgrid-tab-name: build-1.20
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-dind-enabled: "true"
