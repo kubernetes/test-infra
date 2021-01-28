@@ -243,7 +243,7 @@ presubmits:
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
         - --aksengine-orchestratorRelease=1.20
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
@@ -252,14 +252,12 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-disk-e2e-master-windows-containerd
-      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster using containerd.
+      description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.
   - name: pull-kubernetes-e2e-azure-file-windows-containerd
     decorate: true
     decoration_config:
@@ -306,7 +304,7 @@ presubmits:
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
         - --aksengine-orchestratorRelease=1.20
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
@@ -315,14 +313,12 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
       testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows-containerd
-      description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster using containerd.
+      description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.
   - name: pull-kubernetes-e2e-azure-file-windows
     decorate: true
     decoration_config:
