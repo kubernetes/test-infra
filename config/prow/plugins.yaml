@@ -336,6 +336,7 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.21
   kubernetes/k8s.io:
+    main: v1.21
     master: v1.21
   kubernetes/kops:
     master: v1.20
