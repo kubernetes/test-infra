@@ -315,6 +315,130 @@ presubmits:
       testgrid-tab-name: pr-aks-engine-windows-gpu
       description: Presubmit job for Windows tests on k8s clusters with assignable GPUs provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-azure-disk-windows-containerd
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list-master: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: azuredisk-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/azuredisk-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test-azure-disk-csi-driver
+        securityContext:
+          privileged: true
+        env:
+        - name: AZURE_STORAGE_DRIVER
+          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        - name: TEST_WINDOWS
+          value: "true"
+    annotations:
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-tab-name: pr-k8s-azure-disk-e2e-master-windows-containerd
+      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster with containerd runtime.
+  - name: pull-kubernetes-e2e-azure-file-windows-containerd
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list-master: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: azurefile-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/azurefile-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test-azure-file-csi-driver
+        securityContext:
+          privileged: true
+        env:
+        - name: AZURE_STORAGE_DRIVER
+          value: kubernetes.io/azure-file # In-tree Azure file storage class
+        - name: TEST_WINDOWS
+          value: "true"
+    annotations:
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows-containerd
+      description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime.
 periodics:
 - interval: 8h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
