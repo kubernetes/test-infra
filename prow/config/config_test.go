@@ -49,6 +49,10 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
+func pStr(str string) *string {
+	return &str
+}
+
 func TestDefaultJobBase(t *testing.T) {
 	bar := "bar"
 	filled := JobBase{
@@ -490,7 +494,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "default-service-account",
+				GCSCredentialsSecret: pStr("default-service-account"),
 			},
 		},
 		{
@@ -538,7 +542,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "default-service-account",
+				GCSCredentialsSecret: pStr("default-service-account"),
 			},
 		},
 		{
@@ -598,7 +602,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "explicit-service-account",
+				GCSCredentialsSecret: pStr("explicit-service-account"),
 			},
 		},
 		{
@@ -653,7 +657,7 @@ periodics:
 					DefaultRepo:  "kubernetes",
 					MediaTypes:   map[string]string{"log": "text/plain"},
 				},
-				GCSCredentialsSecret: "explicit-service-account",
+				GCSCredentialsSecret: pStr("explicit-service-account"),
 			},
 		},
 	}
@@ -1123,7 +1127,7 @@ func TestValidateDecoration(t *testing.T) {
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
-		GCSCredentialsSecret: "upload-secret",
+		GCSCredentialsSecret: pStr("upload-secret"),
 		GCSConfiguration: &prowjobv1.GCSConfiguration{
 			PathStrategy: prowjobv1.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
@@ -1232,7 +1236,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
-		GCSCredentialsSecret: "upload-secret",
+		GCSCredentialsSecret: pStr("upload-secret"),
 		GCSConfiguration: &prowjobv1.GCSConfiguration{
 			PathStrategy: prowjobv1.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
@@ -1663,6 +1667,7 @@ func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
 		name               string
 		prowConfig         string
+		versionFileContent string
 		jobConfigs         []string
 		expectError        bool
 		expectPodNameSpace string
@@ -2294,6 +2299,16 @@ in_repo_config:
 				return nil
 			},
 		},
+		{
+			name:               "Version file sets the version",
+			versionFileContent: "some-git-sha",
+			verify: func(c *Config) error {
+				if c.ConfigVersionSHA != "some-git-sha" {
+					return fmt.Errorf("expected value of ConfigVersionSH field to be 'some-git-sha', was %q", c.ConfigVersionSHA)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -2309,6 +2324,13 @@ in_repo_config:
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			if tc.versionFileContent != "" {
+				versionFile := filepath.Join(prowConfigDir, "VERSION")
+				if err := ioutil.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
+					t.Fatalf("failed to write prow version file: %v", err)
+				}
 			}
 
 			jobConfig := ""
@@ -2669,7 +2691,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone and whitelist specified",
+			name: "allow anyone and allowed users specified",
 			prowConfig: `
 deck:
   rerun_auth_config:
@@ -2689,7 +2711,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone with empty whitelist",
+			name: "allow anyone with an empty allowlist",
 			prowConfig: `
 deck:
   rerun_auth_config:
@@ -2952,6 +2974,18 @@ func TestPlankJobURLPrefix(t *testing.T) {
 			expectedJobURLPrefix: "https://my-alternate-prow",
 		},
 		{
+			name: "Matching repo in extraRefs returns JobURLPrefix from repo",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
+			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
 			name: "JobURLPrefix in decoration config overrides job_url_prefix_config",
 			plank: Plank{
 				JobURLPrefixConfig: map[string]string{
@@ -2976,6 +3010,18 @@ func TestPlankJobURLPrefix(t *testing.T) {
 				},
 			},
 			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			expectedJobURLPrefix: "https://my-third-prow",
+		},
+		{
+			name: "Matching org in extraRefs and not matching repo returns JobURLPrefix from org",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -3574,7 +3620,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3593,7 +3639,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -3617,7 +3663,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								GCSConfiguration: &prowapi.GCSConfiguration{
@@ -3644,7 +3690,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-repo",
 					DefaultRepo:  "repo-by-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -3665,7 +3711,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 						DefaultOrg:   "org-from-ps",
 						DefaultRepo:  "repo-from-ps",
 					},
-					GCSCredentialsSecret: "credentials-gcs-from-ps",
+					GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 				},
 			},
 			config: &Config{
@@ -3685,7 +3731,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3704,7 +3750,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-from-ps",
 					DefaultRepo:  "repo-from-ps",
 				},
-				GCSCredentialsSecret: "credentials-gcs-from-ps",
+				GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 			},
 		},
 		{
@@ -3725,7 +3771,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 						DefaultOrg:   "org-from-ps",
 						DefaultRepo:  "repo-from-ps",
 					},
-					GCSCredentialsSecret: "credentials-gcs-from-ps",
+					GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 				},
 			},
 			config: &Config{
@@ -3745,7 +3791,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3760,7 +3806,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-test",
 									DefaultRepo:  "repo-test",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3779,7 +3825,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-from-ps",
 					DefaultRepo:  "repo-from-ps",
 				},
-				GCSCredentialsSecret: "credentials-gcs-from-ps",
+				GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 			},
 		},
 		{
@@ -3803,7 +3849,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3818,7 +3864,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-repo",
 									DefaultRepo:  "repo-by-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 							},
 						},
 					},
@@ -3837,7 +3883,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-repo",
 					DefaultRepo:  "repo-by-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 			},
 		},
 		{
@@ -3861,7 +3907,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3876,7 +3922,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -3895,7 +3941,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -3919,7 +3965,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -3938,7 +3984,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 
@@ -3963,7 +4009,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3978,7 +4024,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3993,7 +4039,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org-repo",
 									DefaultRepo:  "repo-by-org-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -4012,7 +4058,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org-repo",
 					DefaultRepo:  "repo-by-org-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 			},
 		},
 
@@ -4037,7 +4083,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -4052,7 +4098,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4071,7 +4117,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -4096,7 +4142,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -4115,7 +4161,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -4141,7 +4187,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -4196,7 +4242,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4216,7 +4262,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 		{
@@ -4238,7 +4284,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -4253,7 +4299,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4281,7 +4327,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -4303,7 +4349,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -4318,7 +4364,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org-repo",
 									DefaultRepo:  "repo-by-org-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -4346,7 +4392,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org-repo",
 					DefaultRepo:  "repo-by-org-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 			},
 		},
 		{
@@ -4371,7 +4417,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4390,7 +4436,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 		{
@@ -4416,7 +4462,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},

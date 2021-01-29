@@ -595,12 +595,12 @@ func TestListIssueComments(t *testing.T) {
 	}
 }
 
-func TestAddLabel(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func addLabelHTTPServer(t *testing.T, org, repo string, number int, labels ...string) *httptest.Server {
+	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels" {
+		if r.URL.Path != fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
@@ -610,16 +610,60 @@ func TestAddLabel(t *testing.T) {
 		var ls []string
 		if err := json.Unmarshal(b, &ls); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ls) != 1 {
+		} else if len(ls) != len(labels) {
 			t.Errorf("Wrong length labels: %v", ls)
-		} else if ls[0] != "yay" {
-			t.Errorf("Wrong label: %s", ls[0])
+		}
+
+		for index, label := range labels {
+			if ls[index] != label {
+				t.Errorf("Wrong label: %s", ls[index])
+			}
 		}
 	}))
+}
+
+func TestAddLabel(t *testing.T) {
+	ts := addLabelHTTPServer(t, "k8s", "kuber", 5, "yay")
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.AddLabel("k8s", "kuber", 5, "yay"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestAddLabels(t *testing.T) {
+	testCases := []struct {
+		name   string
+		org    string
+		repo   string
+		number int
+		labels []string
+	}{
+		{
+			name:   "one label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 1,
+			labels: []string{"one"},
+		},
+		{
+			name:   "two label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 2,
+			labels: []string{"one", "two"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := addLabelHTTPServer(t, tc.org, tc.repo, tc.number, tc.labels...)
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			if err := c.AddLabels(tc.org, tc.repo, tc.number, tc.labels...); err != nil {
+				t.Errorf("Didn't expect error: %v", err)
+			}
+		})
 	}
 }
 
@@ -2680,4 +2724,86 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 			t.Error(err)
 		}
 	})
+}
+
+func TestGetDirectory(t *testing.T) {
+	expectedContents := []DirectoryContent{
+		{
+			Type: "file",
+			Name: "bar",
+			Path: "foo/bar",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", ""); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
+	}
+}
+
+func TestGetDirectoryRef(t *testing.T) {
+	expectedContents := []DirectoryContent{
+		{
+			Type: "file",
+			Name: "bar.go",
+			Path: "foo/bar.go",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "ref=12345" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", "12345"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
+	}
 }

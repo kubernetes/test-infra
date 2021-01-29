@@ -73,6 +73,11 @@ type TideMergeCommitTemplate struct {
 	Body  *template.Template `json:"-"`
 }
 
+// TidePriority contains a list of labels used to prioritize PRs in the merge pool
+type TidePriority struct {
+	Labels []string `json:"labels,omitempty"`
+}
+
 // Tide is config for the tide pool.
 type Tide struct {
 	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
@@ -146,6 +151,10 @@ type Tide struct {
 	//  0 => unlimited batch size
 	// -1 => batch merging disabled :(
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+
+	// Priority is an ordered list of labels that would be prioritized before other PRs
+	// PRs should match all labels contained in a list to be prioritized
+	Priority []TidePriority `json:"priority,omitempty"`
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {

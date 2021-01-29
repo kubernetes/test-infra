@@ -55,6 +55,7 @@ template = """
       - --deployment=kops
       - --provider=aws
       - --cluster={{name}}.test-cncf-aws.k8s.io
+      - --kops-args=--networking=calico
       - --kops-ssh-user=ubuntu
       - --kops-nodes=4
       - --extract={{extract}}
@@ -86,11 +87,11 @@ def build_tests(branch, k8s_version):
 
     if branch == 'master':
         extract = "release/latest-" + master_k8s_version
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master"
     else:
         extract = expand("release/stable-{k8s_version}")
         # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-1.19"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19"
         e2e_image = e2e_image[:-4] + k8s_version
 
     tab = expand('kops-pipeline-updown-{branch}')

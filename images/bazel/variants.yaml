@@ -9,8 +9,8 @@ variants:
     OLD_VERSION: 0.29.1
   test-infra:
     CONFIG: test-infra # Used by test-infra repo
-    NEW_VERSION: 3.1.0
-    OLD_VERSION: 3.0.0
+    NEW_VERSION: 3.4.1
+    OLD_VERSION: 3.1.0
   testgrid:
     CONFIG: testgrid # Used by testgrid repo
     NEW_VERSION: 3.0.0

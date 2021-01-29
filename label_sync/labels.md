@@ -59,7 +59,6 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="api-review" href="#api-review">`api-review`</a> | Categorizes an issue or PR as actively needing an API review.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/dependency" href="#area/dependency">`area/dependency`</a> | Issues or PRs related to dependency changes| label | |
-| <a id="area/licensing" href="#area/licensing">`area/licensing`</a> | Issues or PRs related to Kubernetes licensing| label | |
 | <a id="area/provider/aws" href="#area/provider/aws">`area/provider/aws`</a> | Issues or PRs related to aws provider <br><br> This was previously `area/platform/aws`, `area/platform/eks`, `sig/aws`, `aws`, | label | |
 | <a id="area/provider/azure" href="#area/provider/azure">`area/provider/azure`</a> | Issues or PRs related to azure provider <br><br> This was previously `area/platform/aks`, `area/platform/azure`, `sig/azure`, `azure`, | label | |
 | <a id="area/provider/digitalocean" href="#area/provider/digitalocean">`area/provider/digitalocean`</a> | Issues or PRs related to digitalocean provider| label | |
@@ -130,7 +129,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/multitenancy" href="#wg/multitenancy">`wg/multitenancy`</a> | Categorizes an issue or PR as relevant to WG Multitenancy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/naming" href="#wg/naming">`wg/naming`</a> | Categorizes an issue or PR as relevant to WG Naming.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/policy" href="#wg/policy">`wg/policy`</a> | Categorizes an issue or PR as relevant to WG Policy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="wg/resource-management" href="#wg/resource-management">`wg/resource-management`</a> | REMOVING. This will be deleted after 2020-04-08 00:00:00 +0000 UTC <br><br> Categorizes an issue or PR as relevant to WG Resource Management.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="wg/reliability" href="#wg/reliability">`wg/reliability`</a> | Categorizes an issue or PR as relevant to WG Reliability| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="¯\_(ツ)_/¯" href="#¯\_(ツ)_/¯">`¯\_(ツ)_/¯`</a> | ¯\\\_(ツ)_/¯| humans |  [shrug](https://git.k8s.io/test-infra/prow/plugins/shrug) |
 
 ## Labels that apply to all repos, only for issues

@@ -151,9 +151,8 @@ func TestHandle(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
 
 		e := &github.GenericCommentEvent{
 			Action: github.GenericCommentActionCreated,

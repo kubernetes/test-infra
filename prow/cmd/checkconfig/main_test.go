@@ -346,19 +346,19 @@ func TestOrgRepoUnion(t *testing.T) {
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": sets.NewString()}, sets.NewString("4/1", "4/2", "5/1")),
 		},
 		{
-			name:     "keep only common blacklist items for an org",
+			name:     "keep only common denied items for an org",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/bar")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 		},
 		{
-			name:     "remove items from an org blacklist if they're in a repo whitelist",
+			name:     "remove items from an org denylist if they're in a repo allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/repo")),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString()}, sets.NewString()),
 		},
 		{
-			name:     "remove repos when they're covered by an org whitelist",
+			name:     "remove repos when they're covered by an org allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2", "4/3")),
 			b:        newOrgRepoConfig(map[string]sets.String{"4": sets.NewString("4/2")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"4": sets.NewString()}, sets.NewString()),

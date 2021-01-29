@@ -293,8 +293,10 @@ def main(db, opts, outfile):
 
     if opts.assert_oldest:
         oldest = db.get_oldest_emitted(incremental_table)
+        if oldest is None:
+            return 1 # if the table is empty, allow cycle
         if oldest < time.time() - opts.assert_oldest * SECONDS_PER_DAY:
-            return 1
+            return 1 # if table is outdated, allow cycle
         return 0
 
     if opts.reset_emitted:

@@ -509,11 +509,21 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
                 type = "",
                 job = "",
                 agent = "",
-                refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+                refs: {repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
                 pod_spec,
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
         } = build;
+
+        let org = "";
+        let repo = "";
+        if (build.spec.refs !== undefined) {
+            org = build.spec.refs.org;
+            repo = build.spec.refs.repo;
+        } else if (build.spec.extra_refs !== undefined && build.spec.extra_refs.length > 0 ) {
+            org = build.spec.extra_refs[0].org;
+            repo = build.spec.extra_refs[0].repo;
+        }
 
         if (!equalSelected(typeSel, type)) {
             continue;

@@ -19,7 +19,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-18-0
+  - name: pull-kubebuilder-e2e-k8s-1-19-4
     decorate: true
     always_run: true
     optional: true
@@ -29,7 +29,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -37,7 +37,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.18.0"
+          value: "v1.19.4"
         resources:
           requests:
             cpu: 4000m
@@ -45,11 +45,11 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-18-0
+      testgrid-tab-name: kubebuilder-e2e-1-19-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-17-0
+  - name: pull-kubebuilder-e2e-k8s-1-18-8
     decorate: true
     always_run: true
     optional: true
@@ -59,7 +59,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -67,7 +67,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.17.0"
+          value: "v1.18.8"
         resources:
           requests:
             cpu: 4000m
@@ -75,11 +75,41 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-17-0
+      testgrid-tab-name: kubebuilder-e2e-1-18-8
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-16-2
+  - name: pull-kubebuilder-e2e-k8s-1-17-11
+    decorate: true
+    always_run: true
+    optional: true
+    path_alias: sigs.k8s.io/kubebuilder
+    branches:
+    - ^master$
+    - ^feature/plugins-.+$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        command:
+        # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
+        - runner.sh
+        # this MUST be a relative directory with "./" or the runner will fail to find the file
+        - ./test_e2e.sh
+        env:
+        - name: KIND_K8S_VERSION
+          value: "v1.17.11"
+        resources:
+          requests:
+            cpu: 4000m
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: kubebuilder-e2e-1-17-11
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+  - name: pull-kubebuilder-e2e-k8s-1-16-15
     decorate: true
     always_run: true
     optional: false
@@ -89,7 +119,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -97,7 +127,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.16.2"
+          value: "v1.16.15"
         resources:
           requests:
             cpu: 4000m
@@ -105,11 +135,11 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-16-2
+      testgrid-tab-name: kubebuilder-e2e-1-16-15
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-15-3
+  - name: pull-kubebuilder-e2e-k8s-1-15-12
     decorate: true
     always_run: true
     optional: false
@@ -119,7 +149,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -127,7 +157,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.15.3"
+          value: "v1.15.12"
         resources:
           requests:
             cpu: 4000m
@@ -135,11 +165,11 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-15-3
+      testgrid-tab-name: kubebuilder-e2e-1-15-12
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-14-1
+  - name: pull-kubebuilder-e2e-k8s-1-14-10
     decorate: true
     always_run: true
     optional: false
@@ -149,7 +179,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
@@ -157,7 +187,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.14.1"
+          value: "v1.14.10"
         resources:
           requests:
             cpu: 4000m
@@ -165,7 +195,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-14-1
+      testgrid-tab-name: kubebuilder-e2e-1-14-10
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"

@@ -114,6 +114,7 @@ type options struct {
 	soakDuration            time.Duration
 	sshUser                 string
 	stage                   stageStrategy
+	storageTestDriverPath   string
 	test                    bool
 	testArgs                string
 	testCmd                 string
@@ -179,6 +180,7 @@ func defineFlags() *options {
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
+	flag.StringVar(&o.storageTestDriverPath, "storage-testdriver-repo-path", "", "Relative path for external e2e test driver config in the csi driver repo")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")

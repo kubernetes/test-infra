@@ -535,19 +535,18 @@ Instructions for interacting with me using PR comments are available [here](http
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				CombinedStatuses: make(map[string]*github.CombinedStatus),
-				CreatedStatuses:  make(map[string][]github.Status),
-				PullRequests:     map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
-				IssueComments:    make(map[int][]github.IssueComment),
-				CommitMap: map[string][]github.RepositoryCommit{
-					"/#3": tc.commits,
-				},
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
-				Collaborators: []string{"test-collaborator"},
+			fc := fakegithub.NewFakeClient()
+			fc.CombinedStatuses = make(map[string]*github.CombinedStatus)
+			fc.CreatedStatuses = make(map[string][]github.Status)
+			fc.PullRequests = map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest}
+			fc.IssueComments = make(map[int][]github.IssueComment)
+			fc.CommitMap = map[string][]github.RepositoryCommit{
+				"/#3": tc.commits,
 			}
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
+			}
+			fc.Collaborators = []string{"test-collaborator"}
 			if tc.hasDCOYes {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
 			}
@@ -739,17 +738,16 @@ Instructions for interacting with me using PR comments are available [here](http
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				CreatedStatuses:  make(map[string][]github.Status),
-				CombinedStatuses: make(map[string]*github.CombinedStatus),
-				PullRequests:     tc.pullRequests,
-				IssueComments:    make(map[int][]github.IssueComment),
-				CommitMap: map[string][]github.RepositoryCommit{
-					"/#3": tc.commits,
-				},
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
+			fc := fakegithub.NewFakeClient()
+			fc.CreatedStatuses = make(map[string][]github.Status)
+			fc.CombinedStatuses = make(map[string]*github.CombinedStatus)
+			fc.PullRequests = tc.pullRequests
+			fc.IssueComments = make(map[int][]github.IssueComment)
+			fc.CommitMap = map[string][]github.RepositoryCommit{
+				"/#3": tc.commits,
+			}
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
 			}
 			if tc.hasDCOYes {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))

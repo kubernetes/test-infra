@@ -98,11 +98,10 @@ func TestBranchCleaner(t *testing.T) {
 				event.PullRequest.MergeSHA = &mergeSHA
 			}
 
-			fgc := &fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					prNumber: {
-						Number: prNumber,
-					},
+			fgc := fakegithub.NewFakeClient()
+			fgc.PullRequests = map[int]*github.PullRequest{
+				prNumber: {
+					Number: prNumber,
 				},
 			}
 			if err := handle(fgc, log, event); err != nil {

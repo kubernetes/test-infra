@@ -37,30 +37,8 @@ We need to fulfil those requirements to use this tool:
     to be used by this tool to push changes and create PRs against the remote repo.
 
 * a yaml config file that specifies the follwing information passed in with the flag -config=FILEPATH:
-	* gitHubOrg: The GitHub org name where the autobump PR will be created. Only required when SkipPullRequest is false.
-	* gitHubRepo: The GitHub repo name where the autobump PR will be created. Only required when SkipPullRequest is false.
-    * gitHubLogin: The GitHub username to use. If not specified, uses values from the user associated with the access token.
-    * gitHubToken: The path to the GitHub token file. Only required when SkipPullRequest is false.
-	* gitName: The name to use on the git commit. Only required when GitEmail is specified. If not specified, uses values from the user associated with the access token 
-	* gitEmail: The email to use on the git commit. Only required when GitName is specified. If not specified, uses values from the user associated with the access token.
-	* onCallAddress: The oncall address where we can get the JSON file that stores the current oncall information.
-	* skipPullRequest: Whether to skip creating the pull request for this bump.
-	* upstreamURLBase: The URL where upstream images are located. Required only if Target Version is "upstream" or "upstreamStaging"
-	* includedConfigPaths: List of the config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
-	* excludedConfigPaths: List of the config paths to be excluded in this bump, in which only .yaml files will be considered.
-	* extraFiles: The extra non-yaml file to be considered in this bump.
-	* targetVersion: The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
-	* remoteName: The name used in the address when creating remote. Format will be git@github.com:{GitLogin}/{RemoteName}.git
-	* headBranchName: The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
-	* prefixes: List of prefixes that the autobumped is looking for, and other information needed to bump them. The Fields for the Prefix are as follows:
-        * name: Name of the tool being bumped
-	    * prefix: The image prefix that the autobumper should look for
-	    * refConfigFile: File that is looked at when bumping to match upstream. Required only if targetVersion is "upstream"
-	    * stagingRefConfigFile: File that is looked at when bumping to match upstreamStaging. Required only if targetVersion is "upstreamStaging"
-	    * repo: Repo used when generating pull request
-	    * summarise: Whether or not the format of the PR summary for this prefix should be summarised.
-	    * consistentImages: Whether the prefix tags should be consistent after the bump
-
+  * For info about what should go in the config look at [the documentation for the Options here](https://pkg.go.dev/k8s.io/test-infra/experiment/autobumper/bumper#Options) and look at the example below.
+  
 e.g.,
 ```yaml
 gitHubLogin: "k8s-ci-robot"

@@ -229,6 +229,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":     "12345",
 						"config.yaml": "old-config",
 					},
 				},
@@ -240,6 +241,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":     "12345",
 						"config.yaml": "new-config",
 					},
 				},
@@ -275,6 +277,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"config.yaml": "new-config",
+						"VERSION":     "12345",
 					},
 				},
 			},
@@ -309,6 +312,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"test-key": "new-plugins",
+						"VERSION":  "12345",
 					},
 				},
 			},
@@ -343,6 +347,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"resources.yaml": "new-boskos-config",
+						"VERSION":        "12345",
 					},
 				},
 			},
@@ -403,6 +408,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"config.yaml": "new-config",
+						"VERSION":     "12345",
 					},
 				},
 				{
@@ -412,6 +418,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"test-key": "new-plugins",
+						"VERSION":  "12345",
 					},
 				},
 				{
@@ -421,6 +428,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"resources.yaml": "new-boskos-config",
+						"VERSION":        "12345",
 					},
 				},
 			},
@@ -461,6 +469,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					Data: map[string]string{
 						"foo.yaml": "new-foo-config",
 						"bar.yaml": "new-bar-config",
+						"VERSION":  "12345",
 					},
 				},
 			},
@@ -498,6 +507,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					Data: map[string]string{
 						"foo.yaml": "new-foo-config",
 						"bar.yaml": "old-bar-config",
+						"VERSION":  "12345",
 					},
 				},
 			},
@@ -533,6 +543,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"bar.yaml": "old-bar-config",
+						"VERSION":  "12345",
 					},
 				},
 			},
@@ -570,6 +581,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					Data: map[string]string{
 						"fejta.yaml":    "old-fejta-config",
 						"krzyzacy.yaml": "new-krzyzacy-config",
+						"VERSION":       "12345",
 					},
 				},
 			},
@@ -606,6 +618,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"fejtabot.yaml": "new-fejtabot-config",
+						"VERSION":       "54321",
 					},
 				},
 			},
@@ -654,6 +667,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 						"fejta.yaml":    "new-fejta-config",
 						"krzyzacy.yaml": "old-krzyzacy-config",
 						"added.yaml":    "new-added-config",
+						"VERSION":       "12345",
 					},
 				},
 			},
@@ -679,6 +693,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"config.yaml": "new-config",
+						"VERSION":     "12345",
 					},
 				},
 			},
@@ -704,6 +719,9 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					BinaryData: map[string][]byte{
 						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+					Data: map[string]string{
+						"VERSION": "12345",
 					},
 				},
 			},
@@ -747,6 +765,9 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					BinaryData: map[string][]byte{
 						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
+					Data: map[string]string{
+						"VERSION": "12345",
+					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -755,6 +776,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"plugins.yaml": "new-plugins",
+						"VERSION":      "12345",
 					},
 				},
 			},
@@ -798,6 +820,9 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					BinaryData: map[string][]byte{
 						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
+					Data: map[string]string{
+						"VERSION": "12345",
+					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -806,6 +831,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"plugins.yaml": "new-plugins",
+						"VERSION":      "12345",
 					},
 				},
 			},
@@ -848,6 +874,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"config.yaml": "new-config",
+						"VERSION":     "12345",
 					},
 					BinaryData: map[string][]byte{
 						"binary.yaml": []byte("new-binary\x00\xFF\xFF"),
@@ -894,6 +921,9 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					BinaryData: map[string][]byte{
 						"becoming-binary.yaml": []byte("now-binary\x00\xFF\xFF"),
 					},
+					Data: map[string]string{
+						"VERSION": "12345",
+					},
 				},
 			},
 			config: &plugins.ConfigUpdater{
@@ -935,6 +965,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"becoming-text.yaml": "now-text",
+						"VERSION":            "12345",
 					},
 					BinaryData: map[string][]uint8{},
 				},
@@ -989,6 +1020,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"becoming-text.yaml": "now-text",
+						"VERSION":            "12345",
 					},
 				},
 			},
@@ -1032,6 +1064,9 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					BinaryData: map[string][]byte{
 						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
+					Data: map[string]string{
+						"VERSION": "12345",
+					},
 				},
 			},
 			config: &plugins.ConfigUpdater{
@@ -1074,6 +1109,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					},
 					Data: map[string]string{
 						"config.yaml": "new-config",
+						"VERSION":     "12345",
 					},
 				},
 			},
@@ -1100,15 +1136,14 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			event.PullRequest.MergeSHA = &tc.mergeCommit
 		}
 
-		fgc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				basicPR.Number: &basicPR,
-			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				basicPR.Number: tc.changes,
-			},
-			IssueComments: map[int][]github.IssueComment{},
+		fgc := fakegithub.NewFakeClient()
+		fgc.PullRequests = map[int]*github.PullRequest{
+			basicPR.Number: &basicPR,
 		}
+		fgc.PullRequestChanges = map[int][]github.PullRequestChange{
+			basicPR.Number: tc.changes,
+		}
+		fgc.IssueComments = map[int][]github.IssueComment{}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
 		m := tc.config
@@ -1345,6 +1380,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 				},
 				Data: map[string]string{
 					"foo.yaml": "new-foo-config",
+					"VERSION":  "12345",
 				},
 			},
 		},
@@ -1375,6 +1411,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 					Namespace: defaultNamespace,
 				},
 				Data: map[string]string{
+					"VERSION":  "12345",
 					"foo.yaml": "new-foo-config",
 					"bar.yaml": "old-bar-config",
 				},
@@ -1437,7 +1474,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 			t.Errorf("Failed to checkout 12345: %v.", err)
 			continue
 		}
-		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, tc.expectedConfigMap.Name, tc.expectedConfigMap.Namespace, tc.updates, tc.bootstrap, nil, log); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, tc.expectedConfigMap.Name, tc.expectedConfigMap.Namespace, tc.updates, tc.bootstrap, nil, log, "12345"); err != nil {
 			t.Errorf("%s: unexpected error updating: %s", tc.name, err)
 			continue
 		}

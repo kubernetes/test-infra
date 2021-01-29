@@ -125,7 +125,13 @@ func main() {
 	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+	var token string
+	if o.github.TokenPath != "" {
+		token = o.github.TokenPath
+	} else {
+		token = o.github.AppPrivateKeyPath
+	}
+	if err := secretAgent.Start([]string{token}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -163,7 +169,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil, o.github.AppPrivateKeyPath != "")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}

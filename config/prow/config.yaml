@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210111-f6f01a1373"
-        initupload: "gcr.io/k8s-prow/initupload:v20210111-f6f01a1373"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210111-f6f01a1373"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210111-f6f01a1373"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210128-721ee668fd"
+        initupload: "gcr.io/k8s-prow/initupload:v20210128-721ee668fd"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210128-721ee668fd"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210128-721ee668fd"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -184,6 +184,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-openstack:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
@@ -248,6 +252,7 @@ branch-protection:
             contexts:
             - build-linux-amd64
             - build-macos-amd64
+            - build-windows-amd64
             - verify
         kubelet:
           restrictions:
@@ -441,6 +446,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-subdir-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         node-feature-discovery:
           branches:
             gh-pages:
@@ -460,6 +469,8 @@ tide:
   queries:
   - orgs:
     - kubeflow
+    excludedRepos: # TODO(Bobgy): move entire Kubeflow org to oss prow.
+    - kubeflow/pipelines
     labels:
     - lgtm
     - approved
@@ -588,6 +599,13 @@ tide:
             skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+#  TODO uncomment after merging #20468
+#  priority:
+#  # prioritize PRs fixing flaking/failing tests
+#  - labels: [ "kind/failing-test" ]
+#  - labels: [ "area/deflake" ]
+#  # prioritize critical bugfixes
+#  - labels: [ "kind/bug", "priority/critical-urgent" ]
 
 push_gateway:
   endpoint: pushgateway

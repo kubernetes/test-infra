@@ -59,6 +59,41 @@ type manifest map[string]struct {
 	Tags          []string `json:"tag"`
 }
 
+// commit | tag-n-gcommit
+var commitRegexp = regexp.MustCompile(`^g?([\da-f]+)|(.+?)??(?:-(\d+)-g([\da-f]+))?$`)
+
+// DeconstructCommit separates a git describe commit into its parts.
+
+//
+// Examples:
+//  v0.0.30-14-gdeadbeef => (v0.0.30 14 deadbeef)
+//  v0.0.30 => (v0.0.30 0 "")
+//  deadbeef => ("", 0, deadbeef)
+//
+// See man git describe.
+func DeconstructCommit(commit string) (string, int, string) {
+	parts := commitRegexp.FindStringSubmatch(commit)
+	if parts == nil {
+		return "", 0, ""
+	}
+	if parts[1] != "" {
+		return "", 0, parts[1]
+	}
+	var n int
+	if s := parts[3]; s != "" {
+		var err error
+		n, err = strconv.Atoi(s)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return parts[2], n, parts[4]
+}
+
+// DeconstructTag separates the tag into its vDATE-COMMIT-VARIANT components
+//
+// COMMIT may be in the form vTAG-NEW-gCOMMIT, use PureCommit to further process
+// this down to COMMIT.
 func DeconstructTag(tag string) (date, commit, variant string) {
 	currentTagParts := tagRegexp.FindStringSubmatch(tag)
 	if currentTagParts == nil {

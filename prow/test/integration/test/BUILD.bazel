@@ -1,0 +1,52 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "crier_test.go",
+        "overall_test.go",
+        "sinker_test.go",
+    ],
+    data = [
+        "//prow/test/integration/test:all-srcs",
+    ],
+    embed = [":go_default_library"],
+    tags = [
+        "e2e",
+        "no-remote-exec",  # Test need access to $KUBECONIFG file, which doesn't work with remote exec.
+    ],
+    deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/github:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/wait:go_default_library",
+        "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["setup.go"],
+    importpath = "k8s.io/test-infra/prow/test/integration/test",
+    deps = [
+        "@io_k8s_client_go//plugin/pkg/client/auth/oidc:go_default_library",
+        "@io_k8s_client_go//tools/clientcmd:go_default_library",
+        "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
+    ],
+)

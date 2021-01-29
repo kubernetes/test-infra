@@ -137,7 +137,9 @@ function gencreds() {
   cd "${origdir}"
   echo
   echo "Supply the file '${outfile}' to the current oncall for them to add to Prow's kubeconfig secret via:"
-  echo "  kubernetes/test-infra/gencred/merge_kubeconfig_secret.py --auto --context=<kubeconfig-context-for-prow-cluster> ${outfile}"
+  echo "  kubectl --context=<kubeconfig-context-for-prow-cluster> create secret generic kubeconfig-${clusterAlias} --from-file=kubeconfig=${outfile}"
+  echo "  Prow oncall should create PR updating build clusters consuming prow components to also include this new build cluster as part of KUBECONFIG env var."
+  echo "  An example of this PR is https://github.com/GoogleCloudPlatform/oss-test-infra/pull/653"
   echo "ProwJobs that intend to use this cluster should specify 'cluster: ${clusterAlias}'" # TODO: color this
   echo
   echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before Prow can schedule jobs to your cluster)..."

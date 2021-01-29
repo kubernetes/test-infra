@@ -2,7 +2,7 @@
 
 This directory contains tooling for uploading [Kubernetes Conformance test](https://github.com/cncf/k8s-conformance) results for display / monitoring on [TestGrid](../README.md), a tool used heavily by [the core kubernetes project](https://github.com/kubernetes/kubernetes) to monitor test results, particularly as part of the release process.
 
-Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://testgrid.k8s.io/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards. Generally we are aiming to have a dashboard here for each provider E.g. "[conformance-cloud-provider-openstack](https://testgrid.k8s.io/conformance-cloud-provider-openstack)" as well as [a cross-vendor dashboard](https://testgrid.k8s.io/conformance-all) to track project wide conformance. 
+Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://testgrid.k8s.io/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards. Generally we are aiming to have a dashboard here for each provider E.g. "[conformance-cloud-provider-openstack](https://testgrid.k8s.io/conformance-cloud-provider-openstack)" as well as [a cross-vendor dashboard](https://testgrid.k8s.io/conformance-all) to track project wide conformance.
 
 All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://testgrid.k8s.io/sig-release-master-blocking).
 
@@ -12,12 +12,12 @@ For the original design doc and further details on the motivation please see [de
 
 ## Usage Guide
 
-1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
+1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.
 If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please file an issue in https://github.com/kubernetes/k8s.io for a staging bucket, referencing https://github.com/kubernetes/k8s.io/pull/501.
 
 2. Make a PR to test-infra adding your bucket to the TestGrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
 
-- See The following PR from setting up the initial OpenStack bucket: [#7670](https://github.com/kubernetes/test-infra/pull/7670) 
+- See The following PR from setting up the initial OpenStack bucket: [#7670](https://github.com/kubernetes/test-infra/pull/7670)
 
 3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v3.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
 
@@ -34,7 +34,7 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
  - follow [the official conformance testing guide's instructions](https://github.com/cncf/k8s-conformance/blob/master/instructions.md#running) to run and obtain the result files
 
  - or use [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest):
-   - cd to a Kubernetes source tree (git clone) for the release you wish to test, using something like:  
+   - cd to a Kubernetes source tree (git clone) for the release you wish to test, using something like:
    ```sh
    git clone https://github.com/kubernetes/kubernetes.git && cd kubernetes && git checkout release-1.11
    ```
@@ -43,15 +43,9 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
    - run [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest) with:
     ```sh
     export KUBERNETES_CONFORMANCE_TEST=y
-    # NOTE: see https://github.com/kubernetes/test-infra/pull/9104 for why 
-    # we have to supply `--ginkgo.skip`, in the longer term we should not do this.
-    # For < Kubernetes 1.12 use:
-    export SKIP="Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
-    # otherwise use:
-    export SKIP="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
     kubetest --provider=skeleton \
              --test \
-             --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=${SKIP}" \ 
+             --test_args="--ginkgo.focus=\[Conformance\]" \
              --dump=./_artifacts | tee ./e2e.log
     ```
    - You can then find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.
@@ -67,7 +61,7 @@ For uploading the results (`d)`) you can use the tooling provided here (or build
 
 - `--bucket` -- The upload prefix, which should include the GCS bucket as well as the job name, E.g. `gs://k8s-conformance-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11/` like: `--bucket=gs://your-bucket/your-job`
 
-You can optionally also provide:  
+You can optionally also provide:
 - `--key-file` -- A Google Cloud [service account](https://cloud.google.com/iam/docs/service-accounts) keyfile, used to automatically authenticate to GCS. Otherwise you will need to authenticate with [`gcloud auth`](https://cloud.google.com/sdk/gcloud/reference/auth/) in some other part of your CI to use this tool.
 Specify like:
 `--key-file=/path/to-key-file.json`
@@ -75,6 +69,6 @@ Specify like:
 
 - `--year` -- The year in which the logfile was produced, otherwise the current year on the host machine is assumed when parsing timestamps for the job's start / finish time. E.g. `--year=2018`
 
-- `--metadata` -- A JSON dict of metadata key-value pairs that can be displayed in custom TestGrid column headers. E.g. `--metadata='{"version": 52e0b2617ffec85d467f96de34d47e9bb407f880"}'`. 
-  - For more details please see [metadata for finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout) and custom [column headers in TestGrid](https://github.com/kubernetes/test-infra/blob/master/testgrid/README.md#column-headers). 
+- `--metadata` -- A JSON dict of metadata key-value pairs that can be displayed in custom TestGrid column headers. E.g. `--metadata='{"version": 52e0b2617ffec85d467f96de34d47e9bb407f880"}'`.
+  - For more details please see [metadata for finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout) and custom [column headers in TestGrid](https://github.com/kubernetes/test-infra/blob/master/testgrid/README.md#column-headers).
 

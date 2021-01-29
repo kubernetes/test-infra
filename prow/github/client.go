@@ -159,11 +159,14 @@ type RepositoryClient interface {
 	DeleteRepoLabel(org, repo, label string) error
 	GetRepoLabels(org, repo string) ([]Label, error)
 	AddLabel(org, repo string, number int, label string) error
+	AddLabels(org, repo string, number int, labels ...string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
+	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) (string, error)
+	EnsureFork(forkingUser, org, repo string) (string, error)
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
@@ -928,7 +931,7 @@ func (c *client) doRequest(method, path, accept, org string, body interface{}) (
 	}
 	req, err := http.NewRequest(method, path, buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
 	if header := c.authHeader(); len(header) > 0 {
 		req.Header.Set("Authorization", header)
@@ -1918,7 +1921,7 @@ func (c *client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		exitCodes:   []int{201},
 	}, &resp)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create pull request against %s/%s#%s from %s: %v", org, repo, head, base, err)
 	}
 	return resp.Num, nil
 }
@@ -2060,7 +2063,6 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
-
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),
@@ -2461,14 +2463,21 @@ func (c *client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
 //
 // See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *client) AddLabel(org, repo string, number int, label string) error {
-	durationLogger := c.log("AddLabel", org, repo, number, label)
+	return c.AddLabels(org, repo, number, label)
+}
+
+// AddLabels adds one or more labels to org/repo#number, returning an error on a bad response code.
+//
+// See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
+func (c *client) AddLabels(org, repo string, number int, labels ...string) error {
+	durationLogger := c.log("AddLabels", org, repo, number, labels)
 	defer durationLogger()
 
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 		org:         org,
-		requestBody: []string{label},
+		requestBody: labels,
 		exitCodes:   []int{200},
 	}, nil)
 	return err
@@ -2997,22 +3006,22 @@ func (e *FileNotFound) Error() string {
 
 // GetFile uses GitHub repo contents API to retrieve the content of a file with commit SHA.
 // If commit is empty, it will grab content from repo's default branch, usually master.
-// TODO(krzyzacy): Support retrieve a directory
+// Use GetDirectory() method to retrieve a directory.
 //
 // See https://developer.github.com/v3/repos/contents/#get-contents
 func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	durationLogger := c.log("GetFile", org, repo, filepath, commit)
 	defer durationLogger()
 
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
 	if commit != "" {
-		url = fmt.Sprintf("%s?ref=%s", url, commit)
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
 	}
 
 	var res Content
 	code, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      url,
+		path:      path,
 		org:       org,
 		exitCodes: []int{200, 404},
 	}, &res)
@@ -3561,6 +3570,71 @@ func (c *client) CreateFork(owner, repo string) (string, error) {
 	return resp.Name, err
 }
 
+// EnsureFork checks to see that there is a fork of org/repo in the forkedUsers repositories.
+// If there is not, it makes one, and waits for the fork to be created before returning.
+// The return value is the name of the repo that was created
+// (This may be different then the one that is forked due to naming conflict)
+func (c *client) EnsureFork(forkingUser, org, repo string) (string, error) {
+	// Fork repo if it doesn't exist.
+	fork := forkingUser + "/" + repo
+	repos, err := c.GetRepos(forkingUser, true)
+	if err != nil {
+		return repo, fmt.Errorf("could not fetch all existing repos: %v", err)
+	}
+	if !repoExists(fork, repos) {
+		if name, err := c.CreateFork(org, repo); err != nil {
+			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+		} else {
+			// we got a fork but it may be named differently
+			repo = name
+		}
+		if err := c.waitForRepo(forkingUser, repo); err != nil {
+			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
+		}
+	}
+	return repo, nil
+
+}
+
+func (c *client) waitForRepo(owner, name string) error {
+	// Wait for at most 5 minutes for the fork to appear on GitHub.
+	// The documentation instructs us to contact support if this
+	// takes longer than five minutes.
+	after := time.After(6 * time.Minute)
+	tick := time.Tick(30 * time.Second)
+
+	var ghErr string
+	for {
+		select {
+		case <-tick:
+			repo, err := c.GetRepo(owner, name)
+			if err != nil {
+				ghErr = fmt.Sprintf(": %v", err)
+				logrus.WithError(err).Warn("Error getting bot repository.")
+				continue
+			}
+			ghErr = ""
+			if repoExists(owner+"/"+name, []Repo{repo.Repo}) {
+				return nil
+			}
+		case <-after:
+			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
+		}
+	}
+}
+
+func repoExists(repo string, repos []Repo) bool {
+	for _, r := range repos {
+		if !r.Fork {
+			continue
+		}
+		if r.FullName == repo {
+			return true
+		}
+	}
+	return false
+}
+
 // ListRepoTeams gets a list of all the teams with access to a repository
 // See https://developer.github.com/v3/repos/#list-teams
 func (c *client) ListRepoTeams(org, repo string) ([]Team, error) {
@@ -4054,11 +4128,17 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 	defer durationLogger()
 
 	var ais []AppInstallation
-	if _, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      "/app/installations",
-		exitCodes: []int{200},
-	}, &ais); err != nil {
+	if err := c.readPaginatedResults(
+		"/app/installations",
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]AppInstallation{}
+		},
+		func(obj interface{}) {
+			ais = append(ais, *(obj.(*[]AppInstallation))...)
+		},
+	); err != nil {
 		return nil, err
 	}
 	return ais, nil
@@ -4095,4 +4175,41 @@ func (c *client) GetApp() (*App, error) {
 	}
 
 	return &app, nil
+}
+
+// GetDirectory uses GitHub repo contents API to retrieve the content of a directory with commit SHA.
+// If commit is empty, it will grab content from repo's default branch, usually master.
+//
+// See https://developer.github.com/v3/repos/contents/#get-contents
+func (c *client) GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error) {
+	durationLogger := c.log("GetDirectory", org, repo, dirpath, commit)
+	defer durationLogger()
+
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, dirpath)
+	if commit != "" {
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
+	}
+
+	var res []DirectoryContent
+	code, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      path,
+		org:       org,
+		exitCodes: []int{200, 404},
+	}, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if code == 404 {
+		return nil, &FileNotFound{
+			org:    org,
+			repo:   repo,
+			path:   dirpath,
+			commit: commit,
+		}
+	}
+
+	return res, nil
 }

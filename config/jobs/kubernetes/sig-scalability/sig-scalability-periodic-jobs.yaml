@@ -15,7 +15,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -57,7 +57,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
-    preset-e2e-scalability-containerd: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
@@ -65,7 +64,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -119,7 +118,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -138,6 +137,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -184,7 +184,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -203,6 +203,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -248,7 +249,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -268,6 +269,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
@@ -318,7 +320,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -336,6 +338,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
+      - --metadata-sources=cl2-metadata.json
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -385,7 +388,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -403,6 +406,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -456,7 +460,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -474,6 +478,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -516,7 +521,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -535,6 +540,7 @@ periodics:
       - --kubemark-master-size=n1-standard-32
       - --kubemark-nodes=600
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -572,7 +578,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -606,7 +612,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -642,7 +648,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -683,7 +689,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -728,7 +734,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

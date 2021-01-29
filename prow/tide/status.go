@@ -127,22 +127,22 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	// Weight incorrect branches with very high diff so that we select the query
 	// for the correct branch.
-	targetBranchBlacklisted := false
+	targetBranchDenied := false
 	for _, excludedBranch := range q.ExcludedBranches {
 		if string(pr.BaseRef.Name) == excludedBranch {
-			targetBranchBlacklisted = true
+			targetBranchDenied = true
 			break
 		}
 	}
-	// if no whitelist is configured, the target is OK by default
-	targetBranchWhitelisted := len(q.IncludedBranches) == 0
+	// if no allowlist is configured, the target is OK by default
+	targetBranchAllowed := len(q.IncludedBranches) == 0
 	for _, includedBranch := range q.IncludedBranches {
 		if string(pr.BaseRef.Name) == includedBranch {
-			targetBranchWhitelisted = true
+			targetBranchAllowed = true
 			break
 		}
 	}
-	if targetBranchBlacklisted || !targetBranchWhitelisted {
+	if targetBranchDenied || !targetBranchAllowed {
 		diff += 1000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
@@ -558,7 +558,8 @@ func (sc *statusController) search() []PullRequest {
 		sc.PreviousQuery = query
 	}
 
-	prs, err := search(sc.ghc.Query, sc.logger, query, sc.LatestPR.Time, now)
+	// TODO @alvaroaleman: Add github apps support
+	prs, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, sc.LatestPR.Time, now, "")
 	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
 	if err != nil {
 		log := log.WithError(err)

@@ -58,7 +58,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -82,13 +82,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -103,7 +103,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -127,19 +127,64 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
     testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
     testgrid-tab-name: gce-windows-1909-master
     description: Runs tests on a Kubernetes cluster with Windows 1909 nodes on GCE
+
+- name: ci-kubernetes-e2e-windows-gce-20h2
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--node-os-distro=windows
+      - --timeout=180m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win20h2"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
+    testgrid-tab-name: gce-windows-20h2-master
+    description: Runs tests on a Kubernetes cluster with Windows 20H2 nodes on GCE
 
 - name: ci-kubernetes-e2e-windows-gce-alpha-features
   decorate: true
@@ -148,7 +193,7 @@ periodics:
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -172,7 +217,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
@@ -180,7 +225,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -225,7 +270,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -270,7 +315,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
     testgrid-tab-name: gce-windows-2019-containerd-master
@@ -318,7 +363,7 @@ periodics:
         value: win2019
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
       name: ""
       resources: {}
   annotations:
@@ -352,7 +397,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "gcr.io/gke-release/pause-win:1.2.1"
@@ -406,7 +451,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
@@ -489,7 +534,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

@@ -73,12 +73,13 @@ def main():
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
         call(f'python3 stream.py --poll {SUB_PATH} ' \
-            '--dataset k8s-gubernator:build --tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
+             f'--dataset k8s-gubernator:build ' \
+             f'--tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
         call(f'python3 stream.py --poll {SUB_PATH} ' \
-            '--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
+             f'--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))

@@ -539,12 +539,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 
 	var volumes []coreapi.Volume
 	var mounts []coreapi.VolumeMount
-	if dc.GCSCredentialsSecret != "" {
+	if dc.GCSCredentialsSecret != nil && *dc.GCSCredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: gcsCredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.GCSCredentialsSecret,
+					SecretName: *dc.GCSCredentialsSecret,
 				},
 			},
 		})
@@ -554,12 +554,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 		})
 		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
-	if dc.S3CredentialsSecret != "" {
+	if dc.S3CredentialsSecret != nil && *dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: s3CredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.S3CredentialsSecret,
+					SecretName: *dc.S3CredentialsSecret,
 				},
 			},
 		})
@@ -720,7 +720,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -746,6 +746,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
 	}
 
+	defaultSA := pj.Spec.DecorationConfig.DefaultServiceAccountName
+	if spec.ServiceAccountName == "" && defaultSA != nil {
+		spec.ServiceAccountName = *defaultSA
+	}
+
 	return nil
 }
 
@@ -762,14 +767,17 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
+	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
+	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions: &gcsOptions,
-		Entries:    wrappers,
-		EntryError: requirePassingEntries,
+		GcsOptions:       &gcsOptions,
+		Entries:          wrappers,
+		EntryError:       requirePassingEntries,
+		IgnoreInterrupts: ignoreInterrupts,
 	})
 	if err != nil {
 		return nil, err

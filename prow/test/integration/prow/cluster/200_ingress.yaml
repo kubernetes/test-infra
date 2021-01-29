@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    # Rewrite path to strip /fakeghserver from path to match in cluster traffic.
+    # Doc: https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/rewrite/README.md#rewrite-target
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /fakeghserver(/|$)(.*)
+        backend:
+          serviceName: fakeghserver
+          servicePort: 80

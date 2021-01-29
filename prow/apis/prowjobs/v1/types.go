@@ -259,10 +259,10 @@ func (rac *RerunAuthConfig) Validate() error {
 		return nil
 	}
 
-	hasWhiteList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
+	hasAllowList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
 
-	// If a whitelist is specified, the user probably does not intend for anyone to be able to rerun any job.
-	if rac.AllowAnyone && hasWhiteList {
+	// If an allowlist is specified, the user probably does not intend for anyone to be able to rerun any job.
+	if rac.AllowAnyone && hasAllowList {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
 
@@ -344,10 +344,13 @@ type DecorationConfig struct {
 	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials.
-	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+	GCSCredentialsSecret *string `json:"gcs_credentials_secret,omitempty"`
 	// S3CredentialsSecret is the name of the Kubernetes secret
 	// that holds blob storage push credentials.
-	S3CredentialsSecret string `json:"s3_credentials_secret,omitempty"`
+	S3CredentialsSecret *string `json:"s3_credentials_secret,omitempty"`
+	// DefaultServiceAccountName is the name of the Kubernetes service account
+	// that should be used by the pod if one is not specified in the podspec.
+	DefaultServiceAccountName *string `json:"default_service_account_name,omitempty"`
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process.
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
@@ -434,11 +437,14 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
 	}
-	if merged.GCSCredentialsSecret == "" {
+	if merged.GCSCredentialsSecret == nil {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret
 	}
-	if merged.S3CredentialsSecret == "" {
+	if merged.S3CredentialsSecret == nil {
 		merged.S3CredentialsSecret = def.S3CredentialsSecret
+	}
+	if merged.DefaultServiceAccountName == nil {
+		merged.DefaultServiceAccountName = def.DefaultServiceAccountName
 	}
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = def.SSHKeySecrets
@@ -484,9 +490,10 @@ func (d *DecorationConfig) Validate() error {
 	if d.GCSConfiguration == nil {
 		return errors.New("GCS upload configuration is not specified")
 	}
-	if d.GCSCredentialsSecret == "" && d.S3CredentialsSecret == "" {
-		return errors.New("neither GCS nor S3 credential secret are specified")
-	}
+	// Intentionally allow d.GCSCredentialsSecret and d.S3CredentialsSecret to
+	// be unset in which case we assume GCS permissions are provided by GKE
+	// Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
 	}
@@ -796,6 +803,10 @@ type Refs struct {
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
 	CloneDepth int `json:"clone_depth,omitempty"`
+	// SkipFetchHead tells prow to avoid a git fetch <remote> call.
+	// Multiheaded repos may need to not make this call.
+	// The git fetch <remote> <BaseRef> call occurs regardless.
+	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 }
 
 func (r Refs) String() string {

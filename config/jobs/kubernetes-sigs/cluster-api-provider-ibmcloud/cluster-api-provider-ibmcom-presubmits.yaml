@@ -10,14 +10,12 @@ presubmits:
     spec:
       containers:
       - command:
-        - runner.sh
-        args:
-        - make
-        - images
+        - "runner.sh"
+        - "./scripts/ci-make.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         imagePullPolicy: Always
         resources:
           requests:
@@ -33,33 +31,27 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         imagePullPolicy: Always
         command:
-        - runner.sh
-        args:
-        - make
-        - test
+        - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-test
-  - name: pull-cluster-api-provider-ibmcloud-check
+  - name: pull-cluster-api-provider-ibmcloud-build
     always_run: true
+    optional: false
     decorate: true
-    branches:
-    - master
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
         command:
-        - runner.sh
-        args:
-        - make
-        - check
+        - "./scripts/ci-build.sh"
+        resources:
+          requests:
+            memory: "6Gi"
+            cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-check
+      testgrid-tab-name: pr-build

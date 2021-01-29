@@ -15,11 +15,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: 0052cc
-      description: Issues or PRs related to Kubernetes licensing
-      name: area/licensing
-      target: both
-      addedBy: label
-    - color: 0052cc
       description: Issues or PRs related to dependency changes
       name: area/dependency
       target: both
@@ -623,12 +618,11 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Resource Management.
-      name: wg/resource-management
+      description: Categorizes an issue or PR as relevant to WG Reliability
+      name: wg/reliability
       target: both
       prowPlugin: label
       addedBy: anyone
-      deleteAfter: 2020-04-08T00:00:00Z
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Component Standard.
       name: wg/component-standard

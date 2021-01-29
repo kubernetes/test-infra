@@ -21,7 +21,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/version"
 )
 
 var (
@@ -51,10 +50,6 @@ var (
 		Name: "prowjob_state_transitions",
 		Help: "Number of prowjobs transitioning states",
 	}, metricLabels)
-	prowVersion = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "prow_version",
-		Help: "Prow version",
-	})
 )
 
 type jobLabel struct {
@@ -75,7 +70,6 @@ func (jl *jobLabel) values() []string {
 func init() {
 	prometheus.MustRegister(prowJobs)
 	prometheus.MustRegister(prowJobTransitions)
-	prometheus.MustRegister(prowVersion)
 }
 
 func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
@@ -124,16 +118,6 @@ func GatherProwJobMetrics(l *logrus.Entry, current []prowapi.ProwJob) {
 	// This may be racing with the prometheus server but we need to remove
 	// stale metrics like triggered or pending jobs that are now complete.
 	prowJobs.Reset()
-
-	// record prow version
-	version, err := version.VersionTimestamp()
-	if err != nil {
-		// Not worth panicking
-		l.WithError(err).Debug("Failed to get version timestamp")
-		prowVersion.Set(-1)
-	} else {
-		prowVersion.Set(float64(version))
-	}
 
 	// record the current state of ProwJob CRs on the system
 	for jl, count := range getJobLabelMap(current) {

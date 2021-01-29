@@ -219,6 +219,10 @@ branch-protection:
           - ""
         users:
           - ""
+
+
+# The git sha from which this config was generated
+config_version_sha: ' '
 deck:
     # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
     # (in addition to those listed in the GCSConfiguration).
@@ -478,6 +482,10 @@ plank:
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ' '
 
+            # DefaultServiceAccountName is the name of the Kubernetes service account
+            # that should be used by the pod if one is not specified in the podspec.
+            default_service_account_name: ""
+
             # GCSConfiguration holds options for pushing logs and
             # artifacts to GCS from a job.
             gcs_configuration:
@@ -519,7 +527,7 @@ plank:
 
             # GCSCredentialsSecret is the name of the Kubernetes secret
             # that holds GCS push credentials.
-            gcs_credentials_secret: ' '
+            gcs_credentials_secret: ""
 
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
@@ -562,7 +570,7 @@ plank:
 
             # S3CredentialsSecret is the name of the Kubernetes secret
             # that holds blob storage push credentials.
-            s3_credentials_secret: ' '
+            s3_credentials_secret: ""
 
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs
@@ -805,6 +813,12 @@ tide:
     # mapped by org or org/repo level.
     pr_status_base_urls:
         "": ""
+
+    # Priority is an ordered list of labels that would be prioritized before other PRs
+    # PRs should match all labels contained in a list to be prioritized
+    priority:
+      - labels:
+          - ""
 
     # Queries represents a list of GitHub search queries that collectively
     # specify the set of PRs that meet merge requirements.

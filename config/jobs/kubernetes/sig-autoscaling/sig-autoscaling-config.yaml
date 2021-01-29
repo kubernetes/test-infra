@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -38,7 +38,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -69,7 +69,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -100,7 +100,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -131,7 +131,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -184,7 +184,7 @@ periodics:
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -209,7 +209,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
@@ -244,7 +244,7 @@ periodics:
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -269,7 +269,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
@@ -295,7 +295,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
 
   annotations:
     # TODO: add to release blocking dashboards once run is successful

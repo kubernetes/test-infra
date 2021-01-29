@@ -38,7 +38,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       resources:
         requests:
           cpu: 6
@@ -52,13 +52,13 @@ periodics:
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-containerd: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
@@ -86,6 +86,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       # TODO(https://github.com/kubernetes/perf-tests/issues/1536): Reenable oom tracker.
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=false
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
@@ -98,6 +99,7 @@ periodics:
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=5000
+      - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/load/config.yaml
@@ -108,7 +110,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=330m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       resources:
         requests:
           cpu: 6
@@ -128,7 +130,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-containerd: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
@@ -143,7 +144,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210108-3c85f1a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -160,6 +161,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --test=false

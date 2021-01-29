@@ -792,8 +792,9 @@ func (t *GinkgoScriptTester) Run(control *process.Control, testArgs []string) er
 // toBuildTesterOptions builds the BuildTesterOptions data structure for passing to BuildTester
 func toBuildTesterOptions(o *options) *e2e.BuildTesterOptions {
 	return &e2e.BuildTesterOptions{
-		FocusRegex:  o.focusRegex,
-		SkipRegex:   o.skipRegex,
-		Parallelism: o.ginkgoParallel.Get(),
+		FocusRegex:            o.focusRegex,
+		SkipRegex:             o.skipRegex,
+		Parallelism:           o.ginkgoParallel.Get(),
+		StorageTestDriverPath: o.storageTestDriverPath,
 	}
 }

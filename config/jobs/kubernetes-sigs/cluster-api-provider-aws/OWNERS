@@ -10,6 +10,7 @@ reviewers:
 - kris-nova
 - luxas
 - randomvariable
+- richardcase
 - timothysc
 - vincepri
 approvers:
@@ -22,6 +23,7 @@ approvers:
 - kris-nova
 - luxas
 - randomvariable
+- richardcase
 - timothysc
 - vincepri
 emeritus_reviewers:

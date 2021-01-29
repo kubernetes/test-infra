@@ -237,7 +237,7 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+// ShouldRun returns true if the input branch matches, given the allow/deny list.
 func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
@@ -423,6 +423,9 @@ type UtilityConfig struct {
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
 	CloneDepth int `json:"clone_depth,omitempty"`
+	// SkipFetchHead tells prow to avoid a git fetch <remote> call.
+	// The git fetch <remote> <BaseRef> call occurs regardless.
+	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config

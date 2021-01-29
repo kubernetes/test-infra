@@ -23,8 +23,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/google/gofuzz"
+	fuzz "github.com/google/gofuzz"
 )
+
+func pStr(str string) *string {
+	return &str
+}
 
 func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
@@ -97,7 +101,17 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 		{
 			name: "gcs secret name provided",
 			provided: &DecorationConfig{
-				GCSCredentialsSecret: "somethingSecret",
+				GCSCredentialsSecret: pStr("somethingSecret"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "gcs secret name unset",
+			provided: &DecorationConfig{
+				GCSCredentialsSecret: pStr(""),
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
@@ -107,10 +121,30 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 		{
 			name: "s3 secret name provided",
 			provided: &DecorationConfig{
-				S3CredentialsSecret: "overwritten",
+				S3CredentialsSecret: pStr("overwritten"),
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name unset",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: pStr(""),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "default service account name provided",
+			provided: &DecorationConfig{
+				DefaultServiceAccountName: pStr("gcs-upload-sa"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.DefaultServiceAccountName = orig.DefaultServiceAccountName
 				return def
 			},
 		},
@@ -193,8 +227,8 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "secretName",
-				S3CredentialsSecret:  "s3-secret",
+				GCSCredentialsSecret: pStr("secretName"),
+				S3CredentialsSecret:  pStr("s3-secret"),
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
 				SkipCloning:          &truth,

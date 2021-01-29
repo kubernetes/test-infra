@@ -663,7 +663,8 @@ type IssueEvent struct {
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
 	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
-	Label Label `json:"label"`
+	Label  Label `json:"label"`
+	Sender User  `json:"sender"`
 
 	// GUID is included in the header of the request received by GitHub.
 	GUID string
@@ -944,6 +945,9 @@ type DraftReviewComment struct {
 }
 
 // Content is some base64 encoded github file content
+// It include selected fields available in content record returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
@@ -1324,4 +1328,15 @@ type AppInstallationToken struct {
 	ExpiresAt    time.Time               `json:"expires_at,omitempty"`
 	Permissions  InstallationPermissions `json:"permissions,omitempty"`
 	Repositories []Repo                  `json:"repositories,omitempty"`
+}
+
+// DirectoryContent contains information about a github directory.
+// It include selected fields available in content records returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
+type DirectoryContent struct {
+	SHA  string `json:"sha"`
+	Type string `json:"type"`
+	Name string `json:"name"`
+	Path string `json:"path"`
 }

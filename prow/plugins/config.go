@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
@@ -167,6 +168,22 @@ type Owners struct {
 	// OWNERS file, preventing their automatic addition by the owners-label plugin.
 	// This check is performed by the verify-owners plugin.
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
+
+	// Filenames allows configuring repos to use a separate set of filenames for
+	// any plugin that interacts with these files. Keys are in "org/repo" format.
+	Filenames map[string]ownersconfig.Filenames `json:"filenames,omitempty"`
+}
+
+// OwnersFilenames determines which filenames to use for OWNERS and OWNERS_ALIASES for a repo.
+func (c *Configuration) OwnersFilenames(org, repo string) ownersconfig.Filenames {
+	full := fmt.Sprintf("%s/%s", org, repo)
+	if config, configured := c.Owners.Filenames[full]; configured {
+		return config
+	}
+	return ownersconfig.Filenames{
+		Owners:        ownersconfig.DefaultOwnersFile,
+		OwnersAliases: ownersconfig.DefaultOwnersAliasesFile,
+	}
 }
 
 // MDYAMLEnabled returns a boolean denoting if the passed repo supports YAML OWNERS config headers
@@ -540,7 +557,7 @@ type ManagedColumn struct {
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
 // If a PR is pushed to any of the repos listed in the config then send messages
-// to the all the slack channels listed if pusher is NOT in the whitelist.
+// to the all the slack channels listed if pusher is NOT in the allowlist.
 type MergeWarning struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`

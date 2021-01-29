@@ -99,6 +99,10 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	return github.FullRepo{}, nil
 }
 
+func (f *fghc) EnsureFork(forkingUser, org, repo string) (string, error) {
+	return "", nil
+}
+
 var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
 
 func prToString(pr github.PullRequest) string {

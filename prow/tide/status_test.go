@@ -27,7 +27,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/runtime"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -44,8 +44,8 @@ func TestExpectedStatus(t *testing.T) {
 		name string
 
 		baseref           string
-		branchWhitelist   []string
-		branchBlacklist   []string
+		branchAllowList   []string
+		branchDenyList    []string
 		sameBranchReqs    bool
 		labels            []string
 		author            string
@@ -56,7 +56,7 @@ func TestExpectedStatus(t *testing.T) {
 		checkRuns         []CheckRun
 		inPool            bool
 		blocks            []int
-		prowJobs          []ctrlruntimeclient.Object
+		prowJobs          []runtime.Object
 		requiredContexts  []string
 		mergeConflicts    bool
 
@@ -130,12 +130,12 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
-			name:            "against excluded branch",
-			baseref:         "bad",
-			branchBlacklist: []string{"bad"},
-			sameBranchReqs:  true,
-			labels:          neededLabels,
-			inPool:          false,
+			name:           "against excluded branch",
+			baseref:        "bad",
+			branchDenyList: []string{"bad"},
+			sameBranchReqs: true,
+			labels:         neededLabels,
+			inPool:         false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
@@ -143,7 +143,7 @@ func TestExpectedStatus(t *testing.T) {
 		{
 			name:            "not against included branch",
 			baseref:         "bad",
-			branchWhitelist: []string{"good"},
+			branchAllowList: []string{"good"},
 			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
@@ -154,7 +154,7 @@ func TestExpectedStatus(t *testing.T) {
 		{
 			name:              "choose query for correct branch",
 			baseref:           "bad",
-			branchWhitelist:   []string{"good"},
+			branchAllowList:   []string{"good"},
 			author:            "batman",
 			firstQueryAuthor:  "batman",
 			secondQueryAuthor: "batman",
@@ -435,7 +435,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -474,7 +474,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar", "baz"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -527,7 +527,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:           true,
 			baseref:          "baseref",
 			requiredContexts: []string{"foo", "bar", "baz"},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -583,7 +583,7 @@ func TestExpectedStatus(t *testing.T) {
 				strings.Repeat("very-long-context", 8),
 				strings.Repeat("also-long-content", 8),
 			},
-			prowJobs: []ctrlruntimeclient.Object{
+			prowJobs: []runtime.Object{
 				&prowapi.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{Name: "123"},
 					Spec: prowapi.ProwJobSpec{
@@ -635,14 +635,14 @@ func TestExpectedStatus(t *testing.T) {
 				Milestone: "v1.0",
 			}
 			if tc.sameBranchReqs {
-				secondQuery.ExcludedBranches = tc.branchBlacklist
-				secondQuery.IncludedBranches = tc.branchWhitelist
+				secondQuery.ExcludedBranches = tc.branchDenyList
+				secondQuery.IncludedBranches = tc.branchAllowList
 			}
 			queriesByRepo := config.TideQueries{
 				config.TideQuery{
 					Orgs:             []string{""},
-					ExcludedBranches: tc.branchBlacklist,
-					IncludedBranches: tc.branchWhitelist,
+					ExcludedBranches: tc.branchDenyList,
+					IncludedBranches: tc.branchAllowList,
 					Labels:           neededLabels,
 					MissingLabels:    forbiddenLabels,
 					Author:           tc.firstQueryAuthor,

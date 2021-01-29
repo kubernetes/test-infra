@@ -56,6 +56,16 @@ EOF
 for image in "${IMAGES[@]}"; do
     cat >>"${OUTPUT}" <<EOF
     - name: post-kubernetes-push-e2e-${image//\//-}-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -104,6 +114,8 @@ periodics:
       - org: kubernetes
         slug: release-engineering
     github_users:
+      - aojea
+      - chewong
       - claudiubelu
   # Since the servercore image is updated once per month, we only need to build this
   # cache once per month.

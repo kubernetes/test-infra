@@ -18,9 +18,11 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=uid
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "uid"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username
@@ -41,9 +43,11 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=username
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "username"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-uid-group
@@ -64,9 +68,11 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=uid-group
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "uid-group"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username-group
@@ -87,9 +93,11 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=username-group
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "username-group"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-multi-arch
