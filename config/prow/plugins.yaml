@@ -327,6 +327,8 @@ milestone_applier:
     release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
+  kubernetes/org:
+    master: v1.21
   kubernetes/release:
     master: v1.21
   kubernetes/sig-release:
