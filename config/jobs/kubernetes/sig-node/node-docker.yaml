@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -35,7 +35,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -64,7 +64,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
