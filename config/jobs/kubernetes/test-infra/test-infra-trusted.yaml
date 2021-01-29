@@ -4,6 +4,7 @@ postsubmits:
     cluster: test-infra-trusted
     decorate: true
     branches:
+    - ^main$
     - ^master$
     max_concurrency: 1
     spec:
