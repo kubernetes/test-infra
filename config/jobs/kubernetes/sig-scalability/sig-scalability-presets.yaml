@@ -52,7 +52,7 @@ presets:
     value: "5G"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
@@ -132,7 +132,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
@@ -263,7 +263,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components and Kubelet.
   - name: ETCD_EXTRA_ARGS
