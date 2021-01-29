@@ -14,7 +14,6 @@ go_test(
     ],
     embed = [":go_default_library"],
     tags = [
-        "e2e",
         "no-remote-exec",  # Test need access to $KUBECONIFG file, which doesn't work with remote exec.
     ],
     deps = [

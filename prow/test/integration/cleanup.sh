@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2019 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# runs bazel and then coalesce.py (to convert results to junit)
-
-set -o nounset
 set -o errexit
+set -o nounset
 set -o pipefail
 
-bazel=$(command -v bazelisk || command -v bazel)
+readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
+readonly DEFAULT_REGISTRY_NAME="kind-registry"
 
-code=0
-(set -o xtrace && "$bazel" "$@") || code=$?
-# Cleanup happens any way and shouldn't fail.
-coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
-(set -o xtrace && "$coalesce") || true
-set -o xtrace
-exit "$code"
+kind delete cluster --name "${DEFAULT_CLUSTER_NAME}"
+container_hash="$(docker ps -q -f name="${DEFAULT_REGISTRY_NAME}" 2>/dev/null || true)"
+if [ -z "${container_hash}" ]; then
+  echo "Container ${DEFAULT_REGISTRY_NAME} not exist, skip cleaning up."
+  exit 0
+fi
+echo "Deleting container ${DEFAULT_REGISTRY_NAME}"
+docker container stop "${DEFAULT_REGISTRY_NAME}"
+docker container rm "${DEFAULT_REGISTRY_NAME}"
