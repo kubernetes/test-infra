@@ -8,6 +8,7 @@ presubmits:
     path_alias: k8s.io/k8s.io
     run_if_changed: "^groups/"
     branches:
+    - ^main$
     - ^master$
     spec:
       containers:
