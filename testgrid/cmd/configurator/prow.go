@@ -99,8 +99,8 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 			var prefix string
 			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
 				prefix = path.Join(j.DecorationConfig.GCSConfiguration.Bucket, j.DecorationConfig.GCSConfiguration.PathPrefix)
-			} else if pc.Plank.GetDefaultDecorationConfigs(repo) != nil && pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration != nil {
-				prefix = path.Join(pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration.Bucket, pc.Plank.GetDefaultDecorationConfigs(repo).GCSConfiguration.PathPrefix)
+			} else if def := pc.Plank.MergeDefaultDecorationConfig(repo, "", nil); def != nil && def.GCSConfiguration != nil {
+				prefix = path.Join(def.GCSConfiguration.Bucket, def.GCSConfiguration.PathPrefix)
 			} else {
 				return fmt.Errorf("job %s: couldn't figure out a default decoration config", j.Name)
 			}

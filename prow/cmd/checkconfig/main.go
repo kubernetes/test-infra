@@ -806,19 +806,19 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
 	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
-		if presubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, presubmit.JobBase.UtilityConfig) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && !*presubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
 	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
-		if postsubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, postsubmit.JobBase.UtilityConfig) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && !*postsubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
 	for _, periodic := range cfg.AllPeriodics() {
-		if periodic.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, periodic.JobBase.UtilityConfig) {
+		if periodic.Agent == string(v1.KubernetesAgent) && !*periodic.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
 	}

@@ -485,11 +485,20 @@ type Plank struct {
 	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
 	// stuck in an unscheduled state. Defaults to one day.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
+
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
-	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
-	// if extraRefs[0] exists.
-	// Use `org/repo`, `org` or `*` as a key.
-	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
+	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
+	// match against jobs and a corresponding DecorationConfig. All entries that
+	// match a job are used. Later matching entries override the fields of earlier
+	// matching entries.
+	// Alternatively this field may be type `map[string]*prowapi.DecorationConfig`
+	// Use `org/repo`, `org` or `*` as a key to match against jobs. (Periodics
+	// use extra_refs[0] for matching if present.)
+	DefaultDecorationConfigs []*DefaultDecorationConfigEntry `json:"-"`
+	// DefaultDecorationConfigsRaw compiles into DefaultDecorationConfigs.
+	// It may represent either `[]*DefaultDecorationConfigEntry` or
+	// `map[string]*prowapi.DecorationConfig`.
+	DefaultDecorationConfigsRaw *json.RawMessage `json:"default_decoration_configs,omitempty"`
 
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
@@ -500,16 +509,123 @@ type Plank struct {
 	JobURLPrefixDisableAppendStorageProvider bool `json:"jobURLPrefixDisableAppendStorageProvider,omitempty"`
 }
 
-func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfig {
-	def := p.DefaultDecorationConfigs["*"]
-	if dcByRepo, ok := p.DefaultDecorationConfigs[repo]; ok {
-		return dcByRepo.ApplyDefault(def)
+type DefaultDecorationConfigEntry struct {
+	// Matching/filtering fields
+
+	// Repo matches against the "org/repo" that the presubmit or postsubmit is
+	// associated with. If the job is a periodic, extra_refs[0] is used. If the
+	// job is a periodic without extra_refs, the empty string will be used.
+	Repo *regexp.Regexp `json:"-"`
+	// OrgRepoRaw is the string field that compiles into the Repo regexp field.
+	RepoRaw string `json:"repo,omitempty"`
+	// Cluster matches against the cluster alias of the build cluster that the
+	// ProwJob is configured to run on. Recall that ProwJobs default to running on
+	// the "default" build cluster if they omit the "cluster" field in config.
+	Cluster *regexp.Regexp `json:"-"`
+	// ClusterRaw is the string field that compiles into the Cluster regexp field.
+	ClusterRaw string `json:"cluster,omitempty"`
+
+	// Config is the DecorationConfig to apply if the filter fields all match the
+	// ProwJob. Note that when multiple entries match a ProwJob they are all used
+	// by sequentially merging with later entries overriding fields from earlier
+	// entries.
+	Config *prowapi.DecorationConfig `json:"config,omitempty"`
+}
+
+func (d *DefaultDecorationConfigEntry) Matches(repo, cluster string) bool {
+	return d.Repo.MatchString(repo) && d.Cluster.MatchString(cluster)
+}
+
+func (p *Plank) MergeDefaultDecorationConfig(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+	var merged *prowapi.DecorationConfig
+	for _, entry := range p.DefaultDecorationConfigs {
+		if entry.Matches(repo, cluster) {
+			merged = entry.Config.ApplyDefault(merged)
+		}
 	}
-	org := strings.Split(repo, "/")[0]
-	if dcByOrg, ok := p.DefaultDecorationConfigs[org]; ok {
-		return dcByOrg.ApplyDefault(def)
+	merged = jobDC.ApplyDefault(merged)
+	if merged == nil {
+		merged = &prowapi.DecorationConfig{}
 	}
-	return def
+	return merged
+}
+
+// defaultDecorationMapToSlice converts the old DefaultDecorationConfigs format:
+// map[string]*prowapi.DecorationConfig) to the new format: []*DefaultDecorationConfigEntry
+func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
+	var entries []*DefaultDecorationConfigEntry
+	add := func(repo string, dc *prowapi.DecorationConfig) {
+		entries = append(entries, &DefaultDecorationConfigEntry{
+			RepoRaw:    repo,
+			ClusterRaw: ".*",
+			Config:     dc,
+		})
+	}
+	// Ensure "*" comes first...
+	if dc, exists := m["*"]; exists {
+		add(".*", dc)
+	}
+	// then orgs...
+	for key, dc := range m {
+		if key == "*" || strings.Contains(key, "/") {
+			continue
+		}
+		add(fmt.Sprintf("^%s/.*", key), dc)
+	}
+	// then repos.
+	for key, dc := range m {
+		if key == "*" || !strings.Contains(key, "/") {
+			continue
+		}
+		add(fmt.Sprintf("^%s$", key), dc)
+	}
+	return entries
+}
+
+func compileDefaultDecorationRegex(entries []*DefaultDecorationConfigEntry) error {
+	var errs []error
+	for i, entry := range entries {
+		var err error
+		if entry.Repo, err = regexp.Compile(entry.RepoRaw); err != nil {
+			err = fmt.Errorf("compiling repo regex for plank.default_decoration_configs[%d]: %w", i, err)
+			errs = append(errs, err)
+		}
+		if entry.Cluster, err = regexp.Compile(entry.ClusterRaw); err != nil {
+			err = fmt.Errorf("compiling cluster regex for plank.default_decoration_configs[%d]: %w", i, err)
+			errs = append(errs, err)
+		}
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
+// DefaultDecorationMapToSliceTesting is a convenience function that is exposed
+// to allow unit tests to convert the old map format to the new slice format.
+// It should only be used in testing.
+func DefaultDecorationMapToSliceTesting(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
+	slice := defaultDecorationMapToSlice(m)
+	if err := compileDefaultDecorationRegex(slice); err != nil {
+		panic(err)
+	}
+	return slice
+}
+
+func (p *Plank) FinalizeDefaultDecorationConfigs() error {
+	if p.DefaultDecorationConfigsRaw == nil {
+		return nil
+	}
+	// Try parsing either accepted config format.
+	// Old format: map[string]*prowapi.DecorationConfig where the key is org,
+	//             org/repo, or "*".
+	// New format: []*DefaultDecorationConfigEntry
+	var old map[string]*prowapi.DecorationConfig
+	if oldErr := yaml.Unmarshal(*p.DefaultDecorationConfigsRaw, &old); oldErr != nil {
+		if newErr := yaml.Unmarshal(*p.DefaultDecorationConfigsRaw, &p.DefaultDecorationConfigs); newErr != nil {
+			return fmt.Errorf("failed to parse plank.default_decoration_configs in either accepted format: %w", utilerrors.NewAggregate([]error{newErr, oldErr}))
+		}
+	} else {
+		p.DefaultDecorationConfigs = defaultDecorationMapToSlice(old)
+	}
+	return compileDefaultDecorationRegex(p.DefaultDecorationConfigs)
 }
 
 // GetJobURLPrefix gets the job url prefix from the config
@@ -803,8 +919,8 @@ func (d *Deck) ShouldValidateStorageBuckets() bool {
 func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
-		if dc.GCSConfiguration != nil {
-			knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		if dc.Config.GCSConfiguration != nil {
+			knownBuckets.Insert(dc.Config.GCSConfiguration.Bucket)
 		}
 	}
 	for _, j := range c.Periodics {
@@ -1244,36 +1360,36 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
-func ShouldDecorate(c *JobConfig, util UtilityConfig) bool {
+func shouldDecorate(c *JobConfig, util *UtilityConfig) bool {
 	if util.Decorate != nil {
 		return *util.Decorate
+	} else {
+		b := c.DecorateAllJobs
+		util.Decorate = &b
 	}
 	return c.DecorateAllJobs
 }
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		def := c.Plank.GetDefaultDecorationConfigs(repo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		ps.DecorationConfig = c.Plank.MergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		def := c.Plank.GetDefaultDecorationConfigs(repo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		ps.DecorationConfig = c.Plank.MergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		var orgRepo string
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		var repo string
 		if len(ps.UtilityConfig.ExtraRefs) > 0 {
-			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
+			repo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
 		}
 
-		def := c.Plank.GetDefaultDecorationConfigs(orgRepo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+		ps.DecorationConfig = c.Plank.MergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
@@ -1310,36 +1426,24 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 	return utilerrors.NewAggregate(errs)
 }
 
-// defaultPeriodics defaults periodics
-func defaultPeriodics(periodics []Periodic, c *Config) error {
+// defaultPeriodics defaults c.Periodics
+func defaultPeriodics(c *Config) error {
 	var errs []error
-	c.defaultPeriodicFields(periodics)
-	for _, periodic := range periodics {
-		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
+
+	for i := range c.Periodics {
+		setPeriodicDecorationDefaults(c, &c.Periodics[i])
+		if err := resolvePresets(c.Periodics[i].Name, c.Periodics[i].Labels, c.Periodics[i].Spec, c.Presets); err != nil {
 			errs = append(errs, err)
 		}
 	}
+	c.defaultPeriodicFields(c.Periodics)
 	return utilerrors.NewAggregate(errs)
 }
 
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
-	if c.decorationRequested() {
-
-		def, ok := c.Plank.DefaultDecorationConfigs["*"]
-		if !ok {
-			return errors.New("default_decoration_configs['*'] is missing")
-		}
-
-		for key, valCfg := range c.Plank.DefaultDecorationConfigs {
-			if err := valCfg.ApplyDefault(def).Validate(); err != nil {
-				return fmt.Errorf("default_decoration_configs[%q]: validation error: %v", key, err)
-			}
-		}
-
-		for i := range c.Periodics {
-			setPeriodicDecorationDefaults(c, &c.Periodics[i])
-		}
+	if err := c.Plank.FinalizeDefaultDecorationConfigs(); err != nil {
+		return err
 	}
 
 	for repo, jobs := range c.PresubmitsStatic {
@@ -1356,7 +1460,7 @@ func (c *Config) finalizeJobConfig() error {
 		c.AllRepos.Insert(repo)
 	}
 
-	if err := defaultPeriodics(c.Periodics, c); err != nil {
+	if err := defaultPeriodics(c); err != nil {
 		return err
 	}
 
@@ -1892,32 +1996,6 @@ func parseProwConfig(c *Config) error {
 	}
 
 	return nil
-}
-
-func (c *JobConfig) decorationRequested() bool {
-	for _, vs := range c.PresubmitsStatic {
-		for i := range vs {
-			if ShouldDecorate(c, vs[i].JobBase.UtilityConfig) {
-				return true
-			}
-		}
-	}
-
-	for _, js := range c.PostsubmitsStatic {
-		for i := range js {
-			if ShouldDecorate(c, js[i].JobBase.UtilityConfig) {
-				return true
-			}
-		}
-	}
-
-	for i := range c.Periodics {
-		if ShouldDecorate(c, c.Periodics[i].JobBase.UtilityConfig) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func validateLabels(labels map[string]string) error {
