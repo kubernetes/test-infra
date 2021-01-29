@@ -101,7 +101,7 @@ periodics:
       - --extract=release/latest
       - --ginkgo-parallel
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210118
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a
@@ -138,7 +138,7 @@ periodics:
       - --extract=ci/latest
       - --ginkgo-parallel
       - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210118
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=eu-west-1a
@@ -151,7 +151,7 @@ periodics:
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-arm64-ci
 
-- interval: 8h
+- interval: 1h
   name: e2e-kops-aws-misc-arm64-conformance
   labels:
     preset-service-account: "true"
@@ -173,12 +173,12 @@ periodics:
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=ci/latest
-      - --ginkgo-parallel=10
-      - --kops-args=--node-size=m6g.large --master-size=m6g.large --container-runtime=containerd --networking=calico
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
+      - --ginkgo-parallel
+      - --kops-args=--node-size=c6g.large --master-size=c6g.large --container-runtime=containerd --networking=calico
+      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210118
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=eu-west-1a
+      - --kops-zones=eu-central-1a
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
       - --timeout=120m
