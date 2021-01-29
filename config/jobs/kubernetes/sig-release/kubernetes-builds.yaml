@@ -67,45 +67,7 @@ periodics:
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
-- interval: 1h
-  name: ci-kubernetes-build-canary
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210108-5927ee692c
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=240
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --extra-version-markers=k8s-master
-      - --registry=gcr.io/k8s-staging-ci-images
-      - --release=k8s-release-dev
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 7300m
-          memory: "34Gi"
-        requests:
-          cpu: 7300m
-          memory: "34Gi"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-canaries
-    testgrid-tab-name: build-master-canary
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-
-- name: ci-kubernetes-build-no-bootstrap
+- name: ci-kubernetes-build-canary
   interval: 1h
   cluster: k8s-infra-prow-build
   decorate: true
@@ -123,28 +85,28 @@ periodics:
       - wrapper.sh
       - /krel
       - ci-build
+      - --configure-docker
       - --allow-dup
-      - --fast
       - --bucket=k8s-release-dev
-      - --gcs-root=ci-no-bootstrap
       - --registry=gcr.io/k8s-staging-ci-images
+      - --extra-version-markers=k8s-master
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
         limits:
-          cpu: 6
-          memory: "20Gi"
+          cpu: 7300m
+          memory: "34Gi"
         requests:
-          cpu: 6
-          memory: "20Gi"
+          cpu: 7300m
+          memory: "34Gi"
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-dashboards: sig-release-releng-informing
-    testgrid-tab-name: build-master-no-bootstrap
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-testing-canaries
+    testgrid-tab-name: build-master-canary
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 - interval: 5m
   name: ci-kubernetes-build-fast
