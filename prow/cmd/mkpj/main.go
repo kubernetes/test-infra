@@ -247,7 +247,10 @@ func main() {
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	if pjs.Refs != nil {
+	// local mode runs with phaino, which uses local source code instead of cloing, so
+	// no need to fetch refs from github.
+	// Aside, this also makes mkpj usable for source control system other than github.
+	if pjs.Refs != nil && !o.local {
 		o.org = pjs.Refs.Org
 		o.repo = pjs.Refs.Repo
 		if len(pjs.Refs.Pulls) != 0 {
@@ -278,6 +281,10 @@ func main() {
 }
 
 func splitRepoName(repo string) (string, string, error) {
+	// Normalize repo name to remove http:// or https://, this is the case for some
+	// of the gerrit instances.
+	repo = strings.TrimPrefix(repo, "http://")
+	repo = strings.TrimPrefix(repo, "https://")
 	s := strings.SplitN(repo, "/", 2)
 	if len(s) != 2 {
 		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
