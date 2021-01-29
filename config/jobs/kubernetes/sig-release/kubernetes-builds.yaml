@@ -95,10 +95,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 7300m
+          cpu: "7"
           memory: "34Gi"
         requests:
-          cpu: 7300m
+          cpu: "7"
           memory: "34Gi"
   rerun_auth_config:
     github_team_ids:
