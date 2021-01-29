@@ -1,6 +1,7 @@
 dashboard_groups:
 - name: sig-windows
   dashboard_names:
+    - sig-windows-signal
     - sig-windows-releases
     - sig-windows-sac
     - sig-windows-containerd
@@ -10,6 +11,7 @@ dashboard_groups:
     - sig-windows-networking
 
 dashboards:
+- name: sig-windows-signal
 - name: sig-windows-releases
 - name: sig-windows-sac
 - name: sig-windows-containerd
