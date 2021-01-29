@@ -1906,7 +1906,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.7
   name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.7
-- days_of_results: 60
+- days_of_results: 33
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-sdn-network-stress-4.7
   name: release-openshift-origin-installer-e2e-aws-sdn-network-stress-4.7
 - days_of_results: 60
