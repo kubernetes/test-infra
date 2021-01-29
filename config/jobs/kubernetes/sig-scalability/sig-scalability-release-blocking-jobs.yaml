@@ -77,8 +77,6 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
-      # TODO(mborsz): Revert or merge MASTER_MIN_CPU_ARCHITECTURE with preset.
-      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Skylake
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi

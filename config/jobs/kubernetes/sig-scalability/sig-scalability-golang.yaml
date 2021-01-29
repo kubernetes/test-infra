@@ -62,8 +62,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-golang
-      # TODO(mborsz): Revert or merge MASTER_MIN_CPU_ARCHITECTURE with preset.
-      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Skylake
       - --env=CL2_ENABLE_PVS=false
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
