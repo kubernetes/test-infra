@@ -5,7 +5,6 @@ postsubmits:
     decorate: true
     branches:
     - ^main$
-    - ^master$
     max_concurrency: 1
     spec:
       containers:
@@ -785,7 +784,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: org
-    base_ref: master
+    base_ref: main
   spec:
     containers:
     - image: launcher.gcr.io/google/bazel:0.29.1
