@@ -53,7 +53,6 @@ var (
 		"k8s-jkns-pr-kubemark",
 		"k8s-jkns-pr-node-e2e",
 		"k8s-jkns-pr-gce-gpus",
-		"k8s-gke-gpu-pr",
 		"k8s-presubmit-scale",
 	}
 )
