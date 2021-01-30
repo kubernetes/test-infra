@@ -798,6 +798,7 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 
 		if set := sets.NewString(strings.Split(omit, ",")...); set.Len() > 0 {
 			for i := range jobs {
+				jobs[i].ManagedFields = nil
 				if set.Has(Annotations) {
 					jobs[i].Annotations = nil
 				}
