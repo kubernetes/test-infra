@@ -1013,7 +1013,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 
 	var candidates []PullRequest
 	for _, pr := range sp.prs {
-		if isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
+		if c.config().Tide.BatchSkipTests || isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
 			candidates = append(candidates, pr)
 		}
 	}
