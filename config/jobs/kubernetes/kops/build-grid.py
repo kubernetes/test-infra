@@ -19,6 +19,7 @@ import yaml
 
 template = """
 - name: e2e-kops-grid{{suffix}}
+  interval: '{{interval}}'
   cron: '{{cron}}'
   labels:
     preset-service-account: "true"
@@ -63,6 +64,7 @@ template = """
 kubetest2_template = """
 - name: e2e-kops-grid{{suffix}}
   cron: '{{cron}}'
+  interval: '{{interval}}'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -209,7 +211,8 @@ def build_test(cloud='aws',
                force_name=None,
                feature_flags=(),
                extra_flags=None,
-               extra_dashboards=None):
+               extra_dashboards=None,
+               interval=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
@@ -349,7 +352,12 @@ def build_test(cloud='aws',
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
-    y = y.replace('{{cron}}', cron)
+    if interval:
+        y = y.replace('{{interval}}', interval)
+        y = remove_line_with_prefix(y, 'cron: ')
+    else:
+        y = y.replace('{{cron}}', cron)
+        y = remove_line_with_prefix(y, 'interval: ')
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
     y = y.replace('{{extract}}', extract)
