@@ -89,9 +89,9 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
-          --create-args="--image={{kops_image}}" \\
+          --create-args="--image={{kops_image}} --networking={{networking}} --container-runtime={{container_runtime}}" \\
+          --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
-          --networking={{networking}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
           --test=kops \\
           -- \\
@@ -207,7 +207,7 @@ def build_test(cloud='aws',
                kops_version=None,
                kops_zones=None,
                force_name=None,
-               feature_flags=None,
+               feature_flags=(),
                extra_flags=None,
                extra_dashboards=None):
     # pylint: disable=too-many-statements,too-many-branches
@@ -297,6 +297,9 @@ def build_test(cloud='aws',
     kops_args = kops_args.strip()
 
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+    if networking == "cilium":
+        # https://github.com/cilium/cilium/issues/10002
+        skip_regex += r'|TCP.CLOSE_WAIT'
     test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
@@ -336,7 +339,7 @@ def build_test(cloud='aws',
     # As kubetest2 adds support for additional configurations we can reduce this conditional
     # and migrate more of the grid jobs to kubetest2
     use_kubetest2 = container_runtime == 'containerd' and distro == 'u2004' and \
-        feature_flags is None and extra_flags is None and kops_zones is None
+        len(feature_flags) == 0 and extra_flags is None and kops_zones is None
 
     y = template
     if use_kubetest2:
@@ -351,6 +354,8 @@ def build_test(cloud='aws',
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
+    y = y.replace('{{kops_image}}', kops_image)
+
     # specific to kubetest2
     if use_kubetest2:
         if networking:
@@ -359,6 +364,9 @@ def build_test(cloud='aws',
             y = remove_line_with_prefix(y, "--networking=")
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
+        y = y.replace('{{container_runtime}}', container_runtime)
+        y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+
     else:
         if kops_zones:
             y = y.replace('{{kops_zones}}', ','.join(kops_zones))
@@ -370,12 +378,6 @@ def build_test(cloud='aws',
         else:
             y = remove_line_with_prefix(y, "- --kops-feature-flags=")
 
-    if kops_image:
-        y = y.replace('{{kops_image}}', kops_image)
-    elif use_kubetest2:
-        y = remove_line_with_prefix(y, "--create-args")
-    else:
-        y = remove_line_with_prefix(y, "- --kops-image=")
 
     if kops_version:
         y = y.replace('{{kops_version}}', kops_version)
