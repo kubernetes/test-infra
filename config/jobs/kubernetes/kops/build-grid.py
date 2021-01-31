@@ -297,6 +297,9 @@ def build_test(cloud='aws',
     kops_args = kops_args.strip()
 
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+    if networking == "cilium":
+        # https://github.com/cilium/cilium/issues/10002
+        skip_regex += r'|TCP.CLOSE_WAIT'
     test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
