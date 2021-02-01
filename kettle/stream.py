@@ -95,10 +95,15 @@ def retry(func, *args, **kwargs):
     for attempt in range(20):
         try:
             return func(*args, **kwargs)
-        except (socket.error, google.cloud.exceptions.ServerError, api_exceptions.BadRequest):
+        except (socket.error, google.cloud.exceptions.ServerError):
             # retry with exponential backoff
             traceback.print_exc()
             time.sleep(1.4 ** attempt)
+        except api_exceptions.BadRequest as err:
+            args_str = ','.join(map(str, args))
+            kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
+            print(f"Error running {func.__name__}({','.join([args_str, kwargs_str])}) : {err}")
+            return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
 
