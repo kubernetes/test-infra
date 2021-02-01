@@ -53,6 +53,7 @@ template = """
       - --test_args={{test_args}}
       - --timeout=60m
       image: {{e2e_image}}
+      imagePullPolicy: Always
       resources:
         limits:
           memory: 2Gi
@@ -100,12 +101,13 @@ kubetest2_template = """
           --test-package-marker={{marker}} \\
           --parallel 25 \\
           --skip-regex="{{skip_regex}}"
-      image: {{e2e_image}}
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
+      image: {{e2e_image}}
+      imagePullPolicy: Always
       resources:
         limits:
           memory: 2Gi
