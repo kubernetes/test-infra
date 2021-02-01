@@ -61,6 +61,7 @@ presubmits:
       testgrid-dashboards: sig-network-gce
       testgrid-tab-name: presubmit-network-policies, google-gce
       testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
@@ -643,5 +644,6 @@ periodics:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: network-policies, google-gce
     testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
