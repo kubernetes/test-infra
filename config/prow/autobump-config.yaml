@@ -14,8 +14,8 @@ includedConfigPaths:
 excludedConfigPaths:
   - "config/prow-staging"
 extraFiles:
-  - "config/jobs/kubernetes/kops/build-grid.py"
-  - "config/jobs/kubernetes/kops/build-pipeline.py"
+  - "config/jobs/kubernetes/kops/build_grid.py"
+  - "config/jobs/kubernetes/kops/build_pipeline.py"
   - "releng/generate_tests.py"
   - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
