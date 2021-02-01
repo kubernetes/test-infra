@@ -207,7 +207,7 @@ def build_test(cloud='aws',
                distro=None,
                networking=None,
                container_runtime=None,
-               k8s_version=None,
+               k8s_version='latest',
                kops_version=None,
                kops_zones=None,
                force_name=None,
@@ -275,18 +275,25 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
 
-    if k8s_version is None:
+    if k8s_version == 'latest':
         extract = "release/latest"
-        marker = 'stable-latest.txt'
+        marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master"
-    else:
+    elif k8s_version == 'stable':
+        extract = "release/stable"
+        marker = 'stable.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master"
+    elif k8s_version:
         extract = expand("release/stable-{k8s_version}")
         marker = expand("stable-{k8s_version}.txt")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
+    else:
+        raise Exception('missing required k8s_version')
 
     kops_args = ""
     if networking:
@@ -473,7 +480,7 @@ distro_options = [
 ]
 
 k8s_versions = [
-    #None, # disabled until we're ready to test 1.21
+    #"latest", # disabled until we're ready to test 1.21
     "1.17",
     "1.18",
     "1.19",
