@@ -44,7 +44,7 @@ experimental_k8s_version="1.20"
 latest_stable_k8s_version="1.20"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.4.0"
+hostpath_driver_version="v1.5.0"
 
 # We need this image because it has Docker in Docker and go.
 dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master"
