@@ -584,7 +584,7 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 		finished <- k.dumpAllNodes(ctx, logDumper)
 	}()
 
-	logDumper.dumpPods(ctx, "kube-system", []string{"k8s-app=kops-controller"})
+	logDumper.dumpPods(ctx, "kube-system", nil)
 
 	for {
 		select {
