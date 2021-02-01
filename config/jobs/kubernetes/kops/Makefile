@@ -13,6 +13,8 @@
 # limitations under the License.
 
 .PHONY: generate
+generate: export PYTHONPATH = .
 generate:
 	python3 build_grid.py > kops-periodics-grid.yaml
 	python3 build_pipeline.py > kops-pipeline.yaml
+	python3 build_distros.py > kops-periodics-distros.yaml
