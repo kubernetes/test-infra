@@ -745,6 +745,16 @@ func commitToRef(commit string) string {
 	return tag
 }
 
+func formatVariant(variant string) string {
+	if variant == "" {
+		return ""
+	}
+	if strings.HasPrefix(variant, "-") {
+		variant = variant[1:]
+	}
+	return fmt.Sprintf("(%s)", variant)
+}
+
 func generateSummary(name, repo, prefix string, summarise bool, images map[string]string) string {
 	type delta struct {
 		oldCommit string
@@ -772,7 +782,7 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 			newCommit: newCommit,
 			oldDate:   oldDate,
 			newDate:   newDate,
-			variant:   oldVariant,
+			variant:   formatVariant(oldVariant),
 			component: componentFromName(image),
 		}
 		versions[k] = append(versions[k], d)
