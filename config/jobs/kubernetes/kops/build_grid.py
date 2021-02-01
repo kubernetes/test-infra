@@ -445,7 +445,7 @@ def build_test(cloud='aws',
         dashboards.append('kops-kubetest2')
 
     annotations = {
-        'testgrid-dashboards': ', '.join(dashboards),
+        'testgrid-dashboards': ', '.join(sorted(dashboards)),
         'testgrid-days-of-results': '90',
         'testgrid-tab-name': tab,
     }
