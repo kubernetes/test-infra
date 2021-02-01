@@ -20,7 +20,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-kubernetes-master
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -58,7 +58,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-kubernetes-master
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -90,7 +90,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -122,7 +122,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - bash
         args:
@@ -167,7 +167,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       command:
       - bash
       args:
@@ -213,7 +213,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       imagePullPolicy: Always
       command:
       - bash
@@ -259,7 +259,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-kubernetes-master
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
@@ -301,7 +301,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-kubernetes-master
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
