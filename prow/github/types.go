@@ -900,6 +900,17 @@ type ReviewCommentEvent struct {
 	GUID string
 }
 
+// DiffSide enumerates the sides of the diff that the PR's changes appear on.
+// See also: https://docs.github.com/en/rest/reference/pulls#create-a-review-comment-for-a-pull-request
+type DiffSide string
+
+const (
+	// DiffSideLeft means left side of the diff.
+	DiffSideLeft = "LEFT"
+	// DiffSideRight means right side of the diff.
+	DiffSideRight = "RIGHT"
+)
+
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
 	ID        int       `json:"id"`
@@ -912,7 +923,11 @@ type ReviewComment struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// Position will be nil if the code has changed such that the comment is no
 	// longer relevant.
-	Position *int `json:"position"`
+	Position  *int     `json:"position"`
+	Side      DiffSide `json:"side"`
+	StartSide DiffSide `json:"start_side"`
+	Line      int      `json:"line"`
+	StartLine int      `json:"start_line"`
 }
 
 // ReviewAction is the action that a review can be made with.
