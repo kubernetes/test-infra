@@ -536,5 +536,5 @@ def generate():
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
 
-
-generate()
+if __name__ == "__main__":
+    generate()
