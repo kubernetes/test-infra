@@ -19,7 +19,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         resources:
           limits:
             cpu: 5

@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -47,7 +47,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -83,7 +83,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -114,7 +114,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - bash
@@ -151,7 +151,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
