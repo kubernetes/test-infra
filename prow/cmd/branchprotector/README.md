@@ -119,6 +119,7 @@ branch-protection:
       protect: false
       repos:
         protected-repo:
+          protect: true
           # Inherit protect-by-default config from parent
           # If protected, always require the tested status context
           required_status_checks:
