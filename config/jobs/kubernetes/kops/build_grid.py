@@ -218,8 +218,6 @@ def build_test(cloud='aws',
                skip_override=None):
     # pylint: disable=too-many-statements,too-many-branches
 
-    if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
-        return
     if should_skip_newer_k8s(k8s_version, kops_version):
         return
 
@@ -382,10 +380,7 @@ def build_test(cloud='aws',
 
     # specific to kubetest2
     if use_kubetest2:
-        if networking:
-            y = y.replace('{{networking}}', networking)
-        else:
-            y = remove_line_with_prefix(y, "--networking=")
+        y = y.replace('{{networking}}', networking or 'kubenet')
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
         y = y.replace('{{container_runtime}}', container_runtime)
