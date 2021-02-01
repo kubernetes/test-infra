@@ -420,7 +420,6 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        'kops-grid',
     ]
 
     if distro:
@@ -508,6 +507,7 @@ def generate():
                     for kops_version in kops_versions:
                         build_test(cloud="aws",
                                    distro=distro,
+                                   extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
