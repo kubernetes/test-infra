@@ -14,5 +14,5 @@
 
 .PHONY: generate
 generate:
-	python3 build-grid.py > kops-periodics-grid.yaml
-	python3 build-pipeline.py > kops-pipeline.yaml
+	python3 build_grid.py > kops-periodics-grid.yaml
+	python3 build_pipeline.py > kops-pipeline.yaml

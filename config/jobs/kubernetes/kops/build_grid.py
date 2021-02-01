@@ -19,6 +19,7 @@ import yaml
 
 template = """
 - name: e2e-kops-grid{{suffix}}
+  interval: '{{interval}}'
   cron: '{{cron}}'
   labels:
     preset-service-account: "true"
@@ -52,6 +53,7 @@ template = """
       - --test_args={{test_args}}
       - --timeout=60m
       image: {{e2e_image}}
+      imagePullPolicy: Always
       resources:
         limits:
           memory: 2Gi
@@ -63,6 +65,7 @@ template = """
 kubetest2_template = """
 - name: e2e-kops-grid{{suffix}}
   cron: '{{cron}}'
+  interval: '{{interval}}'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -98,12 +101,13 @@ kubetest2_template = """
           --test-package-marker={{marker}} \\
           --parallel 25 \\
           --skip-regex="{{skip_regex}}"
-      image: {{e2e_image}}
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
+      image: {{e2e_image}}
+      imagePullPolicy: Always
       resources:
         limits:
           memory: 2Gi
@@ -203,13 +207,14 @@ def build_test(cloud='aws',
                distro=None,
                networking=None,
                container_runtime=None,
-               k8s_version=None,
+               k8s_version='latest',
                kops_version=None,
                kops_zones=None,
                force_name=None,
                feature_flags=(),
                extra_flags=None,
-               extra_dashboards=None):
+               extra_dashboards=None,
+               interval=None):
     # pylint: disable=too-many-statements,too-many-branches
 
     if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
@@ -270,18 +275,25 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
 
-    if k8s_version is None:
+    if k8s_version == 'latest':
         extract = "release/latest"
-        marker = 'stable-latest.txt'
+        marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master"
-    else:
+    elif k8s_version == 'stable':
+        extract = "release/stable"
+        marker = 'stable.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-master"
+    elif k8s_version:
         extract = expand("release/stable-{k8s_version}")
         marker = expand("stable-{k8s_version}.txt")
         k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210129-3799a64-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
+    else:
+        raise Exception('missing required k8s_version')
 
     kops_args = ""
     if networking:
@@ -349,7 +361,12 @@ def build_test(cloud='aws',
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
-    y = y.replace('{{cron}}', cron)
+    if interval:
+        y = y.replace('{{interval}}', interval)
+        y = remove_line_with_prefix(y, 'cron: ')
+    else:
+        y = y.replace('{{cron}}', cron)
+        y = remove_line_with_prefix(y, 'interval: ')
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
     y = y.replace('{{extract}}', extract)
@@ -403,7 +420,6 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        'kops-grid',
     ]
 
     if distro:
@@ -428,7 +444,7 @@ def build_test(cloud='aws',
         dashboards.append('kops-kubetest2')
 
     annotations = {
-        'testgrid-dashboards': ', '.join(dashboards),
+        'testgrid-dashboards': ', '.join(sorted(dashboards)),
         'testgrid-days-of-results': '90',
         'testgrid-tab-name': tab,
     }
@@ -463,7 +479,7 @@ distro_options = [
 ]
 
 k8s_versions = [
-    #None, # disabled until we're ready to test 1.21
+    #"latest", # disabled until we're ready to test 1.21
     "1.17",
     "1.18",
     "1.19",
@@ -491,6 +507,7 @@ def generate():
                     for kops_version in kops_versions:
                         build_test(cloud="aws",
                                    distro=distro,
+                                   extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
@@ -528,5 +545,5 @@ def generate():
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
 
-
-generate()
+if __name__ == "__main__":
+    generate()
