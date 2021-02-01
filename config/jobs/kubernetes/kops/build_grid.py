@@ -18,7 +18,7 @@ import zlib
 import yaml
 
 template = """
-- name: e2e-kops-grid{{suffix}}
+- name: {{job_name}}
   interval: '{{interval}}'
   cron: '{{cron}}'
   labels:
@@ -63,7 +63,7 @@ template = """
 """
 
 kubetest2_template = """
-- name: e2e-kops-grid{{suffix}}
+- name: {{job_name}}
   cron: '{{cron}}'
   interval: '{{interval}}'
   labels:
@@ -211,7 +211,7 @@ def build_test(cloud='aws',
                k8s_version='latest',
                kops_version=None,
                kops_zones=None,
-               force_name=None,
+               name_override=None,
                feature_flags=(),
                extra_flags=None,
                extra_dashboards=None,
@@ -331,11 +331,10 @@ def build_test(cloud='aws',
     if container_runtime:
         suffix += "-" + container_runtime
 
-    if force_name:
-        suffix = "-" + force_name
-
     # We current have an issue with long cluster names; let's hash and warn if we encounter them
     cluster_name = "e2e-kops" + suffix
+    if name_override:
+        cluster_name = name_override
     if len(cluster_name) > 32:
         md5 = hashlib.md5(cluster_name.encode('utf-8'))
         cluster_name = cluster_name[0:20] + "--" + md5.hexdigest()[0:10]
@@ -346,8 +345,12 @@ def build_test(cloud='aws',
 
     tab = 'kops-grid' + suffix
 
+    if name_override:
+        tab = name_override
+
     if tab in skip_jobs:
         return
+    job_name = 'e2e-' + tab
 
     cron = build_cron(tab)
 
@@ -361,6 +364,7 @@ def build_test(cloud='aws',
         y = kubetest2_template
     y = y.replace('{{cluster_name}}', cluster_name)
     y = y.replace('{{suffix}}', suffix)
+    y = y.replace('{{job_name}}', job_name)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
@@ -522,7 +526,7 @@ def generate():
 
     # A one-off scenario testing arm64
     # TODO: Would be nice to default the arm image, perhaps based on the instance type
-    build_test(force_name="scenario-arm64",
+    build_test(name_override="kops-grid-scenario-arm64",
                cloud="aws",
                distro="u2004",
                kops_zones=['us-east-2b'],
@@ -532,7 +536,7 @@ def generate():
                extra_dashboards=['kops-misc'])
 
     # A special test for JWKS
-    build_test(force_name="scenario-public-jwks",
+    build_test(name_override="kops-grid-scenario-public-jwks",
                cloud="aws",
                distro="u2004",
                feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
@@ -540,7 +544,7 @@ def generate():
                extra_dashboards=['kops-misc'])
 
     # A special test for AWS Cloud-Controller-Manager
-    build_test(force_name="scenario-aws-cloud-controller-manager",
+    build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
                cloud="aws",
                distro="u2004",
                k8s_version="1.19",

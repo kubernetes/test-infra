@@ -27176,7 +27176,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-scenario-arm64.test-cncf-aws.k8s.io
+      - --cluster=kops-grid-scenario-arm64.test-cncf-aws.k8s.io
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
@@ -27230,7 +27230,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-scenario-public-jwks.test-cncf-aws.k8s.io
+      - --cluster=kops-grid-scenario-public-jwks.test-cncf-aws.k8s.io
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
@@ -27284,7 +27284,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-scenario-aw--8aec44b8ad.test-cncf-aws.k8s.io
+      - --cluster=kops-grid-scenario-a--d92091ede0.test-cncf-aws.k8s.io
       - --deployment=kops
       - --kops-ssh-user=ubuntu
       - --env=KUBE_SSH_USER=ubuntu
