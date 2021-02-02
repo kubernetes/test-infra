@@ -17,6 +17,7 @@
 """Generate JSON for BigQuery importing."""
 
 import argparse
+import gzip
 import logging
 import json
 import os
@@ -265,6 +266,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--days', type=float, default=0,
                         help='Grab data for builds within N days')
+    parser.add_argument('--out-file', type=str, default="build.json.gz",
+                        help='File to write compressed json, used in `bq load`')
     parser.add_argument('--assert-oldest', type=float,
                         help='Exit nonzero if a build older than X days was emitted previously.')
     parser.add_argument('--reset-emitted', action='store_true',
@@ -311,10 +314,12 @@ def main(db, opts, outfile):
         builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
 
     rows_emitted = set()
-    for rowid, row in make_rows(db, builds):
-        json.dump(row, outfile, sort_keys=True)
-        outfile.write('\n')
-        rows_emitted.add(rowid)
+
+    with gzip.open(opts.out_file, 'wt', encoding="ascii") as zipfile:
+        for rowid, row in make_rows(db, builds):
+            json.dump(row, zipfile, sort_keys=True)
+            zipfile.write('\n')
+            rows_emitted.add(rowid)
 
     if rows_emitted:
         gen = db.insert_emitted(rows_emitted, incremental_table=incremental_table)

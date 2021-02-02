@@ -62,21 +62,21 @@ def main():
         mj_ext = ' --reset-emitted'
 
     if os.getenv('DEPLOYMENT', 'staging') == "prod":
-        call(f'{mj_cmd} {mj_ext} --days {DAY} | pv | gzip > build_day.json.gz')
+        call(f'{mj_cmd} {mj_ext} --days {DAY} --out-file build_day.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.day build_day.json.gz schema.json')
 
-        call(f'{mj_cmd} {mj_ext} --days {WEEK} | pv | gzip > build_week.json.gz')
+        call(f'{mj_cmd} {mj_ext} --days {WEEK} --out-file build_week.json.gz')
         call(f'{bq_cmd} {bq_ext} k8s-gubernator:build.week build_week.json.gz schema.json')
 
         # TODO: (MushuEE) #20024, remove 30 day limit once issue with all uploads is found
-        call(f'{mj_cmd} --days {MONTH} | pv | gzip > build_all.json.gz')
+        call(f'{mj_cmd} --days {MONTH} --out-file build_all.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
         call(f'python3 stream.py --poll {SUB_PATH} ' \
              f'--dataset k8s-gubernator:build ' \
              f'--tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
     else:
-        call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
+        call(f'{mj_cmd} --out-file build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
         call(f'python3 stream.py --poll {SUB_PATH} ' \
              f'--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
