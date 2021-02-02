@@ -127,12 +127,12 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-osd-default-plus-two-nightly
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-osd-default-plus-one-nightly
+- name: osde2e-int-rosa-e2e-osd-default-plus-one-nightly
+  gcs_prefix: origin-ci-test/logs/osde2e-int-rosa-e2e-osd-default-plus-one-nightly
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-osd-default-plus-two-nightly
+- name: osde2e-int-rosa-e2e-osd-default-plus-two-nightly
+  gcs_prefix: origin-ci-test/logs/osde2e-int-rosa-e2e-osd-default-plus-two-nightly
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-stage-gcp-e2e-default
@@ -157,16 +157,16 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-next-z
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-stage-moa-e2e-default
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-default
+- name: osde2e-stage-rosa-e2e-default
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-rosa-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-stage-moa-e2e-next-y
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-next-y
+- name: osde2e-stage-rosa-e2e-next-y
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-rosa-e2e-next-y
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-stage-moa-e2e-next-z
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-next-z
+- name: osde2e-stage-rosa-e2e-next-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-rosa-e2e-next-z
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-prod-gcp-e2e-default
@@ -187,12 +187,12 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-next
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-prod-moa-e2e-default
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-default
+- name: osde2e-prod-rosa-e2e-default
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-rosa-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-prod-moa-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-next
+- name: osde2e-prod-rosa-e2e-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-rosa-e2e-next
   column_header:
   - configuration_value: cluster-version
 
@@ -781,9 +781,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
+  - name: osde2e-int-rosa-e2e-osd-default-plus-one-nightly
     description: OSD test
-    test_group_name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
+    test_group_name: osde2e-int-rosa-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -801,9 +801,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
+  - name: osde2e-int-rosa-e2e-osd-default-plus-two-nightly
     description: OSD test
-    test_group_name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
+    test_group_name: osde2e-int-rosa-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -921,9 +921,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-moa-e2e-default
+  - name: osde2e-stage-rosa-e2e-default
     description: Runs a test using the default version on ROSA
-    test_group_name: osde2e-stage-moa-e2e-default
+    test_group_name: osde2e-stage-rosa-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -941,9 +941,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-moa-e2e-next-y
+  - name: osde2e-stage-rosa-e2e-next-y
     description: Runs a test using the next-y version on ROSA
-    test_group_name: osde2e-stage-moa-e2e-next-y
+    test_group_name: osde2e-stage-rosa-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -961,9 +961,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-moa-e2e-next-z
+  - name: osde2e-stage-rosa-e2e-next-z
     description: Runs a test using the next-z version on ROSA
-    test_group_name: osde2e-stage-moa-e2e-next-z
+    test_group_name: osde2e-stage-rosa-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -1061,9 +1061,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-moa-e2e-default
+  - name: osde2e-prod-rosa-e2e-default
     description: Runs a test using default version on ROSA
-    test_group_name: osde2e-prod-moa-e2e-default
+    test_group_name: osde2e-prod-rosa-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -1081,9 +1081,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-moa-e2e-next
+  - name: osde2e-prod-rosa-e2e-next
     description: Runs an a test using the next available version in ROSA
-    test_group_name: osde2e-prod-moa-e2e-next
+    test_group_name: osde2e-prod-rosa-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
