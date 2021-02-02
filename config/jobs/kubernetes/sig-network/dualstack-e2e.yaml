@@ -143,7 +143,8 @@ periodics:
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -195,7 +196,8 @@ periodics:
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -247,7 +249,8 @@ periodics:
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -302,7 +305,8 @@ presubmits:
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+        # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
         - --ginkgo-parallel=20
         securityContext:
           privileged: true
@@ -354,7 +358,8 @@ presubmits:
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+        # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
         - --ginkgo-parallel=20
         securityContext:
           privileged: true
