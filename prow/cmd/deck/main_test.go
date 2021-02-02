@@ -924,11 +924,11 @@ func TestHandleConfig(t *testing.T) {
 
 func TestHandlePluginConfig(t *testing.T) {
 	c := plugins.Configuration{
-		Plugins: map[string][]string{
-			"org/repo": {
+		Plugins: plugins.Plugins{
+			"org/repo": {Plugins: []string{
 				"approve",
 				"lgtm",
-			},
+			}},
 		},
 		Blunderbuss: plugins.Blunderbuss{
 			ExcludeApprovers: true,

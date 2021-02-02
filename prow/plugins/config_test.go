@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	utilpointer "k8s.io/utils/pointer"
@@ -1435,5 +1437,86 @@ func TestConfigUpdaterResolve(t *testing.T) {
 				t.Errorf("expected config differs from actual config: %s", diff)
 			}
 		})
+	}
+}
+
+func TestEnabledReposForPlugin(t *testing.T) {
+	pluginsYaml := []byte(`
+orgA:
+ excluded_repos:
+ - repoB
+ plugins:
+ - pluginCommon
+ - pluginNotForRepoB
+orgA/repoB:
+ plugins:
+ - pluginCommon
+ - pluginOnlyForRepoB
+`)
+	var p Plugins
+	err := yaml.Unmarshal(pluginsYaml, &p)
+	if err != nil {
+		t.Errorf("cannot unmarshal plugins config: %v", err)
+	}
+	cfg := Configuration{
+		Plugins: p,
+	}
+	testCases := []struct {
+		name              string
+		wantOrgs          []string
+		wantRepos         []string
+		wantExcludedRepos map[string]sets.String
+	}{
+		{
+			name:              "pluginCommon",
+			wantOrgs:          []string{"orgA"},
+			wantRepos:         []string{"orgA/repoB"},
+			wantExcludedRepos: map[string]sets.String{"orgA": {}},
+		},
+		{
+			name:              "pluginNotForRepoB",
+			wantOrgs:          []string{"orgA"},
+			wantRepos:         nil,
+			wantExcludedRepos: map[string]sets.String{"orgA": {"orgA/repoB": {}}},
+		},
+		{
+			name:              "pluginOnlyForRepoB",
+			wantOrgs:          nil,
+			wantRepos:         []string{"orgA/repoB"},
+			wantExcludedRepos: map[string]sets.String{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			orgs, repos, excludedRepos := cfg.EnabledReposForPlugin(tc.name)
+			if diff := cmp.Diff(tc.wantOrgs, orgs); diff != "" {
+				t.Errorf("expected wantOrgs differ from actual: %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantRepos, repos); diff != "" {
+				t.Errorf("expected repos differ from actual: %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantExcludedRepos, excludedRepos); diff != "" {
+				t.Errorf("expected excludedRepos differ from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestPluginsUnmarshalFailed(t *testing.T) {
+	badPluginsYaml := []byte(`
+orgA:
+ excluded_repos = [ repoB ]
+ plugins:
+ - pluginCommon
+ - pluginNotForRepoB
+orgA/repoB:
+ plugins:
+ - pluginCommon
+ - pluginOnlyForRepoB
+`)
+	var p Plugins
+	err := p.UnmarshalJSON(badPluginsYaml)
+	if err == nil {
+		t.Error("expected unmarshal error but didn't get one")
 	}
 }

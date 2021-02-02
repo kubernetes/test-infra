@@ -104,7 +104,7 @@ func TestHook(t *testing.T) {
 		nil,
 	)
 	pa := &plugins.ConfigAgent{}
-	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
+	pa.Set(&plugins.Configuration{Plugins: plugins.Plugins{"foo/bar": {Plugins: []string{"baz"}}}})
 	ca := &config.Agent{}
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:   github.NewFakeClient(),

@@ -157,7 +157,7 @@ func (ha *HelpAgent) GeneratePluginHelp() *pluginhelp.Help {
 		"": allPlugins,
 	}
 	for repo, plugins := range config.Plugins {
-		repoPlugins[repo] = plugins
+		repoPlugins[repo] = plugins.Plugins
 	}
 	repoExternalPlugins := map[string][]string{
 		"": allExternalPlugins,
@@ -242,7 +242,7 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 		} else {
 			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
-		for _, plugin := range enabledPlugins {
+		for _, plugin := range enabledPlugins.Plugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
