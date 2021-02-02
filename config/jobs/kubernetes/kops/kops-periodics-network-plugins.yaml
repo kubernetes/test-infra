@@ -30,7 +30,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -66,7 +66,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -102,7 +102,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -139,7 +139,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|should.set.TCP.CLOSE_WAIT|rejected.when.no.endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -175,7 +175,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -211,7 +211,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -247,7 +247,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
@@ -283,7 +283,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-network-plugins
     testgrid-days-of-results: "30"
