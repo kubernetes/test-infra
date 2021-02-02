@@ -29,6 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
@@ -41,6 +42,7 @@ var (
 // StorageArtifactFetcher contains information used for fetching artifacts from GCS
 type StorageArtifactFetcher struct {
 	opener        pkgio.Opener
+	cfg           config.Getter
 	useCookieAuth bool
 }
 
@@ -57,11 +59,30 @@ type storageJobSource struct {
 }
 
 // NewStorageArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewStorageArtifactFetcher(opener pkgio.Opener, useCookieAuth bool) *StorageArtifactFetcher {
+func NewStorageArtifactFetcher(opener pkgio.Opener, cfg config.Getter, useCookieAuth bool) *StorageArtifactFetcher {
 	return &StorageArtifactFetcher{
 		opener:        opener,
+		cfg:           cfg,
 		useCookieAuth: useCookieAuth,
 	}
+}
+
+// parseStorageURL parses and validates the storage path.
+// If no scheme is given we assume Google Cloud Storage ("gs"). For example:
+// * test-bucket/logs/sig-flexing/example-ci-run/403 or
+// * gs://test-bucket/logs/sig-flexing/example-ci-run/403
+func (af *StorageArtifactFetcher) parseStorageURL(storagePath string) (*url.URL, error) {
+	if !strings.Contains(storagePath, "://") {
+		storagePath = "gs://" + storagePath
+	}
+	storageURL, err := url.Parse(storagePath)
+	if err != nil {
+		return nil, ErrCannotParseSource
+	}
+	if err := af.cfg().ValidateStorageBucket(storageURL.Host); err != nil {
+		return nil, err
+	}
+	return storageURL, nil
 }
 
 func fieldsForJob(src *storageJobSource) logrus.Fields {
@@ -70,16 +91,14 @@ func fieldsForJob(src *storageJobSource) logrus.Fields {
 	}
 }
 
-// newStorageJobSource creates a new storageJobSource from a given storage provider bucket and jobPrefix. If no scheme is given we assume GS, e.g.:
+// newStorageJobSource creates a new storageJobSource from a given storage URL.
+// If no scheme is given we assume Google Cloud Storage ("gs"). For example:
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
-func newStorageJobSource(src string) (*storageJobSource, error) {
-	if !strings.Contains(src, "://") {
-		src = "gs://" + src
-	}
-	storageURL, err := url.Parse(src)
+func (af *StorageArtifactFetcher) newStorageJobSource(storagePath string) (*storageJobSource, error) {
+	storageURL, err := af.parseStorageURL(storagePath)
 	if err != nil {
-		return &storageJobSource{}, ErrCannotParseSource
+		return &storageJobSource{}, err
 	}
 	var object string
 	if storageURL.Path == "" {
@@ -95,7 +114,7 @@ func newStorageJobSource(src string) (*storageJobSource, error) {
 	buildID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
 	return &storageJobSource{
-		source:     src,
+		source:     storageURL.String(),
 		linkPrefix: storageURL.Scheme + "://",
 		bucket:     storageURL.Host,
 		jobPrefix:  path.Clean(object) + "/",
@@ -109,10 +128,7 @@ func newStorageJobSource(src string) (*storageJobSource, error) {
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
 func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
-	if !strings.Contains(key, "://") {
-		key = "gs://" + key
-	}
-	src, err := newStorageJobSource(key)
+	src, err := af.newStorageJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
 	}
@@ -121,7 +137,7 @@ func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]
 	_, prefix := extractBucketPrefixPair(src.jobPath())
 	artifacts := []string{}
 
-	it, err := af.opener.Iterator(ctx, key, "")
+	it, err := af.opener.Iterator(ctx, src.source, "")
 	if err != nil {
 		return artifacts, err
 	}
@@ -133,6 +149,9 @@ func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]
 			break
 		}
 		if err != nil {
+			if err == context.Canceled {
+				return nil, err
+			}
 			logrus.WithFields(fieldsForJob(src)).WithError(err).Error("Error accessing GCS artifact.")
 			if i >= len(wait) {
 				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %v", err)
@@ -178,10 +197,7 @@ func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, er
 // * test-bucket/logs/sig-flexing/example-ci-run/403 or
 // * gs://test-bucket/logs/sig-flexing/example-ci-run/403
 func (af *StorageArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
-	if !strings.Contains(key, "://") {
-		key = "gs://" + key
-	}
-	src, err := newStorageJobSource(key)
+	src, err := af.newStorageJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get GCS job source from %s: %v", key, err)
 	}

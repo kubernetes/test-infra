@@ -59,6 +59,7 @@ query: |
   ORDER BY
     day DESC,
     pr_failure_perc DESC
+
 jqfilter: |
   ([(.[] | .day|tonumber)] | max) as $newestday |
   [(.[] | select((.day|tonumber)==$newestday) | {

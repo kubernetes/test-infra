@@ -12,7 +12,7 @@ periodics:
     testgrid-tab-name: echo-test
     description: temporarily echoing things.
 - name: ci-test-infra-benchmark-demo
-  interval: 20m
+  interval: 24h
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -35,37 +35,49 @@ periodics:
     testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.
 - interval: 1h
-  name: ci-test-infra-larger-multiple-container-test
+  name: ci-test-infra-multiple-container-test
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  labels:
-    preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - name: benchmark-junit-container
-      image: gcr.io/k8s-testimages/benchmarkjunit:latest
-      command:
-      - /benchmarkjunit
+    - name: test-1
+      image: alpine
+      command: ["/bin/echo"]
+      args: ["I am first"]
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+    - name: test-2
+      image: alpine
+      command: ["/bin/sh"]
       args:
-      - --log-file=$(ARTIFACTS)/benchmark-log.txt
-      - --output=$(ARTIFACTS)/junit_benchmarks.xml
-      - --pass-on-error
-      - ./experiment/dummybenchmarks/...
-    - name: bazel-test-container
-      image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
-      command:
-      - hack/bazel.sh
+      - -c
+      - "sleep 60 && echo I && sleep 60 && echo am && sleep 60 && echo second"
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+    - name: test-3
+      image: alpine
+      command: ["/bin/sh"]
       args:
-      - test
-      - --config=ci
-      - --nobuild_tests_only
-      - //...
+      - -c
+      - "sleep 120 && echo I && sleep 120 && echo am && sleep 120 && echo third"
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
   annotations:
     testgrid-alert-email: anthonytong@google.com
     testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: larger-multiple-container-test
-    description: combination of test-infra-bazel and ci-test-infra-benchmark-demo to test more complicated multi container behavior
+    testgrid-tab-name: multiple-container-test
+    description: echo at different times from three different containers

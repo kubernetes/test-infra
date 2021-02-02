@@ -9,7 +9,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-test-infra
         command:
         - hack/bazel.sh
         args:

@@ -1,0 +1,12 @@
+<testsuite failures="1" tests="7" time="662.614119181">
+    <testcase classname="e2e.go" name="TearDown Previous" time="2.065e-05"/>
+    <testcase classname="e2e.go" name="Up" time="6.342e-06"/>
+    <testcase classname="e2e.go" name="test setup" time="5.298e-06"/>
+    <testcase classname="e2e.go" name="Node Tests" time="654.279097299">
+        <failure>error during go run</failure>
+    </testcase>
+    <testcase classname="e2e.go" time="5.399023835"/>
+    <testcase classname="e2e.go" time="1.21e-05"/>
+    <testcase classname="e2e.go" name="Deferred TearDown" time="2.17e-07"/>
+    <testcase classname="e2e.go" name="Timeout" time="3900"/>
+</testsuite>

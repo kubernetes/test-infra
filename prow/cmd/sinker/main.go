@@ -29,19 +29,23 @@ import (
 	corev1api "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/version"
 )
 
 type options struct {
@@ -114,57 +118,67 @@ func main() {
 
 	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	// Enabling debug logging has the unfortunate side-effect of making the log
-	// unstructured
-	// https://github.com/kubernetes-sigs/controller-runtime/issues/442
-	ctrlruntimelog.SetLogger(ctrlruntimelog.ZapLogger(cfg().LogLevel == "debug"))
+	ctrlruntimelog.SetLogger(zap.New(zap.JSONEncoder()))
 
 	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun.Value)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting config for infastructure cluster")
 	}
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	opts := manager.Options{
-		MetricsBindAddress:      "0",
-		Namespace:               cfg().ProwJobNamespace,
-		LeaderElection:          true,
-		LeaderElectionNamespace: configAgent.Config().ProwJobNamespace,
-		LeaderElectionID:        "prow-sinker-leaderlock",
+		MetricsBindAddress:            "0",
+		Namespace:                     cfg().ProwJobNamespace,
+		LeaderElection:                true,
+		LeaderElectionNamespace:       configAgent.Config().ProwJobNamespace,
+		LeaderElectionID:              "prow-sinker-leaderlock",
+		LeaderElectionReleaseOnCancel: true,
 	}
 	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun.Value,
+		func(o *manager.Options) {
+			o.Namespace = cfg().PodNamespace
+		},
+	)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
 	}
 
-	var podClients []podInterface
-	for _, client := range buildClusterClients {
-		// sinker doesn't care about build cluster aliases
-		podClients = append(podClients, client)
+	buildClusterClients := map[string]ctrlruntimeclient.Client{}
+	for clusterName, buildManager := range buildManagers {
+		if err := mgr.Add(buildManager); err != nil {
+			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
+		}
+		buildClusterClients[clusterName] = buildManager.GetClient()
 	}
 
 	c := controller{
 		ctx:           context.Background(),
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
 		prowJobClient: mgr.GetClient(),
-		podClients:    podClients,
+		podClients:    buildClusterClients,
 		config:        cfg,
 		runOnce:       o.runOnce,
 	}
 	if err := mgr.Add(&c); err != nil {
 		logrus.WithError(err).Fatal("failed to add controller to manager")
 	}
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
-}
-
-type podInterface interface {
-	Delete(ctx context.Context, name string, options metav1.DeleteOptions) error
-	List(ctx context.Context, opts metav1.ListOptions) (*corev1api.PodList, error)
+	logrus.Info("Manager ended gracefully")
 }
 
 type controller struct {
@@ -172,12 +186,12 @@ type controller struct {
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    []podInterface
+	podClients    map[string]ctrlruntimeclient.Client
 	config        config.Getter
 	runOnce       bool
 }
 
-func (c *controller) Start(stopChan <-chan struct{}) error {
+func (c *controller) Start(ctx context.Context) error {
 	runChan := make(chan struct{})
 
 	// We want to be able to dynamically adjust to changed config values, hence we cant use a time.Ticker
@@ -190,7 +204,7 @@ func (c *controller) Start(stopChan <-chan struct{}) error {
 
 	for {
 		select {
-		case <-stopChan:
+		case <-ctx.Done():
 			c.logger.Info("stop signal received, quitting")
 			return nil
 		case <-runChan:
@@ -273,14 +287,6 @@ func init() {
 	prometheus.MustRegister(sinkerMetrics.prowJobsCreated)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaned)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaningErrors)
-}
-
-func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
-	result := 0
-	for _, v := range m.podsRemoved {
-		result += v
-	}
-	return result
 }
 
 func (m *sinkerReconciliationMetrics) getTimeUsed() time.Duration {
@@ -368,14 +374,25 @@ func (c *controller) clean() {
 	}
 
 	// Now clean up old pods.
-	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
 	for cluster, client := range c.podClients {
 		log := c.logger.WithField("cluster", cluster)
-		pods, err := client.List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
-		if err != nil {
+		var isClusterExcluded bool
+		for _, excludeCluster := range c.config().Sinker.ExcludeClusters {
+			if excludeCluster == cluster {
+				isClusterExcluded = true
+				break
+			}
+		}
+		if isClusterExcluded {
+			log.Debugf("Cluster %q is excluded, skipping pods deletion.", cluster)
+			continue
+		}
+		var pods corev1api.PodList
+		if err := client.List(c.ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(c.config().PodNamespace)); err != nil {
 			log.WithError(err).Error("Error listing pods.")
 			continue
 		}
+		log.WithField("pod-count", len(pods.Items)).Debug("Successfully listed pods.")
 		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		terminatedPodTTL := c.config().Sinker.TerminatedPodTTL.Duration
@@ -390,9 +407,16 @@ func (c *controller) clean() {
 			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
 				podJobName = value
 			}
+			log = log.WithField("pj", podJobName)
 			terminationTime := time.Time{}
 			if pj, ok := pjMap[podJobName]; ok && pj.Complete() {
 				terminationTime = pj.Status.CompletionTime.Time
+			}
+
+			if podNeedsKubernetesFinalizerCleanup(log, pjMap[podJobName], &pod) {
+				if err := c.cleanupKubernetesFinalizer(&pod, client); err != nil {
+					log.WithError(err).Error("Failed to remove kubernetesreporter finalizer")
+				}
 			}
 
 			switch {
@@ -409,7 +433,8 @@ func (c *controller) clean() {
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if _, ok := pjMap[podJobName]; !ok {
+
+			if c.isPodOrphaned(log, &pod, podJobName) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true
@@ -419,7 +444,7 @@ func (c *controller) clean() {
 				continue
 			}
 
-			c.deletePod(log, pod.Name, reason, client, &metrics)
+			c.deletePod(log, &pod, reason, client, &metrics)
 		}
 	}
 
@@ -439,17 +464,69 @@ func (c *controller) clean() {
 	for k, v := range metrics.prowJobsCleaningErrors {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
+	version.GatherProwVersion(c.logger)
 	c.logger.Info("Sinker reconciliation complete.")
 }
 
-func (c *controller) deletePod(log *logrus.Entry, name, reason string, client podInterface, m *sinkerReconciliationMetrics) {
-	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
-	if err := client.Delete(context.TODO(), name, metav1.DeleteOptions{}); err == nil {
-		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
-		m.podsRemoved[reason]++
-	} else if !k8serrors.IsNotFound(err) {
-		log.WithField("pod", name).WithError(err).Error("Error deleting pod.")
-		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
+func (c *controller) cleanupKubernetesFinalizer(pod *corev1api.Pod, client ctrlruntimeclient.Client) error {
+
+	oldPod := pod.DeepCopy()
+	pod.Finalizers = sets.NewString(pod.Finalizers...).Delete(kubernetesreporterapi.FinalizerName).List()
+
+	if err := client.Patch(c.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
+	return nil
+}
+
+func (c *controller) deletePod(log *logrus.Entry, pod *corev1api.Pod, reason string, client ctrlruntimeclient.Client, m *sinkerReconciliationMetrics) {
+	name := pod.Name
+	// Delete old finished or orphan pods. Don't quit if we fail to delete one.
+	if err := client.Delete(c.ctx, pod); err == nil {
+		log.WithFields(logrus.Fields{"pod": name, "reason": reason}).Info("Deleted old completed pod.")
+		m.podsRemoved[reason]++
+	} else {
+		m.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
+		if k8serrors.IsNotFound(err) {
+			log.WithField("pod", name).WithError(err).Info("Could not delete missing pod.")
+		} else {
+			log.WithField("pod", name).WithError(err).Error("Error deleting pod.")
+		}
+	}
+}
+
+func (c *controller) isPodOrphaned(log *logrus.Entry, pod *corev1api.Pod, prowJobName string) bool {
+	// ProwJobs are cached and the cache may lag a bit behind, so never considers
+	// pods that are less than 30 seconds old as orphaned
+	if !pod.CreationTimestamp.Before(&metav1.Time{Time: time.Now().Add(-30 * time.Second)}) {
+		return false
+	}
+
+	// We do a list in the very beginning of our processing. By the time we reach this check, that
+	// list might be outdated, so do another GET here before declaring the pod orphaned
+	pjName := types.NamespacedName{Namespace: c.config().ProwJobNamespace, Name: prowJobName}
+	if err := c.prowJobClient.Get(c.ctx, pjName, &prowapi.ProwJob{}); err != nil {
+		if k8serrors.IsNotFound(err) {
+			return true
+		}
+		logrus.WithError(err).Error("Failed to get prowjob")
+	}
+
+	return false
+}
+
+func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, pod *corev1api.Pod) bool {
+	// Can happen if someone deletes the prowjob before it finishes
+	if pj == nil {
+		return true
+	}
+	// This is always a bug
+	if pj.Complete() && pj.Status.PrevReportStates[kubernetesreporterapi.ReporterName] == pj.Status.State && sets.NewString(pod.Finalizers...).Has(kubernetesreporterapi.FinalizerName) {
+		log.WithField("pj", pj.Name).Errorf("BUG: Pod for prowjob still had the %s finalizer after completing and being successfully reported by the %s reporter", kubernetesreporterapi.FinalizerName, kubernetesreporterapi.ReporterName)
+
+		return true
+	}
+
+	return false
 }

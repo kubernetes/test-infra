@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         - kubetest
@@ -127,11 +127,11 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.16
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/linux.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         securityContext:
@@ -159,7 +159,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         - kubetest
@@ -174,11 +174,11 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/linux-vmss.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         securityContext:
@@ -208,7 +208,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         - kubetest
@@ -225,11 +225,11 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.18
-        - --aksengine-location=westus2
+        - --aksengine-location=eastus2
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_csi_proxy.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         securityContext:
@@ -242,6 +242,58 @@ presubmits:
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-windows
       description: "Run E2E tests on a Windows cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-migration
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/migration.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Specific test args
+        - --test-azure-file-csi-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: AZURE_STORAGE_DRIVER
+            value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+          - name: TEST_MIGRATION
+            value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration
+      description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Linux nodes."
+      testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-windows-build
     decorate: true
     always_run: true
@@ -252,7 +304,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -262,4 +314,113 @@ presubmits:
       testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azurefile-csi-driver-windows-build
       description: "Run make azurefile-windows for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-windows-containerd
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Specific test args
+        - --test-azure-file-csi-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: TEST_WINDOWS
+            value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azurefile-csi-driver-e2e-windows-containerd
+      description: "Run E2E tests on a Windows containerd cluster for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-migration-windows
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/migration-windows.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Specific test args
+        - --test-azure-file-csi-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: AZURE_STORAGE_DRIVER
+            value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+          - name: TEST_MIGRATION
+            value: "true"
+          - name: TEST_WINDOWS
+            value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration-windows
+      description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'

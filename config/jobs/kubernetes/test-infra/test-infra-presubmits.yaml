@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -31,7 +31,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20200721-0db9121
+      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -73,12 +73,13 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-yaml
 
+  # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200814-1330dc0906
+      - image: gcr.io/k8s-prow/checkconfig:v20210201-6494714d87
         command:
         - /checkconfig
         args:
@@ -96,3 +97,31 @@ presubmits:
         - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-integration
+    branches:
+    - master
+    always_run: false # TODO(fejta): merge into bazel test //...
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        command:
+        - runner.sh
+        args:
+        - prow/test/integration/test.sh
+        - --config=ci
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration

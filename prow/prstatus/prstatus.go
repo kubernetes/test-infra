@@ -167,7 +167,7 @@ func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *se
 type GitHubClient interface {
 	githubQuerier
 	githubStatusFetcher
-	BotName() (string, error)
+	BotUser() (*github.UserData, error)
 }
 
 type githubClientCreator func(accessToken string) GitHubClient
@@ -204,12 +204,12 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		// not, we invalidate the sessions and continue as if not logged in.
 		token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
 		var user *github.User
-		var botName string
+		var botUser *github.UserData
 		if ok && token.Valid() {
 			githubClient := createClient(token.AccessToken)
 			var err error
-			botName, err = githubClient.BotName()
-			user = &github.User{Login: botName}
+			botUser, err = githubClient.BotUser()
+			user = &github.User{Login: botUser.Login}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
@@ -335,6 +335,7 @@ func (da *DashboardAgent) queryPullRequests(ctx context.Context, ghc githubQueri
 
 type githubStatusFetcher interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 }
 
 // getHeadContexts returns the status checks' contexts of the head commit of the PR.
@@ -345,16 +346,32 @@ func (da *DashboardAgent) getHeadContexts(ghc githubStatusFetcher, pr PullReques
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
 	}
-	contexts := make([]Context, 0, len(combined.Statuses))
+	checkruns, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch checkruns: %v", err)
+	}
+	contexts := make([]Context, 0, len(combined.Statuses)+len(checkruns.CheckRuns))
 	for _, status := range combined.Statuses {
-		contexts = append(
-			contexts,
-			Context{
-				Context:     status.Context,
-				Description: status.Description,
-				State:       strings.ToUpper(status.State),
-			},
-		)
+		contexts = append(contexts, Context{
+			Context:     status.Context,
+			Description: status.Description,
+			State:       strings.ToUpper(status.State),
+		})
+	}
+	for _, checkrun := range checkruns.CheckRuns {
+		var state string
+		if checkrun.CompletedAt == "" {
+			state = "PENDING"
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			state = "SUCCESS"
+		} else {
+			state = strings.ToUpper(checkrun.Conclusion)
+		}
+		contexts = append(contexts, Context{
+			Context:     checkrun.Name,
+			Description: checkrun.DetailsURL,
+			State:       state,
+		})
 	}
 	return contexts, nil
 }

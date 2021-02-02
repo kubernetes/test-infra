@@ -15,11 +15,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: 0052cc
-      description: Issues or PRs related to Kubernetes licensing
-      name: area/licensing
-      target: both
-      addedBy: label
-    - color: 0052cc
       description: Issues or PRs related to dependency changes
       name: area/dependency
       target: both
@@ -97,6 +92,12 @@ default:
       addedBy: humans
       previously:
         - name: cherrypick-approved
+    - color: 8fc951
+      description: Indicates an issue or PR is ready to be actively worked on.
+      name: triage/accepted
+      target: both
+      prowPlugin: label
+      addedBy: org members
     - color: d455d0
       description: Indicates an issue is a duplicate of other open issue.
       name: triage/duplicate
@@ -117,15 +118,6 @@ default:
       name: triage/not-reproducible
       previously:
         - name: close/not-reproducible
-      target: both
-      addedBy: humans
-    - color: d455d0
-      description: Indicates an issue that is a support question.
-      name: triage/support
-      previously:
-        - name: close/support
-        - name: kind/support
-        - name: question
       target: both
       addedBy: humans
     - color: d455d0
@@ -310,6 +302,15 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: d455d0
+      description: Categorizes issue or PR as a support question.
+      name: kind/support
+      previously:
+        - name: close/support
+        - name: question
+        - name: triage/support
+      target: both
+      addedBy: humans
     - color: 15dd18
       description: Indicates that a PR is ready to be merged.
       name: lgtm
@@ -368,6 +369,12 @@ default:
     - color: ededed
       description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
       name: needs-sig
+      target: both
+      prowPlugin: require-matching-label
+      addedBy: prow
+    - color: ededed
+      description: Indicates an issue or PR lacks a `triage/foo` label and requires one.
+      name: needs-triage
       target: both
       prowPlugin: require-matching-label
       addedBy: prow
@@ -531,6 +538,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to SIG Security.
+      name: sig/security
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Service Catalog.
       name: sig/service-catalog
       target: both
@@ -587,18 +600,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG LTS.
-      name: wg/lts
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Machine Learning.
-      name: wg/machine-learning
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Multitenancy.
       name: wg/multitenancy
       target: both
@@ -617,15 +618,8 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Resource Management.
-      name: wg/resource-management
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-      deleteAfter: 2020-04-08T00:00:00Z
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Security Audit.
-      name: wg/security-audit
+      description: Categorizes an issue or PR as relevant to WG Reliability
+      name: wg/reliability
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -958,6 +952,12 @@ repos:
         target: issues
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
         target: both
@@ -1001,6 +1001,19 @@ repos:
         target: prs
         prowPlugin: require-matching-label
         addedBy: prow
+      - color: e11d21
+        description: Indicates a PR lacks a `kind/foo` label and requires one.
+        name: do-not-merge/needs-kind
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+      - color: e11d21
+        description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
+        name: do-not-merge/needs-sig
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
+
   kubernetes/org:
     labels:
       - color: 0052cc
@@ -1026,6 +1039,12 @@ repos:
   kubernetes/release:
     labels:
       - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
@@ -1034,6 +1053,12 @@ repos:
         addedBy: label
   kubernetes/sig-release:
     labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the Enhancements subproject
         name: area/enhancements
@@ -1053,6 +1078,12 @@ repos:
         addedBy: label
   kubernetes/test-infra:
     labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to code in /robots
         name: area/robots
@@ -1211,11 +1242,6 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to prow's knative-build controller component
         name: area/prow/knative-build
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's mkbuild-cluster component
-        name: area/prow/mkbuild-cluster
         target: both
         addedBy: label
       - color: 0052cc
@@ -1502,11 +1528,24 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to docker provider
+        name: area/provider/docker
+        target: both
+        addedBy: label
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
         description: Issues or PRs related to proposals.
         name: kind/proposal
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+  kubernetes-sigs/cluster-api-provider-aws:
+    labels:
+      - color: c2e0c6
+        description: Denotes an issue or PR contains a decision that needs documenting using an ADR.
+        name: adr-required
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -1555,3 +1594,18 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
+  kubernetes-sigs/k8s-container-image-promoter:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts for subprojects
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        previously:
+          - name: area/release-infra
+        target: both
+        addedBy: label

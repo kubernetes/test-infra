@@ -150,9 +150,147 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 		configInfo[repo.String()] = strings.Join(configInfoStrings, "\n")
 	}
+	str := func(s string) *string { return &s }
+	yes := true
+	no := false
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Bugzilla: plugins.Bugzilla{
+			Default: map[string]plugins.BugzillaBranchOptions{
+				"*": {
+					ValidateByDefault: &yes,
+					IsOpen:            &yes,
+					TargetRelease:     str("release1"),
+					Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+					ValidStates: &[]plugins.BugzillaBugState{
+						{
+							Status: "MODIFIED",
+						},
+						{
+							Status:     "CLOSED",
+							Resolution: "ERRATA",
+						},
+					},
+					DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+					DependentBugStates: &[]plugins.BugzillaBugState{
+						{
+							Status: "MODIFIED",
+						},
+					},
+					DependentBugTargetReleases: &[]string{"release1", "release2"},
+					StatusAfterValidation:      str("VERIFIED"),
+					StateAfterValidation: &plugins.BugzillaBugState{
+						Status: "VERIFIED",
+					},
+					AddExternalLink:  &no,
+					StatusAfterMerge: str("RELEASE_PENDING"),
+					StateAfterMerge: &plugins.BugzillaBugState{
+						Status:     "RELEASE_PENDING",
+						Resolution: "RESOLVED",
+					},
+					StateAfterClose: &plugins.BugzillaBugState{
+						Status:     "RESET",
+						Resolution: "FIXED",
+					},
+					AllowedGroups: []string{"group1", "groups2"},
+				},
+			},
+			Orgs: map[string]plugins.BugzillaOrgOptions{
+				"org": {
+					Default: map[string]plugins.BugzillaBranchOptions{
+						"*": {
+							ExcludeDefaults:   &yes,
+							ValidateByDefault: &yes,
+							IsOpen:            &yes,
+							TargetRelease:     str("release1"),
+							Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+							ValidStates: &[]plugins.BugzillaBugState{
+								{
+									Status: "MODIFIED",
+								},
+								{
+									Status:     "CLOSED",
+									Resolution: "ERRATA",
+								},
+							},
+							DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+							DependentBugStates: &[]plugins.BugzillaBugState{
+								{
+									Status: "MODIFIED",
+								},
+							},
+							DependentBugTargetReleases: &[]string{"release1", "release2"},
+							StatusAfterValidation:      str("VERIFIED"),
+							StateAfterValidation: &plugins.BugzillaBugState{
+								Status: "VERIFIED",
+							},
+							AddExternalLink:  &no,
+							StatusAfterMerge: str("RELEASE_PENDING"),
+							StateAfterMerge: &plugins.BugzillaBugState{
+								Status:     "RELEASE_PENDING",
+								Resolution: "RESOLVED",
+							},
+							StateAfterClose: &plugins.BugzillaBugState{
+								Status:     "RESET",
+								Resolution: "FIXED",
+							},
+							AllowedGroups: []string{"group1", "groups2"},
+						},
+					},
+					Repos: map[string]plugins.BugzillaRepoOptions{
+						"repo": {
+							Branches: map[string]plugins.BugzillaBranchOptions{
+								"branch": {
+									ExcludeDefaults:   &no,
+									ValidateByDefault: &yes,
+									IsOpen:            &yes,
+									TargetRelease:     str("release1"),
+									Statuses:          &[]string{"NEW", "MODIFIED", "VERIFIED", "IN_PROGRESS", "CLOSED", "RELEASE_PENDING"},
+									ValidStates: &[]plugins.BugzillaBugState{
+										{
+											Status: "MODIFIED",
+										},
+										{
+											Status:     "CLOSED",
+											Resolution: "ERRATA",
+										},
+									},
+									DependentBugStatuses: &[]string{"NEW", "MODIFIED"},
+									DependentBugStates: &[]plugins.BugzillaBugState{
+										{
+											Status: "MODIFIED",
+										},
+									},
+									DependentBugTargetReleases: &[]string{"release1", "release2"},
+									StatusAfterValidation:      str("VERIFIED"),
+									StateAfterValidation: &plugins.BugzillaBugState{
+										Status: "VERIFIED",
+									},
+									AddExternalLink:  &no,
+									StatusAfterMerge: str("RELEASE_PENDING"),
+									StateAfterMerge: &plugins.BugzillaBugState{
+										Status:     "RELEASE_PENDING",
+										Resolution: "RESOLVED",
+									},
+									StateAfterClose: &plugins.BugzillaBugState{
+										Status:     "RESET",
+										Resolution: "FIXED",
+									},
+									AllowedGroups: []string{"group1", "groups2"},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/bugzilla refresh",
@@ -853,16 +991,24 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 	mergedMessage := func(statement string) string {
 		var links []string
 		for _, bug := range mergedPRs {
-			links = append(links, link(bug))
+			links = append(links, fmt.Sprintf(" * %s", link(bug)))
 		}
-		return fmt.Sprintf(`%s pull requests linked via external trackers have merged: %s.`, statement, strings.Join(links, ", "))
+		return fmt.Sprintf(`%s pull requests linked via external trackers have merged:
+%s
+
+`, statement, strings.Join(links, "\n"))
 	}
 
 	var statements []string
 	for bug, state := range unmergedPrStates {
-		statements = append(statements, fmt.Sprintf("\n * %s is %s", link(bug), state))
+		statements = append(statements, fmt.Sprintf(" * %s is %s", link(bug), state))
 	}
-	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:%s`, strings.Join(statements, "\n"))
+	unmergedMessage := fmt.Sprintf(`The following pull requests linked via external trackers have not merged:
+%s
+
+These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state. Once unlinked, request a bug refresh with <code>/bugzilla refresh</code>.
+
+`, strings.Join(statements, "\n"))
 
 	outcomeMessage := func(action string) string {
 		return fmt.Sprintf(bugLink+" has %sbeen moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, action, options.StateAfterMerge)
@@ -879,9 +1025,9 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 			return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterMerge), bc.Endpoint(), e.bugId, err))
 		}
-		return comment(fmt.Sprintf("%s %s", mergedMessage("All"), outcomeMessage("")))
+		return comment(fmt.Sprintf("%s%s", mergedMessage("All"), outcomeMessage("")))
 	}
-	return comment(fmt.Sprintf("%s %s\n%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("")))
+	return comment(fmt.Sprintf("%s%s%s", mergedMessage("Some"), unmergedMessage, outcomeMessage("not ")))
 }
 
 func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
@@ -917,7 +1063,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	}
 	clones, err := bc.GetClones(bug)
 	if err != nil {
-		return comment(formatError(fmt.Sprintf("creating a cherry-pick bug in Bugzilla: could not get list of clones"), bc.Endpoint(), bug.ID, err))
+		return comment(formatError("creating a cherry-pick bug in Bugzilla: could not get list of clones", bc.Endpoint(), bug.ID, err))
 	}
 	oldLink := fmt.Sprintf(bugLink, bugID, bc.Endpoint(), bugID)
 	if options.TargetRelease == nil {
@@ -933,7 +1079,7 @@ func handleCherrypick(e event, gc githubClient, bc bugzilla.Client, options plug
 	cloneID, err := bc.CloneBug(bug)
 	if err != nil {
 		log.WithError(err).Debugf("Failed to clone bug %d", bugID)
-		return comment(formatError(fmt.Sprintf("cloning bug for cherrypick"), bc.Endpoint(), bug.ID, err))
+		return comment(formatError("cloning bug for cherrypick", bc.Endpoint(), bug.ID, err))
 	}
 	cloneLink := fmt.Sprintf(bugLink, cloneID, bc.Endpoint(), cloneID)
 	// Update the version of the bug to the target release
@@ -994,22 +1140,71 @@ Once a valid bug is referenced in the title of this pull request, request a bug 
 }
 
 func formatError(action, endpoint string, bugId int, err error) string {
-	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s:
-> %v
+	knownErrors := map[string]string{
+		"There was an error reported for a GitHub REST call": "The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.",
+	}
+	var applicable []string
+	for key, value := range knownErrors {
+		if strings.Contains(err.Error(), key) {
+			applicable = append(applicable, value)
+
+		}
+	}
+	digest := "No known errors were detected, please see the full error message for details."
+	if len(applicable) > 0 {
+		digest = "We were able to detect the following conditions from the error:\n\n"
+		for _, item := range applicable {
+			digest = fmt.Sprintf("%s- %s\n", digest, item)
+		}
+	}
+	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s
+
+<details><summary>Full error message.</summary>
+
+<code>
+%v
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
-		action, bugId, endpoint, err)
+		action, bugId, endpoint, digest, err)
 }
 
 func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
 	comment := e.comment(gc)
+	if e.missing {
+		return nil
+	}
 	if options.AddExternalLink != nil && *options.AddExternalLink {
+		response := fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId)
 		changed, err := bc.RemovePullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)
 		if err != nil {
 			log.WithError(err).Warn("Unexpected error removing external tracker bug from Bugzilla bug.")
 			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
 		}
+		if options.StateAfterClose != nil {
+			links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+			if err != nil {
+				log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
+				return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
+			}
+			if len(links) == 0 {
+				bug, err := getBug(bc, e.bugId, log, comment)
+				if err != nil || bug == nil {
+					return err
+				}
+				if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
+					if err := bc.UpdateBug(e.bugId, *update); err != nil {
+						log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+						return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+					}
+					response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+				}
+			}
+		}
 		if changed {
-			return comment(fmt.Sprintf(`This pull request references `+bugLink+`. The bug has been updated to no longer refer to the pull request using the external bug tracker.`, e.bugId, bc.Endpoint(), e.bugId))
+			return comment(response)
 		}
 	}
 	return nil

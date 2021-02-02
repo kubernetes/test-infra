@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -40,15 +39,13 @@ import (
 type options struct {
 	totURL string
 
-	configPath    string
-	jobConfigPath string
-	buildCluster  string
-	selector      string
-	skipReport    bool
+	configPath           string
+	jobConfigPath        string
+	selector             string
+	deprecatedSkipReport bool
 
 	dryRun                 bool
 	kubernetes             prowflagutil.KubernetesOptions
-	github                 prowflagutil.GitHubOptions // TODO(fejta): remove
 	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
@@ -59,21 +56,19 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	fs.BoolVar(&o.skipReport, "skip-report", false, "Validate that crier is reporting to github, not plank")
+	fs.BoolVar(&o.deprecatedSkipReport, "skip-report", false, "No-Op flag kept for compatibility. Will be removed in September 2020.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 
-	o.github.AllowDirectAccess = true
 	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	o.github.AllowAnonymous = true
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -94,6 +89,13 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	if o.deprecatedSkipReport {
+		logrus.Warning("The deprecated --skip-report flag has been set. It doesn't do anything anymore and will be removed in September 2020.")
+	}
+
+	logrus.Warning("The plank binary has been deprecated. Please migrate to the prow controller manager that provides a more modern implementation of the same functionality. Check out its readme here: https://github.com/kubernetes/test-infra/blob/master/prow/cmd/prow-controller-manager/README.md")
+	logrus.Warning("The plank binary will be removed in February, 2021")
+
 	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
@@ -103,16 +105,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
-
-	var reporter func(context.Context)
-	if !o.skipReport {
-		logrus.Warn("Plank no longer supports github reporting, migrate to crier before June 2020")
-		var err error
-		reporter, err = deprecatedReporter(o.github, o.kubernetes, o.dryRun, cfg)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error creating github reporter")
-		}
-	}
 
 	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
@@ -129,7 +121,7 @@ func main() {
 
 	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
+		logrus.WithError(err).Error("Error creating build cluster clients. Is there a bad entry in the kubeconfig secret?")
 	}
 
 	c, err := plank.NewController(mgr.GetClient(), buildClusterClients, nil, cfg, o.totURL, o.selector)
@@ -140,9 +132,6 @@ func main() {
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 	// gather metrics for the jobs handled by plank.
-	if reporter != nil {
-		interrupts.Run(reporter)
-	}
 	interrupts.TickLiteral(func() {
 		start := time.Now()
 		c.SyncMetrics()
@@ -153,7 +142,7 @@ func main() {
 	if err := mgr.Add(c); err != nil {
 		logrus.WithError(err).Fatal("failed to add controller to manager")
 	}
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 }

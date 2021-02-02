@@ -3,38 +3,42 @@ presubmits:
   - name: pull-cloud-provider-aws-check
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
         - make
         - check
     annotations:
-      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: check
       description: aws cloud provider checks
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-aws-test
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
         - make
         - test
     annotations:
-      testgrid-dashboards: sig-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: test
       description: aws cloud provider tests
       testgrid-num-columns-recent: '30'

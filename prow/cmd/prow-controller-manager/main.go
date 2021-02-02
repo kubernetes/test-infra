@@ -27,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -149,19 +149,28 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(false,
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},
 	)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to construct build cluster managers")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
 	}
 
 	for _, buildManager := range buildManagers {
 		if err := mgr.Add(buildManager); err != nil {
 			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
 		}
+	}
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
@@ -174,7 +183,7 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 

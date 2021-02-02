@@ -21,15 +21,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sort"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
+	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -513,17 +519,20 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
-	err error
+	err  error
+	lock sync.Mutex
 
-	prs       []PullRequest
-	refs      map[string]string
-	merged    int
-	setStatus bool
-	statuses  map[string]github.Status
-	mergeErrs map[int]error
+	prs        map[string][]PullRequest
+	refs       map[string]string
+	merged     int
+	setStatus  bool
+	statuses   map[string]github.Status
+	mergeErrs  map[int]error
+	queryCalls int
 
 	expectedSHA    string
 	combinedStatus map[string]string
+	checkRuns      *github.CheckRunList
 }
 
 func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
@@ -544,12 +553,17 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
-func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+func (f *fgc) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	sq, ok := q.(*searchQuery)
 	if !ok {
 		return errors.New("unexpected query type")
 	}
-	for _, pr := range f.prs {
+
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.queryCalls++
+
+	for _, pr := range f.prs[org] {
 		sq.Search.Nodes = append(
 			sq.Search.Nodes,
 			struct {
@@ -593,6 +607,16 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 			Statuses: statuses,
 		},
 		nil
+}
+
+func (f *fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if f.expectedSHA != ref {
+		return nil, errors.New("bad combined status request: incorrect sha")
+	}
+	if f.checkRuns != nil {
+		return f.checkRuns, nil
+	}
+	return &github.CheckRunList{}, nil
 }
 
 func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
@@ -713,7 +737,7 @@ func TestDividePool(t *testing.T) {
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc,
+		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, false,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1142,7 +1166,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		triggered        int
 		triggeredBatches int
 		action           Action
-		expectErr        bool
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -1497,7 +1520,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge errors but continues if a PR has changed",
@@ -1507,7 +1529,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge errors but continues on unknown error",
@@ -1517,7 +1538,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge stops on auth error",
@@ -1527,7 +1547,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 		{
 			name: "batch merge stops on invalid merge method error",
@@ -1537,7 +1556,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,
-			expectErr:   true,
 		},
 	}
 
@@ -1651,6 +1669,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				nil,
 				nil,
 				nil,
+				false,
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
@@ -1663,11 +1682,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if tc.batchPending {
 				batchPending = []PullRequest{{}}
 			}
-			if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); err != nil && !tc.expectErr {
-				t.Fatalf("Unexpected error in takeAction: %v", err)
-			} else if err == nil && tc.expectErr {
-				t.Error("Missing expected error from takeAction.")
-			} else if act != tc.action {
+			if act, _, _ := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); act != tc.action {
 				t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 			}
 
@@ -1769,9 +1784,10 @@ func TestHeadContexts(t *testing.T) {
 	lose := "lose"
 	headSHA := "head"
 	testCases := []struct {
-		name           string
-		commitContexts []commitContext
-		expectAPICall  bool
+		name                string
+		commitContexts      []commitContext
+		expectAPICall       bool
+		expectChecksAPICall bool
 	}{
 		{
 			name: "first commit is head",
@@ -1790,7 +1806,7 @@ func TestHeadContexts(t *testing.T) {
 			},
 		},
 		{
-			name: "no commit is head",
+			name: "no commit is head, falling back to v3 api and getting context via status api",
 			commitContexts: []commitContext{
 				{context: lose, sha: "shaaa"},
 				{context: lose, sha: "other"},
@@ -1798,36 +1814,55 @@ func TestHeadContexts(t *testing.T) {
 			},
 			expectAPICall: true,
 		},
+		{
+			name: "no commit is head, falling back to v3 api and getting context via checks api",
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+			expectAPICall:       true,
+			expectChecksAPICall: true,
+		},
 	}
 
 	for _, tc := range testCases {
-		t.Logf("Running test case %q", tc.name)
-		fgc := &fgc{combinedStatus: map[string]string{win: string(githubql.StatusStateSuccess)}}
-		if tc.expectAPICall {
-			fgc.expectedSHA = headSHA
-		}
-		pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
-		for _, ctx := range tc.commitContexts {
-			commit := Commit{
-				Status: struct{ Contexts []Context }{
-					Contexts: []Context{
-						{
-							Context: githubql.String(ctx.context),
+		t.Run(tc.name, func(t *testing.T) {
+			t.Logf("Running test case %q", tc.name)
+			fgc := &fgc{}
+			if !tc.expectChecksAPICall {
+				fgc.combinedStatus = map[string]string{win: string(githubql.StatusStateSuccess)}
+			} else {
+				fgc.checkRuns = &github.CheckRunList{CheckRuns: []github.CheckRun{
+					{Name: win, Status: "completed", Conclusion: "neutral"},
+				}}
+			}
+			if tc.expectAPICall {
+				fgc.expectedSHA = headSHA
+			}
+			pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
+			for _, ctx := range tc.commitContexts {
+				commit := Commit{
+					Status: struct{ Contexts []Context }{
+						Contexts: []Context{
+							{
+								Context: githubql.String(ctx.context),
+							},
 						},
 					},
-				},
-				OID: githubql.String(ctx.sha),
+					OID: githubql.String(ctx.sha),
+				}
+				pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
 			}
-			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
-		}
 
-		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
-		if err != nil {
-			t.Fatalf("Unexpected error from headContexts: %v", err)
-		}
-		if len(contexts) != 1 || string(contexts[0].Context) != win {
-			t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
-		}
+			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
+			if err != nil {
+				t.Fatalf("Unexpected error from headContexts: %v", err)
+			}
+			if len(contexts) != 1 || string(contexts[0].Context) != win {
+				t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
+			}
+		})
 	}
 }
 
@@ -1855,6 +1890,15 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 			OID: githubql.String("SHA"),
 		},
 	})
+	return pr
+}
+
+func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) PullRequest {
+	pr := testPR(org, repo, branch, number, mergeable)
+	for _, label := range labels {
+		labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
+		pr.Labels.Nodes = append(pr.Labels.Nodes, labelNode)
+	}
 	return pr
 }
 
@@ -1948,7 +1992,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{
-			prs: tc.prs,
+			prs: map[string][]PullRequest{"": tc.prs},
 			refs: map[string]string{
 				"org/repo heads/A": "SHA",
 				"org/repo A":       "SHA",
@@ -2046,6 +2090,7 @@ func TestFilterSubpool(t *testing.T) {
 		number    int
 		mergeable bool
 		contexts  []Context
+		checkRuns []CheckRun
 	}
 	tcs := []struct {
 		name string
@@ -2076,6 +2121,103 @@ func TestFilterSubpool(t *testing.T) {
 				},
 			},
 			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), checkrun is considered",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "one mergeable passing PR (omitting optional context), neutral checkrun is considered success",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: checkRunConclusionNeutral,
+					}},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "Incomplete checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Conclusion: githubql.String(githubql.StatusStateSuccess),
+					}},
+				},
+			},
+		},
+		{
+			name: "Failing checkrun throws the pr out",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+					checkRuns: []CheckRun{{
+						Name:       githubql.String("other-a"),
+						Status:     checkRunStatusCompleted,
+						Conclusion: githubql.String(githubql.StatusStateFailure),
+					}},
+				},
+			},
 		},
 		{
 			name: "one unmergeable passing PR",
@@ -2324,11 +2466,20 @@ func TestFilterSubpool(t *testing.T) {
 				pr := PullRequest{
 					Number: githubql.Int(pull.number),
 				}
+				var checkRunNodes []CheckRunNode
+				for _, checkRun := range pull.checkRuns {
+					checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+				}
 				pr.Commits.Nodes = []struct{ Commit Commit }{
 					{
 						Commit{
 							Status: struct{ Contexts []Context }{
 								Contexts: pull.contexts,
+							},
+							StatusCheckRollup: StatusCheckRollup{
+								Contexts: StatusCheckRollupContext{
+									Nodes: checkRunNodes,
+								},
 							},
 						},
 					},
@@ -2465,8 +2616,7 @@ func TestIsPassing(t *testing.T) {
 		log := logrus.WithField("component", "tide")
 		_, err := log.String()
 		if err != nil {
-			t.Errorf("Failed to get log output before testing: %v", err)
-			t.FailNow()
+			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, &tc.config)
@@ -3508,7 +3658,7 @@ type fakeFieldIndexer struct {
 	client *indexingClient
 }
 
-func (fi *fakeFieldIndexer) IndexField(_ context.Context, _ runtime.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
+func (fi *fakeFieldIndexer) IndexField(_ context.Context, _ ctrlruntimeclient.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
 	fi.client.indexFuncs[field] = extractValue
 	return nil
 }
@@ -3526,7 +3676,7 @@ type indexingClient struct {
 	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
 }
 
-func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
 	if err := c.Client.List(ctx, list, opts...); err != nil {
 		return err
 	}
@@ -3681,5 +3831,258 @@ func TestNonFailedBatchByBaseAndPullsIndexFunc(t *testing.T) {
 		if diff := deep.Equal(result, tc.expected); diff != nil {
 			t.Errorf("Result differs from expected, diff: %v", diff)
 		}
+	}
+}
+
+func TestCheckRunNodesToContexts(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name      string
+		checkRuns []CheckRun
+		expected  []Context
+	}{
+		{
+			name:      "Empty checkrun is ignored",
+			checkRuns: []CheckRun{{}},
+		},
+		{
+			name:      "Incomplete checkrun is considered pending",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: githubql.String("queued")}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStatePending}},
+		},
+		{
+			name:      "Neutral checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Successful checkrun is considered success",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateSuccess}},
+		},
+		{
+			name:      "Other checkrun conclusion is considered failure",
+			checkRuns: []CheckRun{{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: "unclear"}},
+			expected:  []Context{{Context: "some-job", State: githubql.StatusStateFailure}},
+		},
+		{
+			name: "Multiple checkruns are translated correctly",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+			},
+			expected: []Context{
+				{Context: "another-job", State: githubql.StatusStateSuccess},
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, success > everything",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, neutral > everything",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: checkRunConclusionNeutral},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateSuccess},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, pending > failure",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+				{Name: githubql.String("some-job")},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStatePending},
+			},
+		},
+		{
+			name: "De-duplicate checkruns, only failures",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("FAILURE")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String("ERROR")},
+				{Name: githubql.String("some-job"), Status: checkRunStatusCompleted},
+			},
+			expected: []Context{
+				{Context: "some-job", State: githubql.StatusStateFailure},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Shuffle the checkruns to make sure we don't rely on slice order
+			rand.Shuffle(len(tc.checkRuns), func(i, j int) {
+				tc.checkRuns[i], tc.checkRuns[j] = tc.checkRuns[j], tc.checkRuns[i]
+			})
+
+			var checkRunNodes []CheckRunNode
+			for _, checkRun := range tc.checkRuns {
+				checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+			}
+
+			result := checkRunNodesToContexts(logrus.New().WithField("test", tc.name), checkRunNodes)
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].Context+result[i].Description+githubql.String(result[i].State) < result[j].Context+result[j].Description+githubql.String(result[j].State)
+			})
+
+			if diff := cmp.Diff(result, tc.expected); diff != "" {
+				t.Errorf("actual result differs from expected: %s", diff)
+			}
+		})
+	}
+}
+
+func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			context := Context{}
+			fuzz.New().Fuzz(&context)
+			res := deduplicateContexts([]Context{context})
+			if diff := cmp.Diff(context, res[0]); diff != "" {
+				t.Errorf("deduplicateContexts lost data, new object differs: %s", diff)
+			}
+		})
+	}
+}
+
+func TestPickSmallestPassingNumber(t *testing.T) {
+	priorities := []config.TidePriority{
+		{Labels: []string{"kind/failing-test"}},
+		{Labels: []string{"area/deflake"}},
+		{Labels: []string{"kind/bug", "priority/critical-urgent"}},
+	}
+	testCases := []struct {
+		name     string
+		prs      []PullRequest
+		expected int
+	}{
+		{
+			name: "no label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+			},
+			expected: 3,
+		},
+		{
+			name: "deflake PR",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 7,
+		},
+		{
+			name: "same label",
+			prs: []PullRequest{
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 1,
+		},
+		{
+			name: "missing one label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+			},
+			expected: 3,
+		},
+		{
+			name: "complete",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"}),
+				testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"}),
+			},
+			expected: 9,
+		},
+	}
+	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			if int(got.Number) != tc.expected {
+				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
+			}
+		})
+	}
+}
+
+func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name                     string
+		usesGitHubAppsAuth       bool
+		prs                      map[string][]PullRequest
+		expectedNumberOfApiCalls int
+	}{
+		{
+			name:               "Apps auth is used, one call per org",
+			usesGitHubAppsAuth: true,
+			prs: map[string][]PullRequest{
+				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+			},
+			expectedNumberOfApiCalls: 2,
+		},
+		{
+			name:               "Apps auth is unused, one call for all orgs",
+			usesGitHubAppsAuth: false,
+			prs: map[string][]PullRequest{"": {
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
+			}},
+			expectedNumberOfApiCalls: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Controller{
+				logger: logrus.WithField("test", tc.name),
+				config: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+				},
+				ghc:                &fgc{prs: tc.prs},
+				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
+			}
+
+			prs, err := c.query()
+			if err != nil {
+				t.Fatalf("query() failed: %v", err)
+			}
+			if n := len(prs); n != 2 {
+				t.Errorf("expected to get two prs back, got %d", n)
+			}
+			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, c.ghc.(*fgc).queryCalls); diff != "" {
+				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
+			}
+		})
 	}
 }

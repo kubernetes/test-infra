@@ -25,7 +25,7 @@ personal repos.
     - Add the `repo` scope if you plan on handing private repos
     - Add the `admin:org_hook` scope if you plan on handling a github org
 1. Set this token aside for later (we'll assume you wrote it to a file on your
-   workstation at `/path/to/oauth/secret`)
+   workstation at `/path/to/github/token`)
 
 ## Tackle deployment
 
@@ -51,7 +51,7 @@ This will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
-* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/oauth/secret`
+* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
 
 See the [Next Steps](#next-steps) section after running this utility.
 
@@ -132,21 +132,23 @@ randomness-generator, eg `openssl rand -hex 20`.
 
 ```sh
 $ openssl rand -hex 20 > /path/to/hook/secret
-$ kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+$ kubectl create secret -n prow generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `github-token` is the OAuth2 token you created above for the [GitHub bot account].
+The `github-token` is the *Personal access token* you created above for the [GitHub bot account].
 If you need to create one, go to <https://github.com/settings/tokens>.
 
 ```sh
-kubectl create secret generic github-token --from-file=token=/path/to/oauth/secret
+kubectl create secret -n prow generic github-token --from-file=token=/path/to/github/token
 ```
 
 ### Update the sample manifest
 
 There are two sample manifests to get you started:
 * [`starter-s3.yaml`](/config/prow/cluster/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working
-* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](# Configure a GCS bucket) for details.
+* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#Configure a GCS bucket) for details.
+
+**Note**: It will deploy prow in the `prow` namespace of the cluster.
 
 Regardless of which object storage you choose, the below adjustments are always needed:
 
@@ -167,7 +169,7 @@ Apply the manifest you edited above by executing one of the following two comman
 After a moment, the cluster components will be running.
 
 ```sh
-$ kubectl get pods
+$ kubectl get pods -n prow
 NAME                                       READY   STATUS    RESTARTS   AGE
 crier-69b6bd8f48-6sg24                     1/1     Running   0          9m54s
 deck-7f6867c46c-j7nnh                      1/1     Running   0          2m5s
@@ -189,7 +191,7 @@ Find out your external address. It might take a couple minutes for the IP to
 show up.
 
 ```sh
-kubectl get ingress prow
+kubectl get ingress -n prow prow
 NAME   CLASS    HOSTS                     ADDRESS               	PORTS     AGE
 prow   <none>   prow.<<yourdomain.com>>   an.ip.addr.ess          80, 443   22d
 ```
@@ -207,14 +209,14 @@ You have two options to do this:
 1. You can do this with the `update-hook` utility:
 
 ```sh
-# Note /path/to/hook/secret and /path/to/oauth/secret from earlier secrets step
+# Note /path/to/hook/secret and /path/to/github/token from earlier secrets step
 # Note the an.ip.addr.ess from previous ingress step
 
 # Ideally use https://bazel.build, alternatively try:
 #   go get -u k8s.io/test-infra/experiment/update-hook && update-hook
 $ bazel run //experiment/update-hook -- \
   --hmac-path=/path/to/hook/secret \
-  --github-token-path=/path/to/oauth/secret \
+  --github-token-path=/path/to/github/token \
   --hook-url http://an.ip.addr.ess/hook \
   --repo my-org/my-repo \
   --repo my-whole-org \
@@ -250,7 +252,7 @@ This section will help you complete any additional setup that your instance may 
 > If you want to persist logs and output in GCS, you need to follow the steps below.
 
 When configuring Prow jobs to use the [Pod utilities](./pod-utilities.md)
-with `decorate: true`, job metdata, logs, and artifacts will be uploaded
+with `decorate: true`, job metadata, logs, and artifacts will be uploaded
 to a GCS bucket in order to persist results from tests and allow for the
 job overview page to load those results at a later point. In order to run
 these jobs, it is required to set up a GCS bucket for job outputs. If your
@@ -285,7 +287,7 @@ $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service
 Before we can update plank's `default_decoration_configs['*']` we'll need to retrieve the version of plank using the following:
 
 ```sh
-$ kubectl get pod -lapp=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
+$ kubectl get pod -n prow -l app=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
 v20191108-08fbf64ac
 ```
 Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_configs['*']` in `config.yaml`:
@@ -353,15 +355,15 @@ $ bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --con
 Now run the following to update the configmap.
 
 ```sh
-$ kubectl create configmap config \
-  --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+$ kubectl create configmap -n prow config \
+  --from-file=config.yaml=path/to/config.yaml --dry-run=server -o yaml | kubectl replace configmap -n prow config -f -
 ```
 
 We create a `make` rule:
 
 ```Make
 update-config: get-cluster-credentials
-    kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+    kubectl create configmap -n prow config --from-file=config.yaml=config.yaml --dry-run=server -o yaml | kubectl replace configmap -n prow config -f -
 ```
 
 Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to

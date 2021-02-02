@@ -34,7 +34,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -47,6 +46,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
+	"k8s.io/test-infra/prow/version"
 )
 
 // For mocking out sleep during unit tests.
@@ -55,11 +55,12 @@ var sleep = time.Sleep
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
-	Query(context.Context, interface{}, map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 }
 
 type contextChecker interface {
@@ -71,12 +72,13 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	ctx           context.Context
-	logger        *logrus.Entry
-	config        config.Getter
-	ghc           githubClient
-	prowJobClient ctrlruntimeclient.Client
-	gc            git.ClientFactory
+	ctx                context.Context
+	logger             *logrus.Entry
+	config             config.Getter
+	ghc                githubClient
+	prowJobClient      ctrlruntimeclient.Client
+	gc                 git.ClientFactory
+	usesGitHubAppsAuth bool
 
 	sc *statusController
 
@@ -228,7 +230,7 @@ type manager interface {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc git.ClientFactory, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc git.ClientFactory, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry, usesGitHubAppsAuth bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -245,7 +247,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	go sc.run()
 
-	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker)
+	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker, usesGitHubAppsAuth)
 }
 
 func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
@@ -276,6 +278,7 @@ func newSyncController(
 	sc *statusController,
 	hist *history.History,
 	mergeChecker *mergeChecker,
+	usesGitHubAppsAuth bool,
 ) (*Controller, error) {
 	if err := mgr.GetFieldIndexer().IndexField(
 		ctx,
@@ -294,13 +297,14 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 	return &Controller{
-		ctx:           ctx,
-		logger:        logger.WithField("controller", "sync"),
-		ghc:           ghcSync,
-		prowJobClient: mgr.GetClient(),
-		config:        cfg,
-		gc:            gc,
-		sc:            sc,
+		ctx:                ctx,
+		logger:             logger.WithField("controller", "sync"),
+		ghc:                ghcSync,
+		prowJobClient:      mgr.GetClient(),
+		config:             cfg,
+		gc:                 gc,
+		usesGitHubAppsAuth: usesGitHubAppsAuth,
+		sc:                 sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
@@ -358,31 +362,22 @@ func (c *Controller) Sync() error {
 		c.logger.WithField("duration", duration.String()).Info("Synced")
 		tideMetrics.syncDuration.Set(duration.Seconds())
 		tideMetrics.syncHeartbeat.WithLabelValues("sync").Inc()
+		version.GatherProwVersion(c.logger)
 	}()
 	defer c.changedFiles.prune()
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
-	prs := make(map[string]PullRequest)
-	for _, query := range c.config().Tide.Queries {
-		q := query.Query()
-		results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
-		if err != nil && len(results) == 0 {
-			return fmt.Errorf("query %q, err: %v", q, err)
-		}
-		if err != nil {
-			c.logger.WithError(err).WithField("query", q).Warning("found partial results")
-		}
-		for _, pr := range results {
-			prs[prKey(&pr)] = pr
-		}
+	prs, err := c.query()
+	if err != nil {
+		return fmt.Errorf("failed to query GitHub for prs: %w", err)
 	}
-	c.logger.WithField(
-		"duration", time.Since(start).String(),
-	).Debugf("Found %d (unfiltered) pool PRs.", len(prs))
+	c.logger.WithFields(logrus.Fields{
+		"duration":       time.Since(start).String(),
+		"found_pr_count": len(prs),
+	}).Debug("Found (unfiltered) pool PRs.")
 
 	var blocks blockers.Blockers
-	var err error
 	if len(prs) > 0 {
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
@@ -444,6 +439,49 @@ func (c *Controller) Sync() error {
 
 	c.History.Flush()
 	return nil
+}
+
+func (c *Controller) query() (map[string]PullRequest, error) {
+	lock := sync.Mutex{}
+	wg := sync.WaitGroup{}
+	prs := make(map[string]PullRequest)
+	var errs []error
+	for _, query := range c.config().Tide.Queries {
+
+		// Use org-sharded queries only when GitHub apps auth is in use
+		var queries map[string]string
+		if c.usesGitHubAppsAuth {
+			queries = query.OrgQueries()
+		} else {
+			queries = map[string]string{"": query.Query()}
+		}
+
+		for org, q := range queries {
+			org, q := org, q
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				results, err := search(c.ghc.QueryWithGitHubAppsSupport, c.logger, q, time.Time{}, time.Now(), org)
+				lock.Lock()
+				defer lock.Unlock()
+
+				if err != nil && len(results) == 0 {
+					errs = append(errs, fmt.Errorf("query %q, err: %v", q, err))
+					return
+				}
+				if err != nil {
+					c.logger.WithError(err).WithField("query", q).Warning("found partial results")
+				}
+
+				for _, pr := range results {
+					prs[prKey(&pr)] = pr
+				}
+			}()
+		}
+	}
+	wg.Wait()
+
+	return prs, utilerrors.NewAggregate(errs)
 }
 
 func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -766,23 +804,43 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 	return failed
 }
 
-func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc map[int]contextChecker) (bool, PullRequest) {
+func hasAllLabels(pr PullRequest, labels []string) bool {
+	if len(labels) == 0 {
+		return true
+	}
+	prLabels := sets.NewString()
+	for _, l := range pr.Labels.Nodes {
+		prLabels.Insert(string(l.Name))
+	}
+	requiredLabels := sets.NewString(labels...)
+	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
+}
+
+func pickHighestPriorityPR(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool, priorities []config.TidePriority) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
-	for _, pr := range prs {
-		if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
-			continue
+	for _, p := range append(priorities, config.TidePriority{}) {
+		for _, pr := range prs {
+			if !hasAllLabels(pr, p.Labels) {
+				continue
+			}
+			if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
+				continue
+			}
+			if len(pr.Commits.Nodes) < 1 {
+				continue
+			}
+			if !isPassingTestsFunc(log, ghc, pr, cc[int(pr.Number)]) {
+				continue
+			}
+			smallestNumber = int(pr.Number)
+			smallestPR = pr
 		}
-		if len(pr.Commits.Nodes) < 1 {
-			continue
+		if smallestNumber > -1 {
+			return true, smallestPR
 		}
-		if !isPassingTests(log, ghc, pr, cc[int(pr.Number)]) {
-			continue
-		}
-		smallestNumber = int(pr.Number)
-		smallestPR = pr
 	}
-	return smallestNumber > -1, smallestPR
+	return false, smallestPR
 }
 
 // accumulateBatch looks at existing batch ProwJobs and, if applicable, returns:
@@ -1094,9 +1152,8 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
 		})
 		if err != nil {
-			log.WithError(err).Error("Merge failed.")
-			errs = append(errs, err)
-			failed = append(failed, int(pr.Number))
+			// These are user errors, shouldn't be printed as tide errors
+			log.WithError(err).Debug("Merge failed.")
 		} else {
 			log.Info("Merged.")
 			merged = append(merged, int(pr.Number))
@@ -1241,7 +1298,7 @@ func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *pro
 	pjs := &prowapi.ProwJobList{}
 	if err := c.prowJobClient.List(c.ctx,
 		pjs,
-		ctrlruntimeclient.MatchingField(nonFailedBatchByNameBaseAndPullsIndexName, nonFailedBatchByNameBaseAndPullsIndexKey(jobName, refs)),
+		ctrlruntimeclient.MatchingFields{nonFailedBatchByNameBaseAndPullsIndexName: nonFailedBatchByNameBaseAndPullsIndexKey(jobName, refs)},
 		ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace),
 	); err != nil {
 		c.logger.WithError(err).Error("Failed to list non-failed batches")
@@ -1259,7 +1316,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes, sp.cc); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, successes, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
@@ -1279,7 +1336,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(missings) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, missings, sp.cc); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, missings, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, missingSerialTests[int(pr.Number)], []PullRequest{pr})
 		}
 	}
@@ -1614,7 +1671,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 		err := c.prowJobClient.List(
 			c.ctx,
 			pjs,
-			ctrlruntimeclient.MatchingField(cacheIndexName, cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)),
+			ctrlruntimeclient.MatchingFields{cacheIndexName: cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)},
 			ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace))
 		if err != nil {
 			return nil, fmt.Errorf("failed to list jobs for subpool %s: %v", subpoolkey, err)
@@ -1673,7 +1730,26 @@ type Commit struct {
 	Status struct {
 		Contexts []Context
 	}
-	OID githubql.String `graphql:"oid"`
+	OID               githubql.String `graphql:"oid"`
+	StatusCheckRollup StatusCheckRollup
+}
+
+type StatusCheckRollup struct {
+	Contexts StatusCheckRollupContext `graphql:"contexts(last: 100)"`
+}
+
+type StatusCheckRollupContext struct {
+	Nodes []CheckRunNode
+}
+
+type CheckRunNode struct {
+	CheckRun CheckRun `graphql:"... on CheckRun"`
+}
+
+type CheckRun struct {
+	Name       githubql.String
+	Conclusion githubql.String
+	Status     githubql.String
 }
 
 // Context holds graphql response data for github contexts.
@@ -1698,7 +1774,7 @@ type searchQuery struct {
 			EndCursor   githubql.String
 		}
 		Nodes []PRNode
-	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
+	} `graphql:"search(type: ISSUE, first: 37, after: $searchCursor, query: $query)"`
 }
 
 func (pr *PullRequest) logFields() logrus.Fields {
@@ -1723,7 +1799,7 @@ func (pr *PullRequest) logFields() logrus.Fields {
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
 	for _, node := range pr.Commits.Nodes {
 		if node.Commit.OID == pr.HeadRefOID {
-			return node.Commit.Status.Contexts, nil
+			return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
@@ -1732,22 +1808,37 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	// Log this event so we can tune the number of commits we list to minimize this.
+	// TODO alvaroaleman: Add checkrun support here. Doesn't seem to happen often though,
+	// openshift doesn't have a single occurrence of this in the past seven days.
 	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
 	}
-	contexts := make([]Context, 0, len(combined.Statuses))
-	for _, status := range combined.Statuses {
-		contexts = append(
-			contexts,
-			Context{
-				Context:     githubql.String(status.Context),
-				Description: githubql.String(status.Description),
-				State:       githubql.StatusState(strings.ToUpper(status.State)),
-			},
-		)
+	checkRunList, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list checkruns: %w", err)
 	}
+	checkRunNodes := make([]CheckRunNode, 0, len(checkRunList.CheckRuns))
+	for _, checkRun := range checkRunList.CheckRuns {
+		checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: CheckRun{
+			Name: githubql.String(checkRun.Name),
+			// They are uppercase in the V4 api and lowercase in the V3 api
+			Conclusion: githubql.String(strings.ToUpper(checkRun.Conclusion)),
+			Status:     githubql.String(strings.ToUpper(checkRun.Status)),
+		}})
+	}
+
+	contexts := make([]Context, 0, len(combined.Statuses)+len(checkRunNodes))
+	for _, status := range combined.Statuses {
+		contexts = append(contexts, Context{
+			Context:     githubql.String(status.Context),
+			Description: githubql.String(status.Description),
+			State:       githubql.StatusState(strings.ToUpper(status.State)),
+		})
+	}
+	contexts = append(contexts, checkRunNodesToContexts(log, checkRunNodes)...)
+
 	// Add a commit with these contexts to pr for future look ups.
 	pr.Commits.Nodes = append(pr.Commits.Nodes,
 		struct{ Commit Commit }{
@@ -1784,7 +1875,7 @@ func cacheIndexKey(org, repo, branch, baseSHA string) string {
 	return fmt.Sprintf("%s/%s:%s@%s", org, repo, branch, baseSHA)
 }
 
-func cacheIndexFunc(obj runtime.Object) []string {
+func cacheIndexFunc(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
@@ -1812,7 +1903,7 @@ func nonFailedBatchByNameBaseAndPullsIndexKey(jobName string, refs *prowapi.Refs
 	return strings.Join(keys, "|")
 }
 
-func nonFailedBatchByNameBaseAndPullsIndexFunc(obj runtime.Object) []string {
+func nonFailedBatchByNameBaseAndPullsIndexFunc(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	if pj.Spec.Type != prowapi.BatchJob || pj.Spec.Refs == nil {
 		return nil
@@ -1823,4 +1914,91 @@ func nonFailedBatchByNameBaseAndPullsIndexFunc(obj runtime.Object) []string {
 	}
 
 	return []string{nonFailedBatchByNameBaseAndPullsIndexKey(pj.Spec.Job, pj.Spec.Refs)}
+}
+
+func checkRunNodesToContexts(log *logrus.Entry, nodes []CheckRunNode) []Context {
+	var result []Context
+	for _, node := range nodes {
+		// GitHub gives us an empty checkrun per status context. In theory they could
+		// at some point decide to create a virtual check run per status context.
+		// If that were to happen, we would retrieve redundant data as we get the
+		// status context both directly as a status context and as a checkrun, however
+		// the actual data in there should be identical, hence this isn't a problem.
+		if string(node.CheckRun.Name) == "" {
+			continue
+		}
+		result = append(result, checkRunToContext(node.CheckRun))
+	}
+	result = deduplicateContexts(result)
+	if len(result) > 0 {
+		log.WithField("checkruns", len(result)).Debug("Transformed checkruns to contexts")
+	}
+	return result
+}
+
+type descriptionAndState struct {
+	description githubql.String
+	state       githubql.StatusState
+}
+
+// deduplicateContexts deduplicates contexts, returning the best result for
+// contexts that have multiple entries
+func deduplicateContexts(contexts []Context) []Context {
+	result := map[githubql.String]descriptionAndState{}
+	for _, context := range contexts {
+		previousResult, found := result[context.Context]
+		if !found {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+			continue
+		}
+		if isStateBetter(previousResult.state, context.State) {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+		}
+	}
+
+	var resultSlice []Context
+	for name, descriptionAndState := range result {
+		resultSlice = append(resultSlice, Context{Context: name, Description: descriptionAndState.description, State: descriptionAndState.state})
+	}
+
+	return resultSlice
+}
+
+func isStateBetter(previous, current githubql.StatusState) bool {
+	if current == githubql.StatusStateSuccess {
+		return true
+	}
+	if current == githubql.StatusStatePending && (previous == githubql.StatusStateError || previous == githubql.StatusStateFailure || previous == githubql.StatusStateExpected) {
+		return true
+	}
+	if previous == githubql.StatusStateExpected && (current == githubql.StatusStateError || current == githubql.StatusStateFailure) {
+		return true
+	}
+
+	return false
+}
+
+const (
+	checkRunStatusCompleted   = githubql.String("COMPLETED")
+	checkRunConclusionNeutral = githubql.String("NEUTRAL")
+)
+
+// checkRunToContext translates a checkRun to a classic context
+// ref: https://developer.github.com/v3/checks/runs/#parameters
+func checkRunToContext(checkRun CheckRun) Context {
+	context := Context{
+		Context: checkRun.Name,
+	}
+	if checkRun.Status != checkRunStatusCompleted {
+		context.State = githubql.StatusStatePending
+		return context
+	}
+
+	if checkRun.Conclusion == checkRunConclusionNeutral || checkRun.Conclusion == githubql.String(githubql.StatusStateSuccess) {
+		context.State = githubql.StatusStateSuccess
+		return context
+	}
+
+	context.State = githubql.StatusStateFailure
+	return context
 }

@@ -62,6 +62,8 @@ class Database:
                 ' and started_json IS NOT NULL and finished_json IS NULL',
                 (jobs_dir + '\x00', jobs_dir + '\x7f')):
             started = json.loads(started_json)
+            if 'timestamp' not in started.keys():
+                continue # malformed started
             if int(started['timestamp']) < time.time() - 60*60*24*5:
                 # over 5 days old, no need to try looking for finished any more.
                 builds_have.add(path_tuple(path))
@@ -161,12 +163,19 @@ class Database:
         Return a list of file data under the given path. Intended for JUnit artifacts.
         """
         results = []
-        for dataz, in self.db.execute(
-                'select data from file where path between ? and ?',
-                (path, path + '\x7F')):
-            data = zlib.decompress(dataz).decode('utf-8')
-            if data:
-                results.append(data)
+        try:
+            for dataz, in self.db.execute(
+                    'select data from file where path between ? and ?',
+                    (path, path + '\x7F')):
+                try:
+                    data = zlib.decompress(dataz).decode('utf-8', 'replace')
+                    if data:
+                        results.append(data)
+                except UnicodeDecodeError:
+                    print(f'Failed to decode data for {path}')
+                    break
+        except Exception as e: # pylint: disable=broad-except
+            print(f'Exception of type {type(e)}: {e} on path: {path}')
         return results
 
     def get_oldest_emitted(self, incremental_table):

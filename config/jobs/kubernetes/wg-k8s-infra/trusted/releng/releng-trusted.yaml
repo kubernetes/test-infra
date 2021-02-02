@@ -1,0 +1,129 @@
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-image-promo
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+        command:
+        - cip
+        args:
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -dry-run=false
+    annotations:
+      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+
+periodics:
+# ci-k8sio-image-promo runs every 4 hours, to make sure that the destination
+# GCRs do not deviate away from the intent of the manifest.
+- interval: 4h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  # This name is the "job name", passed in as "--job=NAME" for mkpj.
+  name: ci-k8sio-image-promo
+  # Enable Pod Utilities.
+  # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
+  decorate: true
+  extra_refs:
+  # We clone the below repo automatically (via Pod Utilities), and get dropped
+  # into /home/prow/go/src/github.com/kubernetes/k8s.io.
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    # The k8s-artifacts-prod name was chosen in
+    # https://github.com/kubernetes/k8s.io/pull/695.
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      command:
+      - cip
+      args:
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -dry-run=false
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+
+- interval: 4h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-k8sio-gcr-prod-backup
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    serviceAccountName: k8s-infra-gcr-promoter-bak
+    containers:
+    - image: k8s.gcr.io/releng/releng-ci:v0.1.1
+      command:
+      - infra/gcp/backup_tools/backup.sh
+      env:
+      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+      # here anyway in case the underlying image changes (the backup.sh script
+      # needs it to be defined).
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+
+- name: ci-release-vulndash-update
+  interval: 2h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 6h
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+  spec:
+    serviceAccountName: k8s-infra-gcr-vuln-dashboard
+    containers:
+    # TODO(releng): Point to promoted image once this job is fixed
+    - image: gcr.io/k8s-staging-artifact-promoter/vulndash-amd64:latest
+      command:
+      - /vulndash
+      args:
+        - --project=k8s-artifacts-prod
+        - --bucket=k8s-artifacts-prod-vuln-dashboard
+        - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
+        - --page-size=1000
+        - --registry-hostname=us.gcr.io
+      resources:
+        requests:
+          cpu: 4
+          memory: "16Gi"
+        limits:
+          cpu: 4
+          memory: "16Gi"
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers

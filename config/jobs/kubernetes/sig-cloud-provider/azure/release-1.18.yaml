@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -38,7 +38,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/kubernetes.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
         - --ginkgo-parallel=30
@@ -64,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -85,7 +85,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -135,7 +135,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         - --ginkgo-parallel=1
@@ -166,7 +166,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -190,7 +190,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         - --ginkgo-parallel=1
@@ -219,7 +219,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - kubetest
@@ -240,7 +240,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       - --ginkgo-parallel=1
@@ -274,7 +274,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - kubetest
@@ -295,7 +295,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       - --ginkgo-parallel=1
@@ -331,7 +331,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - kubetest
@@ -355,7 +355,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test-azure-file-csi-driver
       - --ginkgo-parallel=1
@@ -395,7 +395,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -448,7 +448,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -503,7 +503,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -557,7 +557,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

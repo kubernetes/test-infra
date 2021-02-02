@@ -14,8 +14,8 @@
 # limitations under the License.
 
 
-OLD=3.0.0
-NEW=3.1.0
+NEW=3.4.1
+OLD=3.1.0
 
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 rm -rf rules_k8s

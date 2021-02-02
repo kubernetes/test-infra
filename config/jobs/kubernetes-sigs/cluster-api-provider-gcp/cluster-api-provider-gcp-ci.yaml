@@ -13,7 +13,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -34,7 +34,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -51,7 +51,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 12h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
@@ -63,17 +63,17 @@ periodics:
     path_alias: "sigs.k8s.io/image-builder"
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.19
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
-          - "./scripts/ci-e2e.sh"
+          - "./scripts/ci-conformance.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -89,103 +89,6 @@ periodics:
     testgrid-tab-name: capg-conformance-v1alpha3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: ci-cluster-api-provider-gcp-make-conformance-v1alpha2
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  interval: 4h
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-gcp
-    base_ref: release-0.2
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-        env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-        command:
-          - "runner.sh"
-          - "./scripts/ci-e2e.sh"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha2
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
-- name: ci-cluster-api-provider-gcp-make-conformance-v1alpha2-k8s-ci-artifacts
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  interval: 4h
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-gcp
-    base_ref: release-0.2
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-        env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-        command:
-          - "runner.sh"
-          - "./scripts/ci-e2e.sh"
-          - "--use-ci-artifacts"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha2-k8s-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-gcp-make-conformance-v1alpha3-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
@@ -196,7 +99,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 12h
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
@@ -212,13 +115,13 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
         command:
           - "runner.sh"
-          - "./scripts/ci-e2e.sh"
+          - "./scripts/ci-conformance.sh"
           - "--use-ci-artifacts"
         # we need privileged mode in order to do docker in docker
         securityContext:
@@ -233,5 +136,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
     testgrid-tab-name: capg-conformance-v1alpha3-k8s-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, release-team@kubernetes.io
     testgrid-num-failures-to-alert: "2"

@@ -92,9 +92,8 @@ func runCmd(command string, args ...string) error {
 	return cmd.Run()
 }
 
-func getVersion(flags []string) (string, error) {
-	describeCmd := append([]string{"describe"}, flags...)
-	cmd := exec.Command("git", describeCmd...)
+func getVersion() (string, error) {
+	cmd := exec.Command("git", "describe", "--tags", "--always", "--dirty")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -277,11 +276,7 @@ func runBuildJobs(o options) []error {
 	}
 
 	log.Println("Running build jobs...")
-	tagFlags := []string{"--tags", "--always", "--dirty"}
-	if len(o.tagMatch) > 0 {
-		tagFlags = append(tagFlags, fmt.Sprintf(`--match "%s"`, o.tagMatch))
-	}
-	tag, err := getVersion(tagFlags)
+	tag, err := getVersion()
 	if err != nil {
 		return []error{fmt.Errorf("failed to get current tag: %v", err)}
 	}
@@ -340,7 +335,6 @@ type options struct {
 	noSource       bool
 	variant        string
 	envPassthrough string
-	tagMatch       string
 
 	// withGitDirectory will include the .git directory when uploading the source to GCB
 	withGitDirectory bool
@@ -368,7 +362,6 @@ func parseFlags() options {
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
 	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 	flag.BoolVar(&o.withGitDirectory, "with-git-dir", o.withGitDirectory, "If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.")
-	flag.StringVar(&o.tagMatch, "tag-match", "", "If specified, use the latest tag matching this pattern (see `git describe --tags --match`)")
 
 	flag.Parse()
 

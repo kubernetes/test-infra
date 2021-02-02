@@ -38,6 +38,12 @@ listergen=$PWD/$4
 go_bindata=$PWD/$5
 do_clean=${6:-}
 
+cleanup() {
+  if [[ -n ${fake_gopath:-} ]]; then chmod u+rwx -R $fake_gopath && rm -rf $fake_gopath; fi
+  if [[ -n ${TEMP_GOCACHE:-} ]]; then rm -rf $TEMP_GOCACHE; fi
+}
+trap cleanup EXIT
+
 ensure-in-gopath() {
   fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
 
@@ -167,7 +173,8 @@ gen-spyglass-bindata(){
 export GO111MODULE=off
 ensure-in-gopath
 old=${GOCACHE:-}
-export GOCACHE=$(mktemp -d -t codegen.gocache.XXXX)
+export TEMP_GOCACHE=$(mktemp -d -t codegen.gocache.XXXX)
+export GOCACHE=$TEMP_GOCACHE
 export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org

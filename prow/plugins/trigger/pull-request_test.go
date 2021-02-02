@@ -88,11 +88,10 @@ func TestTrusted(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			g := &fakegithub.FakeClient{
-				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-incubator": {member, fakegithub.Bot}},
-				Collaborators: []string{friend},
-				IssueComments: map[int][]github.IssueComment{},
-			}
+			g := fakegithub.NewFakeClient()
+			g.OrgMembers = map[string][]string{"kubernetes": {sister}, "kubernetes-sigs": {member, fakegithub.Bot}}
+			g.Collaborators = []string{friend}
+			g.IssueComments = map[int][]github.IssueComment{}
 			trigger := plugins.Trigger{
 				TrustedOrg:     "kubernetes",
 				OnlyOrgMembers: tc.onlyOrg,
@@ -103,7 +102,7 @@ func TestTrusted(t *testing.T) {
 					Name: label,
 				})
 			}
-			_, actual, err := TrustedPullRequest(g, trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
+			_, actual, err := TrustedPullRequest(g, trigger, tc.author, "kubernetes-sigs", "random-repo", 1, labels)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}
@@ -139,6 +138,7 @@ func TestHandlePullRequest(t *testing.T) {
 		prChanges     bool
 		prAction      github.PullRequestEventAction
 		prIsDraft     bool
+		eventSender   string
 		jobToAbort    *prowapi.ProwJob
 	}{
 		{
@@ -348,6 +348,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			ShouldBuild: true,
+			eventSender: "not-k8s-ci-robot",
 			prAction:    github.PullRequestActionLabeled,
 			prLabel:     labels.OkToTest,
 		},
@@ -356,13 +357,15 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "u",
 			ShouldBuild: true,
+			eventSender: "not-k8s-ci-robot",
 			prAction:    github.PullRequestActionLabeled,
 			prLabel:     labels.OkToTest,
 		},
 		{
 			name: "Label added by a bot. Build should not be triggered in this case.",
 
-			Author:      "k8s-ci-robot",
+			Author:      "u",
+			eventSender: "k8s-ci-robot",
 			prLabel:     labels.OkToTest,
 			prAction:    github.PullRequestActionLabeled,
 			ShouldBuild: false,
@@ -381,30 +384,38 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			HasOkToTest: true,
-			prAction:    github.PullRequestConvertedToDraft,
+			prAction:    github.PullRequestActionConvertedToDraft,
 			ShouldBuild: false,
+			jobToAbort:  jobToAbort,
+		},
+		{
+			name: "Abort old jobs and build on push",
+
+			Author:      "t",
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionSynchronize,
+			ShouldBuild: true,
 			jobToAbort:  jobToAbort,
 		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
 		t.Run(tc.name, func(t *testing.T) {
-			g := &fakegithub.FakeClient{
-				IssueComments: map[int][]github.IssueComment{},
-				OrgMembers:    map[string][]string{"org": {"t"}},
-				PullRequests: map[int]*github.PullRequest{
-					0: {
-						Number: 0,
-						User:   github.User{Login: tc.Author},
-						Base: github.PullRequestBranch{
-							Ref: "master",
-							Repo: github.Repo{
-								Owner: github.User{Login: "org"},
-								Name:  "repo",
-							},
+			g := fakegithub.NewFakeClient()
+			g.IssueComments = map[int][]github.IssueComment{}
+			g.OrgMembers = map[string][]string{"org": {"t"}}
+			g.PullRequests = map[int]*github.PullRequest{
+				0: {
+					Number: 0,
+					User:   github.User{Login: tc.Author},
+					Base: github.PullRequestBranch{
+						Ref: "master",
+						Repo: github.Repo{
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
 						},
-						Draft: tc.prIsDraft,
 					},
+					Draft: tc.prIsDraft,
 				},
 			}
 			fakeProwJobClient := fake.NewSimpleClientset(jobToAbort)
@@ -433,6 +444,9 @@ func TestHandlePullRequest(t *testing.T) {
 			if tc.HasOkToTest {
 				g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
 			}
+			if tc.eventSender == "" {
+				tc.eventSender = tc.Author
+			}
 			pr := github.PullRequestEvent{
 				Action: tc.prAction,
 				Label:  github.Label{Name: tc.prLabel},
@@ -448,6 +462,9 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 					Draft: tc.prIsDraft,
+				},
+				Sender: github.User{
+					Login: tc.eventSender,
 				},
 			}
 			if tc.prChanges {

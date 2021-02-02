@@ -2,7 +2,9 @@
 
 reviewers:
   - cjwagner
+  - alvaroaleman
 approvers:
   - cjwagner
+  - alvaroaleman
 labels:
   - area/ghproxy

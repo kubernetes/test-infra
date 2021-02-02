@@ -16,7 +16,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-1.16
+    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
       resources:
         limits:
           cpu: 4
@@ -40,4 +40,4 @@ periodics:
         go get sigs.k8s.io/kubetest2@latest;
         go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --focus-regex='\[Conformance\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.19.0 --focus-regex='\[Conformance\]'

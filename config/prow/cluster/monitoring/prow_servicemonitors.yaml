@@ -1,3 +1,5 @@
+# PROW_INSTANCE_SPECIFIC
+# Contains prow components list, could be solved by breaking these down to individual files
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -27,12 +29,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: http
-      scheme: http
+  - interval: 30s
+    port: http
+    scheme: http
   namespaceSelector:
     matchNames:
-      - prow-monitoring
+    - prow-monitoring
   selector:
     matchLabels:
       app: alertmanager
@@ -46,12 +48,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: http
-      scheme: http
+  - interval: 30s
+    port: http
+    scheme: http
   namespaceSelector:
     matchNames:
-      - prow-monitoring
+    - prow-monitoring
   selector:
     matchLabels:
       app: grafana
@@ -65,9 +67,9 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
       - default
@@ -84,9 +86,9 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
       - default
@@ -103,12 +105,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: hook
@@ -122,15 +124,15 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
-      app: plank
+      app: prow-controller-manager
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -141,12 +143,12 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: sinker
@@ -160,12 +162,50 @@ metadata:
   namespace: prow-monitoring
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
-      scheme: http
+  - interval: 30s
+    port: metrics
+    scheme: http
   namespaceSelector:
     matchNames:
-      - default
+    - default
   selector:
     matchLabels:
       app: tide
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: horologium
+  name: horologium
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: horologium
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: crier
+  name: crier
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: crier

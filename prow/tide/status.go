@@ -30,7 +30,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -128,22 +127,22 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	// Weight incorrect branches with very high diff so that we select the query
 	// for the correct branch.
-	targetBranchBlacklisted := false
+	targetBranchDenied := false
 	for _, excludedBranch := range q.ExcludedBranches {
 		if string(pr.BaseRef.Name) == excludedBranch {
-			targetBranchBlacklisted = true
+			targetBranchDenied = true
 			break
 		}
 	}
-	// if no whitelist is configured, the target is OK by default
-	targetBranchWhitelisted := len(q.IncludedBranches) == 0
+	// if no allowlist is configured, the target is OK by default
+	targetBranchAllowed := len(q.IncludedBranches) == 0
 	for _, includedBranch := range q.IncludedBranches {
 		if string(pr.BaseRef.Name) == includedBranch {
-			targetBranchWhitelisted = true
+			targetBranchAllowed = true
 			break
 		}
 	}
-	if targetBranchBlacklisted || !targetBranchWhitelisted {
+	if targetBranchDenied || !targetBranchAllowed {
 		diff += 1000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
@@ -218,9 +217,10 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	// fixing label issues takes precedence over status contexts
 	var contexts []string
+	log := logrus.WithFields(pr.logFields())
 	for _, commit := range pr.Commits.Nodes {
 		if commit.Commit.OID == pr.HeadRefOID {
-			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc, logrus.New().WithFields(pr.logFields())) {
+			for _, ctx := range unsuccessfulContexts(append(commit.Commit.Status.Contexts, checkRunNodesToContexts(log, commit.Commit.StatusCheckRollup.Contexts.Nodes)...), cc, log) {
 				contexts = append(contexts, string(ctx.Context))
 			}
 		}
@@ -289,7 +289,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
 	passingUpToDatePJs := &prowapi.ProwJobList{}
-	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingField(indexNamePassingJobs, indexKey)); err != nil {
+	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingFields{indexNamePassingJobs: indexKey}); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
 		log.WithError(err).Error("Failed to list ProwJobs.")
 		return github.StatusSuccess, statusInPool, nil
@@ -558,7 +558,8 @@ func (sc *statusController) search() []PullRequest {
 		sc.PreviousQuery = query
 	}
 
-	prs, err := search(sc.ghc.Query, sc.logger, query, sc.LatestPR.Time, now)
+	// TODO @alvaroaleman: Add github apps support
+	prs, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, sc.LatestPR.Time, now, "")
 	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
 	if err != nil {
 		log := log.WithError(err)
@@ -609,7 +610,7 @@ func indexKeyPassingJobs(repo config.OrgRepo, baseSHA, headSHA string) string {
 	return fmt.Sprintf("%s@%s+%s", repo, baseSHA, headSHA)
 }
 
-func indexFuncPassingJobs(obj runtime.Object) []string {
+func indexFuncPassingJobs(obj ctrlruntimeclient.Object) []string {
 	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {

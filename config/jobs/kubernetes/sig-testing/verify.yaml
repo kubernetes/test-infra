@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -59,7 +59,7 @@ periodics:
     fork-per-release-periodic-interval: 2h 2h 6h 24h
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: verify-master
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
     description: "Ends up running: make verify"
   decorate: true
   extra_refs:
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       imagePullPolicy: Always
       command:
       - runner.sh

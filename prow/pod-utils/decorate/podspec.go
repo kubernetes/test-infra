@@ -72,9 +72,14 @@ func VolumeMounts() sets.String {
 	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
 }
 
-// VolumeMountPaths returns a string set with *MountPath consts in it.
-func VolumeMountPaths() sets.String {
-	return sets.NewString(logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath, s3CredentialsMountPath)
+// VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
+func VolumeMountsOnTestContainer() sets.String {
+	return sets.NewString(logMountName, codeMountName, toolsMountName)
+}
+
+// VolumeMountPathsOnTestContainer returns a string set with *MountPath consts in it which are applied to the test container.
+func VolumeMountPathsOnTestContainer() sets.String {
+	return sets.NewString(logMountPath, codeMountPath, toolsMountPath)
 }
 
 // PodUtilsContainerNames returns a string set with pod utility container name consts in it.
@@ -158,19 +163,19 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
-	return ProwJobToPodLocal(pj, buildID, "")
+func ProwJobToPod(pj prowapi.ProwJob) (*coreapi.Pod, error) {
+	return ProwJobToPodLocal(pj, "")
 }
 
 // ProwJobToPodLocal converts a ProwJob to a Pod that will run the tests.
 // If an output directory is specified, files are copied to the dir instead of uploading to GCS if
 // decoration is configured.
-func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*coreapi.Pod, error) {
+func ProwJobToPodLocal(pj prowapi.ProwJob, outputDir string) (*coreapi.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
 
-	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, buildID, pj.Name))
+	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -534,12 +539,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 
 	var volumes []coreapi.Volume
 	var mounts []coreapi.VolumeMount
-	if dc.GCSCredentialsSecret != "" {
+	if dc.GCSCredentialsSecret != nil && *dc.GCSCredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: gcsCredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.GCSCredentialsSecret,
+					SecretName: *dc.GCSCredentialsSecret,
 				},
 			},
 		})
@@ -549,12 +554,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 		})
 		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
-	if dc.S3CredentialsSecret != "" {
+	if dc.S3CredentialsSecret != nil && *dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: s3CredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.S3CredentialsSecret,
+					SecretName: *dc.S3CredentialsSecret,
 				},
 			},
 		})
@@ -603,43 +608,53 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 	return container, nil
 }
 
+// LogMountAndVolume returns the canonical volume and mount used to persist container logs.
+func LogMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      logMountName,
+			MountPath: logMountPath,
+		}, coreapi.Volume{
+			Name: logMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// CodeMountAndVolume returns the canonical volume and mount used to share code under test
+func CodeMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      codeMountName,
+			MountPath: codeMountPath,
+		}, coreapi.Volume{
+			Name: codeMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
+// ToolsMountAndVolume returns the canonical volume and mount used to propagate the entrypoint
+func ToolsMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
+	return coreapi.VolumeMount{
+			Name:      toolsMountName,
+			MountPath: toolsMountPath,
+		}, coreapi.Volume{
+			Name: toolsMountName,
+			VolumeSource: coreapi.VolumeSource{
+				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+			},
+		}
+}
+
 func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]string, outputDir string) error {
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath
 	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
-	logMount := coreapi.VolumeMount{
-		Name:      logMountName,
-		MountPath: logMountPath,
-	}
-	logVolume := coreapi.Volume{
-		Name: logMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	codeMount := coreapi.VolumeMount{
-		Name:      codeMountName,
-		MountPath: codeMountPath,
-	}
-	codeVolume := coreapi.Volume{
-		Name: codeMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
-
-	toolsMount := coreapi.VolumeMount{
-		Name:      toolsMountName,
-		MountPath: toolsMountPath,
-	}
-	toolsVolume := coreapi.Volume{
-		Name: toolsMountName,
-		VolumeSource: coreapi.VolumeSource{
-			EmptyDir: &coreapi.EmptyDirVolumeSource{},
-		},
-	}
+	logMount, logVolume := LogMountAndVolume()
+	codeMount, codeVolume := CodeMountAndVolume()
+	toolsMount, toolsVolume := ToolsMountAndVolume()
 
 	// The output volume is only used if outputDir is specified, indicating the pod-utils should
 	// copy files instead of uploading to GCS.
@@ -705,7 +720,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, wrappers...)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -731,6 +746,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
 	}
 
+	defaultSA := pj.Spec.DecorationConfig.DefaultServiceAccountName
+	if spec.ServiceAccountName == "" && defaultSA != nil {
+		spec.ServiceAccountName = *defaultSA
+	}
+
 	return nil
 }
 
@@ -747,14 +767,17 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
+	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
+	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions: &gcsOptions,
-		Entries:    wrappers,
-		EntryError: requirePassingEntries,
+		GcsOptions:       &gcsOptions,
+		Entries:          wrappers,
+		EntryError:       requirePassingEntries,
+		IgnoreInterrupts: ignoreInterrupts,
 	})
 	if err != nil {
 		return nil, err

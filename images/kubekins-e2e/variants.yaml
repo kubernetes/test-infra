@@ -1,27 +1,33 @@
 variants:
   experimental:
     CONFIG: experimental
-    GO_VERSION: 1.15
+    GO_VERSION: 1.15.7
     K8S_RELEASE: stable
-    BAZEL_VERSION: 2.2.0
-    OLD_BAZEL_VERSION: 0.28.1
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
     UPGRADE_DOCKER: 'true'
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.15
+    GO_VERSION: 1.15.7
     K8S_RELEASE: stable
-    BAZEL_VERSION: 2.2.0
-    OLD_BAZEL_VERSION: 0.23.2
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
   master:
     CONFIG: master
-    GO_VERSION: 1.15
+    GO_VERSION: 1.15.7
     K8S_RELEASE: stable
-    BAZEL_VERSION: 2.2.0
-    OLD_BAZEL_VERSION: 0.23.2
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  '1.20':
+    CONFIG: '1.20'
+    GO_VERSION: 1.15.5
+    K8S_RELEASE: stable-1.20
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
   '1.19':
     CONFIG: '1.19'
-    GO_VERSION: 1.15
-    K8S_RELEASE: latest-1.19
+    GO_VERSION: 1.15.5
+    K8S_RELEASE: stable-1.19
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2
   '1.18':
@@ -34,11 +40,5 @@ variants:
     CONFIG: '1.17'
     GO_VERSION: 1.13.15
     K8S_RELEASE: stable-1.17
-    BAZEL_VERSION: 2.2.0
-    OLD_BAZEL_VERSION: 0.23.2
-  '1.16':
-    CONFIG: '1.16'
-    GO_VERSION: 1.13.15
-    K8S_RELEASE: stable-1.16
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2

@@ -1,5 +1,7 @@
 {
   prometheusAlerts+:: {
+    local monitoringLink = $._config.instance.monitoringLink,
+    local dashboardID = $._config.grafanaDashboardIDs['ghproxy.json'],
     groups+: [
       {
         name: 'ghproxy',
@@ -13,7 +15,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: '{{ $value | humanize }}%% of all requests for {{ $labels.path }} through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=9>' % $._config.grafanaDashboardIDs['ghproxy.json'],
+              message: '{{ $value | humanize }}%% of all requests for {{ $labels.path }} through the GitHub proxy are erroring with code {{ $labels.status }}. Check %s.' % [monitoringLink('/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=9' % [dashboardID], 'the ghproxy dashboard')],
             },
           },
           {
@@ -25,7 +27,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: '{{ $value | humanize }}%% of all API requests through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=8|grafana>' % $._config.grafanaDashboardIDs['ghproxy.json'],
+              message: '{{ $value | humanize }}%% of all API requests through the GitHub proxy are errorring with code {{ $labels.status }}. Check %s.' % [monitoringLink('/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=8' % [dashboardID], 'the ghproxy dashboard')],
             },
           },
           {

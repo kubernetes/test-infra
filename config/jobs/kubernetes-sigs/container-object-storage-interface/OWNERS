@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - jsafrane
+  - msau42
+  - saad-ali
+  - xing-yang
+  - brahmaroutu
+  - wlan0
+

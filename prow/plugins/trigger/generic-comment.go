@@ -63,11 +63,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	// Skip bot comments.
-	botName, err := c.GitHubClient.BotName()
+	botUserChecker, err := c.GitHubClient.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if commentAuthor == botName {
+
+	if botUserChecker(commentAuthor) {
 		c.Logger.Debug("Comment is made by the bot, skipping.")
 		return nil
 	}
@@ -108,7 +109,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message.")
+			resp := "Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message."
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
 		}

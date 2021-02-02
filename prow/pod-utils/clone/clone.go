@@ -64,7 +64,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 				message = err.Error()
 				record.Failed = true
 			}
-			record.Commands = append(record.Commands, Command{Command: censorGitCommand(formattedCommand, oauthToken), Output: output, Error: message})
+			record.Commands = append(record.Commands, Command{Command: censorToken(formattedCommand, oauthToken), Output: censorToken(output, oauthToken), Error: censorToken(message, oauthToken)})
 			if err != nil {
 				return err
 			}
@@ -95,11 +95,11 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	return record
 }
 
-func censorGitCommand(command, token string) string {
+func censorToken(msg, token string) string {
 	if token == "" {
-		return command
+		return msg
 	}
-	censored := bytes.ReplaceAll([]byte(command), []byte(token), []byte("CENSORED"))
+	censored := bytes.ReplaceAll([]byte(msg), []byte(token), []byte("CENSORED"))
 	return string(censored)
 }
 
@@ -109,6 +109,10 @@ func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	var clonePath string
 	if refs.PathAlias != "" {
 		clonePath = refs.PathAlias
+	} else if refs.RepoLink != "" {
+		// Drop the protocol from the RepoLink
+		parts := strings.Split(refs.RepoLink, "://")
+		clonePath = parts[len(parts)-1]
 	} else {
 		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
 	}
@@ -124,10 +128,17 @@ type gitCtx struct {
 
 // gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
 func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken string) gitCtx {
+	var repoURI string
+	if refs.RepoLink != "" {
+		repoURI = fmt.Sprintf("%s.git", refs.RepoLink)
+	} else {
+		repoURI = fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+	}
+
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
 		env:           env,
-		repositoryURI: fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo),
+		repositoryURI: repoURI,
 	}
 	if refs.CloneURI != "" {
 		g.repositoryURI = refs.CloneURI
@@ -180,17 +191,27 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	if gitUserEmail != "" {
 		commands = append(commands, g.gitCommand("config", "user.email", gitUserEmail))
 	}
-	if cookiePath != "" {
+	if cookiePath != "" && refs.SkipSubmodules {
 		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
 	}
 
-	if refs.CloneDepth > 0 {
-		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune", "--depth", strconv.Itoa(refs.CloneDepth)))
-		commands = append(commands, g.gitFetch("--depth", strconv.Itoa(refs.CloneDepth), g.repositoryURI, refs.BaseRef))
-	} else {
-		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune"))
-		commands = append(commands, g.gitFetch(g.repositoryURI, refs.BaseRef))
+	var depthArgs []string
+	if d := refs.CloneDepth; d > 0 {
+		depthArgs = append(depthArgs, "--depth", strconv.Itoa(d))
 	}
+
+	if !refs.SkipFetchHead {
+		fetchArgs := []string{g.repositoryURI, "--tags", "--prune"}
+		fetchArgs = append(fetchArgs, depthArgs...)
+		commands = append(commands, g.gitFetch(fetchArgs...))
+	}
+
+	{
+		fetchArgs := append([]string{}, depthArgs...)
+		fetchArgs = append(fetchArgs, g.repositoryURI, refs.BaseRef)
+		commands = append(commands, g.gitFetch(fetchArgs...))
+	}
+
 	var target string
 	if refs.BaseSHA != "" {
 		target = refs.BaseSHA
@@ -260,6 +281,9 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []run
 	var commands []runnable
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
+		if prRef.SHA != "" {
+			ref = prRef.SHA
+		}
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}

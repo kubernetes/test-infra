@@ -66,17 +66,18 @@ dashboards:
     test_group_name: osconfig-presubmit-gotest
   name: googleoss-gcp-guest
 - dashboard_tab:
-  - description: transfer finished results into resultstore
-    name: resultstore
-    test_group_name: ci-google-oss-test-infra-resultstore-upload
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: ci-oss-test-infra-autobump-knative-prow
     name: autobump-knative-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: ci-oss-test-infra-autobump-knative-prow
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: ci-oss-test-infra-autobump-prow
     name: autobump-prow
@@ -85,19 +86,50 @@ dashboards:
     test_group_name: ci-oss-test-infra-autobump-prow
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: ci-oss-test-infra-heartbeat
+    name: oss-prow-heartbeat
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    test_group_name: ci-oss-test-infra-heartbeat
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
+    description: testgrid-canary-autobump
+    name: autobump-testgrid-canary
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    test_group_name: testgrid-canary-autobump
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: post-oss-test-infra-deploy-knative-prow
     name: knative-prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: post-oss-test-infra-deploy-knative-prow
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: post-oss-test-infra-deploy-prow
     name: prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: post-oss-test-infra-deploy-prow
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: post-oss-test-infra-reconcile-hmacs
+    name: hmacs-reconciliation
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    test_group_name: post-oss-test-infra-reconcile-hmacs
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: post-oss-test-infra-upload-testgrid-config
     name: testgrid-upload
@@ -127,8 +159,24 @@ dashboards:
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
     test_group_name: push-testgrid-images
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
+    description: testgrid-prod-autobump
+    name: autobump-testgrid-prod
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    test_group_name: testgrid-prod-autobump
   name: googleoss-test-infra
 - dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all integration tests with latest envoy and old configmanager for api backward compatibility
+    name: api-regression
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    test_group_name: ESPv2-API-regression-test
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
     description: Runs e2e tests for Cloud Run with Anthos.
@@ -357,13 +405,51 @@ dashboards:
     test_group_name: ESPv2-serverless-janitor
   name: googleoss-esp-v2-periodic
 - dashboard_tab:
-  - code_search_url_template:
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
     description: ci-en-server-performance
     name: performance
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
     test_group_name: ci-en-server-performance
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-terraform-e2e
+    name: e2e
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-terraform-e2e
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-server-terraform-smoke
+    name: terraform-smoke
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-server/issues/
+    test_group_name: ci-en-server-terraform-smoke
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-e2e
+    name: verification-e2e
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-e2e
+  - alert_options:
+      alert_mail_to_addresses: en-server-prow-test-alert@google.com
+    code_search_url_template:
+      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
+    description: ci-en-verification-server-terraform-smoke
+    name: verification-terraform-smoke
+    open_bug_template:
+      url: https://github.com/google/exposure-notifications-verification-server/issues/
+    test_group_name: ci-en-verification-server-terraform-smoke
   name: googleoss-en-server
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -402,12 +488,30 @@ test_groups:
   name: ESPv2-serverless-janitor
 - gcs_prefix: oss-prow/logs/ci-en-server-performance
   name: ci-en-server-performance
-- gcs_prefix: oss-prow/logs/ci-google-oss-test-infra-resultstore-upload
-  name: ci-google-oss-test-infra-resultstore-upload
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-server-terraform-e2e
+  name: ci-en-server-terraform-e2e
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-server-terraform-smoke
+  name: ci-en-server-terraform-smoke
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-e2e
+  name: ci-en-verification-server-e2e
+  num_failures_to_alert: 1
+- gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
+  name: ci-en-verification-server-terraform-smoke
+  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-knative-prow
   name: ci-oss-test-infra-autobump-knative-prow
+  num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
+  num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/ci-oss-test-infra-heartbeat
+  name: ci-oss-test-infra-heartbeat
+- gcs_prefix: oss-prow/logs/testgrid-canary-autobump
+  name: testgrid-canary-autobump
+  num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
 - gcs_prefix: oss-prow/logs/gce-build
@@ -420,16 +524,28 @@ test_groups:
   name: osconfig-build
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-deploy-knative-prow
   name: post-oss-test-infra-deploy-knative-prow
+  num_failures_to_alert: 2
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-deploy-prow
   name: post-oss-test-infra-deploy-prow
+  num_failures_to_alert: 2
+- gcs_prefix: oss-prow/logs/post-oss-test-infra-reconcile-hmacs
+  name: post-oss-test-infra-reconcile-hmacs
+  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-upload-testgrid-config
   name: post-oss-test-infra-upload-testgrid-config
+  num_failures_to_alert: 2
 - gcs_prefix: oss-prow/logs/post-testgrid-deploy-canary
   name: post-testgrid-deploy-canary
 - gcs_prefix: oss-prow/logs/post-testgrid-deploy-prod
   name: post-testgrid-deploy-prod
 - gcs_prefix: oss-prow/logs/push-testgrid-images
   name: push-testgrid-images
+- gcs_prefix: oss-prow/logs/testgrid-prod-autobump
+  name: testgrid-prod-autobump
+  num_failures_to_alert: 3
+- gcs_prefix: oss-prow/pr-logs/directory/ESPv2-API-regression-test
+  name: ESPv2-API-regression-test
+  num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   name: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   num_columns_recent: 20

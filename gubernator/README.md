@@ -92,14 +92,8 @@ The properties can be defined as:
 ```xml
 <testcase ...>
   <properties>
-    <property>
-        <name>key1</name>
-        <value>value1</value>
-    </property>
-    <property>
-        <name>key2</name>
-        <value>value2</value>
-    </property>
+    <property name="key1" value="value1"></property>
+    <property name="key2" value="value2"></property>
   </properties>
 </testcase>
 ```

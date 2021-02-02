@@ -232,7 +232,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkDownErr error
 	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump)
 	}
 
 	if o.charts {
@@ -515,12 +515,22 @@ func isUp(d deployer) error {
 	return nil
 }
 
-func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
-	logDumpPath := "./cluster/log-dump/log-dump.sh"
-	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
-	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+func logDumpPath(provider string) string {
+	// Use the log dumping script outside of kubernetes/kubernetes repo.
+	// Guarding against K8s provider as the script is tested only for gce
+	// and gke cases at the moment.
+	if os.Getenv("USE_TEST_INFRA_LOG_DUMPING") == "true" && (provider == "gce" || provider == "gke") {
+		if logDumpPath := os.Getenv("LOG_DUMP_SCRIPT_PATH"); logDumpPath != "" {
+			return logDumpPath
+		}
+	}
+	return "./cluster/log-dump/log-dump.sh"
+}
+
+func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath, provider string) error {
+	logDumpPath := logDumpPath(provider)
 	if _, err := os.Stat(logDumpPath); err != nil {
-		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		log.Printf("Could not find %s.", logDumpPath)
 		if cwd, err := os.Getwd(); err == nil {
 			log.Printf("CWD: %v", cwd)
 		}
@@ -561,6 +571,18 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
 	}
 
+	var sshUser string
+	// Use the KUBE_SSH_USER environment variable if it is set. This is particularly
+	// required for Fedora CoreOS hosts that only have the user 'core`. Tests
+	// using Fedora CoreOS as a host for node tests must set KUBE_SSH_USER
+	// environment variable so that test infrastructure can communicate with the host
+	// successfully using ssh.
+	if os.Getenv("KUBE_SSH_USER") != "" {
+		sshUser = os.Getenv("KUBE_SSH_USER")
+	} else {
+		sshUser = os.Getenv("USER")
+	}
+
 	// prep node args
 	runner := []string{
 		"run",
@@ -572,7 +594,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--results-dir=%s", artifactsDir),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
-		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
+		fmt.Sprintf("--ssh-user=%s", sshUser),
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
@@ -715,10 +737,19 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, dump string) {
+func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump string) {
 	defer wg.Done()
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+		logDumpPath := logDumpPath(provider)
+		cmd := exec.Command(logDumpPath, dump)
+		masterName := os.Getenv("MASTER_NAME")
+		cmd.Env = append(
+			os.Environ(),
+			"KUBEMARK_MASTER_NAME="+masterName,
+			"DUMP_ONLY_MASTER_LOGS=true",
+		)
+		log.Printf("Dumping logs for kubemark master: %s", masterName)
+		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
@@ -761,8 +792,9 @@ func (t *GinkgoScriptTester) Run(control *process.Control, testArgs []string) er
 // toBuildTesterOptions builds the BuildTesterOptions data structure for passing to BuildTester
 func toBuildTesterOptions(o *options) *e2e.BuildTesterOptions {
 	return &e2e.BuildTesterOptions{
-		FocusRegex:  o.focusRegex,
-		SkipRegex:   o.skipRegex,
-		Parallelism: o.ginkgoParallel.Get(),
+		FocusRegex:            o.focusRegex,
+		SkipRegex:             o.skipRegex,
+		Parallelism:           o.ginkgoParallel.Get(),
+		StorageTestDriverPath: o.storageTestDriverPath,
 	}
 }

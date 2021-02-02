@@ -7,12 +7,14 @@ postsubmits:
         # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-network-dns
       decorate: true
+      # match on regex '^\d+\.\d+\.\d+$' to trigger job on new tags
       branches:
         - ^master$
+        - ^\d+\.\d+\.\d+$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200813-af45e55
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
             command:
               - /run.sh
             args:

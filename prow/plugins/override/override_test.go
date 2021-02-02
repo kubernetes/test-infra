@@ -31,7 +31,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -56,12 +58,16 @@ type fakeOwnersClient struct {
 	topLevelApprovers sets.String
 }
 
+func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
+}
+
 func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
 	return foc.topLevelApprovers
 }
 
-func (foc *fakeOwnersClient) Approvers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
+	return layeredsets.String{}
 }
 
 func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
@@ -72,8 +78,8 @@ func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
 	return ""
 }
 
-func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
+	return layeredsets.String{}
 }
 
 func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
@@ -219,7 +225,7 @@ func (c *fakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
 	if id == 1 {
 		return []github.TeamMember{
 			{Login: "user1"},
@@ -412,6 +418,25 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{fmt.Sprintf("%s: broken-test, hung-test", adminUser)},
 		},
 		{
+			name: "override with extra whitespace",
+			// Note two spaces here to start, and trailing whitespace
+			comment: "/override  broken-test \n",
+			contexts: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"broken-test": {
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{fmt.Sprintf("%s: broken-test", adminUser)},
+		},
+		{
 			name:    "ignore non-PRs",
 			issue:   true,
 			comment: "/override broken-test",
@@ -593,6 +618,27 @@ func TestHandle(t *testing.T) {
 				"job": {
 					Context:     "job",
 					Description: description("code_owner"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:      "override with allow_top_level_owners works for uppercase user",
+			comment:   "/override job",
+			user:      "Code_owner",
+			options:   plugins.Override{AllowTopLevelOwners: true},
+			approvers: []string{"code_owner"},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("Code_owner"),
 					State:       github.StatusSuccess,
 				},
 			},

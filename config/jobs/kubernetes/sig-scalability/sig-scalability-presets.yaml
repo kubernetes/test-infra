@@ -38,11 +38,6 @@ presets:
   # Reduce etcd compaction frequency to match production.
   - name: KUBEMARK_ETCD_COMPACTION_INTERVAL_SEC
     value: "150"
-  # Use Taint based evictions to control hollow node recreation in case of
-  # node VM restart.
-  # See https://github.com/kubernetes/kubernetes/issues/67120 for context.
-  - name: KUBE_FEATURE_GATES
-    value: "TaintBasedEvictions=true"
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
     value: 1
@@ -57,7 +52,7 @@ presets:
     value: "5G"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
@@ -88,6 +83,16 @@ presets:
     value: 90
   - name: CL2_ALLOWED_SLOW_API_CALLS
     value: 1
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -101,8 +106,9 @@ presets:
     value: "--use-real-proxier=false"
   - name: HEAPSTER_KUBELET_TEST_ARGS
     value: "--register-with-taints=monitoring=:NoSchedule"
+  # Heapster node is needed in order for Prometheus pods to fit in a cluster.
   - name: HEAPSTER_MACHINE_TYPE
-    value: "n1-standard-8"
+    value: "e2-standard-8"
 
 
 ###### Scalability Envs
@@ -112,7 +118,7 @@ presets:
   env:
   # Override GCE defaults.
   - name: NODE_SIZE
-    value: "n1-standard-1"
+    value: "e2-medium"
   - name: NODE_DISK_SIZE
     value: "50GB"
   - name: REGISTER_MASTER
@@ -126,7 +132,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
@@ -210,17 +216,28 @@ presets:
       apps/v1/ReplicaSet
       apps/v1/StatefulSet
       extensions/v1beta1/Ingress
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
+  # Deprecated. Should be removed after 1.20 branch will be removed from testing
 - labels:
     preset-e2e-scalability-containerd: "true"
   env:
   - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
     value: "10m"
   - name: KUBE_CONTAINER_RUNTIME
-    value: "containerd"
-  - name: LOG_DUMP_SAVE_SERVICES
     value: "containerd"
 
 ###### Scalability Envs
@@ -232,7 +249,7 @@ presets:
   - name: MASTER_SIZE
     value: "n1-standard-4"
   - name: NODE_SIZE
-    value: "n1-standard-8"
+    value: "e2-standard-8"
   - name: NODE_DISK_SIZE
     value: "100GB"
   - name: REGISTER_MASTER
@@ -246,7 +263,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components and Kubelet.
   - name: ETCD_EXTRA_ARGS
@@ -277,4 +294,12 @@ presets:
 
 - labels:
     preset-e2e-scalability-presubmits: "true"
+  env:
+
+- labels:
+    preset-e2e-scalability-periodics: "true"
+  env:
+
+- labels:
+    preset-e2e-scalability-periodics-master: "true"
   env:

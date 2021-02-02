@@ -12,16 +12,16 @@ metadata:
   namespace: default
   name: deck
 rules:
-  - apiGroups:
-      - "prow.k8s.io"
-    resources:
-      - prowjobs
-    verbs:
-      - get
-      - list
-      - watch
-      # Required when deck runs with `--rerun-creates-job=true`
-      - create
+- apiGroups:
+  - "prow.k8s.io"
+  resources:
+  - prowjobs
+  verbs:
+  - get
+  - list
+  - watch
+  # Required when deck runs with `--rerun-creates-job=true`
+  - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -29,12 +29,12 @@ metadata:
   namespace: test-pods
   name: deck
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods/log
-    verbs:
-      - get
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs:
+  - get
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1

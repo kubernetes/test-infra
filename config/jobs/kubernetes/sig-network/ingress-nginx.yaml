@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-boilerplate.sh
     annotations:
@@ -30,7 +30,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-codegen.sh
     annotations:
@@ -47,7 +47,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-gofmt.sh
     annotations:
@@ -66,7 +66,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-golint.sh
     annotations:
@@ -83,7 +83,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-lualint.sh
     annotations:
@@ -102,7 +102,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - ./hack/verify-chart-lint.sh
     annotations:
@@ -121,7 +121,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - make
         - lua-test
@@ -141,7 +141,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-ingress-nginx/e2e-test-runner:v20200627-ingress-nginx-2.9.0-9-ga003eabd5
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
         - /bin/bash
         - -c
@@ -163,37 +163,6 @@ presubmits:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test
 
-  - name: pull-ingress-nginx-e2e-1-15
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    #run_if_changed: '\.go$|^rootfs/'
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
-        command:
-          - wrapper.sh
-          - bash
-          - -c
-          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: K8S_VERSION
-          value: v1.15.11@sha256:6cc31f3533deb138792db2c7d1ffc36f7456a06f1db5556ad3b6927641016f50
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-15
-
   - name: pull-ingress-nginx-e2e-1-16
     always_run: false
     decorate: true
@@ -207,7 +176,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
           - wrapper.sh
           - bash
@@ -220,7 +189,7 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
+          value: v1.16.15@sha256:a89c771f7de234e6547d43695c7ab047809ffc71a0c3b65aa54eda051c45ed20
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-16
@@ -238,7 +207,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
           - wrapper.sh
           - bash
@@ -251,7 +220,7 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
+          value: v1.17.11@sha256:5240a7a2c34bf241afb54ac05669f8a46661912eab05705d660971eeb12f6555
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-17
@@ -269,7 +238,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
           - wrapper.sh
           - bash
@@ -282,10 +251,41 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
+          value: v1.18.8@sha256:e1f5c7e498af9d2ff8e57c30db7bd9b20f6fd0b57be3aaa3f819ba491e359a58
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-1-18
+
+  - name: pull-ingress-nginx-e2e-1-19
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: k8s.io/ingress-nginx
+    #run_if_changed: '\.go$|^rootfs/'
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
+        command:
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: REPO_INFO
+          value: https://github.com/kubernetes/ingress-nginx
+        - name: K8S_VERSION
+          value: v1.19.1@sha256:98cf5288864662e37115e362b23e4369c8c4a408f99cbc06e58ac30ddc721600
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: e2e-1-19
 
   - name: pull-ingress-nginx-e2e-helm-chart
     always_run: false
@@ -300,7 +300,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
           - wrapper.sh
           - bash
@@ -313,7 +313,7 @@ presubmits:
         - name: REPO_INFO
           value: https://github.com/kubernetes/ingress-nginx
         - name: K8S_VERSION
-          value: v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
+          value: v1.19.1@sha256:98cf5288864662e37115e362b23e4369c8c4a408f99cbc06e58ac30ddc721600
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: e2e-helm-chart
@@ -337,7 +337,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+    - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
       command:
         - wrapper.sh
         - bash

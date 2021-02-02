@@ -28,6 +28,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -39,10 +41,11 @@ import (
 type options struct {
 	port int
 
-	configPath string
-	dryRun     bool
-	github     prowflagutil.GitHubOptions
-	prowURL    string
+	configPath             string
+	dryRun                 bool
+	github                 prowflagutil.GitHubOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+	prowURL                string
 
 	webhookSecretFile string
 }
@@ -69,7 +72,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.prowURL, "prow-url", "", "Prow frontend URL.")
-	for _, group := range []flagutil.OptionGroup{&o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -82,9 +85,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
+	logrusutil.ComponentInit()
 	log := logrus.StandardLogger().WithField("plugin", "refresh")
 
 	configAgent := &config.Agent{}
@@ -109,6 +110,9 @@ func main() {
 		ghc:            githubClient,
 		log:            log,
 	}
+
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	health.ServeReady()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", serv)

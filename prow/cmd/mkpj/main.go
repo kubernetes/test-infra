@@ -38,14 +38,16 @@ type options struct {
 	jobName       string
 	configPath    string
 	jobConfigPath string
-
-	baseRef    string
-	baseSha    string
-	pullNumber int
-	pullSha    string
-	pullAuthor string
-	org        string
-	repo       string
+	triggerJob    bool
+	outputPath    string
+	kubeOptions   prowflagutil.KubernetesOptions
+	baseRef       string
+	baseSha       string
+	pullNumber    int
+	pullSha       string
+	pullAuthor    string
+	org           string
+	repo          string
 
 	local bool
 
@@ -189,6 +191,12 @@ func (o *options) Validate() error {
 		return err
 	}
 
+	if o.triggerJob {
+		if err := o.kubeOptions.Validate(false); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -204,6 +212,8 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
 	o.github.AllowDirectAccess = true
@@ -237,7 +247,10 @@ func main() {
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	if pjs.Refs != nil {
+	// local mode runs with phaino, which uses local source code instead of cloing, so
+	// no need to fetch refs from github.
+	// Aside, this also makes mkpj usable for source control system other than github.
+	if pjs.Refs != nil && !o.local {
 		o.org = pjs.Refs.Org
 		o.repo = pjs.Refs.Repo
 		if len(pjs.Refs.Pulls) != 0 {
@@ -250,17 +263,28 @@ func main() {
 		}
 	}
 	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations)
-	b, err := yaml.Marshal(&pj)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error marshalling YAML.")
+	if !o.triggerJob {
+		b, err := yaml.Marshal(&pj)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error marshalling YAML.")
+		}
+		fmt.Print(string(b))
+		if o.local {
+			logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
+		}
+		return
 	}
-	fmt.Print(string(b))
-	if o.local {
-		logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
+
+	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
 
 func splitRepoName(repo string) (string, string, error) {
+	// Normalize repo name to remove http:// or https://, this is the case for some
+	// of the gerrit instances.
+	repo = strings.TrimPrefix(repo, "http://")
+	repo = strings.TrimPrefix(repo, "https://")
 	s := strings.SplitN(repo, "/", 2)
 	if len(s) != 2 {
 		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)

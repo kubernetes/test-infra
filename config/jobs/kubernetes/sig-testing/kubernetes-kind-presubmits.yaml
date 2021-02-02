@@ -18,7 +18,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
         - wrapper.sh
         - bash
@@ -29,7 +29,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|Conntrack|udp|UDP|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
@@ -120,7 +120,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
         - wrapper.sh
         - bash
@@ -230,7 +230,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
         - wrapper.sh
         - bash
@@ -273,7 +273,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
         command:
         - wrapper.sh
         - bash

@@ -38,7 +38,7 @@ const pluginName = "merge-method-comment"
 type githubClient interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 func init() {
@@ -108,7 +108,7 @@ func needsComment(c config.Tide, pe github.PullRequestEvent) (bool, string) {
 }
 
 func issueHasComment(gc githubClient, org, repo string, number int, comment string) (bool, error) {
-	botName, err := gc.BotName()
+	botNameChecker, err := gc.BotUserChecker()
 	if err != nil {
 		return false, err
 	}
@@ -119,7 +119,7 @@ func issueHasComment(gc githubClient, org, repo string, number int, comment stri
 	}
 
 	for _, c := range comments {
-		if c.User.Login == botName && strings.Contains(c.Body, comment) {
+		if botNameChecker(c.User.Login) && strings.Contains(c.Body, comment) {
 			return true, nil
 		}
 	}

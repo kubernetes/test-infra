@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"text/template"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
+	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
@@ -46,6 +48,10 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
+
+func pStr(str string) *string {
+	return &str
+}
 
 func TestDefaultJobBase(t *testing.T) {
 	bar := "bar"
@@ -216,6 +222,17 @@ deck:
 `,
 			expectError: true,
 		},
+		{
+			name: "Invalid Spyglass gcs browser web prefix",
+			spyglassConfig: `
+deck:
+  spyglass:
+    gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
+    gcs_browser_prefixes:
+      '*': https://gcsweb.k8s.io/gcs/
+`,
+			expectError: true,
+		},
 	}
 	for _, tc := range testCases {
 		// save the config
@@ -279,6 +296,49 @@ deck:
 		}
 	}
 
+}
+
+func TestGetGCSBrowserPrefix(t *testing.T) {
+	testCases := []struct {
+		id       string
+		config   Spyglass
+		expected string
+	}{
+		{
+			id: "only default",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"*": "https://default.com/gcs/",
+				},
+			},
+			expected: "https://default.com/gcs/",
+		},
+		{
+			id: "org exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org": "https://org.com/gcs/",
+				},
+			},
+			expected: "https://org.com/gcs/",
+		},
+		{
+			id: "repo exists",
+			config: Spyglass{
+				GCSBrowserPrefixes: map[string]string{
+					"org/repo": "https://repo.com/gcs/",
+				},
+			},
+			expected: "https://repo.com/gcs/",
+		},
+	}
+
+	for _, tc := range testCases {
+		actual := tc.config.GCSBrowserPrefixes.GetGCSBrowserPrefix("org", "repo")
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Fatalf("%s", cmp.Diff(tc.expected, actual))
+		}
+	}
 }
 
 func TestDecorationRawYaml(t *testing.T) {
@@ -434,7 +494,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "default-service-account",
+				GCSCredentialsSecret: pStr("default-service-account"),
 			},
 		},
 		{
@@ -482,7 +542,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "default-service-account",
+				GCSCredentialsSecret: pStr("default-service-account"),
 			},
 		},
 		{
@@ -542,7 +602,7 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
-				GCSCredentialsSecret: "explicit-service-account",
+				GCSCredentialsSecret: pStr("explicit-service-account"),
 			},
 		},
 		{
@@ -597,7 +657,7 @@ periodics:
 					DefaultRepo:  "kubernetes",
 					MediaTypes:   map[string]string{"log": "text/plain"},
 				},
-				GCSCredentialsSecret: "explicit-service-account",
+				GCSCredentialsSecret: pStr("explicit-service-account"),
 			},
 		},
 	}
@@ -828,7 +888,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
-					MountPath: decorate.VolumeMountPaths().List()[0],
+					MountPath: decorate.VolumeMountPathsOnTestContainer().List()[0],
 				})
 			},
 		},
@@ -837,18 +897,36 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Dir(decorate.VolumeMountPaths().List()[0]),
+					MountPath: filepath.Dir(decorate.VolumeMountPathsOnTestContainer().List()[0]),
+				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
 				})
 			},
+			pass: true,
 		},
 		{
 			name: "accept conflicting mount path child",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Join(decorate.VolumeMountPaths().List()[0], "extra"),
+					MountPath: filepath.Join(decorate.VolumeMountPathsOnTestContainer().List()[0], "extra"),
+				})
+				s.Volumes = append(s.Volumes, v1.Volume{
+					Name: "foo",
 				})
 			},
+			pass: true,
+		},
+		{
+			name: "accept mount path that works only through decoration volume",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "gcs-credentials",
+					MountPath: "/secrets/gcs",
+				})
+			},
+			pass: true,
 		},
 		{
 			name: "reject reserved volume",
@@ -1049,7 +1127,7 @@ func TestValidateDecoration(t *testing.T) {
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
-		GCSCredentialsSecret: "upload-secret",
+		GCSCredentialsSecret: pStr("upload-secret"),
 		GCSConfiguration: &prowjobv1.GCSConfiguration{
 			PathStrategy: prowjobv1.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
@@ -1158,7 +1236,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
-		GCSCredentialsSecret: "upload-secret",
+		GCSCredentialsSecret: pStr("upload-secret"),
 		GCSConfiguration: &prowjobv1.GCSConfiguration{
 			PathStrategy: prowjobv1.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
@@ -1395,6 +1473,53 @@ func TestValidateJobBase(t *testing.T) {
 	}
 }
 
+func TestValidateDeck(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
+	cases := []struct {
+		name        string
+		deck        Deck
+		expectedErr string
+	}{
+		{
+			name:        "empty Deck is valid",
+			deck:        Deck{},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is false => no errors",
+			deck:        Deck{SkipStoragePathValidation: &boolFalse, AdditionalAllowedBuckets: []string{"foo", "bar", "batz"}},
+			expectedErr: "",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => error",
+			deck:        Deck{AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+		{
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is true => error",
+			deck:        Deck{SkipStoragePathValidation: &boolTrue, AdditionalAllowedBuckets: []string{"hello", "world"}},
+			expectedErr: "skip_storage_path_validation is enabled",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectingErr := len(tc.expectedErr) > 0
+			err := tc.deck.Validate()
+			if expectingErr && err == nil {
+				t.Fatalf("expecting error (%v), but did not get an error", tc.expectedErr)
+			}
+			if !expectingErr && err != nil {
+				t.Fatalf("not expecting error, but got an error: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				t.Fatalf("expected error (%v), but got unknown error, instead: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
 func TestValidateRefs(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -1542,6 +1667,7 @@ func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
 		name               string
 		prowConfig         string
+		versionFileContent string
 		jobConfigs         []string
 		expectError        bool
 		expectPodNameSpace string
@@ -2173,6 +2299,16 @@ in_repo_config:
 				return nil
 			},
 		},
+		{
+			name:               "Version file sets the version",
+			versionFileContent: "some-git-sha",
+			verify: func(c *Config) error {
+				if c.ConfigVersionSHA != "some-git-sha" {
+					return fmt.Errorf("expected value of ConfigVersionSH field to be 'some-git-sha', was %q", c.ConfigVersionSHA)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -2188,6 +2324,13 @@ in_repo_config:
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			if tc.versionFileContent != "" {
+				versionFile := filepath.Join(prowConfigDir, "VERSION")
+				if err := ioutil.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
+					t.Fatalf("failed to write prow version file: %v", err)
+				}
 			}
 
 			jobConfig := ""
@@ -2548,7 +2691,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone and whitelist specified",
+			name: "allow anyone and allowed users specified",
 			prowConfig: `
 deck:
   rerun_auth_config:
@@ -2568,7 +2711,7 @@ deck:
 			expectError: false,
 		},
 		{
-			name: "allow anyone with empty whitelist",
+			name: "allow anyone with an empty allowlist",
 			prowConfig: `
 deck:
   rerun_auth_config:
@@ -2799,7 +2942,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		plank                Plank
-		refs                 *prowapi.Refs
+		prowjob              *prowapi.ProwJob
 		expectedJobURLPrefix string
 	}{
 		{
@@ -2815,7 +2958,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-org": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -2827,8 +2970,35 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"}}},
 			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "Matching repo in extraRefs returns JobURLPrefix from repo",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
+			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "JobURLPrefix in decoration config overrides job_url_prefix_config",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob: &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{
+				DecorationConfig: &prowjobv1.DecorationConfig{GCSConfiguration: &prowjobv1.GCSConfiguration{JobURLPrefix: "https://overriden"}},
+				Refs:             &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			}},
+			expectedJobURLPrefix: "https://overriden",
 		},
 		{
 			name: "Matching org and not matching repo returns JobURLPrefix from org",
@@ -2839,7 +3009,19 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			expectedJobURLPrefix: "https://my-third-prow",
+		},
+		{
+			name: "Matching org in extraRefs and not matching repo returns JobURLPrefix from org",
+			plank: Plank{
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
+				},
+			},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -2850,7 +3032,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -2862,7 +3044,10 @@ func TestPlankJobURLPrefix(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if prefix := tc.plank.GetJobURLPrefix(tc.refs); prefix != tc.expectedJobURLPrefix {
+			if tc.prowjob == nil {
+				tc.prowjob = &prowjobv1.ProwJob{}
+			}
+			if prefix := tc.plank.GetJobURLPrefix(tc.prowjob); prefix != tc.expectedJobURLPrefix {
 				t.Errorf("expected JobURLPrefix to be %q but was %q", tc.expectedJobURLPrefix, prefix)
 			}
 		})
@@ -2870,6 +3055,8 @@ func TestPlankJobURLPrefix(t *testing.T) {
 }
 
 func TestValidateComponentConfig(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
 	testCases := []struct {
 		name        string
 		config      *Config
@@ -2990,6 +3177,36 @@ func TestValidateComponentConfig(t *testing.T) {
 				},
 			}}},
 			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets:  []string{},
+			}}},
+			errExpected: false,
+		},
+		{
+			name: "SkipStoragePathValidation true and AdditionalAllowedBuckets non-empty, err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolTrue,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: true,
+		},
+		{
+			name: "SkipStoragePathValidation false and AdditionalAllowedBuckets non-empty, no err",
+			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
+				SkipStoragePathValidation: &boolFalse,
+				AdditionalAllowedBuckets: []string{
+					"foo",
+					"bar",
+				},
+			}}},
+			errExpected: false,
 		},
 	}
 
@@ -3403,7 +3620,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3422,7 +3639,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -3446,7 +3663,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								GCSConfiguration: &prowapi.GCSConfiguration{
@@ -3473,7 +3690,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-repo",
 					DefaultRepo:  "repo-by-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -3494,7 +3711,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 						DefaultOrg:   "org-from-ps",
 						DefaultRepo:  "repo-from-ps",
 					},
-					GCSCredentialsSecret: "credentials-gcs-from-ps",
+					GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 				},
 			},
 			config: &Config{
@@ -3514,7 +3731,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3533,7 +3750,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-from-ps",
 					DefaultRepo:  "repo-from-ps",
 				},
-				GCSCredentialsSecret: "credentials-gcs-from-ps",
+				GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 			},
 		},
 		{
@@ -3554,7 +3771,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 						DefaultOrg:   "org-from-ps",
 						DefaultRepo:  "repo-from-ps",
 					},
-					GCSCredentialsSecret: "credentials-gcs-from-ps",
+					GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 				},
 			},
 			config: &Config{
@@ -3574,7 +3791,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3589,7 +3806,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-test",
 									DefaultRepo:  "repo-test",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3608,7 +3825,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-from-ps",
 					DefaultRepo:  "repo-from-ps",
 				},
-				GCSCredentialsSecret: "credentials-gcs-from-ps",
+				GCSCredentialsSecret: pStr("credentials-gcs-from-ps"),
 			},
 		},
 		{
@@ -3632,7 +3849,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3647,7 +3864,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-repo",
 									DefaultRepo:  "repo-by-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 							},
 						},
 					},
@@ -3666,7 +3883,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-repo",
 					DefaultRepo:  "repo-by-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 			},
 		},
 		{
@@ -3690,7 +3907,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3705,7 +3922,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -3724,7 +3941,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -3748,7 +3965,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -3767,7 +3984,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 
@@ -3792,7 +4009,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3807,7 +4024,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3822,7 +4039,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org-repo",
 									DefaultRepo:  "repo-by-org-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -3841,7 +4058,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org-repo",
 					DefaultRepo:  "repo-by-org-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 			},
 		},
 
@@ -3866,7 +4083,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -3881,7 +4098,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -3900,7 +4117,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -3925,7 +4142,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3944,7 +4161,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs",
+				GCSCredentialsSecret: pStr("credentials-gcs"),
 			},
 		},
 		{
@@ -3970,7 +4187,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org",
 									DefaultRepo:  "repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs",
+								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -4025,7 +4242,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4045,7 +4262,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 		{
@@ -4067,7 +4284,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -4082,7 +4299,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org",
 									DefaultRepo:  "repo-by-org",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4110,7 +4327,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org",
 					DefaultRepo:  "repo-by-org",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 			},
 		},
 		{
@@ -4132,7 +4349,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 							"org/repo": {
 								UtilityImages: &prowapi.UtilityImages{
@@ -4147,7 +4364,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-org-repo",
 									DefaultRepo:  "repo-by-org-repo",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -4175,7 +4392,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-org-repo",
 					DefaultRepo:  "repo-by-org-repo",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-org-repo",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 			},
 		},
 		{
@@ -4200,7 +4417,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4219,7 +4436,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					DefaultOrg:   "org-by-*",
 					DefaultRepo:  "repo-by-*",
 				},
-				GCSCredentialsSecret: "credentials-gcs-by-*",
+				GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 			},
 		},
 		{
@@ -4245,7 +4462,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 									DefaultOrg:   "org-by-*",
 									DefaultRepo:  "repo-by-*",
 								},
-								GCSCredentialsSecret: "credentials-gcs-by-*",
+								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4802,5 +5019,139 @@ func TestValidatePostsubmits(t *testing.T) {
 		if errMsg != tc.expectedError {
 			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
 		}
+	}
+}
+
+func TestValidateStorageBucket(t *testing.T) {
+	testCases := []struct {
+		name        string
+		yaml        string
+		bucket      string
+		expectedErr string
+	}{
+		{
+			name:        "unspecified config means no validation",
+			yaml:        ``,
+			bucket:      "who-knows",
+			expectedErr: "",
+		},
+		{
+			name: "validation disabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: true`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "",
+		},
+		{
+			name: "validation enabled",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "random-unknown-bucket",
+			expectedErr: "bucket \"random-unknown-bucket\" not in allowed list",
+		},
+		{
+			name: "DecorationConfig allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+plank:
+    default_decoration_configs:
+        '*':
+            gcs_configuration:
+                bucket: "kubernetes-jenkins"`,
+			bucket:      "kubernetes-jenkins",
+			expectedErr: "",
+		},
+		{
+			name: "custom allowed bucket",
+			yaml: `
+deck:
+    skip_storage_path_validation: false
+    additional_allowed_buckets:
+    - "kubernetes-prow"`,
+			bucket:      "kubernetes-prow",
+			expectedErr: "",
+		},
+		{
+			name: "unknown bucket path",
+			yaml: `
+deck:
+    skip_storage_path_validation: false`,
+			bucket:      "istio-prow",
+			expectedErr: "bucket \"istio-prow\" not in allowed list",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(nested *testing.T) {
+			cfg, err := loadConfigYaml(tc.yaml, nested)
+			if err != nil {
+				nested.Fatalf("failed to load prow config: err=%v\nYAML=%v", err, tc.yaml)
+			}
+			expectingErr := len(tc.expectedErr) > 0
+
+			err = cfg.ValidateStorageBucket(tc.bucket)
+
+			if expectingErr && err == nil {
+				nested.Fatalf("no errors, but was expecting error: %v", tc.expectedErr)
+			}
+			if err != nil && !expectingErr {
+				nested.Fatalf("expecting no errors, but got: %v", err)
+			}
+			if expectingErr && err != nil && !strings.Contains(err.Error(), tc.expectedErr) {
+				nested.Fatalf("expecting error substring \"%v\", but got error: %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
+func loadConfigYaml(prowConfigYaml string, t *testing.T) (*Config, error) {
+	prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+	if err != nil {
+		t.Fatalf("fail to make tempdir: %v", err)
+	}
+	defer os.RemoveAll(prowConfigDir)
+
+	prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+	if err := ioutil.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
+		t.Fatalf("fail to write prow config: %v", err)
+	}
+
+	return Load(prowConfig, "")
+}
+
+func TestGenYamlDocs(t *testing.T) {
+	const fixtureName = "./prow-config-documented.yaml"
+	inputFiles, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatalf("filepath.Glob: %v", err)
+	}
+	prowapiInputFiles, err := filepath.Glob("../apis/prowjobs/v1/*.go")
+	if err != nil {
+		t.Fatalf("prowapi filepath.Glob: %v", err)
+	}
+	inputFiles = append(inputFiles, prowapiInputFiles...)
+
+	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	if err != nil {
+		t.Fatalf("failed to construct commentMap: %v", err)
+	}
+	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
+	if err != nil {
+		t.Fatalf("genyaml errored: %v", err)
+	}
+	if os.Getenv("UPDATE") != "" {
+		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
+			t.Fatalf("failed to write fixture: %v", err)
+		}
+	}
+	expectedYaml, err := ioutil.ReadFile(fixtureName)
+	if err != nil {
+		t.Fatalf("failed to read fixture: %v", err)
+	}
+	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
+		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
 	}
 }

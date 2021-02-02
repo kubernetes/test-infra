@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - make
         - test
@@ -22,7 +22,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -37,6 +37,8 @@ presubmits:
         - --test=false
         - --test-cmd=../test/e2e/test-cmd.sh
         - --timeout=50m
+        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -52,7 +54,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -68,9 +70,42 @@ presubmits:
         - --test-cmd=../test/e2e/test-fully-automated.sh
         - --test-cmd-args=--skip=\[Disruptive\]
         - --timeout=50m
+        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated
+  - name: pull-kube-storage-version-migrator-ha-master
+    path_alias: "sigs.k8s.io/kube-storage-version-migrator"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: master
+      path_alias: k8s.io/kubeadm
+    always_run: true
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        command:
+        - runner.sh
+        - "./test/e2e/test-kinder.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-ha-master

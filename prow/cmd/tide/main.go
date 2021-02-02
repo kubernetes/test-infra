@@ -125,7 +125,13 @@ func main() {
 	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+	var token string
+	if o.github.TokenPath != "" {
+		token = o.github.TokenPath
+	} else {
+		token = o.github.AppPrivateKeyPath
+	}
+	if err := secretAgent.Start([]string{token}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -163,19 +169,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil, o.github.AppPrivateKeyPath != "")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
 	interrupts.Run(func(ctx context.Context) {
-		if err := mgr.Start(ctx.Done()); err != nil {
+		if err := mgr.Start(ctx); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
 		logrus.Info("Mgr finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
-	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
 	interrupts.OnInterrupt(func() {
@@ -184,6 +190,16 @@ func main() {
 			logrus.WithError(err).Error("Could not clean up git client cache.")
 		}
 	})
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}

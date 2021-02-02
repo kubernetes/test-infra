@@ -20,34 +20,8 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
 
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-es-logging
-- interval: 12h
-  name: ci-kubernetes-e2e-gci-gce-sd-logging
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=1340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_LOGGING_DESTINATION=gcp
-      - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
-      - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-
-  annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: gci-gce-sd-logging

@@ -22,9 +22,11 @@ in_repo_config:
     "*": ["default"]
 ```
 
-Additionally, `Deck` must be configured with an oauth token if that is not already the case. To do
+Additionally, `Deck` must be configured with a github token if that is not already the case. To do
 so, the `--github-token-path=` flag must be set and point to a valid token file that has permissions
-to read all your repositories.
+to read all your repositories. Also, in order for Deck to serve content from storage locations not
+defined in the default locations or centrally-defined jobs, those buckets must be listed 
+in `deck.additional_allowed_buckets`.
 
 Afterwards, you need to add a config verification job to make sure people people get told about
 mistakes in their `.prow.yaml` rather than the PR being stuck. It makes sense to define this

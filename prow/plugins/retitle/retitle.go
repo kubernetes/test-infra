@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/invalidcommitmsg"
 	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
@@ -50,12 +51,20 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	} else {
 		configMsg = "The retitle plugin does not allow retitling closed/merged issues and PRs."
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Retitle: plugins.Retitle{
+			AllowClosedIssues: true,
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The retitle plugin allows users to re-title pull requests and issues where GitHub permissions don't allow them to.",
 		Config: map[string]string{
 			"": configMsg,
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/retitle <title>",
@@ -128,6 +137,10 @@ func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error),
 	newTitle := strings.TrimSpace(matches[1])
 	if newTitle == "" {
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not be empty.`))
+	}
+
+	if invalidcommitmsg.AtMentionRegex.MatchString(newTitle) || invalidcommitmsg.CloseIssueRegex.MatchString(newTitle) {
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not contain [keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions.`))
 	}
 
 	if gce.IsPR {

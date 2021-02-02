@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -70,11 +71,23 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 				"build-log.txt",
 			},
 		},
+		{
+			name: "list artifacts without results in gs with multiple containers",
+			args: args{
+				src: "gs/test-bucket/logs/multiple-container-job/123",
+			},
+			want: []string{
+				"test-1-build-log.txt",
+				"test-2-build-log.txt",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fakeGCSClient := fakeGCSServer.Client()
-			sg := New(context.Background(), fakeJa, nil, io.NewGCSOpener(fakeGCSClient), false)
+			ca := &config.Agent{}
+			ca.Set(&config.Config{})
+			sg := New(context.Background(), fakeJa, ca.Config, io.NewGCSOpener(fakeGCSClient), false)
 			got, err := sg.ListArtifacts(context.Background(), tt.args.src)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ListArtifacts() error = %v, wantErr %v", err, tt.wantErr)

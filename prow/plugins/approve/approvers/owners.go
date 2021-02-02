@@ -30,20 +30,23 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
-	ownersFileName = "OWNERS"
 	// ApprovalNotificationName defines the name used in the title for the approval notifications.
 	ApprovalNotificationName = "ApprovalNotifier"
 )
 
 // Repo allows querying and interacting with OWNERS information in a repo.
 type Repo interface {
-	Approvers(path string) sets.String
+	Approvers(path string) layeredsets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
+	Filenames() ownersconfig.Filenames
 }
 
 // Owners provides functionality related to owners of a specific code change.
@@ -65,7 +68,7 @@ func (o Owners) GetApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
 	for fn := range o.GetOwnersSet() {
-		ownersToApprovers[fn] = o.repo.Approvers(fn)
+		ownersToApprovers[fn] = o.repo.Approvers(fn).Set()
 	}
 
 	return ownersToApprovers
@@ -161,7 +164,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
 		ap.AddApprover(newApprover, "", false)
@@ -435,16 +438,18 @@ func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
 	for _, file := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[file]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
-				baseURL:  baseURL,
-				filepath: file,
-				branch:   branch,
+				baseURL:        baseURL,
+				filepath:       file,
+				ownersFilename: ap.owners.repo.Filenames().Owners,
+				branch:         branch,
 			})
 		} else {
 			allOwnersFiles = append(allOwnersFiles, ApprovedFile{
-				baseURL:   baseURL,
-				filepath:  file,
-				approvers: filesApprovers[file],
-				branch:    branch,
+				baseURL:        baseURL,
+				filepath:       file,
+				ownersFilename: ap.owners.repo.Filenames().Owners,
+				approvers:      filesApprovers[file],
+				branch:         branch,
 			})
 		}
 	}
@@ -540,8 +545,9 @@ type File interface {
 
 // ApprovedFile contains the information of a an approved file.
 type ApprovedFile struct {
-	baseURL  *url.URL
-	filepath string
+	baseURL        *url.URL
+	filepath       string
+	ownersFilename string
 	// approvers is the set of users that approved this file change.
 	approvers sets.String
 	branch    string
@@ -549,13 +555,14 @@ type ApprovedFile struct {
 
 // UnapprovedFile contains the information of a an unapproved file.
 type UnapprovedFile struct {
-	baseURL  *url.URL
-	filepath string
-	branch   string
+	baseURL        *url.URL
+	filepath       string
+	ownersFilename string
+	branch         string
 }
 
 func (a ApprovedFile) String() string {
-	fullOwnersPath := filepath.Join(a.filepath, ownersFileName)
+	fullOwnersPath := filepath.Join(a.filepath, a.ownersFilename)
 	if strings.HasSuffix(a.filepath, ".md") {
 		fullOwnersPath = a.filepath
 	}
@@ -568,7 +575,7 @@ func (a ApprovedFile) String() string {
 }
 
 func (ua UnapprovedFile) String() string {
-	fullOwnersPath := filepath.Join(ua.filepath, ownersFileName)
+	fullOwnersPath := filepath.Join(ua.filepath, ua.ownersFilename)
 	if strings.HasSuffix(ua.filepath, ".md") {
 		fullOwnersPath = ua.filepath
 	}
@@ -608,7 +615,7 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
+To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
 You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 

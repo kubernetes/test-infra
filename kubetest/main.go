@@ -57,32 +57,34 @@ var (
 )
 
 type options struct {
-	build              buildStrategy
-	charts             bool
-	checkLeaks         bool
-	checkSkew          bool
-	cluster            string
-	clusterIPRange     string
-	deployment         string
-	down               bool
-	dump               string
-	dumpPreTestLogs    string
-	extract            extractStrategies
-	extractSource      bool
-	flushMemAfterBuild bool
-	focusRegex         string
-	gcpCloudSdk        string
-	gcpMasterImage     string
-	gcpMasterSize      string
-	gcpNetwork         string
-	gcpNodeImage       string
-	gcpImageFamily     string
-	gcpImageProject    string
-	gcpNodes           string
-	gcpNodeSize        string
-	gcpProject         string
-	gcpProjectType     string
-	gcpServiceAccount  string
+	build                buildStrategy
+	charts               bool
+	checkLeaks           bool
+	checkSkew            bool
+	cluster              string
+	clusterIPRange       string
+	deployment           string
+	down                 bool
+	dump                 string
+	dumpPreTestLogs      string
+	extract              extractStrategies
+	extractCIBucket      string
+	extractReleaseBucket string
+	extractSource        bool
+	flushMemAfterBuild   bool
+	focusRegex           string
+	gcpCloudSdk          string
+	gcpMasterImage       string
+	gcpMasterSize        string
+	gcpNetwork           string
+	gcpNodeImage         string
+	gcpImageFamily       string
+	gcpImageProject      string
+	gcpNodes             string
+	gcpNodeSize          string
+	gcpProject           string
+	gcpProjectType       string
+	gcpServiceAccount    string
 	// gcpSSHProxyInstanceName is the name of the vm instance which ip address will be used to set the
 	// KUBE_SSH_BASTION env. If set, it will result in proxying ssh connections in tests through the
 	// "bastion". It's useful for clusters with nodes without public ssh access, e.g. nodes without
@@ -112,6 +114,7 @@ type options struct {
 	soakDuration            time.Duration
 	sshUser                 string
 	stage                   stageStrategy
+	storageTestDriverPath   string
 	test                    bool
 	testArgs                string
 	testCmd                 string
@@ -135,6 +138,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.StringVar(&o.extractCIBucket, "extract-ci-bucket", "kubernetes-release-dev", "Extract k8s CI binaries from the specified GCS bucket")
+	flag.StringVar(&o.extractReleaseBucket, "extract-release-bucket", "kubernetes-release", "Extract k8s release binaries from the specified GCS bucket")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
@@ -175,6 +180,7 @@ func defineFlags() *options {
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
+	flag.StringVar(&o.storageTestDriverPath, "storage-testdriver-repo-path", "", "Relative path for external e2e test driver config in the csi driver repo")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
@@ -198,7 +204,7 @@ func defineFlags() *options {
 	return &o
 }
 
-var suite util.TestSuite
+var suite util.TestSuite = util.TestSuite{Name: "kubetest"}
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
@@ -245,7 +251,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "node":
-		return nodeDeploy{}, nil
+		return nodeDeploy{provider: o.provider}, nil
 	case "none":
 		return noneDeploy{}, nil
 	case "local":
@@ -454,7 +460,7 @@ func acquireKubernetes(o *options, d deployer) error {
 			}
 
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractSource)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractCIBucket, o.extractReleaseBucket, o.extractSource)
 		})
 		if err != nil {
 			return err
@@ -690,9 +696,6 @@ func prepareGcp(o *options) error {
 		}
 		if o.deployment != "gke" {
 			return fmt.Errorf("expected --deployment=gke for --provider=gke, found --deployment=%s", o.deployment)
-		}
-		if o.gcpNodeImage == "" {
-			return fmt.Errorf("--gcp-node-image must be set for GKE")
 		}
 		if o.gcpMasterImage != "" {
 			return fmt.Errorf("expected --gcp-master-image to be empty for --provider=gke, found --gcp-master-image=%s", o.gcpMasterImage)

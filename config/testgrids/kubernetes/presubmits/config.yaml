@@ -68,9 +68,6 @@ dashboards:
   - name: pull-kubernetes-dependencies
     test_group_name: pull-kubernetes-dependencies
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-network-proxy-grpc
-    test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
-    base_options: width=10
   - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-http-connect
     base_options: width=10
@@ -82,6 +79,9 @@ dashboards:
     base_options: width=10
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
+  - name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-rbe
     test_group_name: pull-kubernetes-e2e-gce-rbe
     base_options: width=10
@@ -100,8 +100,9 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-dual-canary
     test_group_name: pull-kubernetes-e2e-kind-dual-canary
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: antonio.ojea.garcia@gmail.com
+  - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+    test_group_name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+    base_options: width=10
   - name: pull-kubernetes-e2e-aks-engine-azure
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
@@ -147,6 +148,9 @@ dashboards:
   - name: pull-kubernetes-files-remake
     test_group_name: pull-kubernetes-files-remake
     base_options: width=10
+  - name: pull-kubernetes-verify-govet-levee
+    test_group_name: pull-kubernetes-verify-govet-levee
+    base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
@@ -166,9 +170,6 @@ dashboards:
     base_options: width=10
   - name: pull-perf-tests-clusterloader2
     test_group_name: pull-perf-tests-clusterloader2
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2-nodekiller-experimental
-    test_group_name: pull-perf-tests-clusterloader2-nodekiller-experimental
     base_options: width=10
   - name: pull-perf-tests-clusterloader2-kubemark
     test_group_name: pull-perf-tests-clusterloader2-kubemark

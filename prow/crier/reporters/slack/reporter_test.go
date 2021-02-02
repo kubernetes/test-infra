@@ -17,6 +17,7 @@ limitations under the License.
 package slack
 
 import (
+	"context"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -200,10 +201,9 @@ func TestShouldReport(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			reporter := &slackReporter{
 				config: cfgGetter,
-				logger: logrus.NewEntry(&logrus.Logger{}),
 			}
 
-			if result := reporter.ShouldReport(tc.pj); result != tc.expected {
+			if result := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj); result != tc.expected {
 				t.Errorf("expected result to be %t but was %t", tc.expected, result)
 			}
 		})
@@ -227,17 +227,16 @@ func TestReloadsConfig(t *testing.T) {
 
 	reporter := &slackReporter{
 		config: cfgGetter,
-		logger: logrus.NewEntry(&logrus.Logger{}),
 	}
 
-	if shouldReport := reporter.ShouldReport(pj); shouldReport {
+	if shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); shouldReport {
 		t.Error("Did expect shouldReport to be false")
 	}
 
 	cfg.JobStatesToReport = []v1.ProwJobState{v1.FailureState}
 	cfg.JobTypesToReport = []v1.ProwJobType{v1.PostsubmitJob}
 
-	if shouldReport := reporter.ShouldReport(pj); !shouldReport {
+	if shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); !shouldReport {
 		t.Error("Did expect shouldReport to be true after config change")
 	}
 }
@@ -460,7 +459,6 @@ func TestShouldReportDefaultsToExtraRefs(t *testing.T) {
 		},
 	}
 	sr := slackReporter{
-		logger: logrus.NewEntry(logrus.New()),
 		config: func(r *v1.Refs) config.SlackReporter {
 			if r.Org == "org" {
 				return config.SlackReporter{
@@ -472,7 +470,7 @@ func TestShouldReportDefaultsToExtraRefs(t *testing.T) {
 		},
 	}
 
-	if !sr.ShouldReport(job) {
+	if !sr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job) {
 		t.Fatal("expected job to report but did not")
 	}
 }
@@ -502,7 +500,6 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 		},
 	}
 	sr := slackReporter{
-		logger: logrus.NewEntry(logrus.New()),
 		config: func(r *v1.Refs) config.SlackReporter {
 			if r.Org == "org" {
 				return config.SlackReporter{
@@ -517,7 +514,7 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 		client: &fakeSlackClient{},
 	}
 
-	if _, err := sr.Report(job); err != nil {
+	if _, _, err := sr.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
 		t.Fatalf("reporting failed: %v", err)
 	}
 	if sr.client.(*fakeSlackClient).messages["emercengy"] != "there you go" {

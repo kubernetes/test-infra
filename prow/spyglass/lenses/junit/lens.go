@@ -145,6 +145,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	for _, artifact := range artifacts {
 		go func(artifact api.Artifact) {
 			groups := make(map[testIdentifier][]JunitResult)
+			var testsSequence []testIdentifier
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -177,13 +178,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					// flaky if it both succeeded and failed
 					k := testIdentifier{suite.Name, test.ClassName, test.Name}
 					groups[k] = append(groups[k], JunitResult{Result: test})
+					if len(groups[k]) == 1 {
+						testsSequence = append(testsSequence, k)
+					}
 				}
 			}
 			for _, suite := range suites.Suites {
 				record(suite)
 			}
-			for _, results := range groups {
-				result.junit = append(result.junit, results)
+			for _, identifier := range testsSequence {
+				result.junit = append(result.junit, groups[identifier])
 			}
 			resultChan <- result
 		}(artifact)
@@ -195,6 +199,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
 
 	var jvd JVD
+	var duplicates int
 
 	for _, result := range results {
 		if result.err != nil {
@@ -234,6 +239,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					Junit: tests,
 					Link:  result.link,
 				})
+				// if the skipped test is a rerun of a failed test
+				if failed {
+					// store it as failed too
+					jvd.Failed = append(jvd.Failed, TestResult{
+						Junit: tests,
+						Link:  result.link,
+					})
+					// account for the duplication
+					duplicates++
+				}
 			} else if failed {
 				jvd.Failed = append(jvd.Failed, TestResult{
 					Junit: tests,
@@ -253,6 +268,6 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 		}
 	}
 
-	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped)
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped) - duplicates
 	return jvd
 }

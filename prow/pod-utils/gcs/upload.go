@@ -23,8 +23,10 @@ import (
 	"net/url"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilpointer "k8s.io/utils/pointer"
 
@@ -34,7 +36,10 @@ import (
 
 // UploadFunc knows how to upload into an object
 type UploadFunc func(writer dataWriter) error
+
 type destToWriter func(dest string) dataWriter
+
+const retryCount = 4
 
 // Upload uploads all of the data in the
 // uploadTargets map to blob storage in parallel. The map is
@@ -76,14 +81,37 @@ func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
 func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 	errCh := make(chan error, len(uploadTargets))
 	group := &sync.WaitGroup{}
+	sem := semaphore.NewWeighted(4)
 	group.Add(len(uploadTargets))
 	for dest, upload := range uploadTargets {
 		log := logrus.WithField("dest", dest)
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
 			defer group.Done()
-			if err := f(writer); err != nil {
+
+			var err error
+
+			for retryIndex := 1; retryIndex <= retryCount; retryIndex++ {
+				err = func() error {
+					sem.Acquire(context.Background(), 1)
+					defer sem.Release(1)
+					if retryIndex > 1 {
+						log.WithField("retry_attempt", retryIndex).Debugf("Retrying upload")
+					}
+					return f(writer)
+				}()
+
+				if err == nil {
+					break
+				}
+				if retryIndex < retryCount {
+					time.Sleep(time.Duration(retryIndex*retryIndex) * time.Second)
+				}
+			}
+
+			if err != nil {
 				errCh <- err
+				log.Info("Failed upload")
 			} else {
 				log.Info("Finished upload")
 			}
@@ -118,6 +146,9 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 		}
 		if fi, err := reader.Stat(); err == nil {
 			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
+			if *opts.BufferSize > 25*1024*1024 {
+				*opts.BufferSize = 25 * 1024 * 1024
+			}
 		}
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)

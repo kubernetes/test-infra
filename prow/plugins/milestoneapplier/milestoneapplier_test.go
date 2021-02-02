@@ -159,13 +159,12 @@ func TestMilestoneApplier(t *testing.T) {
 				PullRequest: basicPR,
 			}
 
-			fakeClient := &fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					basicPR.Number: &basicPR,
-				},
-				MilestoneMap: milestonesMap,
-				Milestone:    tc.previousMilestone,
+			fakeClient := fakegithub.NewFakeClient()
+			fakeClient.PullRequests = map[int]*github.PullRequest{
+				basicPR.Number: &basicPR,
 			}
+			fakeClient.MilestoneMap = milestonesMap
+			fakeClient.Milestone = tc.previousMilestone
 
 			var configuredMilestoneTitle string
 			for title, number := range milestonesMap {

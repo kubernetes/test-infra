@@ -17,7 +17,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200813-af45e55
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
             command:
               - /run.sh
             args:
@@ -27,6 +27,4 @@ postsubmits:
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-descheduler-gcb
               - --env-passthrough=PULL_BASE_REF
-              # This makes sure that only tags matching, eg v0.18.0 get published (and not Helm chart tags)
-              - --tag-match="v*"
               - .

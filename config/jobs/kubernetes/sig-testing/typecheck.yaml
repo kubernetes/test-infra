@@ -19,14 +19,14 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         resources:
           limits:
             cpu: 5
-            memory: 36Gi
+            memory: 32Gi
           requests:
             cpu: 5
-            memory: 36Gi
+            memory: 32Gi
         args:
         - verify
         env:

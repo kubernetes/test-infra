@@ -32,7 +32,7 @@ def main(prow_config, prow_job_config, gubernator_config):
     default_presubmits = set()
     periodic_names = set()
     for config in configs:
-        prow_data = yaml.load(open(config))
+        prow_data = yaml.safe_load(open(config))
 
         if not prow_data:
             continue
@@ -45,7 +45,7 @@ def main(prow_config, prow_job_config, gubernator_config):
             for job in prow_data['periodics']:
                 periodic_names.add(job['name'])
 
-    gubernator_data = yaml.load(open(gubernator_config))
+    gubernator_data = yaml.safe_load(open(gubernator_config))
 
     gubernator_data['jobs']['kubernetes-jenkins/pr-logs/directory/'] = sorted(
         default_presubmits)

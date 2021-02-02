@@ -33,6 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	clienttesting "k8s.io/client-go/testing"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
@@ -101,12 +102,12 @@ type fakeReporter struct {
 	reported bool
 }
 
-func (r *fakeReporter) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
+func (r *fakeReporter) Report(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
 	r.reported = true
-	return nil, nil
+	return nil, nil, nil
 }
 
-func (r *fakeReporter) ShouldReport(pj *prowapi.ProwJob) bool {
+func (r *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) bool {
 	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 

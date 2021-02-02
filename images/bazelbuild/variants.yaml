@@ -5,8 +5,8 @@ variants:
     OLD_BAZEL_VERSION: 2.2.0
   test-infra:
     CONFIG: test-infra
-    BAZEL_VERSION: 3.1.0
-    OLD_BAZEL_VERSION: 3.0.0
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 3.1.0
   testgrid:
     CONFIG: testgrid
     BAZEL_VERSION: 3.3.0

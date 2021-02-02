@@ -75,3 +75,11 @@ func TestAnnotateOwners(t *testing.T) {
 		})
 	}
 }
+
+func TestAnnotateOwnersEmptyParams(t *testing.T) {
+	err := annotateOwners(&jsonOutput{}, map[string]build{}, map[string][]string{})
+	if err != nil {
+		t.Errorf("annotateOwners(empty, empty, empty) returned with an error: %s", err)
+		return
+	}
+}

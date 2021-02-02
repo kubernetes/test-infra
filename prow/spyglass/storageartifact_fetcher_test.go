@@ -26,6 +26,7 @@ import (
 	"testing"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -138,7 +139,9 @@ func TestNewGCSJobSource(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			jobSource, err := newStorageJobSource(tc.src)
+			cfg := createConfigGetter("test-bucket")
+			af := NewStorageArtifactFetcher(nil, cfg, false)
+			jobSource, err := af.newStorageJobSource(tc.src)
 			if err != tc.expectedErr {
 				t.Errorf("Expected err: %v, got err: %v", tc.expectedErr, err)
 			}
@@ -160,8 +163,9 @@ func TestNewGCSJobSource(t *testing.T) {
 
 // Tests listing objects associated with the current job in GCS
 func TestArtifacts_ListGCS(t *testing.T) {
+	cfg := createConfigGetter("test-bucket")
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
+	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), cfg, false)
 	testCases := []struct {
 		name              string
 		handle            artifactHandle
@@ -203,33 +207,36 @@ func TestArtifacts_ListGCS(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		actualArtifacts, err := testAf.artifacts(context.Background(), tc.source)
-		if err != nil {
-			t.Errorf("Failed to get artifact names: %v", err)
-		}
-		for _, ea := range tc.expectedArtifacts {
-			found := false
-			for _, aa := range actualArtifacts {
-				if ea == aa {
-					found = true
-					break
+		t.Run(tc.name, func(nested *testing.T) {
+			actualArtifacts, err := testAf.artifacts(context.Background(), tc.source)
+			if err != nil {
+				nested.Fatalf("Failed to get artifact names: %v", err)
+			}
+			for _, ea := range tc.expectedArtifacts {
+				found := false
+				for _, aa := range actualArtifacts {
+					if ea == aa {
+						found = true
+						break
+					}
 				}
-			}
-			if !found {
-				t.Errorf("Case %s failed to retrieve the following artifact: %s\nRetrieved: %s.", tc.name, ea, actualArtifacts)
-			}
+				if !found {
+					nested.Fatalf("failed to retrieve the following artifact: %s\nRetrieved: %s.", ea, actualArtifacts)
+				}
 
-		}
-		if len(tc.expectedArtifacts) != len(actualArtifacts) {
-			t.Errorf("Case %s produced more artifacts than expected. Expected: %s\nActual: %s.", tc.name, tc.expectedArtifacts, actualArtifacts)
-		}
+			}
+			if len(tc.expectedArtifacts) != len(actualArtifacts) {
+				nested.Fatalf("produced more artifacts than expected. Expected: %s\nActual: %s.", tc.expectedArtifacts, actualArtifacts)
+			}
+		})
 	}
 }
 
 // Tests getting handles to objects associated with the current job in GCS
 func TestFetchArtifacts_GCS(t *testing.T) {
+	cfg := createConfigGetter("test-bucket")
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), false)
+	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), cfg, false)
 	maxSize := int64(500e6)
 	testCases := []struct {
 		name         string
@@ -403,9 +410,10 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 			// Before, these error should have already lead to errors on gcs client creation, so signURL probably was never able to produce these errors during runtime.
 			// (because deck crashed on gcsClient creation)
 			var actual string
+			cfg := createConfigGetter("test-bucket")
 			opener, err := io.NewOpener(context.Background(), path, "")
 			if err == nil {
-				af := NewStorageArtifactFetcher(opener, tc.useCookie)
+				af := NewStorageArtifactFetcher(opener, cfg, tc.useCookie)
 				actual, err = af.signURL(context.Background(), "gs://foo/bar/stuff")
 			}
 			switch {
@@ -426,4 +434,16 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 			}
 		})
 	}
+}
+
+func createConfigGetter(bucketNames ...string) config.Getter {
+	ca := config.Agent{}
+	ca.Set(&config.Config{
+		ProwConfig: config.ProwConfig{
+			Deck: config.Deck{
+				AdditionalAllowedBuckets: bucketNames,
+			},
+		},
+	})
+	return ca.Config
 }

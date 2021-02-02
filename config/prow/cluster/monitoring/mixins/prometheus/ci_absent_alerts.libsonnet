@@ -1,5 +1,6 @@
 {
   prometheusAlerts+:: {
+    local comps = $._config.components,
     groups+: [
       {
         name: 'ci-absent',
@@ -12,12 +13,22 @@
             'for': '5m',
             labels: {
               severity: 'critical',
+              slo: name,
             },
             annotations: {
               message: '@test-infra-oncall The service %s has been down for 5 minutes.' % name,
             },
           }
-          for name in ['deck', 'ghproxy', 'hook', 'plank', 'sinker', 'tide']
+          for name in [
+              comps.crier,
+              comps.deck,
+              comps.ghproxy,
+              comps.hook,
+              comps.horologium,
+              comps.prowControllerManager,
+              comps.sinker,
+              comps.tide,
+          ]
         ],
       },
     ],

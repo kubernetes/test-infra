@@ -98,10 +98,10 @@ data:
             path_strategy: explicit
           s3_credentials_secret: s3-credentials
           utility_images:
-            clonerefs: gcr.io/k8s-prow/clonerefs:v20200814-1330dc0906
-            entrypoint: gcr.io/k8s-prow/entrypoint:v20200814-1330dc0906
-            initupload: gcr.io/k8s-prow/initupload:v20200814-1330dc0906
-            sidecar: gcr.io/k8s-prow/sidecar:v20200814-1330dc0906
+            clonerefs: gcr.io/k8s-prow/clonerefs:v20210201-6494714d87
+            entrypoint: gcr.io/k8s-prow/entrypoint:v20210201-6494714d87
+            initupload: gcr.io/k8s-prow/initupload:v20210201-6494714d87
+            sidecar: gcr.io/k8s-prow/sidecar:v20210201-6494714d87
 
     tide:
       queries:
@@ -239,7 +239,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/hook:v20210201-6494714d87
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -321,7 +321,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/sinker:v20210201-6494714d87
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -359,7 +359,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/deck:v20210201-6494714d87
         args:
         - --config-path=/etc/config/config.yaml
         - --plugin-config=/etc/plugins/plugins.yaml
@@ -450,7 +450,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/horologium:v20210201-6494714d87
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -485,7 +485,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/tide:v20210201-6494714d87
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -543,7 +543,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-staging
 spec:
   backend:
-    # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#prow_backend)
+    # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#default_backend)
     serviceName: deck
     servicePort: 80
   rules:
@@ -584,7 +584,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/status-reconciler:v20210201-6494714d87
         args:
         - --dry-run=false
         - --continue-on-error=true
@@ -738,30 +738,45 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-      - "prow.k8s.io"
+    - "prow.k8s.io"
     resources:
-      - prowjobs
+    - prowjobs
     verbs:
-      - delete
-      - list
-      - watch
-      - get
+    - delete
+    - list
+    - watch
+    - get
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
+    - leases
     resourceNames:
-      - prow-sinker-leaderlock
+    - prow-sinker-leaderlock
     verbs:
-      - get
-      - update
+    - get
+    - update
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
-      - events
+    - leases
     verbs:
-      - create
+    - create
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    resourceNames:
+    - prow-sinker-leaderlock
+    verbs:
+    - get
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - events
+    verbs:
+    - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -776,6 +791,9 @@ rules:
     verbs:
       - delete
       - list
+      - watch
+      - get
+      - patch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -950,7 +968,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/ghproxy:v20210201-6494714d87
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
@@ -1012,7 +1030,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --enable-controller=plank
-        image: gcr.io/k8s-prow/prow-controller-manager:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/prow-controller-manager:v20210201-6494714d87
         volumeMounts:
         - name: github-token
           mountPath: /etc/github
@@ -1041,31 +1059,46 @@ metadata:
   name: prow-controller-manager
 rules:
   - apiGroups:
-      - "prow.k8s.io"
+    - "prow.k8s.io"
     resources:
-      - prowjobs
+    - prowjobs
     verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
+    - get
+    - list
+    - watch
+    - update
+    - patch
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
+    - leases
     resourceNames:
-      - prow-controller-manager-leader-lock
+    - prow-controller-manager-leader-lock
     verbs:
-      - get
-      - update
+    - get
+    - update
   - apiGroups:
-      - ""
+    - coordination.k8s.io
     resources:
-      - configmaps
-      - events
+    - leases
     verbs:
-      - create
+    - create
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    resourceNames:
+    - prow-controller-manager-leader-lock
+    verbs:
+    - get
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - events
+    verbs:
+    - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -1082,6 +1115,7 @@ rules:
       - list
       - watch
       - create
+      - patch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -1131,7 +1165,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20200814-1330dc0906
+        image: gcr.io/k8s-prow/crier:v20210201-6494714d87
         args:
         - --blob-storage-workers=10
         - --config-path=/etc/config/config.yaml
@@ -1198,6 +1232,12 @@ rules:
   verbs:
     - "get"
     - "list"
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+  verbs:
+    - "patch"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1

@@ -1,0 +1,5 @@
+images:
+  fedora:
+    image_family: fedora-coreos-stable
+    project: fedora-coreos-cloud 
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/crio/crio_cgrpv2.ign"

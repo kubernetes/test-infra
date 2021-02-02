@@ -1,0 +1,83 @@
+periodics:
+- name: periodic-cluster-api-test-main
+  interval: 1h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
+      command:
+      - "./scripts/ci-test.sh"
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-test-main
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-e2e-main
+  interval: 1h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-main
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-verify-book-links-main
+  interval: 6h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
+      command:
+      - "runner.sh"
+      - "make"
+      - "verify-book-links"
+      env:
+      - name: GITHUB_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cluster-lifecycle-github-token
+            key: cluster-lifecycle-github-token
+  volumes:
+  - name: cluster-lifecycle-github-token
+    secret:
+      secretName: cluster-lifecycle-github-token
+      items:
+      - key: cluster-lifecycle-github-token
+        path: cluster-lifecycle-github-token
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-verify-book-links-main

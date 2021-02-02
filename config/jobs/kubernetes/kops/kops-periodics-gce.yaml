@@ -21,7 +21,10 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel
-      - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      # The logic in https://github.com/kubernetes/test-infra/pull/19031 and https://github.com/kubernetes/test-infra/pull/18870
+      # Creates a state store bucket in the project, let's use the GCP default service account for the nodes
+      # until we have a dedicated node account.
+      # - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
       - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -29,9 +32,10 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-gce-stable
 
 # Runs e2e on the cluster built with latest released kops and k/k master branch
@@ -65,72 +69,9 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
+    testgrid-days-of-results: "30"
     testgrid-tab-name: kops-gce-latest
-
-# Runs e2e on cluster built with kops master branch and latest released k/k
-- interval: 1h
-  labels:
-    preset-k8s-ssh: "true"
-  name: e2e-kops-canary-gce-stable
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    serviceAccountName: k8s-kops-test
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-canary-gce-stable.k8s.local
-      - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/latest
-      - --ginkgo-parallel
-      - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
-      - --kops-build
-      - --kops-feature-flags=GoogleCloudBucketACL
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-zones=us-central1-c
-      - --provider=gce
-      - --timeout=140m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
-    testgrid-tab-name: kops-canary-gce-stable
-
-# - interval: 30m
-#   name: e2e-kops-gce-ha
-#   labels:
-#     preset-service-account: "true"
-#     preset-k8s-ssh: "true"
-#   decorate: true
-#   decoration_config:
-#     timeout: 140m
-#   spec:
-#     containers:
-#     - command:
-#       - runner.sh
-#       - /workspace/scenarios/kubernetes_e2e.py
-#       args:
-#       - --cluster=e2e-kops-gce-ha.k8s.local
-#       - --deployment=kops
-#       - --extract=ci/latest
-#       - --ginkgo-parallel=30
-#       - --kops-args=--master-count=3
-#       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-#       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-gce-green.txt
-#       - --kops-zones=us-central1-c
-#       - --provider=gce
-#       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-#       - --timeout=120m
-#       image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-#   annotations:
-#     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
-#     testgrid-tab-name: kops-gce-ha

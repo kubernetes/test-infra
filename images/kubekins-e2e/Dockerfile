@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20200813-af45e55
+FROM gcr.io/k8s-testimages/bootstrap:v20210130-12516b2
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -73,7 +73,7 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
 # install bazel
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-COPY ./install-bazel.sh /
+COPY images/kubekins-e2e/install-bazel.sh /
 RUN bash /install-bazel.sh
 
 ARG OLD_BAZEL_VERSION
@@ -90,13 +90,23 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
+# configure dockerd to use mirror.gcr.io
+# per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
+ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
+RUN [ -n "${DOCKER_REGISTRY_MIRROR_URL}" ] && \
+    echo "DOCKER_OPTS=\"\${DOCKER_OPTS} --registry-mirror=${DOCKER_REGISTRY_MIRROR_URL}\"" | \
+    tee --append /etc/default/docker
+
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["kops-e2e-runner.sh", \
-    "kubetest", \
+ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
+    "images/kubekins-e2e/kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
+    "logexporter/cluster/log-dump.sh", \
+    "logexporter/cluster/logexporter-daemonset.yaml", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/get-kube.sh"]
+ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
+RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]

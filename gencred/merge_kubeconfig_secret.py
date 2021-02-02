@@ -52,6 +52,9 @@ def call(cmd, **kwargs):
 def main(args):
     print(args)
     validateArgs(args)
+    print('Ensuring the kubeconfig current-context is not set.')
+    call('kubectl config unset current-context')
+
     if args.auto:
         # We need to determine the dest key automatically.
         args.dest_key = time.strftime('config-%Y%m%d')
@@ -92,7 +95,7 @@ def main(args):
             srcflag = ''
             if args.src_key != args.dest_key:
                 srcflag = '--from-file="%s=%s"' % (args.src_key, orig)
-            call('kubectl --context="%s" create secret generic --namespace "%s" "%s" --from-file="%s=%s" %s --dry-run -oyaml | kubectl replace -f -' % (args.context, args.namespace, args.name, args.dest_key, merged, srcflag)) #pylint: disable=line-too-long
+            call('kubectl --context="%s" create secret generic --namespace "%s" "%s" --from-file="%s=%s" %s --dry-run -oyaml | kubectl --context="%s" replace -f -' % (args.context, args.namespace, args.name, args.dest_key, merged, srcflag, args.context)) #pylint: disable=line-too-long
         else:
             content = ''
             with open(merged, 'r') as mergedFile:

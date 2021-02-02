@@ -172,15 +172,16 @@ func TestLabel(t *testing.T) {
 		},
 	}
 
+	helpGuidelinesURL := "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
-		fakeClient := &fakegithub.FakeClient{
-			Issues:             make(map[int]*github.Issue),
-			IssueComments:      make(map[int][]github.IssueComment),
-			RepoLabelsExisting: []string{labels.Help, labels.GoodFirstIssue},
-			IssueLabelsAdded:   []string{},
-			IssueLabelsRemoved: []string{},
-		}
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.Issues = make(map[int]*github.Issue)
+		fakeClient.IssueComments = make(map[int][]github.IssueComment)
+		fakeClient.RepoLabelsExisting = []string{labels.Help, labels.GoodFirstIssue}
+		fakeClient.IssueLabelsAdded = []string{}
+		fakeClient.IssueLabelsRemoved = []string{}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
 			fakeClient.AddLabel("org", "repo", 1, label)
@@ -202,7 +203,7 @@ func TestLabel(t *testing.T) {
 			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:       github.User{Login: "Alice"},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e)
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, helpGuidelinesURL)
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue

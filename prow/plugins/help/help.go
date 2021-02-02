@@ -31,13 +31,16 @@ import (
 const pluginName = "help"
 
 var (
-	helpRe                     = regexp.MustCompile(`(?mi)^/help\s*$`)
-	helpRemoveRe               = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
-	helpGoodFirstIssueRe       = regexp.MustCompile(`(?mi)^/good-first-issue\s*$`)
-	helpGoodFirstIssueRemoveRe = regexp.MustCompile(`(?mi)^/remove-good-first-issue\s*$`)
-	helpGuidelinesURL          = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
-	helpMsgPruneMatch          = "This request has been marked as needing help from a contributor."
-	helpMsg                    = `
+	helpRe                      = regexp.MustCompile(`(?mi)^/help\s*$`)
+	helpRemoveRe                = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
+	helpGoodFirstIssueRe        = regexp.MustCompile(`(?mi)^/good-first-issue\s*$`)
+	helpGoodFirstIssueRemoveRe  = regexp.MustCompile(`(?mi)^/remove-good-first-issue\s*$`)
+	helpMsgPruneMatch           = "This request has been marked as needing help from a contributor."
+	goodFirstIssueMsgPruneMatch = "This request has been marked as suitable for new contributors."
+)
+
+func helpMsg(helpGuidelinesURL string) string {
+	return `
 	This request has been marked as needing help from a contributor.
 
 Please ensure the request meets the requirements listed [here](` + helpGuidelinesURL + `).
@@ -45,8 +48,10 @@ Please ensure the request meets the requirements listed [here](` + helpGuideline
 If this request no longer meets these requirements, the label can be removed
 by commenting with the ` + "`/remove-help`" + ` command.
 `
-	goodFirstIssueMsgPruneMatch = "This request has been marked as suitable for new contributors."
-	goodFirstIssueMsg           = `
+}
+
+func goodFirstIssueMsg(helpGuidelinesURL string) string {
+	return `
 	This request has been marked as suitable for new contributors.
 
 Please ensure the request meets the requirements listed [here](` + helpGuidelinesURL + "#good-first-issue" + `).
@@ -54,7 +59,7 @@ Please ensure the request meets the requirements listed [here](` + helpGuideline
 If this request no longer meets these requirements, the label can be removed
 by commenting with the ` + "`/remove-good-first-issue`" + ` command.
 `
-)
+}
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
@@ -76,7 +81,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
@@ -88,14 +93,15 @@ type commentPruner interface {
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+	cfg := pc.PluginConfig
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
 	}
-	return handle(pc.GitHubClient, pc.Logger, cp, &e)
+	return handle(pc.GitHubClient, pc.Logger, cp, &e, cfg.Help.HelpGuidelinesURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent, helpGuidelinesURL string) error {
 	// Only consider open issues and new comments.
 	if e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -119,18 +125,18 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.Help)
 		}
 
-		botName, err := gc.BotName()
+		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get bot name.")
 		}
-		cp.PruneComments(shouldPrune(log, botName, helpMsgPruneMatch))
+		cp.PruneComments(shouldPrune(log, botUserChecker, helpMsgPruneMatch))
 
 		// if it has the good-first-issue label, remove it too
 		if hasGoodFirstIssue {
 			if err := gc.RemoveLabel(org, repo, e.Number, labels.GoodFirstIssue); err != nil {
 				log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.GoodFirstIssue)
 			}
-			cp.PruneComments(shouldPrune(log, botName, goodFirstIssueMsgPruneMatch))
+			cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 		}
 
 		return nil
@@ -139,8 +145,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	// If PR does not have the good-first-issue label and we are asking for it to be added,
 	// add both the good-first-issue and help labels
 	if !hasGoodFirstIssue && helpGoodFirstIssueRe.MatchString(e.Body) {
-		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, goodFirstIssueMsg)); err != nil {
-			log.WithError(err).Errorf("Failed to create comment \"%s\".", goodFirstIssueMsg)
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, goodFirstIssueMsg(helpGuidelinesURL))); err != nil {
+			log.WithError(err).Errorf("Failed to create comment \"%s\".", goodFirstIssueMsg(helpGuidelinesURL))
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, labels.GoodFirstIssue); err != nil {
@@ -159,8 +165,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	// If PR does not have the help label and we're asking it to be added,
 	// add the label
 	if !hasHelp && helpRe.MatchString(e.Body) {
-		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg)); err != nil {
-			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg)
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg(helpGuidelinesURL))); err != nil {
+			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg(helpGuidelinesURL))
 		}
 		if err := gc.AddLabel(org, repo, e.Number, labels.Help); err != nil {
 			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labels.Help)
@@ -176,11 +182,11 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.GoodFirstIssue)
 		}
 
-		botName, err := gc.BotName()
+		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get bot name.")
 		}
-		cp.PruneComments(shouldPrune(log, botName, goodFirstIssueMsgPruneMatch))
+		cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 
 		return nil
 	}
@@ -189,9 +195,9 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 }
 
 // shouldPrune finds comments left by this plugin.
-func shouldPrune(log *logrus.Entry, botName, msgPruneMatch string) func(github.IssueComment) bool {
+func shouldPrune(log *logrus.Entry, isBot func(string) bool, msgPruneMatch string) func(github.IssueComment) bool {
 	return func(comment github.IssueComment) bool {
-		if comment.User.Login != botName {
+		if !isBot(comment.User.Login) {
 			return false
 		}
 		return strings.Contains(comment.Body, msgPruneMatch)

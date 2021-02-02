@@ -11,7 +11,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '3'
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-team@kubernetes.io
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -23,13 +23,14 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       resources:
         limits:
           cpu: 1
@@ -56,7 +57,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-1.16
+    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
       resources:
         limits:
           cpu: 4

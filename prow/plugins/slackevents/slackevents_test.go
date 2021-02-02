@@ -85,14 +85,14 @@ func TestPush(t *testing.T) {
 	pushEvManual.Sender.Login = "tester"
 	pushEvManual.Ref = "refs/heads/master"
 
-	pushEvManualBranchWhiteListed := pushEv
-	pushEvManualBranchWhiteListed.Pusher.Name = "Warren Teened"
-	pushEvManualBranchWhiteListed.Pusher.Email = "wteened@users.noreply.github.com"
-	pushEvManualBranchWhiteListed.Sender.Login = "WTeened"
-	pushEvManualBranchWhiteListed.Ref = "refs/heads/warrens-branch"
+	pushEvManualBranchExempted := pushEv
+	pushEvManualBranchExempted.Pusher.Name = "Warren Teened"
+	pushEvManualBranchExempted.Pusher.Email = "wteened@users.noreply.github.com"
+	pushEvManualBranchExempted.Sender.Login = "WTeened"
+	pushEvManualBranchExempted.Ref = "refs/heads/warrens-branch"
 
-	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
-	pushEvManualNotBranchWhiteListed.Ref = "refs/heads/master"
+	pushEvManualNotBranchExempted := pushEvManualBranchExempted
+	pushEvManualNotBranchExempted.Ref = "refs/heads/master"
 
 	pushEvManualCreated := pushEvManual
 	pushEvManualCreated.Created = true
@@ -147,22 +147,22 @@ func TestPush(t *testing.T) {
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contribex and kubernetes-dev.",
-			pushReq:          pushEvManualBranchWhiteListed,
+			name:             "If PR merged by a user not in the exemption list but in THIS branch exemption list, we should NOT send a message to sig-contribex and kubernetes-dev.",
+			pushReq:          pushEvManualBranchExempted,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contribex and kubernetes-dev.",
-			pushReq:          pushEvManualBranchWhiteListed,
+			name:             "If PR merged by a user not in the exemption list, in a branch exemption list, but not THIS branch exemption list, we should send a message to sig-contribex and kubernetes-dev.",
+			pushReq:          pushEvManualBranchExempted,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If a branch is created by a non-whitelisted user, we send message to sig-contribex and kubernetes-dev with branch created message.",
+			name:             "If a branch is created by a non-exempted user, we send message to sig-contribex and kubernetes-dev with branch created message.",
 			pushReq:          pushEvManualCreated,
 			expectedMessages: createdWarningMessages,
 		},
 		{
-			name:             "If a branch is deleted by a non-whitelisted user, we send message to sig-contribex and kubernetes-dev with branch deleted message.",
+			name:             "If a branch is deleted by a non-exempted user, we send message to sig-contribex and kubernetes-dev with branch deleted message.",
 			pushReq:          pushEvManualDeleted,
 			expectedMessages: deletedWarningMessages,
 		},
@@ -172,10 +172,10 @@ func TestPush(t *testing.T) {
 		SlackConfig: plugins.Slack{
 			MergeWarnings: []plugins.MergeWarning{
 				{
-					Repos:     []string{"kubernetes/kubernetes"},
-					Channels:  []string{"kubernetes-dev", "sig-contribex"},
-					WhiteList: []string{"k8s-merge-robot"},
-					BranchWhiteList: map[string][]string{
+					Repos:       []string{"kubernetes/kubernetes"},
+					Channels:    []string{"kubernetes-dev", "sig-contribex"},
+					ExemptUsers: []string{"k8s-merge-robot"},
+					ExemptBranches: map[string][]string{
 						"warrens-branch": {"wteened"},
 					},
 				},
@@ -263,7 +263,7 @@ func TestComment(t *testing.T) {
 			commenter:        orgMember,
 		},
 		{
-			name:             "If multiple sigs mentioned, but only one channel is whitelisted, only send to one channel.",
+			name:             "If multiple sigs mentioned, but only one channel is allowed, only send to one channel.",
 			action:           github.GenericCommentActionCreated,
 			body:             "@kubernetes/sig-node-misc, @kubernetes/sig-testing-misc Message sent to multiple sigs.",
 			expectedMessages: map[string][]string{"sig-node": {"Message sent to multiple sigs."}},
@@ -291,7 +291,7 @@ func TestComment(t *testing.T) {
 			SentMessages: make(map[string][]string),
 		}
 		client := client{
-			GitHubClient: &fakegithub.FakeClient{},
+			GitHubClient: fakegithub.NewFakeClient(),
 			SlackClient:  fakeSlackClient,
 			SlackConfig:  plugins.Slack{MentionChannels: []string{"sig-node", "sig-api-machinery"}},
 		}
@@ -342,10 +342,10 @@ func TestHelpProvider(t *testing.T) {
 					MentionChannels: []string{"chan1", "chan2"},
 					MergeWarnings: []plugins.MergeWarning{
 						{
-							Repos:     []string{"org2/repo"},
-							Channels:  []string{"chan1", "chan2"},
-							WhiteList: []string{"k8s-merge-robot"},
-							BranchWhiteList: map[string][]string{
+							Repos:       []string{"org2/repo"},
+							Channels:    []string{"chan1", "chan2"},
+							ExemptUsers: []string{"k8s-merge-robot"},
+							ExemptBranches: map[string][]string{
 								"warrens-branch": {"wteened"},
 							},
 						},

@@ -28,7 +28,6 @@ filegroup(
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/prowjob-report:all-srcs",
-        "//experiment/resultstore:all-srcs",
         "//experiment/service-account-creator:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
         "//experiment/update-hook:all-srcs",

@@ -80,7 +80,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
         FAILED.append(project)
 
 
-BLACKLIST = [
+EXEMPT_PROJECTS = [
     'kubernetes-scale', # Let it's up/down job handle the resources
     'k8s-scale-testing', # As it can be running some manual experiments
     'k8s-jkns-e2e-gce-f8n-1-7', # federation projects should use fedtidy to clean up
@@ -103,8 +103,6 @@ PR_PROJECTS = {
     'k8s-jkns-pr-kubemark': 3,
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
-    'k8s-gke-gpu-pr': 3,
-    'k8s-c8d-pr-node-e2e': 3,
 }
 
 SCALE_PROJECT = {
@@ -134,17 +132,14 @@ def check_ci_jobs():
             if not mat:
                 continue
             project = mat.group(1)
-            if any(b in project for b in BLACKLIST):
-                print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
+            if any(b in project for b in EXEMPT_PROJECTS):
+                print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
                 continue
             if project in PR_PROJECTS or project in SCALE_PROJECT:
                 continue # CI janitor skips all PR jobs
             found = project
         if found:
             clean_project(found, clean_hours)
-
-    # Hard code node-ci project here
-    clean_project('k8s-jkns-ci-node-e2e')
 
 
 def main(mode, ratelimit, projects, age, artifacts, filt):

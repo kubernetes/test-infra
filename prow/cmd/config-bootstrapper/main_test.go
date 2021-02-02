@@ -69,6 +69,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.AddCommit("openshift", "release", map[string][]byte{
 		"config/foo.yaml": []byte(`#foo.yaml`),
 		"config/bar.yaml": []byte(`#bar.yaml`),
+		"VERSION":         []byte("some-git-sha"),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -131,6 +132,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -179,6 +181,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -189,6 +192,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":        "some-git-sha",
 						"other-foo.yaml": "#other-foo.yaml",
 					},
 				},
@@ -198,6 +202,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":        "some-git-sha",
 						"other-bar.yaml": "#other-bar.yaml",
 					},
 				},

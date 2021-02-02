@@ -63,14 +63,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 				configFileName,
 				configMapSpec.Name,
 			)
-			if len(configMapSpec.AdditionalNamespaces) == 0 {
-				msg = msg + fmt.Sprintf("the %s namespace.\n", configMapSpec.Namespace)
-			} else {
-				for _, nameSpace := range configMapSpec.AdditionalNamespaces {
-					msg = msg + fmt.Sprintf("%s, ", nameSpace)
-				}
-				msg = msg + fmt.Sprintf("and %s namespaces.\n", configMapSpec.Namespace)
-			}
 		}
 		configInfo = map[string]string{"": msg}
 	}
@@ -106,7 +98,7 @@ func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
 // Update updates the configmap with the data from the identified files.
 // Existing configmap keys that are not included in the updates are left alone
 // unless bootstrap is true in which case they are deleted.
-func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry, sha string) error {
 	cm, getErr := kc.Get(context.TODO(), name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
@@ -123,6 +115,9 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	}
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
+	}
+	if sha != "" {
+		cm.Data[config.ConfigVersionFileName] = sha
 	}
 	if cm.BinaryData == nil || bootstrap {
 		cm.BinaryData = map[string][]byte{}
@@ -343,7 +338,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 			errs = append(errs, err)
 			continue
 		}
-		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger, *pr.MergeSHA); err != nil {
 			errs = append(errs, err)
 			continue
 		}

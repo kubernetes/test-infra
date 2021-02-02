@@ -58,7 +58,9 @@ var (
 		github.PullRequestActionReopened:             true,
 		github.PullRequestActionSynchronize:          true,
 		github.PullRequestActionReadyForReview:       true,
-		github.PullRequestConvertedToDraft:           true,
+		github.PullRequestActionConvertedToDraft:     true,
+		github.PullRequestActionLocked:               true,
+		github.PullRequestActionUnlocked:             true,
 	}
 )
 
@@ -111,6 +113,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			IssueAuthor:  re.PullRequest.User,
 			Assignees:    re.PullRequest.Assignees,
 			IssueState:   re.PullRequest.State,
+			IssueTitle:   re.PullRequest.Title,
 			IssueBody:    re.PullRequest.Body,
 			IssueHTMLURL: re.PullRequest.HTMLURL,
 		},
@@ -157,6 +160,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		&github.GenericCommentEvent{
 			GUID:         rce.GUID,
 			IsPR:         true,
+			CommentID:    intPtr(rce.Comment.ID),
 			Action:       action,
 			Body:         rce.Comment.Body,
 			HTMLURL:      rce.Comment.HTMLURL,
@@ -166,6 +170,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			IssueAuthor:  rce.PullRequest.User,
 			Assignees:    rce.PullRequest.Assignees,
 			IssueState:   rce.PullRequest.State,
+			IssueTitle:   rce.PullRequest.Title,
 			IssueBody:    rce.PullRequest.Body,
 			IssueHTMLURL: rce.PullRequest.HTMLURL,
 		},
@@ -223,6 +228,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			IssueAuthor:  pr.PullRequest.User,
 			Assignees:    pr.PullRequest.Assignees,
 			IssueState:   pr.PullRequest.State,
+			IssueTitle:   pr.PullRequest.Title,
 			IssueBody:    pr.PullRequest.Body,
 			IssueHTMLURL: pr.PullRequest.HTMLURL,
 		},
@@ -305,6 +311,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			IssueAuthor:  i.Issue.User,
 			Assignees:    i.Issue.Assignees,
 			IssueState:   i.Issue.State,
+			IssueTitle:   i.Issue.Title,
 			IssueBody:    i.Issue.Body,
 			IssueHTMLURL: i.Issue.HTMLURL,
 		},
@@ -349,6 +356,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		l,
 		&github.GenericCommentEvent{
 			ID:           ic.Issue.ID,
+			CommentID:    intPtr(ic.Comment.ID),
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,
@@ -360,6 +368,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			IssueAuthor:  ic.Issue.User,
 			Assignees:    ic.Issue.Assignees,
 			IssueState:   ic.Issue.State,
+			IssueTitle:   ic.Issue.Title,
 			IssueBody:    ic.Issue.Body,
 			IssueHTMLURL: ic.Issue.HTMLURL,
 		},
@@ -428,4 +437,8 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
+}
+
+func intPtr(i int) *int {
+	return &i
 }

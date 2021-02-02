@@ -25,13 +25,13 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
-	"log"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 	"k8s.io/test-infra/triage/berghelroach"
 	"k8s.io/test-infra/triage/utils"
 )
@@ -164,7 +164,7 @@ func makeNgramCountsDigest(s string) string {
 	hash := sha1.New()
 	_, err := io.WriteString(hash, ngramResultsAsString)
 	if err != nil {
-		log.Fatal("Error writing ngram results string to sha1 hash.")
+		klog.Fatalf("Error writing ngram results string to sha1 hash: %s", err)
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil))[:20]
@@ -257,8 +257,6 @@ func commonSpans(xs []string) []int {
 
 	return spans
 }
-
-/* Functions below this comment are only used within this file as of this commit. */
 
 var memoizedNgramCounts = make(map[string][]int) // Will be used across makeNgramCounts() calls
 var memoizedNgramCountsMutex sync.RWMutex        // makeNgramCounts is eventually depended on by some parallelized functions

@@ -53,8 +53,8 @@ func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, over
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
-	log := logger.WithFields(logrus.Fields{"bucket": bucket, "path": path})
-	log.Debugf("Uploading to %s/%s; overwrite: %v", bucket, path, overwrite)
+	log := logger.WithFields(logrus.Fields{"bucket": bucket, "path": path, "overwrite": overwrite})
+	log.Debug("Uploading")
 	w, err := author.NewWriter(ctx, bucket, path, overwrite)
 	if err != nil {
 		return err

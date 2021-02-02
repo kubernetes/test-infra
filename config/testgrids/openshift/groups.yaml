@@ -1,7 +1,6 @@
 dashboard_groups:
 - dashboard_names:
   - redhat-openshift-informing
-  - redhat-openshift-ocp-release-3.11-informing
   - redhat-openshift-ocp-release-4.1-blocking
   - redhat-openshift-ocp-release-4.1-informing
   - redhat-openshift-ocp-release-4.2-blocking
@@ -21,20 +20,15 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.7-blocking
   - redhat-openshift-ocp-release-4.7-broken
   - redhat-openshift-ocp-release-4.7-informing
+  - redhat-openshift-ocp-release-4.8-blocking
+  - redhat-openshift-ocp-release-4.8-informing
   - redhat-openshift-okd-release-4.3-informing
   - redhat-openshift-okd-release-4.4-informing
   - redhat-openshift-okd-release-4.5-blocking
-  - redhat-openshift-okd-release-4.5-informing
   - redhat-openshift-okd-release-4.6-blocking
   - redhat-openshift-okd-release-4.6-informing
+  - redhat-openshift-okd-release-4.7-blocking
   - redhat-openshift-okd-release-4.7-informing
-  - redhat-osde2e-int-aws
-  - redhat-osde2e-int-gcp
-  - redhat-osde2e-int-moa
-  - redhat-osde2e-prod-aws
-  - redhat-osde2e-prod-gcp
-  - redhat-osde2e-prod-moa
-  - redhat-osde2e-stage-aws
-  - redhat-osde2e-stage-gcp
-  - redhat-osde2e-stage-moa
+  - redhat-openshift-presubmit-master-gcp
+  - redhat-osd
   name: redhat

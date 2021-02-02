@@ -185,8 +185,15 @@ func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.CloneURI != "" {
 		refs.CloneURI = jb.CloneURI
 	}
-	refs.SkipSubmodules = jb.SkipSubmodules
-	refs.CloneDepth = jb.CloneDepth
+	if jb.SkipSubmodules {
+		refs.SkipSubmodules = jb.SkipSubmodules
+	}
+	if jb.CloneDepth > 0 {
+		refs.CloneDepth = jb.CloneDepth
+	}
+	if jb.SkipFetchHead {
+		refs.SkipFetchHead = jb.SkipFetchHead
+	}
 	return &refs
 }
 
@@ -272,12 +279,12 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
 func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) (string, error) {
-	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(pj.Spec.Refs) != "" {
+	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(&pj) != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
 
-		prefix, _ := url.Parse(plank.GetJobURLPrefix(pj.Spec.Refs))
+		prefix, _ := url.Parse(plank.GetJobURLPrefix(&pj))
 
 		prowPath, err := prowapi.ParsePath(gcsConfig.Bucket)
 		if err != nil {

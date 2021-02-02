@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -26,6 +26,8 @@ periodics:
         value: "boskos.test-pods.svc.cluster.local"
       - name: AWS_REGION
         value: "us-west-2"
+      - name: NEW_E2E_FLOW
+        value: "1"
       securityContext:
         privileged: true
       resources:
@@ -37,11 +39,11 @@ periodics:
     testgrid-tab-name: periodic-e2e-v1alpha3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-new-v1alpha3
+- name: periodic-cluster-api-provider-aws-capi-e2e-v1alpha3
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -55,7 +57,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -64,6 +66,8 @@ periodics:
             value: "boskos.test-pods.svc.cluster.local"
           - name: AWS_REGION
             value: "us-west-2"
+          - name: E2E_UNMANAGED_FOCUS
+            value: "Cluster API E2E tests"
           - name: NEW_E2E_FLOW
             value: "1"
         securityContext:
@@ -74,14 +78,14 @@ periodics:
             memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-new-v1alpha3
+    testgrid-tab-name: periodic-capi-e2e-v1alpha3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-v1alpha2
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 6h
+  interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -95,7 +99,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -133,10 +137,10 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         command:
           - "runner.sh"
-          - "./scripts/ci-e2e-conformance.sh"
+          - "./scripts/ci-conformance.sh"
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -157,7 +161,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -171,7 +175,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -191,7 +195,7 @@ periodics:
     testgrid-tab-name: periodic-e2e-conformance-v1alpha2
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
-- name: ci-cluster-api-provider-aws-make-conformance-v1alpha2-k8s-ci-artifacts
+- name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha2-with-k8s-ci-artifacts
   max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
@@ -204,7 +208,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 4h
+  interval: 48h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
@@ -220,7 +224,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         env:
           - name: CAPI_BRANCH
             value: "stable"
@@ -247,7 +251,7 @@ periodics:
     testgrid-tab-name: capa-conformance-v1alpha2-k8s-master
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-- name: ci-cluster-api-provider-aws-make-conformance-v1alpha3-k8s-ci-artifacts
+- name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha3-with-k8s-ci-artifacts
   max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
@@ -276,16 +280,17 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
           - name: AWS_REGION
             value: "us-west-2"
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
-          - "--use-ci-artifacts"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -300,4 +305,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
     testgrid-tab-name: capa-conformance-v1alpha3-k8s-master
     testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, release-team@kubernetes.io

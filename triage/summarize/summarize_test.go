@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 )
@@ -78,7 +77,8 @@ func failOnMismatchedSlices(t *testing.T, want interface{}, got interface{}) boo
 				}
 			}
 		default:
-			log.Panic("Type of want does not equal type of got")
+			t.Logf("Type of want does not equal type of got")
+			t.FailNow()
 		}
 	case []int:
 		switch got := got.(type) {
@@ -93,10 +93,12 @@ func failOnMismatchedSlices(t *testing.T, want interface{}, got interface{}) boo
 				}
 			}
 		default:
-			log.Panic("Type of want does not equal type of got")
+			t.Logf("Type of want does not equal type of got")
+			t.FailNow()
 		}
 	default:
-		log.Panic("want and got must be of type []string or []int")
+		t.Logf("want and got must be of type []string or []int")
+		t.FailNow()
 	}
 
 	return false
@@ -228,6 +230,7 @@ func TestSummarize(t *testing.T) {
 		output:       "failure_data.json",
 		outputSlices: "failure_data_PREFIX.json",
 		numWorkers:   4, // Arbitrary number to keep tests more or less consistent across platforms
+		memoize:      false,
 	})
 
 	// Test the output

@@ -133,6 +133,38 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 		},
 		{
+			name:                  "Org member can add triage/accepted label",
+			body:                  "/triage accepted",
+			repoLabels:            []string{"triage/accepted"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("triage/accepted"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+		},
+		{
+			name:                  "Non org member cannot add triage/accepted label",
+			body:                  "/triage accepted",
+			repoLabels:            []string{"triage/accepted", "kind/bug"},
+			issueLabels:           []string{"kind/bug"},
+			expectedNewLabels:     formatLabels(),
+			expectedRemovedLabels: []string{},
+			commenter:             nonOrgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label `triage/accepted` cannot be applied. Only GitHub organization members can add the label.",
+			action:                github.GenericCommentActionCreated,
+		},
+		{
+			name:                  "Non org member can add triage/needs-information label",
+			body:                  "/triage needs-information",
+			repoLabels:            []string{"area/infra", "triage/needs-information"},
+			issueLabels:           []string{"area/infra"},
+			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedRemovedLabels: []string{},
+			commenter:             nonOrgMember,
+			action:                github.GenericCommentActionCreated,
+		},
+		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind BuG",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
@@ -227,6 +259,16 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 		},
 		{
+			name:                  "Add Multiple Area Labels, With Trailing Whitespace",
+			body:                  "/area api infra ",
+			repoLabels:            []string{"area/infra", "area/api"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("area/api", "area/infra"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+		},
+		{
 			name:                  "Label Prefix Must Match Command (Area-Priority Mismatch)",
 			body:                  "/area urgent",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
@@ -272,6 +314,18 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them",
+			action:                github.GenericCommentActionCreated,
+		},
+		{
+			name:                  "Non org member adds multiple triage labels (some valid)",
+			body:                  "/triage needs-information accepted",
+			repoLabels:            []string{"triage/needs-information", "triage/accepted"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedRemovedLabels: []string{},
+			commenter:             nonOrgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label `triage/accepted` cannot be applied. Only GitHub organization members can add the label.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -368,11 +422,11 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Remove Triage Label",
-			body:                  "/remove-triage needs-information",
-			repoLabels:            []string{"area/infra", "triage/needs-information"},
-			issueLabels:           []string{"area/infra", "triage/needs-information"},
+			body:                  "/remove-triage needs-information accepted",
+			repoLabels:            []string{"area/infra", "triage/needs-information", "triage/accepted"},
+			issueLabels:           []string{"area/infra", "triage/needs-information", "triage/accepted"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("triage/needs-information"),
+			expectedRemovedLabels: formatLabels("triage/needs-information", "triage/accepted"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -626,14 +680,13 @@ func TestLabel(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
-		fakeClient := &fakegithub.FakeClient{
-			Issues:             make(map[int]*github.Issue),
-			IssueComments:      make(map[int][]github.IssueComment),
-			RepoLabelsExisting: tc.repoLabels,
-			OrgMembers:         map[string][]string{"org": {orgMember}},
-			IssueLabelsAdded:   []string{},
-			IssueLabelsRemoved: []string{},
-		}
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.Issues = make(map[int]*github.Issue)
+		fakeClient.IssueComments = make(map[int][]github.IssueComment)
+		fakeClient.RepoLabelsExisting = tc.repoLabels
+		fakeClient.OrgMembers = map[string][]string{"org": {orgMember}}
+		fakeClient.IssueLabelsAdded = []string{}
+		fakeClient.IssueLabelsRemoved = []string{}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
 			fakeClient.AddLabel("org", "repo", 1, label)

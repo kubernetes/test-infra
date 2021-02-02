@@ -14,6 +14,10 @@ dashboard_groups:
     - sig-storage-csi-node-driver-registrar
     - sig-storage-csi-other
     - sig-storage-image-build
+    - sig-storage-container-object-storage-interface-api
+    - sig-storage-container-object-storage-interface-controller
+    - sig-storage-container-object-storage-interface-provisioner-sidecar
+    - sig-storage-container-object-storage-interface-csi-adapter
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -115,3 +119,7 @@ dashboards:
 - name: sig-storage-csi-other
 - name: sig-storage-lib-external-provisioner
 - name: sig-storage-image-build
+- name: sig-storage-container-object-storage-interface-api
+- name: sig-storage-container-object-storage-interface-controller
+- name: sig-storage-container-object-storage-interface-provisioner-sidecar
+- name: sig-storage-container-object-storage-interface-csi-adapter

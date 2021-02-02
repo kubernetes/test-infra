@@ -1,0 +1,30 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes-sigs/scheduler-plugins:
+    # The name should be changed to match the repo name above
+    - name: post-scheduler-plugins-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-scheduling
+      decorate: true
+      branches:
+        - ^master$
+        - ^release-.*
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-scheduler-plugins
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-scheduler-plugins-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -51,6 +52,7 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -60,6 +62,13 @@ const (
 	DefaultJobTimeout = 24 * time.Hour
 
 	ProwImplicitGitResource = "PROW_IMPLICIT_GIT_REF"
+
+	// ConfigVersionFileName is the name of a file that will be added to
+	// all configmaps by the configupdater and contain the git sha that
+	// triggered said configupdate. The configloading in turn will pick
+	// it up if present. This allows components to include the config version
+	// in their logs, which can be useful for debugging.
+	ConfigVersionFileName = "VERSION"
 )
 
 // Config is a read-only snapshot of the config.
@@ -100,13 +109,15 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
+	// The git sha from which this config was generated
+	ConfigVersionSHA string           `json:"config_version_sha,omitempty"`
 	Tide             Tide             `json:"tide,omitempty"`
 	Plank            Plank            `json:"plank,omitempty"`
 	Sinker           Sinker           `json:"sinker,omitempty"`
 	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection"`
+	Gerrit           Gerrit           `json:"gerrit"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter"`
 	// Deprecated: this option will be removed in May 2020.
 	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
@@ -380,20 +391,20 @@ type OwnersDirBlacklist struct {
 	IgnorePreconfiguredDefaults bool `json:"ignore_preconfigured_defaults,omitempty"`
 }
 
-// DirBlacklist returns regular expressions matching directories to ignore when
+// ListIgnoredDirs returns regular expressions matching directories to ignore when
 // searching for OWNERS{,_ALIAS} files in a repo.
-func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (blacklist []string) {
-	blacklist = append(blacklist, ownersDirBlacklist.Default...)
+func (ownersDirBlacklist OwnersDirBlacklist) ListIgnoredDirs(org, repo string) (ignorelist []string) {
+	ignorelist = append(ignorelist, ownersDirBlacklist.Default...)
 	if bl, ok := ownersDirBlacklist.Repos[org]; ok {
-		blacklist = append(blacklist, bl...)
+		ignorelist = append(ignorelist, bl...)
 	}
 	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
-		blacklist = append(blacklist, bl...)
+		ignorelist = append(ignorelist, bl...)
 	}
 
 	preconfiguredDefaults := []string{"\\.git$", "_output$", "vendor/.*/.*"}
 	if !ownersDirBlacklist.IgnorePreconfiguredDefaults {
-		blacklist = append(blacklist, preconfiguredDefaults...)
+		ignorelist = append(ignorelist, preconfiguredDefaults...)
 	}
 	return
 }
@@ -505,23 +516,36 @@ func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfi
 // (to allow using multiple storageProviders within a repo)
 // we always trim the suffix here. Thus, every caller can assume
 // the job url prefix does not have a storageProvider suffix.
-func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
-	jobURLPrefix := p.getJobURLPrefix(refs)
+func (p Plank) GetJobURLPrefix(pj *prowapi.ProwJob) string {
+	jobURLPrefix := p.getJobURLPrefix(pj)
 	if strings.HasSuffix(jobURLPrefix, "gcs/") {
 		return strings.TrimSuffix(jobURLPrefix, "gcs/")
 	}
 	return strings.TrimSuffix(jobURLPrefix, "gcs")
 }
 
-func (p Plank) getJobURLPrefix(refs *prowapi.Refs) string {
-	if refs == nil {
+func (p Plank) getJobURLPrefix(pj *prowapi.ProwJob) string {
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil && pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix != "" {
+		return pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix
+	}
+
+	var org, repo string
+	if pj.Spec.Refs != nil {
+		org = pj.Spec.Refs.Org
+		repo = pj.Spec.Refs.Repo
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		org = pj.Spec.ExtraRefs[0].Org
+		repo = pj.Spec.ExtraRefs[0].Repo
+	}
+
+	if org == "" {
 		return p.JobURLPrefixConfig["*"]
 	}
-	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)] != "" {
-		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]
+	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", org, repo)] != "" {
+		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", org, repo)]
 	}
-	if p.JobURLPrefixConfig[refs.Org] != "" {
-		return p.JobURLPrefixConfig[refs.Org]
+	if p.JobURLPrefixConfig[org] != "" {
+		return p.JobURLPrefixConfig[org]
 	}
 	return p.JobURLPrefixConfig["*"]
 }
@@ -575,6 +599,8 @@ type Sinker struct {
 	// garbage collected.
 	// Defaults to matching MaxPodAge.
 	TerminatedPodTTL *metav1.Duration `json:"terminated_pod_ttl,omitempty"`
+	// ExcludeClusters are build clusters that don't want to be managed by sinker
+	ExcludeClusters []string `json:"exclude_clusters,omitempty"`
 }
 
 // LensConfig names a specific lens, and optionally provides some configuration for it.
@@ -640,6 +666,9 @@ type Spyglass struct {
 	// If left empty, the link will be not be shown. Otherwise, a GCS path (with no
 	// prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
 	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
+	// GCSBrowserPrefixes are used to generate a link to a human-usable GCS browser.
+	// They are mapped by org, org/repo or '*' which is the default value.
+	GCSBrowserPrefixes GCSBrowserPrefixes `json:"gcs_browser_prefixes,omitempty"`
 	// If set, Announcement is used as a Go HTML template string to be displayed at the top of
 	// each spyglass page. Using HTML in the template is acceptable.
 	// Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
@@ -651,6 +680,20 @@ type Spyglass struct {
 	// TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
 	// If left blank, TestGrid links will not appear.
 	TestGridRoot string `json:"testgrid_root,omitempty"`
+}
+
+type GCSBrowserPrefixes map[string]string
+
+func (p GCSBrowserPrefixes) GetGCSBrowserPrefix(org, repo string) string {
+	if prefix, exists := p[fmt.Sprintf("%s/%s", org, repo)]; exists {
+		return prefix
+	}
+
+	if prefix, exists := p[org]; exists {
+		return prefix
+	}
+
+	return p["*"]
 }
 
 // Deck holds config for deck.
@@ -676,6 +719,111 @@ type Deck struct {
 	// accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
 	// config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
 	RerunAuthConfigs RerunAuthConfigs `json:"rerun_auth_configs,omitempty"`
+	// SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
+	// By default, buckets listed in the GCSConfiguration are automatically allowed.
+	// Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
+	// When unspecified (nil), it defaults to true (until ~Jan 2021).
+	SkipStoragePathValidation *bool `json:"skip_storage_path_validation,omitempty"`
+	// AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
+	// (in addition to those listed in the GCSConfiguration).
+	// Setting this field requires "SkipStoragePathValidation" also be set to `false`.
+	AdditionalAllowedBuckets []string `json:"additional_allowed_buckets,omitempty"`
+	// AllKnownStorageBuckets contains all storage buckets configured in all of the
+	// job configs.
+	AllKnownStorageBuckets sets.String `json:"-"`
+}
+
+// Validate performs validation and sanitization on the Deck object.
+func (d *Deck) Validate() error {
+	if len(d.AdditionalAllowedBuckets) > 0 && !d.ShouldValidateStorageBuckets() {
+		return fmt.Errorf("deck.skip_storage_path_validation is enabled despite deck.additional_allowed_buckets being configured: %v", d.AdditionalAllowedBuckets)
+	}
+
+	// TODO(@clarketm): Remove "rerun_auth_config" validation in July 2020
+	if d.RerunAuthConfig != nil {
+		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
+
+		if d.RerunAuthConfigs != nil {
+			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
+		}
+
+		d.RerunAuthConfigs = RerunAuthConfigs{"*": *d.RerunAuthConfig}
+	}
+
+	// Note: The RerunAuthConfigs logic isn't deprecated, only the above RerunAuthConfig stuff is
+	if d.RerunAuthConfigs != nil {
+		for k, config := range d.RerunAuthConfigs {
+			if err := config.Validate(); err != nil {
+				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+var warnInRepoStorageBucketValidation time.Time
+
+// ValidateStorageBucket validates a storage bucket (unless the `Deck.SkipStoragePathValidation` field is true).
+// The bucket name must be included in any of the following:
+//    1) Any job's `.DecorationConfig.GCSConfiguration.Bucket` (except jobs defined externally via InRepoConfig)
+//    2) `Plank.DefaultDecorationConfigs.GCSConfiguration.Bucket`
+//    3) `Deck.AdditionalAllowedBuckets`
+func (c *Config) ValidateStorageBucket(bucketName string) error {
+	if len(c.InRepoConfig.Enabled) > 0 && len(c.Deck.AdditionalAllowedBuckets) == 0 {
+		logrusutil.ThrottledWarnf(&warnInRepoStorageBucketValidation, 1*time.Hour,
+			"skipping storage-path validation because `in_repo_config` is enabled, but `deck.additional_allowed_buckets` empty. "+
+				"(Note: Validation will be enabled by default in January 2021. "+
+				"To disable this message, populate `deck.additional_allowed_buckets` with at least one storage bucket. "+
+				"When `deck.additional_allowed_buckets` is populated, this message will be disabled.)")
+		return nil
+	}
+
+	if !c.Deck.ShouldValidateStorageBuckets() {
+		return nil
+	}
+
+	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
+		return fmt.Errorf("bucket %q not in allowed list (%v); you may allow it by including it in `deck.additional_allowed_buckets`", bucketName, c.Deck.AllKnownStorageBuckets.List())
+	}
+	return nil
+}
+
+// ShouldValidateStorageBuckets returns whether or not the Deck's storage path should be validated.
+// Validation could be either disabled by default or explicitly turned off.
+func (d *Deck) ShouldValidateStorageBuckets() bool {
+	if d.SkipStoragePathValidation == nil {
+		// TODO(e-blackwelder): validate storage paths by default (~Jan 2021)
+		return false
+	}
+	return !*d.SkipStoragePathValidation
+}
+
+func calculateStorageBuckets(c *Config) sets.String {
+	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
+	for _, dc := range c.Plank.DefaultDecorationConfigs {
+		knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+	}
+	for _, j := range c.Periodics {
+		if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
+			knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+		}
+	}
+	for _, jobs := range c.PresubmitsStatic {
+		for _, j := range jobs {
+			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
+				knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+			}
+		}
+	}
+	for _, jobs := range c.PostsubmitsStatic {
+		for _, j := range jobs {
+			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
+				knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+			}
+		}
+	}
+	return knownBuckets
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -754,14 +902,14 @@ type ManagedWebhookInfo struct {
 // ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
 type ManagedWebhooks struct {
 	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
-	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config"`
+	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
-	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report"`
-	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`
+	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
+	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
 	Channel           string                 `json:"channel"`
 	ReportTemplate    string                 `json:"report_template"`
 }
@@ -923,6 +1071,15 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
+	versionFilePath := filepath.Join(path.Dir(prowConfig), ConfigVersionFileName)
+	if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
+		content, err := ioutil.ReadFile(versionFilePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read versionfile %s: %w", versionFilePath, err)
+		}
+		nc.ConfigVersionSHA = string(content)
+	}
+
 	nc.AllRepos = sets.String{}
 	for _, query := range nc.Tide.Queries {
 		for _, repo := range query.Repos {
@@ -974,8 +1131,7 @@ func yamlToConfig(path string, nc interface{}) error {
 		jc = &v.JobConfig
 	}
 	for rep := range jc.PresubmitsStatic {
-		var fix func(*Presubmit)
-		fix = func(job *Presubmit) {
+		fix := func(job *Presubmit) {
 			job.SourcePath = path
 		}
 		for i := range jc.PresubmitsStatic[rep] {
@@ -983,8 +1139,7 @@ func yamlToConfig(path string, nc interface{}) error {
 		}
 	}
 	for rep := range jc.PostsubmitsStatic {
-		var fix func(*Postsubmit)
-		fix = func(job *Postsubmit) {
+		fix := func(job *Postsubmit) {
 			job.SourcePath = path
 		}
 		for i := range jc.PostsubmitsStatic[rep] {
@@ -1044,7 +1199,7 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 //	- Presubmits
 //	- Postsubmits
 // 	- Periodics
-//	- PodPresets
+//	- Presets
 func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	// Merge everything
 	// *** Presets ***
@@ -1205,7 +1360,7 @@ func (c *Config) finalizeJobConfig() error {
 	return nil
 }
 
-// validateComponentConfig validates the infrastructure component configuration
+// validateComponentConfig validates the various infrastructure components' configurations.
 func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
@@ -1254,23 +1409,8 @@ func (c *Config) validateComponentConfig() error {
 		}
 	}
 
-	// TODO(@clarketm): Remove in July 2020
-	if c.Deck.RerunAuthConfig != nil {
-		logrus.Warning("rerun_auth_config will be deprecated in July 2020, and it will be replaced with rerun_auth_configs['*'].")
-
-		if c.Deck.RerunAuthConfigs != nil {
-			return errors.New("rerun_auth_config and rerun_auth_configs['*'] are mutually exclusive")
-		}
-
-		c.Deck.RerunAuthConfigs = RerunAuthConfigs{"*": *c.Deck.RerunAuthConfig}
-	}
-
-	if c.Deck.RerunAuthConfigs != nil {
-		for k, config := range c.Deck.RerunAuthConfigs {
-			if err := config.Validate(); err != nil {
-				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
-			}
-		}
+	if err := c.Deck.Validate(); err != nil {
+		return err
 	}
 
 	return nil
@@ -1296,6 +1436,9 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 		return err
 	}
 	if err := validateLabels(v.Labels); err != nil {
+		return err
+	}
+	if err := validateAnnotation(v.Annotations); err != nil {
 		return err
 	}
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
@@ -1468,6 +1611,8 @@ func (c *Config) ValidateJobConfig() error {
 		}
 	}
 
+	c.Deck.AllKnownStorageBuckets = calculateStorageBuckets(c)
+
 	return utilerrors.NewAggregate(errs)
 }
 
@@ -1477,7 +1622,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if c.Plank.PodPendingTimeout == nil {
-		c.Plank.PodPendingTimeout = &metav1.Duration{Duration: 24 * time.Hour}
+		c.Plank.PodPendingTimeout = &metav1.Duration{Duration: 10 * time.Minute}
 	}
 
 	if c.Plank.PodRunningTimeout == nil {
@@ -1485,7 +1630,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if c.Plank.PodUnscheduledTimeout == nil {
-		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 24 * time.Hour}
+		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 5 * time.Minute}
 	}
 
 	if c.Gerrit.TickInterval == nil {
@@ -1598,6 +1743,19 @@ func parseProwConfig(c *Config) error {
 				c.Deck.Spyglass.Viewers[re][i] = rename
 			}
 		}
+	}
+
+	if c.Deck.Spyglass.GCSBrowserPrefixes == nil {
+		c.Deck.Spyglass.GCSBrowserPrefixes = make(map[string]string)
+	}
+
+	_, exists := c.Deck.Spyglass.GCSBrowserPrefixes["*"]
+	if exists && c.Deck.Spyglass.GCSBrowserPrefix != "" {
+		return fmt.Errorf("both gcs_browser_prefixes and gcs_browser_prefix['*'] are specified.")
+	}
+
+	if !exists {
+		c.Deck.Spyglass.GCSBrowserPrefixes["*"] = c.Deck.Spyglass.GCSBrowserPrefix
 	}
 
 	if c.PushGateway.Interval == nil {
@@ -1771,6 +1929,15 @@ func validateLabels(labels map[string]string) error {
 		}
 		if errs := validation.IsValidLabelValue(labels[label]); len(errs) != 0 {
 			return fmt.Errorf("label %s has invalid value %s: %v", label, value, errs)
+		}
+	}
+	return nil
+}
+
+func validateAnnotation(a map[string]string) error {
+	for key := range a {
+		if errs := validation.IsQualifiedName(key); len(errs) > 0 {
+			return fmt.Errorf("invalid annotation key %q: %v", key, errs)
 		}
 	}
 	return nil
@@ -1951,13 +2118,13 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 
 	for i := range spec.Containers {
 		for _, mount := range spec.Containers[i].VolumeMounts {
-			if !volumeNames.Has(mount.Name) {
+			if !volumeNames.Has(mount.Name) && !decorate.VolumeMounts().Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
-			if decorate.VolumeMounts().Has(mount.Name) {
+			if decorate.VolumeMountsOnTestContainer().Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount name %s is reserved for decoration", mount.Name))
 			}
-			if decorate.VolumeMountPaths().Has(mount.MountPath) {
+			if decorate.VolumeMountPathsOnTestContainer().Has(mount.MountPath) {
 				errs = append(errs, fmt.Errorf("mount %s at %s conflicts with decoration mount", mount.Name, mount.MountPath))
 			}
 		}

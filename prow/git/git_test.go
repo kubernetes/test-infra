@@ -483,6 +483,9 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 			}
 
 			for branchName, branchContent := range tc.branches {
+				if err := lg.Checkout(org, repo, baseSHA); err != nil {
+					t.Fatalf("checkout baseSHA: %v", err)
+				}
 				if err := lg.CheckoutNewBranch(org, repo, branchName); err != nil {
 					t.Fatalf("checkout new branch: %v", err)
 				}
@@ -492,6 +495,7 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 			}
 
 			if err := lg.Checkout(org, repo, baseSHA); err != nil {
+				t.Fatalf("checkout baseSHA: %v", err)
 			}
 
 			r, err := c.ClientFor(org, repo)

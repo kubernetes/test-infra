@@ -13,7 +13,7 @@ presubmits:
       preset-kubernetes-e2e-aws-eks-1-13: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
@@ -34,6 +34,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-13-correctness
         - --timeout=180m
     annotations:
-      testgrid-dashboards: sig-aws-eks-presubmits
+      testgrid-dashboards: provider-aws-eks-presubmits
       testgrid-tab-name: k8s-eks-1-13-correctness
       description: Kubernetes e2e correctness tests against EKS 1.13 build

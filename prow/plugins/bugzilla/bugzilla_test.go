@@ -23,7 +23,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
@@ -103,6 +102,8 @@ orgs:
 	if err != nil {
 		t.Fatalf("unexpected error creating help provider: %v", err)
 	}
+	// don't check snippet
+	help.Snippet = ""
 
 	expected := &pluginhelp.PluginHelp{
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
@@ -688,13 +689,11 @@ Instructions for interacting with me using PR comments are available [here](http
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			client := fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
-				},
-				IssueComments: map[int][]github.IssueComment{},
+			client := fakegithub.NewFakeClient()
+			client.PullRequests = map[int]*github.PullRequest{
+				1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 			}
-			event, err := digestComment(&client, logrus.WithField("testCase", testCase.name), testCase.e)
+			event, err := digestComment(client, logrus.WithField("testCase", testCase.name), testCase.e)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -739,6 +738,7 @@ func TestHandle(t *testing.T) {
 		bugs                  []bugzilla.Bug
 		bugComments           map[int][]bugzilla.Comment
 		bugErrors             []int
+		bugErrorMessages      map[int]string
 		bugCreateErrors       []string
 		subComponents         map[int]map[string][]string
 		options               plugins.BugzillaBranchOptions
@@ -766,8 +766,45 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:      "error fetching bug leaves a comment",
 			bugErrors: []int{123},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error getting bug
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error getting bug
+</code>
+
+</details>
+
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:             "github 403 gets explained",
+			bugErrors:        []int{123},
+			bugErrorMessages: map[int]string{123: "There was an error reported for a GitHub REST call"},
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. We were able to detect the following conditions from the error:
+
+- The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.
+
+
+<details><summary>Full error message.</summary>
+
+<code>
+There was an error reported for a GitHub REST call
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -954,8 +991,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
 			bugErrors: []int{124},
 			options:   plugins.BugzillaBranchOptions{DependentBugStates: &verified},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error getting bug
+			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error getting bug
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1005,7 +1050,10 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "MERGED"}}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+ * [org/repo#1](https://github.com/org/repo/pull/1)
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
 
 <details>
 
@@ -1030,7 +1078,10 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+ * [org/repo#1](https://github.com/org/repo/pull/1)
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -1059,7 +1110,11 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1), [org/repo#22](https://github.com/org/repo/pull/22). [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+ * [org/repo#1](https://github.com/org/repo/pull/1)
+ * [org/repo#22](https://github.com/org/repo/pull/22)
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -1096,9 +1151,15 @@ Instructions for interacting with me using PR comments are available [here](http
 				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1},
 				{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/22", Org: "org", Repo: "repo", Num: 22},
 			},
-			expectedComment: `org/repo#1:@user: Some pull requests linked via external trackers have merged: [org/repo#1](https://github.com/org/repo/pull/1). The following pull requests linked via external trackers have not merged:
+			expectedComment: `org/repo#1:@user: Some pull requests linked via external trackers have merged:
+ * [org/repo#1](https://github.com/org/repo/pull/1)
+
+The following pull requests linked via external trackers have not merged:
  * [org/repo#22](https://github.com/org/repo/pull/22) is open
-[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state. Once unlinked, request a bug refresh with <code>/bugzilla refresh</code>.
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has not been moved to the MODIFIED state.
 
 <details>
 
@@ -1151,8 +1212,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error getting bug
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error getting bug
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1228,6 +1297,76 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 		{
+			name:   "closed PR removes link, changes bug state, and comments",
+			merged: false,
+			closed: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: false}},
+			options: plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to no longer refer to the pull request using the external bug tracker. All external bug links have been closed. The bug has been moved to the NEW state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123, Status: "NEW", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{},
+		},
+		{
+			name:        "closed PR with missing bug does nothing",
+			merged:      false,
+			closed:      true,
+			missing:     true,
+			bugs:        []bugzilla.Bug{},
+			prs:         []github.PullRequest{{Number: base.number, Merged: false}},
+			options:     plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedBug: &bugzilla.Bug{},
+		},
+		{
+			name:   "closed PR with multiple exernal links removes link, does not change bug state, and comments",
+			merged: false,
+			closed: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}, {
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, 42),
+				Org:           base.org, Repo: base.repo, Num: 42,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: false}},
+			options: plugins.BugzillaBranchOptions{AddExternalLink: &yes, StateAfterClose: &plugins.BugzillaBugState{Status: "NEW"}},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to no longer refer to the pull request using the external bug tracker.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "POST", Severity: "urgent"},
+			expectedExternalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, 42),
+				Org:           base.org, Repo: base.repo, Num: 42,
+			}},
+		},
+		{
 			name:                "Cherrypick PR results in cloned bug creation",
 			bugs:                []bugzilla.Bug{{Product: "Test", Component: []string{"TestComponent"}, TargetRelease: []string{"v2"}, ID: 123, Status: "CLOSED", Severity: "urgent"}},
 			bugComments:         map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
@@ -1285,8 +1424,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error getting bug
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error getting bug
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1309,8 +1456,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error creating new bug
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error creating new bug
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1335,8 +1490,16 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla:
-> injected error updating bug
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
+
+<details><summary>Full error message.</summary>
+
+<code>
+injected error updating bug
+</code>
+
+</details>
+
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
 <details>
@@ -1529,11 +1692,10 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			e := *base // copy so parallel tests don't collide
-			gc := fakegithub.FakeClient{
-				IssueLabelsExisting: []string{},
-				IssueComments:       map[int][]github.IssueComment{},
-				PullRequests:        map[int]*github.PullRequest{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.IssueLabelsExisting = []string{}
+			gc.IssueComments = map[int][]github.IssueComment{}
+			gc.PullRequests = map[int]*github.PullRequest{}
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
@@ -1541,13 +1703,14 @@ Instructions for interacting with me using PR comments are available [here](http
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
-				EndpointString:  "www.bugzilla",
-				Bugs:            map[int]bugzilla.Bug{},
-				SubComponents:   map[int]map[string][]string{},
-				BugComments:     testCase.bugComments,
-				BugErrors:       sets.NewInt(),
-				BugCreateErrors: sets.NewString(),
-				ExternalBugs:    map[int][]bugzilla.ExternalBug{},
+				EndpointString:   "www.bugzilla",
+				Bugs:             map[int]bugzilla.Bug{},
+				SubComponents:    map[int]map[string][]string{},
+				BugComments:      testCase.bugComments,
+				BugErrors:        sets.NewInt(),
+				BugErrorMessages: testCase.bugErrorMessages,
+				BugCreateErrors:  sets.NewString(),
+				ExternalBugs:     map[int][]bugzilla.ExternalBug{},
 			}
 			for _, bug := range testCase.bugs {
 				bc.Bugs[bug.ID] = bug
@@ -1570,7 +1733,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
@@ -1608,7 +1771,7 @@ Instructions for interacting with me using PR comments are available [here](http
 	}
 }
 
-func checkComments(client fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
+func checkComments(client *fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
 	wantedComments := 0
 	if expectedComment != "" {
 		wantedComments = 1
@@ -1619,7 +1782,7 @@ func checkComments(client fakegithub.FakeClient, name, expectedComment string, t
 
 	if expectedComment != "" && len(client.IssueCommentsAdded) == 1 {
 		if expectedComment != client.IssueCommentsAdded[0] {
-			t.Errorf("%s: got incorrect comment: %v", name, diff.StringDiff(expectedComment, client.IssueCommentsAdded[0]))
+			t.Errorf("%s: got incorrect comment: %v", name, cmp.Diff(expectedComment, client.IssueCommentsAdded[0]))
 		}
 	}
 }

@@ -155,10 +155,10 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotName() (string, error) {
-	f.Lock()
-	defer f.Unlock()
-	return "bot", nil
+func (f *fghc) BotUserChecker() (func(string) bool, error) {
+	return func(candidate string) bool {
+		return candidate == "bot"
+	}, nil
 }
 func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
 	f.Lock()

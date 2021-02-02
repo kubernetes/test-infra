@@ -25,8 +25,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestPathForRefs(t *testing.T) {
@@ -183,6 +184,33 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 		},
 		{
+			name: "minimal refs with http cookie file (skip submodules)",
+			refs: prowapi.Refs{
+				Org:            "org",
+				Repo:           "repo",
+				BaseRef:        "master",
+				SkipSubmodules: true,
+			},
+			cookiePath: "/cookie.txt",
+			dir:        "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "http.cookiefile", "/cookie.txt"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+		},
+		{
 			name: "minimal refs with http cookie file",
 			refs: prowapi.Refs{
 				Org:     "org",
@@ -194,7 +222,6 @@ func TestCommandsForRefs(t *testing.T) {
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
-				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "http.cookiefile", "/cookie.txt"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
@@ -328,6 +355,7 @@ func TestCommandsForRefs(t *testing.T) {
 				Repo:      "repo",
 				BaseRef:   "master",
 				PathAlias: "my/favorite/dir",
+				RepoLink:  "https://github.com/org/repo",
 			},
 			dir: "/go",
 			expectedBase: []runnable{
@@ -413,6 +441,41 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 		},
 		{
+			name: "refs with simple pr ref, sha takes precedence over virtual pull ref",
+			refs: prowapi.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "master",
+				Pulls: []prowapi.Pull{
+					{Number: 1, SHA: "pull-1-sha"},
+				},
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull-1-sha"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "pull-1-sha"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
 			name: "refs with pr ref override",
 			refs: prowapi.Refs{
 				Org:     "org",
@@ -475,7 +538,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "abcdef"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
@@ -523,19 +586,102 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
+		{
+			name: "refs with repo link",
+			refs: prowapi.Refs{
+				Org:      "org",
+				Repo:     "repo",
+				BaseRef:  "master",
+				BaseSHA:  "abcdef",
+				RepoLink: "https://github.enterprise.com/org/repo",
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
+			name: "support fetching repo with multiple heads",
+			refs: prowapi.Refs{
+				Org:           "org",
+				Repo:          "repo",
+				BaseRef:       "master",
+				BaseSHA:       "abcdef",
+				RepoLink:      "https://github.enterprise.com/org/repo",
+				SkipFetchHead: true, // no single HEAD
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
+			name: "support shallow fetching repo with multiple heads",
+			refs: prowapi.Refs{
+				Org:           "org",
+				Repo:          "repo",
+				BaseRef:       "master",
+				BaseSHA:       "abcdef",
+				RepoLink:      "https://github.enterprise.com/org/repo",
+				SkipFetchHead: true, // no single HEAD
+				CloneDepth:    2,
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "abcdef"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
 	}
 
+	allow := cmp.AllowUnexported(retryCommand{}, cloneCommand{})
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env, testCase.oauthToken)
 			actualBase := g.commandsForBaseRef(testCase.refs, testCase.gitUserName, testCase.gitUserEmail, testCase.cookiePath)
-			if !reflect.DeepEqual(actualBase, testCase.expectedBase) {
-				t.Errorf("generated incorrect commands:\nGot: %#v\nExpected:%#v", actualBase, testCase.expectedBase)
+			if diff := cmp.Diff(actualBase, testCase.expectedBase, allow); diff != "" {
+				t.Errorf("commandsForBaseRef() got unexpected diff (-got, +want):\n%s", diff)
 			}
 
 			actualPull := g.commandsForPullRefs(testCase.refs, fakeTimestamp)
-			if !reflect.DeepEqual(actualPull, testCase.expectedPull) {
-				t.Errorf("generated incorrect commands: %v", diff.ObjectGoPrintDiff(testCase.expectedPull, actualPull))
+			if diff := cmp.Diff(actualPull, testCase.expectedPull, allow); diff != "" {
+				t.Errorf("commandsForPullRefs() got unexpected diff (-got, +want):\n%s", diff)
 			}
 		})
 	}
@@ -643,31 +789,45 @@ func makeFakeGitRepo(fakeTimestamp int) (string, error) {
 	return fakeGitDir, nil
 }
 
-func TestCensorGitCommand(t *testing.T) {
+func TestCensorToken(t *testing.T) {
 	testCases := []struct {
 		id       string
 		token    string
-		command  string
+		msg      string
 		expected string
 	}{
 		{
 			id:       "no token",
-			command:  "git fetch https://github.com/kubernetes/test-infra.git",
+			msg:      "git fetch https://github.com/kubernetes/test-infra.git",
 			expected: "git fetch https://github.com/kubernetes/test-infra.git",
 		},
 		{
 			id:       "with token",
 			token:    "123456789",
-			command:  "git fetch 123456789:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+			msg:      "git fetch 123456789:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
 			expected: "git fetch CENSORED:x-oauth-basic@https://github.com/kubernetes/test-infra.git",
+		},
+		{
+			id:    "git output with token",
+			token: "123456789",
+			msg: `
+Cloning into 'test-infa'...
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://123456789@github.com/kubernetes/test-infa/'
+`,
+			expected: `
+Cloning into 'test-infa'...
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://CENSORED@github.com/kubernetes/test-infa/'
+`,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			censoredCommand := censorGitCommand(tc.command, tc.token)
-			if !reflect.DeepEqual(censoredCommand, tc.expected) {
-				t.Fatalf("expected: %s got %s", tc.expected, censoredCommand)
+			censoredMsg := censorToken(tc.msg, tc.token)
+			if !reflect.DeepEqual(censoredMsg, tc.expected) {
+				t.Fatalf("expected: %s got %s", tc.expected, censoredMsg)
 			}
 		})
 	}

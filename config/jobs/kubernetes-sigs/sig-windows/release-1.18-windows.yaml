@@ -22,7 +22,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -39,7 +39,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-admin-password=AdminPassw0rd
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -81,7 +81,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
         command:
         - runner.sh
         - kubetest
@@ -98,7 +98,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-admin-password=AdminPassw0rd
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -138,7 +138,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - kubetest
@@ -156,7 +156,7 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -192,7 +192,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.18
       command:
       - runner.sh
       - kubetest
@@ -210,11 +210,11 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.54.1/aks-engine-v0.54.1-linux-amd64.tar.gz
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_18_serial.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args

@@ -11,18 +11,18 @@ spec:
         name: prometheus
       spec:
         accessModes:
-          - "ReadWriteOnce"
+        - "ReadWriteOnce"
         storageClassName: "standard"
         resources:
           requests:
             storage: 100Gi
-  retention: "90d"
+  retention: "90d" # TODO(chaodaiG): change back to 180d once figure out how to properly increase the volume.
   serviceAccountName: prometheus-prow
   alerting:
     alertmanagers:
-      - namespace: prow-monitoring
-        name: alertmanager
-        port: http
+    - namespace: prow-monitoring
+      name: alertmanager
+      port: http
   enableAdminAPI: false
   ruleSelector:
     matchLabels:
@@ -30,8 +30,8 @@ spec:
       prometheus: prow
   serviceMonitorSelector:
     matchExpressions:
-      - key: app
-        operator: Exists
+    - key: app
+      operator: Exists
   version: v2.7.1
   baseImage: docker.io/prom/prometheus
   externalLabels: {}

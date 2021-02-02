@@ -115,7 +115,11 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 		}
 	case github.PullRequestActionSynchronize:
-		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
+		var errs []error
+		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
+			errs = append(errs, fmt.Errorf("failed to abort jobs: %w", err))
+		}
+		return utilerrors.NewAggregate(append(errs, buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)))
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
@@ -131,11 +135,11 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			// When the bot adds the label from an /ok-to-test command,
 			// we will trigger tests based on the comment event and do not
 			// need to trigger them here from the label, as well
-			botName, err := c.GitHubClient.BotName()
+			botUserChecker, err := c.GitHubClient.BotUserChecker()
 			if err != nil {
 				return err
 			}
-			if author == botName {
+			if botUserChecker(pr.Sender.Login) {
 				c.Logger.Debug("Label added by the bot, skipping.")
 				return nil
 			}
@@ -148,7 +152,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 	case github.PullRequestActionReadyForReview:
 		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
-	case github.PullRequestConvertedToDraft:
+	case github.PullRequestActionConvertedToDraft:
 		if err := abortAllJobs(c, &pr.PullRequest); err != nil {
 			c.Logger.WithError(err).Error("Failed to abort jobs for pull request converted to draft")
 			return err

@@ -6,7 +6,7 @@ postsubmits:
       path_alias: sigs.k8s.io/boskos
       spec:
         containers:
-          - image: golang:1.14
+          - image: golang:1.15
             imagePullPolicy: Always
             command:
               - make

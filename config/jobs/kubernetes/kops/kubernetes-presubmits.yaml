@@ -21,7 +21,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -36,11 +36,14 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
         - --cluster=
+        - --kops-ssh-user=ubuntu
         - --env=KOPS_ARCH=amd64
+        - --env=KOPS_RUN_TOO_NEW_VERSION=1
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
         - --env=KUBE_GCS_UPDATE_LATEST=n
         - --env=KUBE_FASTBUILD=true
+        - --env=USER=ubuntu
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws

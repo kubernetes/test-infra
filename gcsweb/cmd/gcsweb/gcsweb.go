@@ -17,38 +17,40 @@ limitations under the License.
 package main
 
 import (
-	"encoding/xml"
+	"bytes"
+	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
-	net_url "net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
+
 	"k8s.io/test-infra/gcsweb/pkg/version"
+	"k8s.io/test-infra/prow/flagutil"
+
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
-// The base URL for GCS's HTTP API.
-const gcsBaseURL = "https://storage.googleapis.com"
-const gcsPath = "/gcs" // path for GCS browsing on this server
-
-// The base URL for GCP's GCS browser.
-const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
-
-var flPort = flag.Int("p", 8080, "port number on which to listen")
-var flIcons = flag.String("i", "/icons", "path to the icons directory")
-var flStyles = flag.String("s", "/styles", "path to the styles directory")
-var flVersion = flag.Bool("version", false, "print version and exit")
-var flUpgradeProxiedHTTPtoHTTPS = flag.Bool("upgrade-proxied-http-to-https", false,
-	"upgrade any proxied request (e.g. from GCLB) from http to https")
-
 const (
+	// path for GCS browsing on this server
+	gcsPath = "/gcs"
+
+	// The base URL for GCP's GCS browser.
+	gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
+
 	iconFile = "/icons/file.png"
 	iconDir  = "/icons/dir.png"
 	iconBack = "/icons/back.png"
@@ -67,26 +69,122 @@ func (ss *strslice) Set(value string) error {
 	return nil
 }
 
-// Only buckets in this list will be served.
-var allowedBuckets strslice
+type options struct {
+	flPort int
+
+	flIcons            string
+	flStyles           string
+	oauthTokenFile     string
+	gcsCredentialsFile string
+
+	flVersion bool
+
+	// Only buckets in this list will be served.
+	allowedBuckets strslice
+
+	instrumentationOptions flagutil.InstrumentationOptions
+}
+
+var flUpgradeProxiedHTTPtoHTTPS bool
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	fs.IntVar(&o.flPort, "p", 8080, "port number on which to listen")
+
+	fs.StringVar(&o.flIcons, "i", "/icons", "path to the icons directory")
+	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
+	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the file containing the gcs service account credentials.")
+
+	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
+	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
+
+	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
+	o.instrumentationOptions.AddFlags(fs)
+	fs.Parse(os.Args[1:])
+	return o
+}
+
+func (o *options) validate() error {
+	if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
+		return fmt.Errorf("icons path '%s' doesn't exists.", o.flIcons)
+	}
+	if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
+		return fmt.Errorf("styles path '%s' doesn't exists.", o.flStyles)
+	}
+	if o.oauthTokenFile != "" && o.gcsCredentialsFile != "" {
+		return errors.New("specifying both --oauth-token-file and --gcs-credentials-file is not allowed.")
+	}
+
+	if o.oauthTokenFile != "" {
+		if _, err := os.Stat(o.oauthTokenFile); os.IsNotExist(err) {
+			return fmt.Errorf("oauth token file '%s' doesn't exists.", o.oauthTokenFile)
+		}
+	}
+
+	if o.gcsCredentialsFile != "" {
+		if _, err := os.Stat(o.gcsCredentialsFile); os.IsNotExist(err) {
+			return fmt.Errorf("gcs service account crendentials file '%s' doesn't exists.", o.gcsCredentialsFile)
+		}
+	}
+
+	return nil
+}
+
+func getStorageClient(o options) (*storage.Client, error) {
+	ctx := context.Background()
+	clientOption := option.WithoutAuthentication()
+
+	if o.oauthTokenFile != "" {
+		b, err := ioutil.ReadFile(o.oauthTokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("error reading oauth token file %s: %v", o.oauthTokenFile, err)
+		}
+		clientOption = option.WithAPIKey(string(bytes.TrimSpace(b)))
+	}
+
+	if o.gcsCredentialsFile != "" {
+		clientOption = option.WithCredentialsFile(o.gcsCredentialsFile)
+	}
+
+	storageClient, err := storage.NewClient(ctx, clientOption)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create the gcs storage client: %v", err)
+	}
+
+	return storageClient, nil
+}
 
 func main() {
-	flag.Var(&allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 
-	if *flVersion {
+	if o.flVersion {
 		fmt.Println(version.VERSION)
 		os.Exit(0)
 	}
 
-	log.Printf("starting")
+	logrusutil.ComponentInit()
+
+	storageClient, err := getStorageClient(o)
+	if err != nil {
+		logrus.WithError(err).Fatal("couldn't get storage client")
+	}
+
+	s := &server{storageClient: storageClient}
+
+	logrus.Info("Starting GCSWeb")
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Canonicalize allowed buckets.
-	for i := range allowedBuckets {
-		bucket := joinPath(gcsPath, allowedBuckets[i])
-		log.Printf("allowing %s", bucket)
-		http.HandleFunc(bucket+"/", gcsRequest)
+	for i := range o.allowedBuckets {
+		bucket := joinPath(gcsPath, o.allowedBuckets[i])
+		logrus.WithField("bucket", bucket).Info("allowing bucket")
+		http.HandleFunc(bucket+"/", s.gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
 		})
@@ -105,40 +203,34 @@ func main() {
 			h.ServeHTTP(w, r)
 		}
 	}
-	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons)))))
-	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(*flStyles)))))
+	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
+	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
 
 	// Serve HTTP.
-	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
-	log.Printf("serving on port %d", *flPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
+
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	health.ServeReady()
+
+	logrus.Infof("serving on port %d", o.flPort)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil); err != nil {
+		logrus.WithError(err).Fatal("couldn't start the http server")
+	}
 }
 
-func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger txnLogger) bool {
-	if *flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
+func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger *logrus.Entry) bool {
+	if flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
 		newURL := *r.URL
 		newURL.Scheme = "https"
 		if newURL.Host == "" {
 			newURL.Host = r.Host
 		}
-		logger.Printf("redirect to %s [https upgrade]", newURL.String())
+		logger.Infof("redirect to %s [https upgrade]", newURL.String())
 		http.Redirect(w, r, newURL.String(), http.StatusPermanentRedirect)
 		return true
 	}
 	return false
-}
-
-func healthzRequest(w http.ResponseWriter, r *http.Request) {
-	newTxnLogger(r)
-
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	fmt.Fprintf(w, "ok")
 }
 
 func robotsRequest(w http.ResponseWriter, r *http.Request) {
@@ -186,7 +278,94 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func gcsRequest(w http.ResponseWriter, r *http.Request) {
+type server struct {
+	storageClient *storage.Client
+}
+
+type objectHeaders struct {
+	contentType        string
+	contentEncoding    string
+	contentDisposition string
+	contentLanguage    string
+}
+
+func (s *server) handleObject(w http.ResponseWriter, bucket, object string, headers objectHeaders) error {
+	obj := s.storageClient.Bucket(bucket).Object(object)
+
+	objReader, err := obj.NewReader(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't create the object reader: %v", err)
+	}
+	defer objReader.Close()
+
+	if headers.contentType != "" {
+		if headers.contentEncoding != "" {
+			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", headers.contentType, headers.contentEncoding))
+		} else {
+			w.Header().Set("Content-Type", headers.contentType)
+		}
+	}
+
+	if headers.contentDisposition != "" {
+		w.Header().Set("Content-Disposition", headers.contentDisposition)
+	}
+	if headers.contentLanguage != "" {
+		w.Header().Set("Content-Language", headers.contentLanguage)
+	}
+
+	if _, err := io.Copy(w, objReader); err != nil {
+		return fmt.Errorf("coudln't copy data to the response writer: %v", err)
+	}
+
+	return nil
+}
+
+func (s *server) handleDirectory(w http.ResponseWriter, bucket, object, path string) error {
+	// Get all object that exist in the parent folder only. We can do that by adding a
+	// slash at the end of the prefix and use this as a delimiter in the gcs query.
+	prefix := object + "/"
+	o := s.storageClient.Bucket(bucket).Objects(context.Background(), &storage.Query{
+		Delimiter: "/",
+		Prefix:    prefix,
+	})
+
+	var files []Record
+	var dirs []Prefix
+
+	for {
+		objAttrs, err := o.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("error while processing object: %v", err)
+		}
+
+		// That means that the object is a file
+		if objAttrs.Name != "" {
+			files = append(files, Record{
+				Name:  filepath.Base(objAttrs.Name),
+				MTime: objAttrs.Updated,
+				Size:  objAttrs.Size,
+			})
+			continue
+		}
+
+		dirs = append(dirs, Prefix{Prefix: fmt.Sprintf("%s/", filepath.Base(objAttrs.Prefix))})
+	}
+
+	dir := &gcsDir{
+		Name:           bucket,
+		Prefix:         prefix,
+		Contents:       files,
+		CommonPrefixes: dirs,
+	}
+	dir.Render(w, path)
+
+	return nil
+}
+
+func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
 	if upgradeToHTTPS(w, r, logger) {
@@ -201,60 +380,36 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, gcsPath)
 	// e.g. "/bucket/path/to/object" -> ["bucket", "path/to/object"]
 	bucket, object := splitBucketObject(path)
+	objectLogger := logger.WithFields(logrus.Fields{"bucket": bucket, "object": object})
 
-	url := joinPath(gcsBaseURL, bucket)
-	url += "?delimiter=/"
+	objectLogger.Info("Processing request...")
+	// Getting the object attributes directly will determine if is a folder or a file.
+	objAttrs, _ := s.storageClient.Bucket(bucket).Object(object).Attrs(context.Background())
 
-	if object != "" {
-		// Adding the last slash forces the server to give me a clue about
-		// whether the object is a file or a dir.  If it is a dir, the
-		// contents will include a record for itself.  If it is a file it
-		// will not.
-		url += "&prefix=" + net_url.QueryEscape(object+"/")
-	}
+	// This means that the object is a file.
+	if objAttrs != nil {
+		headers := objectHeaders{
+			contentType:        objAttrs.ContentType,
+			contentEncoding:    objAttrs.ContentEncoding,
+			contentDisposition: objAttrs.ContentDisposition,
+			contentLanguage:    objAttrs.ContentLanguage,
+		}
 
-	if markers, found := r.URL.Query()["marker"]; found {
-		url += "&marker=" + markers[0]
+		if err := s.handleObject(w, bucket, object, headers); err != nil {
+			objectLogger.WithError(err).Error("error while handling object")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error: %v", err)
+			return
+		}
+	} else {
+		err := s.handleDirectory(w, bucket, object, path)
+		if err != nil {
+			objectLogger.WithError(err).Error("error while handling objects")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error: %v", err)
+			return
+		}
 	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		logger.Printf("GET %s: %s", url, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "http.Get: %v", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	logger.Printf("GET %s: %s", url, resp.Status)
-
-	if resp.StatusCode != http.StatusOK {
-		w.WriteHeader(resp.StatusCode)
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Printf("ioutil.ReadAll: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "ioutil.ReadAll: %v", err)
-		return
-	}
-	dir, err := parseXML(body, object+"/")
-	if err != nil {
-		logger.Printf("xml.Unmarshal: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "xml.Unmarshal: %v", err)
-		return
-	}
-	if dir == nil {
-		// It was a request for a file, send them there directly.
-		url := joinPath(gcsBaseURL, bucket, object)
-		logger.Printf("redirect to %s", url)
-		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-		return
-	}
-	dir.Render(w, path)
 }
 
 // splitBucketObject breaks a path into the first part (the bucket), and
@@ -292,208 +447,14 @@ func dirname(path string) string {
 	return leading
 }
 
-// parseXML extracts a gcsDir object from XML.  If this returns a nil gcsDir,
-// the XML indicated that this was not a directory at all.
-func parseXML(body []byte, object string) (*gcsDir, error) {
-	dir := new(gcsDir)
-	if err := xml.Unmarshal(body, &dir); err != nil {
-		return nil, err
-	}
-	// We think this is a dir if the object is "/" (just the bucket) or if we
-	// find any Contents or CommonPrefixes.
-	isDir := object == "/" || len(dir.Contents)+len(dir.CommonPrefixes) > 0
-	selfIndex := -1
-	for i := range dir.Contents {
-		rec := &dir.Contents[i]
-		name := strings.TrimPrefix(rec.Name, object)
-		if name == "" {
-			selfIndex = i
-			continue
-		}
-		rec.Name = name
-		if strings.HasSuffix(name, "/") {
-			rec.isDir = true
-		}
-	}
-
-	for i := range dir.CommonPrefixes {
-		cp := &dir.CommonPrefixes[i]
-		cp.Prefix = strings.TrimPrefix(cp.Prefix, object)
-	}
-
-	if !isDir {
-		return nil, nil
-	}
-
-	if selfIndex >= 0 {
-		// Strip out the record that indicates this object.
-		dir.Contents = append(dir.Contents[:selfIndex], dir.Contents[selfIndex+1:]...)
-	}
-	return dir, nil
-}
-
 // gcsDir represents a bucket in GCS, decoded from XML.
 type gcsDir struct {
-	XMLName        xml.Name `xml:"ListBucketResult"`
-	Name           string   `xml:"Name"`
-	Prefix         string   `xml:"Prefix"`
-	Marker         string   `xml:"Marker"`
-	NextMarker     string   `xml:"NextMarker"`
-	Contents       []Record `xml:"Contents"`
-	CommonPrefixes []Prefix `xml:"CommonPrefixes"`
-}
-
-const tmplPageHeaderText = `
-    <!doctype html>
-   	<html>
-   	<head>
-   	    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-   	    <meta charset="utf-8">
-   	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   	    <title>GCS browser: {{.Name}}</title>
-		<style>
-		header {
-			margin-left: 10px;
-		}
-
-		.next-button {
-			margin: 10px 0;
-		}
-
-		.grid-head {
-			border-bottom: 1px solid black;
-		}
-
-		.resource-grid {
-			margin-right: 20px;
-		}
-
-		li.grid-row:nth-child(even) {
-			background-color: #ddd;
-		}
-
-		li div {
-			box-sizing: border-box;
-			border-left: 1px solid black;
-			padding-left: 5px;
-			overflow-wrap: break-word;
-		}
-		li div:first-child {
-			border-left: none;
-		}
-
-		</style>
-   	</head>
-   	<body>
-`
-
-var tmplPageHeader = template.Must(template.New("page-header").Parse(tmplPageHeaderText))
-
-func htmlPageHeader(out io.Writer, name string) error {
-	args := struct {
-		Name string
-	}{
-		Name: name,
-	}
-	return tmplPageHeader.Execute(out, args)
-}
-
-const tmplPageFooterText = `</body></html>`
-
-var tmplPageFooter = template.Must(template.New("page-footer").Parse(tmplPageFooterText))
-
-func htmlPageFooter(out io.Writer) error {
-	return tmplPageFooter.Execute(out, struct{}{})
-}
-
-const tmplContentHeaderText = `
-    <header>
-        <h1>{{.DirName}}</h1>
-        <h3>{{.Path}}</h3>
-    </header>
-    <ul class="resource-grid">
-`
-
-var tmplContentHeader = template.Must(template.New("content-header").Parse(tmplContentHeaderText))
-
-func htmlContentHeader(out io.Writer, dirname, path string) error {
-	args := struct {
-		DirName string
-		Path    string
-	}{
-		DirName: dirname,
-		Path:    path,
-	}
-	return tmplContentHeader.Execute(out, args)
-}
-
-const tmplContentFooterText = `</ul>`
-
-var tmplContentFooter = template.Must(template.New("content-footer").Parse(tmplContentFooterText))
-
-func htmlContentFooter(out io.Writer) error {
-	return tmplContentFooter.Execute(out, struct{}{})
-}
-
-const tmplNextButtonText = `
-    <a href="{{.Path}}?marker={{.Marker}}"
-	   class="pure-button next-button">
-	   Next page
-	</a>
-`
-
-var tmplNextButton = template.Must(template.New("next-button").Parse(tmplNextButtonText))
-
-func htmlNextButton(out io.Writer, path, marker string) error {
-	args := struct {
-		Path   string
-		Marker string
-	}{
-		Path:   path,
-		Marker: marker,
-	}
-	return tmplNextButton.Execute(out, args)
-}
-
-const tmplGridHeaderText = `
-	<li class="pure-g">
-		<div class="pure-u-2-5 grid-head">Name</div>
-		<div class="pure-u-1-5 grid-head">Size</div>
-		<div class="pure-u-2-5 grid-head">Modified</div>
-	</li>
-`
-
-var tmplGridHeader = template.Must(template.New("grid-header").Parse(tmplGridHeaderText))
-
-func htmlGridHeader(out io.Writer) error {
-	return tmplGridHeader.Execute(out, struct{}{})
-}
-
-const tmplGridItemText = `
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="{{.URL}}"><img src="{{.Icon}}"> {{.Name}}</a></div>
-	    <div class="pure-u-1-5">{{.Size}}</div>
-	    <div class="pure-u-2-5">{{.Modified}}</div>
-	</li>
-`
-
-var tmplGridItem = template.Must(template.New("grid-item").Parse(tmplGridItemText))
-
-func htmlGridItem(out io.Writer, icon, url, name, size, modified string) error {
-	args := struct {
-		URL      string
-		Icon     string
-		Name     string
-		Size     string
-		Modified string
-	}{
-		URL:      url,
-		Icon:     icon,
-		Name:     name,
-		Size:     size,
-		Modified: modified,
-	}
-	return tmplGridItem.Execute(out, args)
+	Name           string
+	Prefix         string
+	Marker         string
+	NextMarker     string
+	Contents       []Record
+	CommonPrefixes []Prefix
 }
 
 // Render writes HTML representing this gcsDir to the provided output.
@@ -533,33 +494,27 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 
 // Record represents a single "Contents" entry in a GCS bucket.
 type Record struct {
-	Name  string `xml:"Key"`
-	MTime string `xml:"LastModified"`
-	Size  int64  `xml:"Size"`
+	Name  string
+	MTime time.Time
+	Size  int64
 	isDir bool
 }
 
 // Render writes HTML representing this Record to the provided output.
 func (rec *Record) Render(out http.ResponseWriter, inPath string) {
-	mtime := "<unknown>"
-	ts, err := time.Parse(time.RFC3339, rec.MTime)
-	if err == nil {
-		mtime = ts.Format("02 Jan 2006 15:04:05")
-	}
-	var url, size string
-	if rec.isDir {
-		url = gcsPath + inPath + rec.Name
-		size = "-"
-	} else {
-		url = gcsBaseURL + inPath + rec.Name
-		size = fmt.Sprintf("%v", rec.Size)
-	}
-	htmlGridItem(out, iconFile, url, rec.Name, size, mtime)
+	htmlGridItem(
+		out,
+		iconFile,
+		gcsPath+inPath+rec.Name,
+		rec.Name,
+		fmt.Sprintf("%v", rec.Size),
+		rec.MTime.Format(time.RFC1123),
+	)
 }
 
 // Prefix represents a single "CommonPrefixes" entry in a GCS bucket.
 type Prefix struct {
-	Prefix string `xml:"Prefix"`
+	Prefix string
 }
 
 // Render writes HTML representing this Prefix to the provided output.
@@ -568,20 +523,10 @@ func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 
-// A logger-wrapper that logs a transaction's metadata.
-type txnLogger struct {
-	nonce string
-}
-
-// Printf logs a formatted line to the logging output.
-func (tl txnLogger) Printf(fmt string, args ...interface{}) {
-	args = append([]interface{}{tl.nonce}, args...)
-	log.Printf("[txn-%s] "+fmt, args...)
-}
-
-func newTxnLogger(r *http.Request) txnLogger {
-	nonce := fmt.Sprintf("%08x", rand.Int31())
-	logger := txnLogger{nonce}
-	logger.Printf("request: %s %s", r.Method, r.URL.Path)
-	return logger
+func newTxnLogger(r *http.Request) *logrus.Entry {
+	return logrus.WithFields(logrus.Fields{
+		"txn":      fmt.Sprintf("%08x", rand.Int31()),
+		"method":   r.Method,
+		"url-path": r.URL.Path,
+	})
 }

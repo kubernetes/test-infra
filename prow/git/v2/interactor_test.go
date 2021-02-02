@@ -1037,24 +1037,24 @@ func TestInteractor_RemoteUpdate(t *testing.T) {
 		{
 			name: "happy case",
 			responses: map[string]execResponse{
-				"remote update": {
+				"remote update --prune": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"remote", "update"},
+				{"remote", "update", "--prune"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "update fails",
 			responses: map[string]execResponse{
-				"remote update": {
+				"remote update --prune": {
 					err: errors.New("oops"),
 				},
 			},
 			expectedCalls: [][]string{
-				{"remote", "update"},
+				{"remote", "update", "--prune"},
 			},
 			expectedErr: true,
 		},

@@ -136,17 +136,6 @@ dashboards:
         value: 'ci-daisy-e2e-daily issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: ci-daisy-e2e-weekly
-    test_group_name: ci-daisy-e2e-weekly
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com   
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-daisy-e2e-weekly issue: <test-name>'
-      - key: body
-        value: <test-url>
   - name: ci-images-import-export-cli-e2e-tests
     test_group_name: ci-images-import-export-cli-e2e-tests
     alert_options:
@@ -185,24 +174,6 @@ dashboards:
       options:
       - key: title
         value: 'ci-v2v-adapt-e2e issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: linux-image-tests
-    test_group_name: linux-image-tests
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'linux-image-tests issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: windows-image-tests
-    test_group_name: windows-image-tests
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'windows-image-tests issue: <test-name>'
       - key: body
         value: <test-url>
 
@@ -252,62 +223,6 @@ dashboards:
 - name: google-unit
 - name: google-windows
 
-- name: wg-resource-management
-  dashboard_tab:
-  - name: gce-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-beta
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-stable1
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-beta-gpu-master-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-beta-gpu-cluster-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-master-gpu-master-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-stable1-master-gpu-cluster-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-beta-stable1-gpu-cluster-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-master-stable1-gpu-cluster-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-cri-containerd
-    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: kubelet-serial-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-serial
-    base_options: include-filter-by-regex=GPU|DevicePlugin
-
 - name: sig-auth-gce
   dashboard_tab:
   - name: gce
@@ -331,11 +246,6 @@ dashboards:
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
 - name: google-rules_k8s
-    
-- name: google-cel
-  dashboard_tab:
-  - name: cel-go
-    test_group_name: cel-go-conformance-tests
 
 #
 # Start dashboard groups

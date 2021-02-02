@@ -39,6 +39,7 @@ const (
 	periodicIntervalAnnotation   = "fork-per-release-periodic-interval"
 	cronAnnotation               = "fork-per-release-cron"
 	replacementAnnotation        = "fork-per-release-replacements"
+	deletionAnnotation           = "fork-per-release-deletions"
 	testgridDashboardsAnnotation = "testgrid-dashboards"
 	testgridTabNameAnnotation    = "testgrid-tab-name"
 	descriptionAnnotation        = "description"
@@ -154,6 +155,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
 		}
+		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 		newPeriodics = append(newPeriodics, p)
 	}
@@ -163,7 +165,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 func cleanAnnotations(annotations map[string]string) map[string]string {
 	result := map[string]string{}
 	for k, v := range annotations {
-		if k == forkAnnotation || k == replacementAnnotation {
+		if k == forkAnnotation || k == replacementAnnotation || k == deletionAnnotation {
 			continue
 		}
 		if k == periodicIntervalAnnotation && v == "" {
@@ -219,6 +221,30 @@ func performReplacement(args []string, version, replacements string) ([]string, 
 	}
 
 	return newArgs, nil
+}
+
+func performDeletion(args map[string]string, deletions string) map[string]string {
+	if args == nil {
+		return nil
+	}
+	if deletions == "" {
+		return args
+	}
+
+	deletionsSet := make(map[string]bool)
+	for _, s := range strings.Split(deletions, ", ") {
+		deletionsSet[s] = true
+	}
+
+	result := map[string]string{}
+
+	for k, v := range args {
+		if !deletionsSet[k] {
+			result[k] = v
+		}
+	}
+
+	return result
 }
 
 func fixImage(image, version string) string {

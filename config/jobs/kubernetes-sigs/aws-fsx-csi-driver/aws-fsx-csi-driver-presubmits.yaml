@@ -3,49 +3,55 @@ presubmits:
   - name: pull-aws-fsx-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
         - make
         - verify
     annotations:
-      testgrid-dashboards: sig-aws-fsx-csi-driver
+      testgrid-dashboards: provider-aws-fsx-csi-driver
       testgrid-tab-name: verify
       description: aws fsx csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-fsx-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
         - make
         - test
     annotations:
-      testgrid-dashboards: sig-aws-fsx-csi-driver
+      testgrid-dashboards: provider-aws-fsx-csi-driver
       testgrid-tab-name: unit-test
       description: aws fsx csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-fsx-csi-driver-e2e
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - runner.sh
         args:
@@ -54,7 +60,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-fsx-csi-driver
+      testgrid-dashboards: provider-aws-fsx-csi-driver
       testgrid-tab-name: e2e-test
       description: aws fsx csi driver e2e test
       testgrid-num-columns-recent: '30'

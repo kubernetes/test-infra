@@ -1,6 +1,6 @@
 periodics:
 - name: ci-build-and-push-k8s-at-golang-tip
-  interval: 8h
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200813-af45e55
+      - image: gcr.io/k8s-testimages/bootstrap:v20210130-12516b2
         args:
         - --root=/go/src
         - --repo=k8s.io/perf-tests=master
@@ -24,12 +24,20 @@ periodics:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 4
+            memory: "16Gi"
+          limits:
+            cpu: 4
+            memory: "16Gi"
 
-- interval: 8h
+- interval: 4h
   name: ci-golang-tip-k8s-1-18
   cluster: scalability
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-18"
+  - "perfDashBuildsCount: 240"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
@@ -37,6 +45,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
   annotations:
     testgrid-alert-email: go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
@@ -45,9 +55,9 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=460
-      # head of perf-tests' master as of 2020-05-29
-      - --repo=k8s.io/perf-tests=master:c8e93e287413fb0efec4478e2f47f1e7b1a92bfd
+      - --timeout=210
+      # head of perf-tests' master as of 2020-11-06
+      - --repo=k8s.io/perf-tests=master:39a6c09ddca620a430d38e5de1400844ea954c2f
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -57,7 +67,7 @@ periodics:
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
-      - --gcp-node-size=n1-standard-8
+      - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project=k8s-presubmit-scale
       - --gcp-zone=us-east1-b
@@ -65,7 +75,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=2500
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/golang/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
@@ -73,15 +83,14 @@ periodics:
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=430m
+      - --timeout=180m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       env:
       - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
         value: "true"
@@ -92,112 +101,6 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-
-# Oneoff jobs for full (5k gce) golang tests
-# TODO(mm4tt): Clean them up
-- cron: '0 0 2 5 *' # Run at 00:00 UTC on May 2nd (Saturday)
-  name: ci-golang-1-14-2-k8s-1-18-full
-  cluster: scalability
-  tags:
-  - "perfDashPrefix: golang-1-14-2-k8s-1-18-full"
-  - "perfDashJobType: performance"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-golang
-    testgrid-tab-name: golang-1-14-2-k8s-1-18-full
-  spec:
-    containers:
-    - args:
-      - --timeout=1080
-      # head of perf-test's master as of 2020-04-28
-      - --repo=k8s.io/perf-tests=master:2a5b685c253ca0b88589d61b5d2c57ff548347e8
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
-      - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-      - --extract=gs://kubernetes-release-dev/devel/v1.18.3-beta.0.5+d5282c1b0604f4
-      - --gcp-nodes=5000
-      - --gcp-project=k8s-scale-testing
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
-      - --test-cmd-args=--nodes=5000
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1050m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-      resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
-- cron: '0 0 6 5 *' # Run at 00:00 UTC on May 6th (Wednesday)
-  name: ci-golang-tip-k8s-1-18-full
-  cluster: scalability
-  tags:
-  - "perfDashPrefix: golang-tip-k8s-1-18-full"
-  - "perfDashJobType: performance"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-golang
-    testgrid-tab-name: golang-tip-k8s-1-18-full
-  spec:
-    containers:
-    - args:
-      - --timeout=1080
-      # head of perf-test's master as of 2020-04-28
-      - --repo=k8s.io/perf-tests=master:2a5b685c253ca0b88589d61b5d2c57ff548347e8
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
-      - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-      - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
-      - --gcp-nodes=5000
-      - --gcp-project=k8s-scale-testing
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
-      - --test-cmd-args=--nodes=5000
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1050m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
-      resources:
-        requests:
+        limits:
           cpu: 6
           memory: "16Gi"

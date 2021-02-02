@@ -14,41 +14,7 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
-            command:
-              - "runner.sh"
-              - "./scripts/ci-e2e.sh"
-            env:
-              - name: BOSKOS_HOST
-                value: "boskos.test-pods.svc.cluster.local"
-              - name: AWS_REGION
-                value: "us-west-2"
-            securityContext:
-              privileged: true
-            resources:
-              requests:
-                cpu: 1
-                memory: "4Gi"
-      annotations:
-        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-        testgrid-tab-name: ci-e2e
-        testgrid-num-columns-recent: '20'
-        testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
-    - name: ci-cluster-api-provider-aws-e2e-new
-      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-      decorate: true
-      decoration_config:
-        timeout: 5h
-      max_concurrency: 1
-      labels:
-        preset-dind-enabled: "true"
-        preset-kind-volume-mounts: "true"
-        preset-service-account: "true"
-        preset-aws-ssh: "true"
-        preset-aws-credential: "true"
-      spec:
-        containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -67,7 +33,7 @@ postsubmits:
                 memory: "4Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-        testgrid-tab-name: ci-e2e-new
+        testgrid-tab-name: ci-e2e
         testgrid-num-columns-recent: '20'
         testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     - name: ci-cluster-api-provider-aws-e2e-conformance
@@ -84,10 +50,10 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-1.18
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-1.19
             command:
               - "runner.sh"
-              - "./scripts/ci-e2e-conformance.sh"
+              - "./scripts/ci-conformance.sh"
             env:
               - name: BOSKOS_HOST
                 value: "boskos.test-pods.svc.cluster.local"

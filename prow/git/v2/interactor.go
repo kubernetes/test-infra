@@ -266,7 +266,7 @@ func (i *interactor) Am(path string) error {
 // RemoteUpdate fetches all updates from the remote.
 func (i *interactor) RemoteUpdate() error {
 	i.logger.Info("Updating from remote")
-	if out, err := i.executor.Run("remote", "update"); err != nil {
+	if out, err := i.executor.Run("remote", "update", "--prune"); err != nil {
 		return fmt.Errorf("error updating: %v %v", err, string(out))
 	}
 	return nil

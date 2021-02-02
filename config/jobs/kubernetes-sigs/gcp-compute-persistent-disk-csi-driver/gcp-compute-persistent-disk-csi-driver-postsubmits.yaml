@@ -6,16 +6,16 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.7"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=90" # Minutes
+      - "--timeout=120" # Minutes (usually runs take 1:15)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
+      - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
         value: "stable"
@@ -33,6 +33,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Release 0.7
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.7
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
   interval: 4h
@@ -41,16 +42,16 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=90" # Minutes
+      - "--timeout=120" # Minutes (usually runs take 1:15)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
+      - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
         value: "dev"
@@ -68,6 +69,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
 - name: ci-gcp-compute-persistent-disk-csi-driver-stable-k8s-master-migration
   interval: 4h
@@ -76,7 +78,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -104,6 +106,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver Stable
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
   interval: 1h
@@ -112,7 +115,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -140,4 +143,5 @@ periodics:
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Latest
+    testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver latest build

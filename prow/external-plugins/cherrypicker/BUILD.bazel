@@ -18,6 +18,7 @@ go_library(
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/interrupts:go_default_library",
+        "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/plugins:go_default_library",

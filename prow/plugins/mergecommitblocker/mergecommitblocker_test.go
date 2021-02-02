@@ -65,8 +65,10 @@ func (f *fakeGHClient) DeleteComment(org, repo string, id int) error {
 	return nil
 }
 
-func (f *fakeGHClient) BotName() (string, error) {
-	return "foo", nil
+func (f *fakeGHClient) BotUserChecker() (func(candidate string) bool, error) {
+	return func(candidate string) bool {
+		return candidate == "foo"
+	}, nil
 }
 
 func (f *fakeGHClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {

@@ -339,10 +339,10 @@ func TestTrustedJobs(t *testing.T) {
 	}
 }
 
-// Enforce conventions for jobs that run in k8s-infra-prow-build-trused cluster
+// Enforce conventions for jobs that run in k8s-infra-prow-build-trusted cluster
 func TestK8sInfraTrusted(t *testing.T) {
 	const trusted = "k8s-infra-prow-build-trusted"
-	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted", "wg-k8s-infra-trusted.yaml")
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted") + "/"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use this cluster
@@ -354,7 +354,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 	// Postsubmits and periodics must
 	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
-	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/wg-k8s-infra-trusted.yaml
+	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
@@ -370,7 +370,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 			if err := validateImagePushingImage(job.Spec); err != nil {
 				t.Errorf("%s defined in %s %s", job.Name, job.SourcePath, err)
 			}
-		} else if job.SourcePath != trustedPath {
+		} else if !strings.HasPrefix(job.SourcePath, trustedPath) {
 			t.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted)
 		}
 	}
@@ -636,7 +636,7 @@ func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[stri
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
 			service = false
 			for key, val := range labels {
-				if (key == "preset-gke-alpha-service" || key == "preset-service-account" || key == "preset-istio-service") && val == "true" {
+				if key == "preset-service-account" && val == "true" {
 					service = true
 				}
 			}
@@ -753,11 +753,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	if scenario == "" {
-		entry := jobName
-		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
-			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
-		}
-
 		if !scenarioArgs {
 			if strings.Contains(imageName, "kubekins-e2e") ||
 				strings.Contains(imageName, "bootstrap") ||
@@ -974,12 +969,6 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 	return errs
 }
 
-// isPodQOSGuaranteed returns true if the PodSpec's containers have non-zero
-// resource limits that are equal to their resource requests
-func isPodQOSGuaranteed(spec *coreapi.PodSpec) bool {
-	return len(verifyPodQOSGuaranteed(spec)) == 0
-}
-
 // A job is merge-blocking if it:
 // - is not optional
 // - reports (aka does not skip reporting)
@@ -1029,10 +1018,7 @@ func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
-// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
-// migrated over for a while
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+func TestKubernetesMergeBlockingJobMustRunOnK8sInfraProwBuild(t *testing.T) {
 	repo := "kubernetes/kubernetes"
 	jobs := c.AllStaticPresubmits([]string{repo})
 	sort.Slice(jobs, func(i, j int) bool {
@@ -1045,7 +1031,7 @@ func TestKubernetesMergeBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
 		}
 		branches := job.Branches
 		if job.Cluster != "k8s-infra-prow-build" {
-			t.Logf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
+			t.Errorf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
 		}
 	}
 }
@@ -1079,50 +1065,6 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 	}
 }
 
-// We have k8s-infra-prow-build setup to auto-scale, but as a quick static
-// check, let's pretend every job schedules one instance to the cluster
-// at the exact same time. This is a poor approximation since there will
-// likely be N presubmits running simultaneously.
-func TestK8sInfraProwBuildJobsMustNotExceedTotalCapacity(t *testing.T) {
-	// k8s-infra-prow-build pool1 is 3-zonal 6-30 n1-highmem-8's
-	maxLimit := coreapi.ResourceList{
-		coreapi.ResourceCPU:    resource.MustParse("576"),    // 3 * 24 * 8 CPUs per n1-highmem-8
-		coreapi.ResourceMemory: resource.MustParse("3744Gi"), // 3 * 24 * 52 Gi per n1-highmem-8
-	}
-	resourceNames := []coreapi.ResourceName{
-		coreapi.ResourceCPU,
-		coreapi.ResourceMemory,
-	}
-	zero := resource.MustParse("0")
-	totalLimit := coreapi.ResourceList{}
-	for _, r := range resourceNames {
-		totalLimit[r] = zero.DeepCopy()
-	}
-	jobs := allStaticJobs()
-	for _, job := range jobs {
-		// Only consider Pods destined for the k8s-infra-prow-builds cluster
-		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
-			continue
-		}
-		for _, c := range job.Spec.Containers {
-			for _, r := range resourceNames {
-				if limit, ok := c.Resources.Limits[r]; ok {
-					total := totalLimit[r]
-					total.Add(limit)
-					totalLimit[r] = total
-				}
-			}
-		}
-	}
-	for _, r := range resourceNames {
-		total, _ := totalLimit[r]
-		max, _ := maxLimit[r]
-		if total.Cmp(max) > -1 {
-			t.Errorf("Total %s limit %s greater than expected limit %s", r, total.String(), max.String())
-		}
-	}
-}
-
 // Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
 // containing the latest merged PRs as soon as possible for the in-development release
 func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T) {
@@ -1136,9 +1078,33 @@ func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T
 		for _, arg := range job.Spec.Containers[0].Args {
 			if strings.HasPrefix(arg, "--extract=") {
 				extract = strings.TrimPrefix(arg, "--extract=")
-				if extract == "ci/latest" {
+				if extract != "ci/latest-fast" {
 					t.Errorf("%s: release-master-blocking e2e jobs must use --extract=ci/latest-fast, found --extract=ci/latest instead", job.Name)
 				}
+			}
+		}
+	}
+}
+
+// To help with migration to community-owned buckets for CI and release artifacts:
+// - jobs extracting from kubernetes-release-dev should use k8s-release-dev instead
+func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
+	jobs := allStaticJobs()
+	for _, job := range jobs {
+		extract := ""
+		extractCIBucket := "kubernetes-release-dev"
+		for _, arg := range job.Spec.Containers[0].Args {
+			if strings.HasPrefix(arg, "--extract=") {
+				extract = strings.TrimPrefix(arg, "--extract=")
+			}
+			if strings.HasPrefix(arg, "--extract-ci-bucket=") {
+				extractCIBucket = strings.TrimPrefix(arg, "--extract-ci-bucket=")
+			}
+		}
+		if strings.HasPrefix(extract, "ci/") && extractCIBucket != "k8s-release-dev" {
+			// TODO(https://github.com/kubernetes/test-infra/issues/19484): widen to all ci/ extracts once ci-kubernetes-build migrated
+			if extract == "ci/latest-fast" {
+				t.Errorf("FAIL - %s: jobs using --extract=%s must have --extract-ci-bucket=k8s-release-dev", job.Name, extract)
 			}
 		}
 	}

@@ -26,6 +26,8 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/spyglass/api"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 type ByteReadCloser struct {
@@ -458,6 +460,91 @@ func TestSize_GCS(t *testing.T) {
 		}
 		if tc.expected != actual {
 			t.Errorf("Test %s failed.\nExpected:\n%d\nActual:\n%d", tc.name, tc.expected, actual)
+		}
+	}
+}
+
+func TestStorageArtifact_RespectsSizeLimit(t *testing.T) {
+	contents := "Supercalifragilisticexpialidocious"
+	numRequestedBytes := int64(10)
+
+	testCases := []struct {
+		name     string
+		expected error
+		skipGzip bool
+		action   func(api.Artifact) error
+	}{
+		{
+			name:     "ReadAll",
+			expected: lenses.ErrFileTooLarge,
+			action: func(a api.Artifact) error {
+				_, err := a.ReadAll()
+				return err
+			},
+		},
+		{
+			name:     "ReadAt",
+			expected: lenses.ErrRequestSizeTooLarge,
+			skipGzip: true, // `offset read on gzipped files unsupported`
+			action: func(a api.Artifact) error {
+				buf := make([]byte, numRequestedBytes)
+				_, err := a.ReadAt(buf, 3)
+				return err
+			},
+		},
+		{
+			name:     "ReadAtMost",
+			expected: lenses.ErrRequestSizeTooLarge,
+			action: func(a api.Artifact) error {
+				_, err := a.ReadAtMost(numRequestedBytes)
+				return err
+			},
+		},
+		{
+			name:     "ReadTail",
+			expected: lenses.ErrRequestSizeTooLarge,
+			skipGzip: true, // `offset read on gzipped files unsupported`
+			action: func(a api.Artifact) error {
+				_, err := a.ReadTail(numRequestedBytes)
+				return err
+			},
+		},
+	}
+	for _, tc := range testCases {
+		for _, encoding := range []string{"", "gzip"} {
+			if encoding == "gzip" && tc.skipGzip {
+				continue
+			}
+			t.Run(tc.name+encoding+"_NoErrors", func(nested *testing.T) {
+				sizeLimit := int64(2 * len(contents))
+				artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
+					contents: []byte(contents),
+					oAttrs: pkgio.Attributes{
+						Size:            int64(len(contents)),
+						ContentEncoding: encoding,
+					},
+				}, "some-link-path", "build-log.txt", sizeLimit)
+				actual := tc.action(artifact)
+				if actual != nil {
+					nested.Fatalf("unexpected error: %s", actual)
+				}
+			})
+			t.Run(tc.name+encoding+"_WithErrors", func(nested *testing.T) {
+				sizeLimit := int64(5)
+				artifact := NewStorageArtifact(context.Background(), &fakeArtifactHandle{
+					contents: []byte(contents),
+					oAttrs: pkgio.Attributes{
+						Size:            int64(len(contents)),
+						ContentEncoding: encoding,
+					},
+				}, "some-link-path", "build-log.txt", sizeLimit)
+				actual := tc.action(artifact)
+				if actual == nil {
+					nested.Fatalf("expected error (%s), but got: nil", tc.expected)
+				} else if tc.expected.Error() != actual.Error() {
+					nested.Fatalf("expected error (%s), but got: %s", tc.expected, actual)
+				}
+			})
 		}
 	}
 }

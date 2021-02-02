@@ -20,11 +20,16 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/v2"
@@ -82,11 +87,28 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		}
 		configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Triggers: []plugins.Trigger{
+			{
+				Repos: []string{
+					"org/repo1",
+					"org/repo2",
+				},
+				JoinOrgURL:     "https://github.com/kubernetes/community/blob/master/community-membership.md",
+				OnlyOrgMembers: true,
+				IgnoreOkToTest: true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
 <br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/test' command.
 <br>The '/retest' command can be used to rerun jobs that have reported failure.`,
-		Config: configInfo,
+		Config:  configInfo,
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/ok-to-test",
@@ -121,7 +143,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
@@ -272,12 +294,16 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
+}
+
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, millisecondOverride ...time.Duration) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.ProwJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
+		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj, millisecondOverride...); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")
 			errors = append(errors, err)
 		}
@@ -304,4 +330,34 @@ func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config,
 		postsubmits = cfg.PostsubmitsStatic[orgRepo]
 	}
 	return postsubmits
+}
+
+// createWithRetry will retry the cration of a ProwJob. The Name must be set, otherwise we might end up creating it multiple times
+// if one Create request errors but succeeds under the hood.
+func createWithRetry(ctx context.Context, client prowJobClient, pj *prowapi.ProwJob, millisecondOverride ...time.Duration) error {
+	millisecond := time.Millisecond
+	if len(millisecondOverride) == 1 {
+		millisecond = millisecondOverride[0]
+	}
+
+	var errs []error
+	if err := wait.ExponentialBackoff(wait.Backoff{Duration: 250 * millisecond, Factor: 2.0, Jitter: 0.1, Steps: 8}, func() (bool, error) {
+		if _, err := client.Create(ctx, pj, metav1.CreateOptions{}); err != nil {
+			// Can happen if a previous request was successful but returned an error
+			if apierrors.IsAlreadyExists(err) {
+				return true, nil
+			}
+			// Store and swallow errors, if we end up timing out we will return all of them
+			errs = append(errs, err)
+			return false, nil
+		}
+		return true, nil
+	}); err != nil {
+		if err != wait.ErrWaitTimeout {
+			return err
+		}
+		return utilerrors.NewAggregate(errs)
+	}
+
+	return nil
 }

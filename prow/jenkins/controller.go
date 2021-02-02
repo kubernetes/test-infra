@@ -51,7 +51,7 @@ type jenkinsClient interface {
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -246,7 +246,7 @@ func (c *Controller) Sync() error {
 func (c *Controller) SyncMetrics() {
 	c.pjLock.RLock()
 	defer c.pjLock.RUnlock()
-	kube.GatherProwJobMetrics(c.pjs)
+	kube.GatherProwJobMetrics(c.log, c.pjs)
 }
 
 // getJenkinsJobs returns all the Jenkins jobs for all active

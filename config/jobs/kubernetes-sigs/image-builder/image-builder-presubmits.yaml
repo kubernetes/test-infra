@@ -1,18 +1,17 @@
 presubmits:
   kubernetes-sigs/image-builder:
-  - name: pull-azure-all
+  - name: pull-azure-vhds
     labels:
       preset-azure-cred: "true"
-    always_run: false
-    optional: true
     decorate: true
+    run_if_changed: 'images/capi/.*'
     decoration_config:
       timeout: 1h
-    max_concurrency: 12
+    max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -21,4 +20,29 @@ presubmits:
             cpu: 1000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
-      testgrid-tab-name: pr-azure-all
+      testgrid-tab-name: pr-azure-vhds
+  - name: pull-azure-sigs
+    labels:
+      preset-azure-cred: "true"
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+        args:
+          - runner.sh
+          - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
+        env:
+          - name: AZURE_BUILD_FORMAT
+            value: "sig"
+        resources:
+          requests:
+            cpu: 1000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-azure-sigs

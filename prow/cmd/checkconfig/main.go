@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -102,6 +103,7 @@ const (
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
 	verifyOwnersFilePresence     = "verify-owners-presence"
+	validateClusterFieldWarning  = "validate-cluster-field"
 )
 
 var defaultWarnings = []string{
@@ -118,6 +120,7 @@ var defaultWarnings = []string{
 	missingTriggerWarning,
 	validateURLsWarning,
 	unknownFieldsWarning,
+	validateClusterFieldWarning,
 }
 
 var expensiveWarnings = []string{
@@ -354,6 +357,11 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(validateClusterFieldWarning) {
+		if err := validateCluster(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
 
 	return utilerrors.NewAggregate(errs)
 }
@@ -401,10 +409,10 @@ func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
 		// Done partitioning the repos.
 
 		if policyIsStrict(org.Policy) {
-			// This org is strict, record with repo exceptions (blacklist).
+			// This org is strict, record with repo exceptions ("denylist")
 			strictOrgExceptions[orgName] = nonStrictExplicitRepos
 		} else {
-			// The org is not strict, record member repos that are (whitelist).
+			// The org is not strict, record member repos that are allowed
 			strictRepos.Insert(strictExplicitRepos.UnsortedList()...)
 		}
 	}
@@ -613,11 +621,11 @@ func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *
 }
 
 // orgRepoConfig describes a set of repositories with an explicit
-// whitelist and a mapping of blacklists for owning orgs
+// allowlist and a mapping of denied repos for owning orgs
 type orgRepoConfig struct {
-	// orgExceptions holds explicit blacklists of repos for owning orgs
+	// orgExceptions holds explicit denylists of repos for owning orgs
 	orgExceptions map[string]sets.String
-	// repos is a whitelist of repos
+	// repos is an allowed list of repos
 	repos sets.String
 }
 
@@ -715,10 +723,10 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts1 := range c.orgExceptions {
-		// keep only items in both blacklists that are not in the
-		// explicit repo whitelists for the other configuration;
+		// keep only items in both denylists that are not in the
+		// explicit repo allowlist for the other configuration;
 		// we know from how the orgRepoConfigs are constructed that
-		// a org blacklist won't intersect it's own repo whitelist
+		// a org denylist won't intersect it's own repo allowlist
 		pruned := excepts1.Difference(c2.repos)
 		if excepts2, ok := c2.orgExceptions[org]; ok {
 			res.orgExceptions[org] = pruned.Intersection(excepts2.Difference(c.repos))
@@ -728,15 +736,15 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts2 := range c2.orgExceptions {
-		// update any blacklists not previously updated
+		// update any denylists not previously updated
 		if _, exists := res.orgExceptions[org]; !exists {
 			res.orgExceptions[org] = excepts2.Difference(c.repos)
 		}
 	}
 
-	// we need to prune out repos in the whitelists which are
+	// we need to prune out repos in the allowed lists which are
 	// covered by an org already; we know from above that no
-	// org blacklist in the result will contain a repo whitelist
+	// org denylist in the result will contain a repo allowlist
 	for _, repo := range c.repos.Union(c2.repos).UnsortedList() {
 		parts := strings.SplitN(repo, "/", 2)
 		if len(parts) != 2 {
@@ -1057,5 +1065,39 @@ func validateTideContextPolicy(cfg *config.Config) error {
 		}
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+var agentsNotSupportingCluster = sets.NewString("jenkins")
+
+func validateJobCluster(job config.JobBase) error {
+	if job.Cluster != "" && job.Cluster != kube.DefaultClusterAlias && agentsNotSupportingCluster.Has(job.Agent) {
+		return fmt.Errorf("%s: cannot set cluster field if agent is %s", job.Name, job.Agent)
+	}
+	return nil
+}
+
+func validateCluster(cfg *config.Config) error {
+	var errs []error
+	for orgRepo, jobs := range cfg.PresubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
+	for _, job := range cfg.Periodics {
+		if err := validateJobCluster(job.JobBase); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", "invalid periodic job", err))
+		}
+
+	}
+	for orgRepo, jobs := range cfg.PostsubmitsStatic {
+		for _, job := range jobs {
+			if err := validateJobCluster(job.JobBase); err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
+			}
+		}
+	}
 	return utilerrors.NewAggregate(errs)
 }

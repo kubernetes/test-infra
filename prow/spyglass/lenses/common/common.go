@@ -19,10 +19,12 @@ package common
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -36,6 +38,7 @@ import (
 )
 
 var lensTemplate = template.Must(template.New("sg").Parse(string(MustAsset("static/spyglass-lens.html"))))
+var buildLogRegex = regexp.MustCompile(`^(?:[^/]*-)?build-log\.txt$`)
 
 type LensWithConfiguration struct {
 	Config LensOpt
@@ -107,8 +110,14 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 		}
 
 		artifacts, err := FetchArtifacts(r.Context(), opts.PJFetcher, opts.ConfigGetter, opts.StorageArtifactFetcher, opts.PodLogArtifactFetcher, request.ArtifactSource, "", opts.ConfigGetter().Deck.Spyglass.SizeLimit, request.Artifacts)
-		if err != nil {
-			writeHTTPError(w, fmt.Errorf("Failed to retrieve expected artifacts: %w", err), http.StatusInternalServerError)
+		if err != nil || len(artifacts) == 0 {
+			statusCode := http.StatusInternalServerError
+			if len(artifacts) == 0 {
+				statusCode = http.StatusNotFound
+				err = errors.New("no artifacts found")
+			}
+
+			writeHTTPError(w, fmt.Errorf("failed to retrieve expected artifacts: %w", err), statusCode)
 			return
 		}
 
@@ -177,10 +186,6 @@ func FetchArtifacts(
 	if err != nil {
 		return arts, fmt.Errorf("error parsing src: %v", err)
 	}
-	jobName, buildID, err := keyToJob(src)
-	if err != nil {
-		return arts, fmt.Errorf("could not derive job: %v", err)
-	}
 	gcsKey := ""
 	switch keyType {
 	case api.ProwKeyType:
@@ -196,7 +201,8 @@ func FetchArtifacts(
 		gcsKey = fmt.Sprintf("%s://%s", keyType, strings.TrimSuffix(key, "/"))
 	}
 
-	podLogNeeded := false
+	logsNeeded := []string{}
+
 	for _, name := range artifactNames {
 		art, err := storageArtifactFetcher.Artifact(ctx, gcsKey, name, sizeLimit)
 		if err == nil {
@@ -206,16 +212,17 @@ func FetchArtifacts(
 			_, err = art.Size()
 		}
 		if err != nil {
-			if name == "build-log.txt" {
-				podLogNeeded = true
+			if buildLogRegex.MatchString(name) {
+				logsNeeded = append(logsNeeded, name)
 			}
+			logrus.WithError(err).WithField("artifact", name).Debug("Failed to fetch artifact")
 			continue
 		}
 		arts = append(arts, art)
 	}
 
-	if podLogNeeded {
-		art, err := podLogArtifactFetcher.Artifact(ctx, jobName, buildID, sizeLimit)
+	for _, logName := range logsNeeded {
+		art, err := podLogArtifactFetcher.Artifact(ctx, src, logName, sizeLimit)
 		if err != nil {
 			logrus.Errorf("Failed to fetch pod log: %v", err)
 		} else {
@@ -235,7 +242,7 @@ type ProwJobFetcher interface {
 // prowToGCS returns the GCS key corresponding to the given prow key
 // TODO: Unexport once we only have remote lenses
 func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (string, string, error) {
-	jobName, buildID, err := keyToJob(prowKey)
+	jobName, buildID, err := KeyToJob(prowKey)
 	if err != nil {
 		return "", "", fmt.Errorf("could not get GCS src: %v", err)
 	}
@@ -246,7 +253,7 @@ func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (st
 	}
 
 	url := job.Status.URL
-	prefix := config().Plank.GetJobURLPrefix(job.Spec.Refs)
+	prefix := config().Plank.GetJobURLPrefix(&job)
 	if !strings.HasPrefix(url, prefix) {
 		return "", "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}
@@ -290,7 +297,7 @@ func splitSrc(src string) (keyType, key string, err error) {
 }
 
 // keyToJob takes a spyglass URL and returns the jobName and buildID.
-func keyToJob(src string) (jobName string, buildID string, err error) {
+func KeyToJob(src string) (jobName string, buildID string, err error) {
 	src = strings.Trim(src, "/")
 	parsed := strings.Split(src, "/")
 	if len(parsed) < 2 {

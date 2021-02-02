@@ -258,6 +258,8 @@ type ExternalBug struct {
 	// The following fields are parsed from the external bug identifier
 	Org, Repo string
 	Num       int
+	// Status holds the status of the PR (ie closed, merged, open)
+	Status string `json:"ext_status"`
 }
 
 // ExternalBugType holds identifying metadata for a tracker
@@ -282,7 +284,11 @@ type AddExternalBugParameters struct {
 type ExternalBugIdentifier struct {
 	// Type is the URL prefix that identifies the external bug tracker type.
 	// For GitHub, this is commonly https://github.com/
-	Type string `json:"ext_type_url"`
+	Type string `json:"ext_type_url,omitempty"`
+	// TrackerID is the internal identifier for the external bug tracker type.
+	// This should be passed instead of the ext_type_url when there is more
+	// than one external tracker for https://github.com/
+	TrackerID int `json:"ext_type_id,omitempty"`
 	// ID is the identifier of the external bug within the bug tracker type.
 	// For GitHub issues and pull requests, this ID is commonly the path
 	// like `org/repo/pull/number` or `org/repo/issue/number`.

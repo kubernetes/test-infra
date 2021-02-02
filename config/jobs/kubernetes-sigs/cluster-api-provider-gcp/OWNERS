@@ -1,14 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- cpanato
 - detiber
-- maisem
-- krousey
 - justinsb
+- krousey
+- maisem
 - vincepri
 approvers:
+- cpanato
 - detiber
-- maisem
-- krousey
 - justinsb
+- krousey
+- maisem
 - vincepri
+
+labels:
+- sig/cluster-lifecycle
+- area/provider/gcp

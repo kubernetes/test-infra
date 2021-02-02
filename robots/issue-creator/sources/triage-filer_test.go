@@ -137,7 +137,7 @@ func init() {
 	sampleOwnerCSV = []byte(
 		`name,owner,auto-assigned,sig
 Sysctls should support sysctls,Random-Liu,1,node
-Sysctls should support unsafe sysctls which are actually whitelisted,deads2k,1,node
+Sysctls should support unsafe sysctls which are actually allowed,deads2k,1,node
 testname1,cjwagner ,1,sigarea
 testname2,spxtr,1,sigarea
 ThirdParty resources Simple Third Party creating/deleting thirdparty objects works,luxas,1,api-machinery

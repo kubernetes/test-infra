@@ -68,7 +68,7 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	http.HandleFunc("/validate", handle)
 	s := http.Server{

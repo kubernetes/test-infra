@@ -17,10 +17,12 @@ limitations under the License.
 package pubsub
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -429,7 +431,7 @@ func TestShouldReport(t *testing.T) {
 	c := NewReporter(fakeConfigAgent.Config)
 
 	for _, tc := range testcases {
-		r := c.ShouldReport(tc.pj)
+		r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 
 		if r != tc.expectedResult {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",

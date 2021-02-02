@@ -41,6 +41,7 @@ const testgridNumColumnsRecentAnnotation = "testgrid-num-columns-recent"
 const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-hours"
 const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
+const testgridInCellMetric = "testgrid-in-cell-metric"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -129,6 +130,10 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 			return fmt.Errorf("%s value %q is not a valid integer", testgridDaysOfResultsAnnotation, dora)
 		}
 		testGroup.DaysOfResults = int32(doraInt)
+	}
+
+	if stm, ok := j.Annotations[testgridInCellMetric]; ok {
+		testGroup.ShortTextMetric = stm
 	}
 
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {

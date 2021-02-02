@@ -46,6 +46,7 @@ func TestOptions(t *testing.T) {
 				instrumentationOptions: prowflagutil.InstrumentationOptions{
 					MetricsPort: prowflagutil.DefaultMetricsPort,
 					PProfPort:   prowflagutil.DefaultPProfPort,
+					HealthPort:  prowflagutil.DefaultHealthPort,
 				},
 			},
 		},

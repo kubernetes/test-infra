@@ -18,15 +18,19 @@ Triage summarization is generally run via `update_summaries.sh`, which downloads
 the correct format and passes them automatically to `triage`. (File formats are listed below.)
 However, summarization can be run directly with the following flags:
 - `builds`: a path to a JSON file containing build information
-- `tests`: a space-delimited series of paths to file containing test informatiob
 - `previous` (optional): a path to a previous output which can be used to maintain consistent cluster
   IDs
 - `owners` (optional): a path to a file that maps SIGs to the labels they own (see [Methodology](#methodology));
   no longer used as labels are read straight from test names
 - `output` (optional): the path to where the output should be written to; defaults to `./failure_data.json`
-- `outputSlices` (optional): a pattern to be used when outputting slices, if desired (see
+- `output_slices` (optional): a pattern to be used when outputting slices, if desired (see
   [Methodology](#methodology)); e.g. `slices/failure_data_PREFIX.json`, where `PREFIX` will be replaced
   with some identifier
+- `num_workers` (optional): the number of worker goroutines to spawn for parallelized functions; defaults to `2*runtime.NumCPU()-1`. (Since CPU detection is unreliable in Kubernetes, we set it manually according to the number of CPUs in [test-infra-periodics.yaml](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml).)
+- `memoize` (optional): whether to memoize certain function results to JSON (and use previously memoized results if they exist); defaults to false
+- `...tests`: after all named flags are passed in, a space-delimited series of paths to files containing test information should be passed in as well
+
+Triage uses klog for logging, so klog flags can be passed in as well.
 
 The web page can be accessed at https://go.k8s.io/triage with the following options:
 - `Date`: defaults to "today"; note that all usages of "today" on the page refer to the currently set date
@@ -34,6 +38,9 @@ The web page can be accessed at https://go.k8s.io/triage with the following opti
 - `Include results from`: toggle between CI tests, PR tests, or both
 - `Sort by`: basic sorting
 - `Include filter`/`Exclude filter`: advanced regex filtering by field
+
+Note that the clusters at the top of the web page are static, and must be added/removed manually.
+Simply adding a button to the HTML is enough.
 
 
 ## Go Packages
@@ -184,3 +191,13 @@ See [Main Output](#main-output). This is only a subset of the main output.
 ## Updating JS dependencies for the web page
 
 See: `package.json` + `bazel run @yarn//:yarn install`
+
+## Deployment
+Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Periodic](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml#L27).
+
+To update the triage image run `make push` from `./triage` which will trigger a [cloudbuild](https://cloud.google.com/cloud-build) using [`//images/builder`](https://github.com/kubernetes/test-infra/tree/master/images/builder). This will result in a fresh triage image within the cloud image registry of the `k8s-testimages` project. (See Container Registry -> Images)
+
+To update Triage frontend in Production or Staging manually run `make push-static` or `make push-staging` respectively. Otherwise it is updated on postsubmit via [post-test-infra-upload-triage](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L616).
+
+### Staging
+   To acces staging see [Triage Staging](https://storage.googleapis.com/k8s-gubernator/triage/staging).

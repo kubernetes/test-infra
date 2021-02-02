@@ -17,19 +17,22 @@ limitations under the License.
 package gerrit
 
 import (
+	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -58,25 +61,6 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 	}
 	f.reportMessage = message
 	f.reportLabel = labels
-	return nil
-}
-
-type fakeLister struct {
-	pjs []*v1.ProwJob
-}
-
-func (fl fakeLister) List(selector labels.Selector) (ret []*v1.ProwJob, err error) {
-	result := []*v1.ProwJob{}
-	for _, pj := range fl.pjs {
-		if selector.Matches(labels.Set(pj.ObjectMeta.Labels)) {
-			result = append(result, pj)
-		}
-	}
-
-	return result, nil
-}
-
-func (fl fakeLister) ProwJobs(namespace string) pjlister.ProwJobNamespaceLister {
 	return nil
 }
 
@@ -1057,15 +1041,15 @@ func TestReport(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fgc := &fgc{instance: "gerrit"}
-			allpj := []*v1.ProwJob{tc.pj}
-			if tc.existingPJs != nil {
-				allpj = append(allpj, tc.existingPJs...)
+			allpj := []runtime.Object{tc.pj}
+			for idx, pj := range tc.existingPJs {
+				pj.Name = strconv.Itoa(idx)
+				allpj = append(allpj, pj)
 			}
 
-			fl := &fakeLister{pjs: allpj}
-			reporter := &Client{gc: fgc, lister: fl}
+			reporter := &Client{gc: fgc, lister: fakectrlruntimeclient.NewFakeClient(allpj...)}
 
-			shouldReport := reporter.ShouldReport(tc.pj)
+			shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
 				t.Errorf("shouldReport: %v, expectReport: %v", shouldReport, tc.expectReport)
 			}
@@ -1074,7 +1058,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, err := reporter.Report(tc.pj)
+			reportedJobs, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

@@ -346,19 +346,19 @@ func TestOrgRepoUnion(t *testing.T) {
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": sets.NewString()}, sets.NewString("4/1", "4/2", "5/1")),
 		},
 		{
-			name:     "keep only common blacklist items for an org",
+			name:     "keep only common denied items for an org",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/bar")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 		},
 		{
-			name:     "remove items from an org blacklist if they're in a repo whitelist",
+			name:     "remove items from an org denylist if they're in a repo allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/repo")),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString()}, sets.NewString()),
 		},
 		{
-			name:     "remove repos when they're covered by an org whitelist",
+			name:     "remove repos when they're covered by an org allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2", "4/3")),
 			b:        newOrgRepoConfig(map[string]sets.String{"4": sets.NewString("4/2")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"4": sets.NewString()}, sets.NewString()),
@@ -445,25 +445,28 @@ triggers:
   - kube/kubez`),
 			expectedErr: "repoz",
 		},
-		{
-			name:     "invalid map entry",
-			filename: "map.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - config-updater
-config_updater:
-  maps:
-    # Update the plugins configmap whenever plugins.yaml changes
-    kube/plugins.yaml:
-      name: plugins
-    kube/config.yaml:
-      validation: config
-size:
-  s: 1`),
-			expectedErr: "validation",
-		},
+		// Options like DisallowUnknownFields can not be passed when using
+		// a custon json.Unmarshaler like we do here for defaulting:
+		// https://github.com/golang/go/issues/41144
+		//		{
+		//			name:     "invalid map entry",
+		//			filename: "map.yaml",
+		//			cfg:      &plugins.Configuration{},
+		//			configBytes: []byte(`plugins:
+		//  kube/kube:
+		//  - size
+		//  - config-updater
+		//config_updater:
+		//  maps:
+		//    # Update the plugins configmap whenever plugins.yaml changes
+		//    kube/plugins.yaml:
+		//      name: plugins
+		//    kube/config.yaml:
+		//      validation: config
+		//size:
+		//  s: 1`),
+		//			expectedErr: "validation",
+		//		},
 		{
 			//only one invalid element is printed in the error
 			name:     "multiple invalid elements",
@@ -544,9 +547,13 @@ size:
 					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
 				}
 			} else { // check substrings in case yaml lib changes err fmt
+				var errMsg string
+				if got != nil {
+					errMsg = got.Error()
+				}
 				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
-					if !strings.Contains(got.Error(), s) {
-						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%s", tc.name, s, got)
+					if !strings.Contains(errMsg, s) {
+						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%v", tc.name, s, got)
 					}
 				}
 			}
@@ -1482,6 +1489,93 @@ func TestValidate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if err := validate(tc.opts); err != nil {
 				t.Fatalf("validation failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateClusterField(t *testing.T) {
+	testCases := []struct {
+		name          string
+		cfg           *config.Config
+		expectedError string
+	}{
+		{
+			name: "Jenkins job with unset cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent: "jenkins",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job with defaulted cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "default",
+									Name:    "some-job",
+								},
+							}}}}},
+		},
+		{
+			name: "jenkins job must not set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "jenkins",
+									Cluster: "build1",
+									Name:    "some-job",
+								},
+							}}}}},
+			expectedError: "org1/repo1: some-job: cannot set cluster field if agent is jenkins",
+		},
+		{
+			name: "k8s job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Agent:   "kubernetes",
+									Cluster: "default",
+								},
+							}}}}},
+		},
+		{
+			name: "empty agent job can set cluster",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "default",
+								},
+							}}}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			errMsg := ""
+			if err := validateCluster(tc.cfg); err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedError {
+				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
 			}
 		})
 	}

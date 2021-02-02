@@ -36,6 +36,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -43,7 +44,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       resources:
         limits:
           cpu: 1
@@ -72,6 +73,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project=k8s-infra-e2e-gpu-project
@@ -79,7 +81,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       resources:
         limits:
           cpu: 1

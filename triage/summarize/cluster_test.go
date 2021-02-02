@@ -119,10 +119,7 @@ func TestClusterGlobal(t *testing.T) {
 			},
 		}
 
-		// Remove any memoization files after the test is done so as not to taint future tests
-		defer os.Remove("memo_cluster_global.json")
-
-		got := clusterGlobal(argument, nil)
+		got := clusterGlobal(argument, nil, false)
 
 		if !want.equal(&got) {
 			t.Errorf("clusterGlobal(%#v) = %#v, wanted %#v", argument, got, want)
@@ -144,7 +141,7 @@ func TestClusterGlobal(t *testing.T) {
 
 		want := nestedFailuresGroups{textOld: failuresGroup{"test a": []failure{f1}}}
 
-		got := clusterGlobal(argument, previous)
+		got := clusterGlobal(argument, previous, true)
 
 		if !want.equal(&got) {
 			t.Errorf("clusterGlobal(%#v, %#v) = %#v, wanted %#v", argument, previous, got, want)

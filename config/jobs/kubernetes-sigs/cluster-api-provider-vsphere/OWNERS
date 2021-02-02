@@ -14,3 +14,5 @@ approvers:
   - cluster-api-vsphere-maintainers
   - figo
   - akutz
+emeritus_reviewers:
+  - ncdc

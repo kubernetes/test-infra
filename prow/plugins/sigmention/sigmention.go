@@ -51,7 +51,7 @@ type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
@@ -60,6 +60,14 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		SigMention: plugins.SigMention{
+			Regexp: "(?m)@kubernetes/sig-([\\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 			Description: `The sigmention plugin responds to SIG (Special Interest Group) GitHub team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>
@@ -67,6 +75,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 			Config: map[string]string{
 				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of GitHub teams matching the following regexp:\n%s", config.SigMention.Regexp),
 			},
+			Snippet: yamlSnippet,
 		},
 		nil
 }
@@ -77,11 +86,11 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := gc.BotName()
+	botUserChecker, err := gc.BotUserChecker()
 	if err != nil {
 		return err
 	}
-	if e.User.Login == botName {
+	if botUserChecker(e.User.Login) {
 		return nil
 	}
 	if e.Action != github.GenericCommentActionCreated {

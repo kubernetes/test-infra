@@ -31,36 +31,24 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/klog/v2"
 )
 
 // loadFailures loads a builds file and one or more test failure files. It maps build paths to builds
-// and groups test failures by test name.
-func loadFailures(buildsFilepath string, testsFilepaths []string) (map[string]build, map[string][]failure, error) {
-	const memoMessage string = "loading failed tests"
-
-	builds := make(map[string]build)
-	tests := make(map[string][]failure)
-
-	// Try to retrieve memoized results first to avoid another computation
-	if getMemoizedResults("memo_load_failures-builds.json", "", &builds) &&
-		getMemoizedResults("memo_load_failures-tests.json", "", &tests) {
-		logInfo("Done (cached) " + memoMessage)
-		return builds, tests, nil
-	}
-
-	builds, err := loadBuilds(buildsFilepath)
+// and groups test failures by test name. memoize determines if memoized results should attempt to be
+// retrieved, and if new results should be memoized to JSON.
+func loadFailures(buildsFilepath string, testsFilepaths []string, memoize bool) (map[string]build, map[string][]failure, error) {
+	builds, err := loadBuilds(buildsFilepath, memoize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve builds: %s", err)
 	}
 
-	tests, err = loadTests(testsFilepaths)
+	tests, err := loadTests(testsFilepaths, memoize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Could not retrieve tests: %s", err)
 	}
 
-	memoizeResults("memo_load_failures-builds.json", "", builds)
-	memoizeResults("memo_load_failures-tests.json", "", tests)
-	logInfo("Done " + memoMessage)
 	return builds, tests, nil
 }
 
@@ -129,7 +117,7 @@ func getMemoizedResults(filepath string, message string, v interface{}) (ok bool
 	err := getJSON(filepath, v)
 	if err == nil {
 		if message != "" {
-			logInfo("Done (cached) " + message)
+			klog.V(2).Infof("Retrieved memoized results from %#v, done (cached) %s", filepath, message)
 		}
 		return true
 	}
@@ -143,17 +131,19 @@ prints a warning if the results could not be memoized.
 message is a message that gets printed on success, appended to "Done ". If it is the empty
 string, no message is printed.
 */
-func memoizeResults(filepath string, message string, v interface{}) {
+func memoizeResults(filepath, message string, v interface{}) {
+	klog.V(2).Infof("Memoizing results to %s...", filepath)
+
 	err := writeJSON(filepath, v)
-	if err == nil && message != "" {
-		logInfo("Done " + message)
+	if err != nil {
+		klog.Warningf("Could not memoize results to '%s': %s", filepath, err)
 		return
 	}
 
-	logWarning("Could not memoize results to '%s': %s", filepath, err)
+	if message != "" {
+		klog.V(2).Infof("Successfully memoized, done " + message)
+	}
 }
-
-/* Functions below this comment are only used within this file as of this commit. */
 
 // jsonBuild represents a build as reported by the JSON. All values are strings.
 // This should not be instantiated directly, but rather via the encoding/json package's
@@ -235,10 +225,18 @@ func (jb *jsonBuild) asBuild() (build, error) {
 }
 
 // loadBuilds parses a JSON file containing build information and returns a map from build paths
-// to build objects.
-func loadBuilds(filepath string) (map[string]build, error) {
-	// The map
+// to build objects. memoize determines if memoized results should attempt to be retrieved, and if
+// new results should be memoized to JSON.
+func loadBuilds(filepath string, memoize bool) (map[string]build, error) {
+	const memoPath string = "memo_load_builds.json"
+	const memoMessage string = "loading builds"
+
 	builds := make(map[string]build)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if memoize && getMemoizedResults(memoPath, memoMessage, &builds) {
+		return builds, nil
+	}
 
 	// jsonBuilds temporarily stores the builds as they are retrieved from the JSON file
 	// until they can be converted to build objects
@@ -267,6 +265,10 @@ func loadBuilds(filepath string) (map[string]build, error) {
 		}
 
 		builds[bld.Path] = bld
+	}
+
+	if memoize {
+		memoizeResults(memoPath, memoMessage, builds)
 	}
 
 	return builds, nil
@@ -309,10 +311,18 @@ func (jf *jsonFailure) asFailure() (failure, error) {
 }
 
 // loadTests parses multiple JSON files containing test information for failed tests. It returns a
-// map from test names to failure objects.
-func loadTests(testsFilepaths []string) (map[string][]failure, error) {
-	// The map
+// map from test names to failure objects. memoize determines if memoized results should attempt to
+// be retrieved, and if new results should be memoized to JSON.
+func loadTests(testsFilepaths []string, memoize bool) (map[string][]failure, error) {
+	const memoPath string = "memo_load_tests.json"
+	const memoMessage string = "loading tests"
+
 	tests := make(map[string][]failure)
+
+	// Try to retrieve memoized results first to avoid another computation
+	if memoize && getMemoizedResults(memoPath, memoMessage, &tests) {
+		return tests, nil
+	}
 
 	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
 	// until they can be converted to failure objects
@@ -358,6 +368,10 @@ func loadTests(testsFilepaths []string) (map[string][]failure, error) {
 		sort.Slice(testSlice, func(i, j int) bool { return testSlice[i].Build < testSlice[j].Build })
 	}
 
+	if memoize {
+		memoizeResults(memoPath, memoMessage, tests)
+	}
+
 	return tests, nil
 }
 
@@ -373,7 +387,7 @@ func getJSON(filepath string, v interface{}) error {
 	// Decode the JSON into the provided interface
 	err = json.Unmarshal(contents, v)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal JSON: %s", err)
+		return fmt.Errorf("Could not unmarshal JSON: %s\nTried to unmarshal the following: %#v", err, v)
 	}
 
 	return nil
@@ -383,7 +397,7 @@ func getJSON(filepath string, v interface{}) error {
 func writeJSON(filepath string, v interface{}) error {
 	output, err := json.Marshal(v)
 	if err != nil {
-		return fmt.Errorf("Could not encode JSON: %s", err)
+		return fmt.Errorf("Could not encode JSON: %s\nTried to encode the following: %#v", err, v)
 	}
 
 	err = ioutil.WriteFile(filepath, output, 0644)

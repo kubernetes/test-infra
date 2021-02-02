@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20200713-e9b3d9d-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-test-infra
       command:
       - hack/bazel.sh
       args:
@@ -27,7 +27,7 @@ periodics:
 - name: ci-test-infra-triage
   decorate: true
   decoration_config:
-    timeout: 1h30m
+    timeout: 3h
   interval: 30m
   spec:
     containers:
@@ -36,6 +36,10 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
+      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
+      - name: NUM_WORKERS
+        value: "13"
       command:
       - "timeout"
       args:
@@ -45,12 +49,13 @@ periodics:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
+      # When changing CPUs, also change NUM_WORKERS above
       resources:
         requests:
-          cpu: 4
+          cpu: 7
           memory: 40Gi
         limits:
-          cpu: 4
+          cpu: 7
           memory: 40Gi
     volumes:
     - name: service
@@ -68,7 +73,7 @@ periodics:
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --
@@ -96,7 +101,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
       args:
       - --scenario=execute
       - --

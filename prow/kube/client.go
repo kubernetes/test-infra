@@ -214,8 +214,6 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode == 422 {
 		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))
-	} else if resp.StatusCode == 404 {
-		return nil, NewNotFoundError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}
@@ -494,9 +492,7 @@ func (c *Client) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
 	}, &jl)
 	if err == nil {
 		var pjs []prowapi.ProwJob
-		for _, pj := range jl.Items {
-			pjs = append(pjs, pj)
-		}
+		pjs = append(pjs, jl.Items...)
 		jl.Items = pjs
 	}
 	return jl.Items, err

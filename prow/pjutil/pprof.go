@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/felixge/fgprof"
+
 	"k8s.io/test-infra/prow/interrupts"
 )
 
@@ -37,6 +39,7 @@ func ServePProf(port int) {
 	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	pprofMux.Handle("/debug/fgprof", fgprof.Handler())
 	server := &http.Server{Addr: ":" + strconv.Itoa(port), Handler: pprofMux}
 	interrupts.ListenAndServe(server, 5*time.Second)
 }

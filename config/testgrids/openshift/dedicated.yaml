@@ -1,55 +1,130 @@
 test_groups:
-# OpenShift Dedicated AWS integration
-- name: osde2e-int-aws-e2e-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-osd-default-nightly
+- name: osde2e-int-aws-e2e-upgrade-to-latest-z
+  gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-latest-z
   column_header:
   - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osde2e-int-aws-e2e-osd-default-plus-one-nightly
   gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-osd-default-plus-one-nightly
   column_header:
   - configuration_value: cluster-version
+- name: osde2e-int-aws-e2e-upgrade-to-latest-y
+  gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-latest-y
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osde2e-int-aws-e2e-osd-default-plus-two-nightly
   gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-osd-default-plus-two-nightly
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-int-aws-e2e-upgrade-to-osd-default-plus-one-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-osd-default-plus-one-nightly
+- name: osde2e-prod-aws-e2e-default
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-default
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-prod-aws-informing-default
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-informing-default
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-informing-default
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-informing-default
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-prod-aws-e2e-upgrade-to-latest
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-to-latest
   column_header:
   - configuration_value: cluster-version
   - configuration_value: upgrade-version
-- name: osde2e-int-aws-e2e-upgrade-to-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-osd-default-nightly
+- name: osde2e-prod-aws-e2e-upgrade-prod-minus-one-to-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-prod-minus-one-to-next
   column_header:
   - configuration_value: cluster-version
   - configuration_value: upgrade-version
-
-# OpenShift Dedicated GCP integration
-- name: osde2e-int-gcp-e2e-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-osd-default-nightly
+- name: osde2e-prod-aws-e2e-upgrade-prod-minus-two-to-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-prod-minus-two-to-next
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-int-gcp-osd-default-plus-one-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-osd-default-plus-one-nightly
+  - configuration_value: upgrade-version
+- name: osde2e-prod-aws-e2e-upgrade-prod-minus-three-to-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-prod-minus-three-to-next
   column_header:
   - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-prod-aws-e2e-upgrade-prod-minus-four-to-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-prod-minus-four-to-next
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-prod-aws-e2e-upgrade-prod-plus-one-to-latest
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-prod-plus-one-to-latest
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-prod-aws-e2e-middle-imageset
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-middle-imageset
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-prod-aws-e2e-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-next
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-prod-aws-informing-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-informing-next
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-informing-next
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-informing-next
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-prod-aws-e2e-oldest-imageset
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-oldest-imageset
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-e2e-default
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-default
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-e2e-upgrade-to-latest-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-upgrade-to-latest-z
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-stage-aws-e2e-upgrade-to-latest
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-upgrade-to-latest
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-stage-aws-e2e-middle-imageset
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-middle-imageset
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-e2e-next-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-next-z
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-e2e-next-y
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-next-y
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-aws-e2e-oldest-imageset
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-oldest-imageset
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-int-gcp-e2e-upgrade-to-latest-z
+  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-upgrade-to-latest-z
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-int-gcp-e2e-osd-default-plus-one-nightly
+  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-osd-default-plus-one-nightly
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-int-gcp-e2e-upgrade-to-latest-y
+  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-upgrade-to-latest-y
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
 - name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
   gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-osd-default-plus-two-nightly
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-int-gcp-e2e-upgrade-to-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-upgrade-to-osd-default-nightly
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-- name: osde2e-int-gcp-e2e-upgrade-to-osd-default-plus-one-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-gcp-e2e-upgrade-to-osd-default-plus-one-nightly
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-
-# OpenShift Dedicated MOA integration
-- name: osde2e-int-moa-e2e-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-osd-default-nightly
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
@@ -60,266 +135,75 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-osd-default-plus-two-nightly
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-int-moa-e2e-upgrade-to-osd-default-plus-one-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-upgrade-to-osd-default-plus-one-nightly
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-- name: osde2e-int-moa-e2e-upgrade-to-osd-default-nightly
-  gcs_prefix: origin-ci-test/logs/osde2e-int-moa-e2e-upgrade-to-osd-default-nightly
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-
-# OpenShift Dedicated AWS staging
-- name: osde2e-stage-aws-e2e-default
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-default
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-stage-aws-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-next
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-stage-aws-e2e-oldest-imageset
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-oldest-imageset
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-stage-aws-e2e-middle-imageset
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-middle-imageset
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-stage-aws-e2e-upgrade-default-next-z
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-upgrade-default-next-z
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-- name: osde2e-stage-aws-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-e2e-upgrade-default-next
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-
-# OpenShift Dedicated GCP staging
-- name: osde2e-stage-gcp-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-next
-  column_header:
-  - configuration_value: cluster-version
 - name: osde2e-stage-gcp-e2e-default
   gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-stage-gcp-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-upgrade-default-next
+- name: osde2e-stage-gcp-e2e-upgrade-to-latest
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-upgrade-to-latest
   column_header:
   - configuration_value: cluster-version
   - configuration_value: upgrade-version
-
-# OpenShift Dedicated MOA staging
-- name: osde2e-stage-moa-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-next
+- name: osde2e-stage-gcp-e2e-upgrade-to-latest-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-upgrade-to-latest-z
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-stage-gcp-e2e-next-y
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-next-y
+  column_header:
+  - configuration_value: cluster-version
+- name: osde2e-stage-gcp-e2e-next-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-gcp-e2e-next-z
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-stage-moa-e2e-default
   gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-stage-moa-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-upgrade-default-next
+- name: osde2e-stage-moa-e2e-next-y
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-next-y
   column_header:
   - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-
-# OpenShift Dedicated AWS production
-- name: osde2e-prod-aws-e2e-default
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-default
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-next
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-informing-default
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-informing-default
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-informing-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-informing-next
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-e2e-oldest-imageset
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-oldest-imageset
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-e2e-middle-imageset	
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-middle-imageset	
-  column_header:
-  - configuration_value: cluster-version
-- name: osde2e-prod-aws-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-aws-e2e-upgrade-default-next
-  column_header:
-  - configuration_value: cluster-version
-  - configuration_value: upgrade-version
-
-# OpenShift Dedicated GCP production
-- name: osde2e-prod-gcp-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-next
+- name: osde2e-stage-moa-e2e-next-z
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-moa-e2e-next-z
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-prod-gcp-e2e-default
   gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-prod-gcp-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-upgrade-default-next
+- name: osde2e-prod-gcp-e2e-upgrade-to-next-y
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-upgrade-to-next-y
   column_header:
   - configuration_value: cluster-version
   - configuration_value: upgrade-version
-
-# OpenShift Dedicated MOA production
-- name: osde2e-prod-moa-e2e-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-next
+- name: osde2e-prod-gcp-e2e-upgrade-to-next-z
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-upgrade-to-next-z
+  column_header:
+  - configuration_value: cluster-version
+  - configuration_value: upgrade-version
+- name: osde2e-prod-gcp-e2e-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-gcp-e2e-next
   column_header:
   - configuration_value: cluster-version
 - name: osde2e-prod-moa-e2e-default
   gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-default
   column_header:
   - configuration_value: cluster-version
-- name: osde2e-prod-moa-e2e-upgrade-default-next
-  gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-upgrade-default-next
+- name: osde2e-prod-moa-e2e-next
+  gcs_prefix: origin-ci-test/logs/osde2e-prod-moa-e2e-next
   column_header:
   - configuration_value: cluster-version
-  - configuration_value: upgrade-version
+
+
 
 dashboards:
-- name: redhat-osde2e-int-gcp
+- name: redhat-osd
   dashboard_tab:
-# OpenShift Dedicated GCP integration dashboard
-  - name: osde2e-int-gcp-e2e-osd-default-nightly
-    description: Runs e2e tests on a cluster in GCP using default-z nightly version
-    test_group_name: osde2e-int-gcp-e2e-osd-default-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-gcp-e2e-upgrade-to-osd-default-nightly
-    description: Runs upgrade e2e tests on a cluster in GCP going from Prod default to next z-nightly
-    test_group_name: osde2e-int-gcp-e2e-upgrade-to-osd-default-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-gcp-e2e-upgrade-to-osd-default-plus-one-nightly
-    description: Runs upgrade e2e tests on a cluster in GCP going from Prod default to next y-nightly
-    test_group_name: osde2e-int-gcp-e2e-upgrade-to-osd-default-plus-one-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-gcp-osd-default-plus-one-nightly
-    description: Runs e2e tests on a cluster in GCP using prod y+1 nightly
-    test_group_name: osde2e-int-gcp-osd-default-plus-one-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
-    description: Runs e2e tests on a cluster in GCP using prod y+2 nightly
-    test_group_name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-int-aws
-  dashboard_tab:
-# OpenShift Dedicated AWS integration dashboard
-  - name: osde2e-int-aws-e2e-upgrade-to-osd-default-plus-one-nightly
-    description: Runs upgrade e2e tests on a cluster in AWS going from Prod default to y+1 nightly
-    test_group_name: osde2e-int-aws-e2e-upgrade-to-osd-default-plus-one-nightly
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-aws-e2e-upgrade-to-osd-default-nightly
-    description: Runs upgrade e2e tests on a cluster in AWS going from Prod default to same y-nightly
-    test_group_name: osde2e-int-aws-e2e-upgrade-to-osd-default-nightly
+  - name: osde2e-int-aws-e2e-upgrade-to-latest-z
+    description: OSD test
+    test_group_name: osde2e-int-aws-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -338,7 +222,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-int-aws-e2e-osd-default-plus-one-nightly
-    description: Runs e2e tests on a cluster in AWS using prod y+1 nightly
+    description: Runs an a test on Default-Y+1 nightly in integration on AWS
     test_group_name: osde2e-int-aws-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -357,9 +241,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-aws-e2e-osd-default-nightly
-    description: Runs e2e tests on a cluster in AWS using default-z nightly version
-    test_group_name: osde2e-int-aws-e2e-osd-default-nightly
+  - name: osde2e-int-aws-e2e-upgrade-to-latest-y
+    description: OSD test
+    test_group_name: osde2e-int-aws-e2e-upgrade-to-latest-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -378,7 +262,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-int-aws-e2e-osd-default-plus-two-nightly
-    description: Runs e2e tests on a cluster in AWS using prod y+2 nightly
+    description: OSD test
     test_group_name: osde2e-int-aws-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -397,12 +281,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-int-moa
-  dashboard_tab:
-# OpenShift Dedicated MOA integration dashboard
-  - name: osde2e-int-moa-e2e-osd-default-nightly
-    description: Runs e2e tests on a cluster in MOA using default-z nightly version
-    test_group_name: osde2e-int-moa-e2e-osd-default-nightly
+  - name: osde2e-prod-aws-e2e-default
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -420,9 +301,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-moa-e2e-upgrade-to-osd-default-nightly
-    description: Runs upgrade e2e tests on a cluster in MOA going from Prod default to next z-nightly
-    test_group_name: osde2e-int-moa-e2e-upgrade-to-osd-default-nightly
+  - name: osde2e-prod-aws-informing-default
+    description: OSD test
+    test_group_name: osde2e-prod-aws-informing-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -440,9 +321,449 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-int-moa-e2e-upgrade-to-osd-default-plus-one-nightly
-    description: Runs upgrade e2e tests on a cluster in MOA going from Prod default to next y-nightly
-    test_group_name: osde2e-int-moa-e2e-upgrade-to-osd-default-plus-one-nightly
+  - name: osde2e-stage-aws-informing-default
+    description: OSD test
+    test_group_name: osde2e-stage-aws-informing-default
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-to-latest
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-to-latest
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-prod-minus-one-to-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-one-to-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-prod-minus-two-to-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-two-to-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-prod-minus-three-to-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-three-to-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-prod-minus-four-to-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-four-to-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-upgrade-prod-plus-one-to-latest
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-upgrade-prod-plus-one-to-latest
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-middle-imageset
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-middle-imageset
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-informing-next
+    description: OSD test
+    test_group_name: osde2e-prod-aws-informing-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-informing-next
+    description: OSD test
+    test_group_name: osde2e-stage-aws-informing-next
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-aws-e2e-oldest-imageset
+    description: OSD test
+    test_group_name: osde2e-prod-aws-e2e-oldest-imageset
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-default
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-default
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-upgrade-to-latest-z
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-upgrade-to-latest-z
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-upgrade-to-latest
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-upgrade-to-latest
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-middle-imageset
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-middle-imageset
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-next-z
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-next-z
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-next-y
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-next-y
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-stage-aws-e2e-oldest-imageset
+    description: OSD test
+    test_group_name: osde2e-stage-aws-e2e-oldest-imageset
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-int-gcp-e2e-upgrade-to-latest-z
+    description: OSD test
+    test_group_name: osde2e-int-gcp-e2e-upgrade-to-latest-z
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-int-gcp-e2e-osd-default-plus-one-nightly
+    description: OSD test
+    test_group_name: osde2e-int-gcp-e2e-osd-default-plus-one-nightly
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-int-gcp-e2e-upgrade-to-latest-y
+    description: OSD test
+    test_group_name: osde2e-int-gcp-e2e-upgrade-to-latest-y
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
+    description: OSD test
+    test_group_name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -461,7 +782,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
-    description: Runs e2e tests on a cluster in MOA using prod y+1 nightly
+    description: OSD test
     test_group_name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -481,7 +802,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
-    description: Runs e2e tests on a cluster in MOA using prod y+2 nightly
+    description: OSD test
     test_group_name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -500,51 +821,8 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-stage-gcp
-  dashboard_tab:
-# OpenShift Dedicated GCP stage dashboard
-  - name: osde2e-stage-gcp-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in GCP going from default to next available Y-stream
-    test_group_name: osde2e-stage-gcp-e2e-upgrade-default-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-gcp-e2e-next
-    description: Runs e2e tests on a cluster in GCP using the next available version
-    test_group_name: osde2e-stage-gcp-e2e-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-stage-gcp-e2e-default
-    description: Runs e2e tests on a cluster in GCP using the default version
+    description: Runs a test using the default version on GCP
     test_group_name: osde2e-stage-gcp-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -563,12 +841,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-stage-aws
-  dashboard_tab:
-# OpenShift Dedicated AWS stage dashboard
-  - name: osde2e-stage-aws-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in AWS going from default to next available Y-stream
-    test_group_name: osde2e-stage-aws-e2e-upgrade-default-next
+  - name: osde2e-stage-gcp-e2e-upgrade-to-latest
+    description: Runa a test on GCP that upgrades to the latest version
+    test_group_name: osde2e-stage-gcp-e2e-upgrade-to-latest
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -586,9 +861,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-aws-e2e-next
-    description: Runs e2e tests on a cluster in AWS using the next available version
-    test_group_name: osde2e-stage-aws-e2e-next
+  - name: osde2e-stage-gcp-e2e-upgrade-to-latest-z
+    description: Runs a test on GCP that upgrades to the latest-z
+    test_group_name: osde2e-stage-gcp-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -606,9 +881,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-aws-e2e-default
-    description: Runs e2e tests on a cluster in AWS using the default version
-    test_group_name: osde2e-stage-aws-e2e-default
+  - name: osde2e-stage-gcp-e2e-next-y
+    description: Runs a test using the next-y version on GCP
+    test_group_name: osde2e-stage-gcp-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -626,92 +901,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-aws-e2e-oldest-imageset
-    description: Runs e2e tests on a cluster in AWS using the oldest available version
-    test_group_name: osde2e-stage-aws-e2e-oldest-imageset
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-aws-e2e-middle-imageset
-    description: Runs e2e tests on a cluster in AWS using the middle-most available version
-    test_group_name: osde2e-stage-aws-e2e-middle-imageset
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-aws-e2e-upgrade-default-next-z
-    description: Runs e2e upgrade tests on a cluster in AWS using the default version upgrading to the latest available z-stream version
-    test_group_name: osde2e-stage-aws-e2e-upgrade-default-next-z
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-stage-moa
-  dashboard_tab:
-# OpenShift Dedicated MOA stage dashboard
-  - name: osde2e-stage-moa-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in MOA going from default to next available Y-stream
-    test_group_name: osde2e-stage-moa-e2e-upgrade-default-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-stage-moa-e2e-next
-    description: Runs e2e tests on a cluster in MOA using the next available version
-    test_group_name: osde2e-stage-moa-e2e-next
+  - name: osde2e-stage-gcp-e2e-next-z
+    description: Runs a test using the next-z version on GCP
+    test_group_name: osde2e-stage-gcp-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -730,7 +922,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-stage-moa-e2e-default
-    description: Runs e2e tests on a cluster in MOA using the default version
+    description: Runs a test using the default version on ROSA
     test_group_name: osde2e-stage-moa-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -749,13 +941,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-
-- name: redhat-osde2e-prod-aws
-  dashboard_tab:
-# OpenShift Dedicated AWS prod dashboard
-  - name: osde2e-prod-aws-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in AWS going from default to next available Y-stream
-    test_group_name: osde2e-prod-aws-e2e-upgrade-default-next
+  - name: osde2e-stage-moa-e2e-next-y
+    description: Runs a test using the next-y version on ROSA
+    test_group_name: osde2e-stage-moa-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -773,152 +961,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-e2e-next
-    description: Runs e2e tests on a cluster in AWS using the next available version
-    test_group_name: osde2e-prod-aws-e2e-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-e2e-default
-    description: Runs e2e tests on a cluster in AWS using the default version
-    test_group_name: osde2e-prod-aws-e2e-default
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-e2e-oldest-imageset
-    description: Runs e2e tests on a cluster in AWS using the oldest available version
-    test_group_name: osde2e-prod-aws-e2e-oldest-imageset
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-e2e-middle-imageset
-    description: Runs e2e tests on a cluster in AWS using the middle-most available version
-    test_group_name: osde2e-prod-aws-e2e-middle-imageset
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-informing-default
-    description: Runs e2e informing tests on a cluster in AWS using the default version
-    test_group_name: osde2e-prod-aws-informing-default
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-aws-informing-next
-    description: Runs e2e informing tests on a cluster in AWS using the next available version
-    test_group_name: osde2e-prod-aws-informing-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-prod-gcp
-  dashboard_tab:
-# OpenShift Dedicated GCP prod dashboard
-  - name: osde2e-prod-gcp-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in GCP going from default to next available Y-stream
-    test_group_name: osde2e-prod-gcp-e2e-upgrade-default-next
-    base_options: width=10
-    open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/osde2e/issues/new
-      options:
-        - key: title
-          value: 'E2E: <test-name>'
-        - key: body
-          value: <test-url>
-    open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/osde2e/issues/
-    results_url_template: # The URL template to visit after clicking
-      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
-    code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-gcp-e2e-next
-    description: Runs e2e tests on a cluster in GCP using the next available version
-    test_group_name: osde2e-prod-gcp-e2e-next
+  - name: osde2e-stage-moa-e2e-next-z
+    description: Runs a test using the next-z version on ROSA
+    test_group_name: osde2e-stage-moa-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -937,7 +982,7 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-prod-gcp-e2e-default
-    description: Runs e2e tests on a cluster in GCP using the default version
+    description: Runs a test using the default version in GCP 
     test_group_name: osde2e-prod-gcp-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
@@ -956,12 +1001,9 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-- name: redhat-osde2e-prod-moa
-  dashboard_tab:
-# OpenShift Dedicated MOA prod dashboard
-  - name: osde2e-prod-moa-e2e-upgrade-default-next
-    description: Runs upgrade e2e tests on a cluster in MOA going from default to next available Y-stream
-    test_group_name: osde2e-prod-moa-e2e-upgrade-default-next
+  - name: osde2e-prod-gcp-e2e-upgrade-to-next-y
+    description: Runs a test using the next-y version on GCP
+    test_group_name: osde2e-prod-gcp-e2e-upgrade-to-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -979,9 +1021,29 @@ dashboards:
     code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
-  - name: osde2e-prod-moa-e2e-next
-    description: Runs e2e tests on a cluster in MOA using the next available version
-    test_group_name: osde2e-prod-moa-e2e-next
+  - name: osde2e-prod-gcp-e2e-upgrade-to-next-z
+    description: Runs a test using the next-z version on GCP
+    test_group_name: osde2e-prod-gcp-e2e-upgrade-to-next-z
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-gcp-e2e-next
+    description: Runs a test using the next version on GCP
+    test_group_name: osde2e-prod-gcp-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -1000,8 +1062,28 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-prod-moa-e2e-default
-    description: Runs e2e tests on a cluster in MOA using the default version
+    description: Runs a test using default version on ROSA
     test_group_name: osde2e-prod-moa-e2e-default
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
+  - name: osde2e-prod-moa-e2e-next
+    description: Runs an a test using the next available version in ROSA
+    test_group_name: osde2e-prod-moa-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>

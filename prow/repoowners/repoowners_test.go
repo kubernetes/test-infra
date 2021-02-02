@@ -33,6 +33,7 @@ import (
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 var (
@@ -274,6 +275,7 @@ labels:
 						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
 					}
 				},
+				filenames: ownersconfig.FakeResolver,
 			},
 		},
 		// Clean up function
@@ -1067,7 +1069,7 @@ func TestGetApprovers(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		foundLeafApprovers := ro.LeafApprovers(test.filePath)
-		foundApprovers := ro.Approvers(test.filePath)
+		foundApprovers := ro.Approvers(test.filePath).Set()
 		foundOwnersPath := ro.FindApproverOwnersForFile(test.filePath)
 		if !foundLeafApprovers.Equal(test.expectedLeafOwners) {
 			t.Errorf("The Leaf Approvers Found Do Not Match Expected For Test %d: %s", testNum, test.name)

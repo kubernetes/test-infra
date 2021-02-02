@@ -135,6 +135,21 @@ jsonnet_to_json(
     ],
 )
 
+jsonnet_to_json(
+    name = "slo",
+    src = "slo.jsonnet",
+    outs = ["slo.json"],
+    imports = [
+        "../lib/",
+        "../vendor/",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//config/prow/cluster/monitoring/mixins/lib",
+        "//config/prow/cluster/monitoring/mixins/vendor/grafonnet",
+    ],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),

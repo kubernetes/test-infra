@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -19,13 +20,11 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
         - build
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - --
         - //...
         - -//vendor/...
@@ -39,6 +38,7 @@ presubmits:
             cpu: 4
             memory: "36Gi"
   - name: pull-kubernetes-bazel-test
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -48,6 +48,7 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
+      description: runs bazel test //... -//build/... -//vendor/...
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -57,24 +58,22 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
         command:
         - ../test-infra/hack/bazel.sh
         args:
         - test
         - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - --
         - -//build/...
         - -//vendor/...
         resources:
           limits:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
           requests:
-            cpu: 4
+            cpu: 7
             memory: 38Gi
 postsubmits:
   kubernetes/kubernetes:
@@ -91,7 +90,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -123,7 +122,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         command:
         - bash
         args:
@@ -168,7 +167,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       command:
       - bash
       args:
@@ -214,7 +213,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       imagePullPolicy: Always
       command:
       - bash
@@ -242,12 +241,11 @@ periodics:
 # periodic bazel test jobs
 - name: periodic-kubernetes-bazel-test-canary
   annotations:
-    fork-per-release: "true"
     fork-per-release-periodic-interval: 6h
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: bazel-test
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/... (using RBE)
-  interval: 5m
+  interval: 1h
   decorate: true
   labels:
     preset-service-account: "true"
@@ -261,7 +259,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:
@@ -283,11 +281,12 @@ periodics:
           memory: "38Gi"
 - name: periodic-kubernetes-bazel-test-master
   annotations:
+    fork-per-release: "true"
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: bazel-test-master
     description: runs bazel test //... //hack:verify-all -//build/... -//vendor/...
-  interval: 1h
+  interval: 5m
   cluster: k8s-infra-prow-build
   decorate: true
   labels:
@@ -302,7 +301,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-kubernetes-master
       command:
       - ../test-infra/hack/bazel.sh
       args:

@@ -36,8 +36,7 @@ const (
 	schemeHTTPS = "https"
 )
 
-// Preset is intended to match the k8s' PodPreset feature, and may be removed
-// if that feature goes beta.
+// Presets can be used to re-use settings across multiple jobs.
 type Preset struct {
 	Labels       map[string]string `json:"labels"`
 	Env          []v1.EnvVar       `json:"env"`
@@ -238,7 +237,7 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+// ShouldRun returns true if the input branch matches, given the allow/deny list.
 func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
@@ -263,10 +262,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 		baseBranches := sets.NewString(br.Branches...)
 		if len(other.Branches) > 0 {
 			otherBranches := sets.NewString(other.Branches...)
-			if baseBranches.Intersection(otherBranches).Len() > 0 {
-				return true
-			}
-			return false
+			return baseBranches.Intersection(otherBranches).Len() > 0
 		}
 
 		// Actually test our branches against the other brancher - if there are regex skip lists, simple comparison
@@ -427,6 +423,9 @@ type UtilityConfig struct {
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
 	CloneDepth int `json:"clone_depth,omitempty"`
+	// SkipFetchHead tells prow to avoid a git fetch <remote> call.
+	// The git fetch <remote> <BaseRef> call occurs regardless.
+	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
@@ -550,8 +549,7 @@ func (c *JobConfig) AllStaticPostsubmits(repos []string) []Postsubmit {
 
 // AllPeriodics returns all prow periodic jobs.
 func (c *JobConfig) AllPeriodics() []Periodic {
-	var listPeriodic func(ps []Periodic) []Periodic
-	listPeriodic = func(ps []Periodic) []Periodic {
+	listPeriodic := func(ps []Periodic) []Periodic {
 		var res []Periodic
 		for _, p := range ps {
 			res = append(res, p)

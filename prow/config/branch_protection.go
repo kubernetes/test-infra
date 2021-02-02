@@ -81,8 +81,8 @@ type ReviewPolicy struct {
 // Restrictions limits who can merge
 // Users and Teams items are appended to parent lists.
 type Restrictions struct {
-	Users []string `json:"users"`
-	Teams []string `json:"teams"`
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
 }
 
 // selectInt returns the child if set, else parent
@@ -172,7 +172,7 @@ func (p Policy) Apply(child Policy) Policy {
 
 // BranchProtection specifies the global branch protection policy
 type BranchProtection struct {
-	Policy
+	Policy `json:",inline"`
 	// ProtectTested determines if branch protection rules are set for all repos
 	// that Prow has registered jobs for, regardless of if those repos are in the
 	// branch protection config.
@@ -200,8 +200,8 @@ func (bp BranchProtection) GetOrg(name string) *Org {
 
 // Org holds the default protection policy for an entire org, as well as any repo overrides.
 type Org struct {
-	Policy
-	Repos map[string]Repo `json:"repos,omitempty"`
+	Policy `json:",inline"`
+	Repos  map[string]Repo `json:"repos,omitempty"`
 }
 
 // GetRepo returns the repo config after merging in any org policies.
@@ -217,7 +217,7 @@ func (o Org) GetRepo(name string) *Repo {
 
 // Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
-	Policy
+	Policy   `json:",inline"`
 	Branches map[string]Branch `json:"branches,omitempty"`
 }
 
@@ -237,7 +237,7 @@ func (r Repo) GetBranch(name string) (*Branch, error) {
 
 // Branch holds protection policy overrides for a particular branch.
 type Branch struct {
-	Policy
+	Policy `json:",inline"`
 }
 
 // GetBranchProtection returns the policy for a given branch.

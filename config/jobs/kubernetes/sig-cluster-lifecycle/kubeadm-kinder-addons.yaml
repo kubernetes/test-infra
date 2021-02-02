@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-no-addons-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-no-addons-latest
   interval: 12h
   decorate: true
   labels:
@@ -9,7 +9,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-no-addons-master
+    testgrid-tab-name: kubeadm-kinder-no-addons-latest
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test if 'join' and 'upgrade' works with missing addon ConfigMaps"
     testgrid-num-columns-recent: "20"
@@ -28,12 +28,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "upgrade-master-no-addon-config-maps"
+      - "upgrade-latest-no-addon-config-maps"
       securityContext:
         privileged: true
       resources:

@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -112,7 +112,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200813-1642133-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -165,7 +165,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20200813-af45e55-master
+    - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
       command:
       - wrapper.sh
       - bash
@@ -182,21 +182,14 @@ periodics:
       resources:
         limits:
           memory: 12Gi
-          cpu: 7300m
+          cpu: 7
         requests:
-          # TODO(BenTheElder): adjust these everywhere
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
           memory: 12Gi
-          # approximately all of the build cluster node CPU, minus:
-          # - GKE system reserved space based on node size
-          # - network policy addon (which we shouldn't need but have enabled in wg-k8s)
-          # - 100m default we've set for prow pod-utilities sidecar
-          cpu: 7300m
+          cpu: 7
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '48'
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance-ga-only
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com, kubernetes-sig-architecture@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-architecture@googlegroups.com"
     description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"

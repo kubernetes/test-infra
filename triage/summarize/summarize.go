@@ -21,27 +21,16 @@ package summarize
 import (
 	"flag"
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/triage/utils"
+	"k8s.io/klog/v2"
 )
 
 const longOutputLen = 10000
 const truncatedSep = "\n...[truncated]...\n"
 const maxClusterTextLen = longOutputLen + len(truncatedSep)
-
-// logInfo logs a message, prepending [I] to it.
-func logInfo(format string, v ...interface{}) {
-	log.Printf("[I]"+format, v...)
-}
-
-// logWarning logs a message, prepending [W] to it.
-func logWarning(format string, v ...interface{}) {
-	log.Printf("[W]"+format, v...)
-}
 
 // summarizeFlags represents the command-line arguments to the summarize and their values.
 type summarizeFlags struct {
@@ -52,6 +41,7 @@ type summarizeFlags struct {
 	output       string
 	outputSlices string
 	numWorkers   int
+	memoize      bool
 }
 
 // parseFlags parses command-line arguments and returns them as a summarizeFlags object.
@@ -63,37 +53,64 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.owners, "owners", "", "path to test owner SIGs file")
 	flag.StringVar(&flags.output, "output", "failure_data.json", "output path")
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
-	flag.IntVar(&flags.numWorkers, "num_workers", utils.Max(runtime.NumCPU()-1, 1), "number of worker goroutines to spawn for parallelized functions") // Leave one CPU for the main goroutine, where possible
-
-	// The tests flag can contain multiple arguments, so we'll split it by space
-	tempTests := flag.String("tests", "", "path to tests.json files from BigQuery")
+	flag.IntVar(&flags.numWorkers, "num_workers", 2*runtime.NumCPU()-1, "number of worker goroutines to spawn for parallelized functions") // This has shown to be a sensible number of workers
+	flag.BoolVar(&flags.memoize, "memoize", false, "whether to memoize certain function results to JSON (and use previously memoized results if they exist)")
 
 	flag.Parse()
-	flags.tests = strings.Split(*tempTests, " ")
+	// list of tests files comes from arguments
+	flags.tests = flag.Args()
+
+	// Do some checks on the flags
+	if !(strings.Contains(flags.outputSlices, "PREFIX")) {
+		klog.Fatalf("'PREFIX' not in output_slices flag")
+	}
 
 	return flags
 }
 
-func summarize(flags summarizeFlags) {
-	builds, failedTests, err := loadFailures(flags.builds, flags.tests)
+// setUpLogging adds flags that determine logging behavior for klog. See klog's documentation for how
+// these flags work.
+func setUpLogging(logtostderr bool, v int) {
+	klogFlags := flag.NewFlagSet("klog", flag.PanicOnError)
+	klog.InitFlags(klogFlags) // Add the klog flags
+
+	// Set the flags
+	err := klogFlags.Set("logtostderr", fmt.Sprint(logtostderr))
 	if err != nil {
-		log.Fatalf("Could not load failures: %s", err)
+		klog.Fatalf("Could not set klog flag 'logtostderr': %s", err)
+	}
+
+	err = klogFlags.Set("v", fmt.Sprint(v))
+	if err != nil {
+		klog.Fatalf("Could not set klog flag 'v': %s", err)
+	}
+}
+
+func summarize(flags summarizeFlags) {
+	setUpLogging(true, 3)
+
+	// Log flag info
+	klog.V(1).Infof("Running with %d workers (%d detected CPUs)", flags.numWorkers, runtime.NumCPU())
+
+	builds, failedTests, err := loadFailures(flags.builds, flags.tests, flags.memoize)
+	if err != nil {
+		klog.Fatalf("Could not load failures: %s", err)
 	}
 
 	var previousClustered []jsonCluster
 	if flags.previous != "" {
-		logInfo("Loading previous")
+		klog.V(2).Infof("Loading previous")
 		previousClustered, err = loadPrevious(flags.previous)
 		if err != nil {
-			log.Fatalf("Could not get previous results: %s", err)
+			klog.Warningf("Could not get previous results, they will not be used: %s", err)
 		}
 	}
 
-	clusteredLocal := clusterLocal(failedTests, flags.numWorkers)
+	clusteredLocal := clusterLocal(failedTests, flags.numWorkers, flags.memoize)
 
-	clustered := clusterGlobal(clusteredLocal, previousClustered)
+	clustered := clusterGlobal(clusteredLocal, previousClustered, flags.memoize)
 
-	logInfo("Rendering results...")
+	klog.V(2).Infof("Rendering results...")
 	start := time.Now()
 
 	data := render(builds, clustered)
@@ -103,30 +120,26 @@ func summarize(flags summarizeFlags) {
 	if flags.owners != "" {
 		owners, err = loadOwners(flags.owners)
 		if err != nil {
-			logWarning("Could not load owners file, clusters will only be labeled based on test names: %s", err)
+			klog.Warningf("Could not load owners file, clusters will only be labeled based on test names: %s", err)
 		}
 	}
 	err = annotateOwners(&data, builds, owners)
 	if err != nil {
-		logWarning("Could not annotate owners: %s", err)
+		klog.Warningf("Could not annotate owners: %s", err)
 	}
 
 	err = writeResults(flags.output, data)
 	if err != nil {
-		logWarning("Could not write results to file: %s", err)
+		klog.Warningf("Could not write results to file: %s", err)
 	}
 
 	if flags.outputSlices != "" {
-		if !(strings.Contains(flags.outputSlices, "PREFIX")) {
-			log.Panic("'PREFIX' not in flags.output_slices")
-		}
-
 		for subset := 0; subset < 256; subset++ {
 			idPrefix := fmt.Sprintf("%02x", subset)
 			subsetClusters, cols := renderSlice(data, builds, idPrefix, "")
 			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", idPrefix, -1), subsetClusters, cols)
 			if err != nil {
-				logWarning("Could not write subset %d to file: %s", subset, err)
+				klog.Warningf("Could not write subset %d to file: %s", subset, err)
 			}
 		}
 
@@ -141,12 +154,12 @@ func summarize(flags summarizeFlags) {
 			ownerResults, cols := renderSlice(data, builds, "", owner)
 			err = writeRenderedSlice(strings.Replace(flags.outputSlices, "PREFIX", "sig-"+owner, -1), ownerResults, cols)
 			if err != nil {
-				logWarning("Could not write result for owner '%s' to file: %s", owner, err)
+				klog.Warningf("Could not write result for owner '%s' to file: %s", owner, err)
 			}
 		}
 	}
 
-	logInfo("Finished rendering results in %s", time.Since(start).String())
+	klog.V(0).Infof("Finished rendering results in %s", time.Since(start).String())
 }
 
 func Main() {

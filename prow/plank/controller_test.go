@@ -125,11 +125,9 @@ func TestTerminateDupes(t *testing.T) {
 		Name string
 
 		PJs  []prowapi.ProwJob
-		PM   map[string]v1.Pod
 		IsV2 bool
 
-		TerminatedPJs  sets.String
-		TerminatedPods sets.String
+		TerminatedPJs sets.String
 	}
 	var testcases = []testCase{
 		{
@@ -258,13 +256,8 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 			},
-			PM: map[string]v1.Pod{
-				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "pods"}},
-				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: "pods"}},
-			},
 
-			TerminatedPJs:  sets.NewString("old"),
-			TerminatedPods: sets.NewString("old"),
+			TerminatedPJs: sets.NewString("old"),
 		},
 	}
 
@@ -289,14 +282,6 @@ func TestTerminateDupes(t *testing.T) {
 			fakeProwJobClient := &patchTrackingFakeClient{
 				Client: fakectrlruntimeclient.NewFakeClient(prowJobs...),
 			}
-			var pods []runtime.Object
-			for name := range tc.PM {
-				pod := tc.PM[name]
-				pods = append(pods, &pod)
-			}
-			fakePodClient := &deleteTrackingFakeClient{
-				Client: fakectrlruntimeclient.NewFakeClient(pods...),
-			}
 			fca := &fca{
 				c: &config.Config{
 					ProwConfig: config.ProwConfig{
@@ -310,25 +295,23 @@ func TestTerminateDupes(t *testing.T) {
 			if !tc.IsV2 {
 				c := Controller{
 					prowJobClient: fakeProwJobClient,
-					buildClients:  map[string]ctrlruntimeclient.Client{prowapi.DefaultClusterAlias: fakePodClient},
 					log:           log,
 					config:        fca.Config,
 					clock:         clock.RealClock{},
 				}
-				if err := c.terminateDupes(tc.PJs, tc.PM); err != nil {
+				if err := c.terminateDupes(tc.PJs); err != nil {
 					t.Fatalf("Error terminating dupes: %v", err)
 				}
 
 			} else {
 				r := &reconciler{
-					pjClient:     fakeProwJobClient,
-					buildClients: map[string]ctrlruntimeclient.Client{prowapi.DefaultClusterAlias: fakePodClient},
-					log:          log,
-					config:       fca.Config,
-					clock:        clock.RealClock{},
+					pjClient: fakeProwJobClient,
+					log:      log,
+					config:   fca.Config,
+					clock:    clock.RealClock{},
 				}
 				for _, pj := range tc.PJs {
-					res, err := r.reconcile(&pj)
+					res, err := r.reconcile(context.Background(), &pj)
 					if res != nil {
 						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
 					}
@@ -346,13 +329,6 @@ func TestTerminateDupes(t *testing.T) {
 				t.Errorf("found unexpectedly deleted prowJobs: %v", extra.List())
 			}
 
-			observedTerminatedPods := fakePodClient.deleted
-			if missing := tc.TerminatedPods.Difference(observedTerminatedPods); missing.Len() > 0 {
-				t.Errorf("did not delete expected pods: %v", missing.List())
-			}
-			if extra := observedTerminatedPods.Difference(tc.TerminatedPods); extra.Len() > 0 {
-				t.Errorf("found unexpectedly deleted pods: %v", extra.List())
-			}
 		})
 	}
 }
@@ -786,16 +762,16 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					pod := pods[i]
 					data = append(data, &pod)
 				}
-				fakeClient := &createErroringClient{
-					Client: fakectrlruntimeclient.NewFakeClient(data...),
-					err:    tc.PodErr,
+				fakeClient := &clientWrapper{
+					Client:      fakectrlruntimeclient.NewFakeClient(data...),
+					createError: tc.PodErr,
 				}
 				buildClients[alias] = fakeClient
 			}
 			if _, exists := buildClients[prowapi.DefaultClusterAlias]; !exists {
-				buildClients[prowapi.DefaultClusterAlias] = &createErroringClient{
-					Client: fakectrlruntimeclient.NewFakeClient(),
-					err:    tc.PodErr,
+				buildClients[prowapi.DefaultClusterAlias] = &clientWrapper{
+					Client:      fakectrlruntimeclient.NewFakeClient(),
+					createError: tc.PodErr,
 				}
 			}
 
@@ -848,7 +824,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				}
 				pj := tc.PJ.DeepCopy()
 				pj.UID = types.UID("under-test")
-				if _, err := r.syncTriggeredJob(pj); (err != nil) != tc.ExpectError {
+				if _, err := r.syncTriggeredJob(context.Background(), pj); (err != nil) != tc.ExpectError {
 					if tc.ExpectError {
 						t.Errorf("for case %q expected an error, but got none", tc.Name)
 					} else {
@@ -869,7 +845,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			if len(actualProwJobs.Items) != tc.ExpectedCreatedPJs+1 {
 				t.Errorf("got %d created prowjobs, expected %d", len(actualProwJobs.Items)-1, tc.ExpectedCreatedPJs)
 			}
-			actual := actualProwJobs.Items[0]
+			var actual prowapi.ProwJob
+			if err := fakeProwJobClient.Get(context.Background(), types.NamespacedName{Namespace: tc.PJ.Namespace, Name: tc.PJ.Name}, &actual); err != nil {
+				t.Errorf("failed to get prowjob from client: %v", err)
+			}
 			if actual.Status.State != tc.ExpectedState {
 				t.Errorf("expected state %v, got state %v", tc.ExpectedState, actual.Status.State)
 			}
@@ -966,6 +945,36 @@ func TestSyncPendingJob(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "boop-41",
 						Namespace: "pods",
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodUnknown,
+					},
+				},
+			},
+			ExpectedState:   prowapi.PendingState,
+			ExpectedNumPods: 0,
+		},
+		{
+			Name: "delete pod in unknown state with gcsreporter finalizer",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-41",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "boop-41",
+						Namespace:  "pods",
+						Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodUnknown,
@@ -1136,6 +1145,38 @@ func TestSyncPendingJob(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "boop-42",
 						Namespace: "pods",
+					},
+					Status: v1.PodStatus{
+						Phase:  v1.PodFailed,
+						Reason: Evicted,
+					},
+				},
+			},
+			ExpectedComplete: false,
+			ExpectedState:    prowapi.PendingState,
+			ExpectedNumPods:  0,
+		},
+		{
+			Name: "delete evicted pod and remove its k8sreporter finalizer",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "boop-42",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "boop-42",
+						Namespace:  "pods",
+						Finalizers: []string{"prow.x-k8s.io/gcsk8sreporter"},
 					},
 					Status: v1.PodStatus{
 						Phase:  v1.PodFailed,
@@ -1413,6 +1454,125 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedState:   prowapi.PendingState,
 			ExpectedNumPods: 1,
 		},
+		{
+			Name: "Pod deleted in pending phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "deleted-pod-in-pending-marks-job-as-errored",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "deleted-pod-in-pending-marks-job-as-errored",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "deleted-pod-in-pending-marks-job-as-errored",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted in unset phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-unset-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-unset-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-unset-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted in running phase, job marked as errored",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-unset-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-unset-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-unset-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodRunning,
+					},
+				},
+			},
+			ExpectedState:    prowapi.ErrorState,
+			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted with NodeLost reason in running phase, pod finalizer gets cleaned up",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-running-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-running-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-running-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+						Finalizers:        []string{"prow.x-k8s.io/gcsk8sreporter"},
+					},
+					Status: v1.PodStatus{
+						Phase:  v1.PodRunning,
+						Reason: "NodeLost",
+					},
+				},
+			},
+			ExpectedState:    prowapi.PendingState,
+			ExpectedComplete: false,
+			ExpectedNumPods:  1,
+		},
 	}
 
 	// Copy the tests for PlankV2
@@ -1440,9 +1600,10 @@ func TestSyncPendingJob(t *testing.T) {
 				pod := tc.Pods[i]
 				data = append(data, &pod)
 			}
-			fakeClient := &createErroringClient{
-				Client: fakectrlruntimeclient.NewFakeClient(data...),
-				err:    tc.Err,
+			fakeClient := &clientWrapper{
+				Client:                   fakectrlruntimeclient.NewFakeClient(data...),
+				createError:              tc.Err,
+				errOnDeleteWithFinalizer: true,
 			}
 			buildClients := map[string]ctrlruntimeclient.Client{
 				prowapi.DefaultClusterAlias: fakeClient,
@@ -1471,7 +1632,7 @@ func TestSyncPendingJob(t *testing.T) {
 					totURL:       totServ.URL,
 					clock:        clock.RealClock{},
 				}
-				if err := r.syncPendingJob(&tc.PJ); err != nil {
+				if err := r.syncPendingJob(context.Background(), &tc.PJ); err != nil {
 					t.Fatalf("syncPendingJob failed: %v", err)
 				}
 			}
@@ -1496,6 +1657,11 @@ func TestSyncPendingJob(t *testing.T) {
 			}
 			if got := len(actualPods.Items); got != tc.ExpectedNumPods {
 				t.Errorf("got %d pods, expected %d", len(actualPods.Items), tc.ExpectedNumPods)
+			}
+			for _, pod := range actualPods.Items {
+				if pod.DeletionTimestamp != nil && len(pod.Finalizers) != 0 {
+					t.Errorf("pod %s was deleted but still had finalizers: %v", pod.Name, pod.Finalizers)
+				}
 			}
 			if actual := actual.Complete(); actual != tc.ExpectedComplete {
 				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectedComplete, actual)
@@ -1618,7 +1784,7 @@ func TestPeriodic(t *testing.T) {
 					clock:        clock.RealClock{},
 				}
 				syncF = func() error {
-					_, err := r.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}})
+					_, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}})
 					return err
 				}
 			}
@@ -1887,7 +2053,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Name:      job.Name,
 						Namespace: job.Namespace,
 					}}
-					if _, err := r.Reconcile(request); err != nil {
+					if _, err := r.Reconcile(context.Background(), request); err != nil {
 						t.Fatalf("failed to reconcile job %s: %v", request.String(), err)
 					}
 				}
@@ -2079,7 +2245,7 @@ func TestMaxConcurency(t *testing.T) {
 				var err error
 				// We filter ourselves out via the UID, so make sure its not the empty string
 				tc.ProwJob.UID = types.UID("under-test")
-				result, err = r.canExecuteConcurrently(&tc.ProwJob)
+				result, err = r.canExecuteConcurrently(context.Background(), &tc.ProwJob)
 				if err != nil {
 					t.Fatalf("canExecuteConcurrently: %v", err)
 				}
@@ -2098,15 +2264,11 @@ type patchTrackingFakeClient struct {
 	patched sets.String
 }
 
-func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	if c.patched == nil {
 		c.patched = sets.NewString()
 	}
-	metaObject, ok := obj.(metav1.Object)
-	if !ok {
-		return errors.New("Object is no metav1.Object")
-	}
-	c.patched.Insert(metaObject.GetName())
+	c.patched.Insert(obj.GetName())
 	return c.Client.Patch(ctx, obj, patch, opts...)
 }
 
@@ -2116,34 +2278,38 @@ type deleteTrackingFakeClient struct {
 	deleted sets.String
 }
 
-func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
 	if c.deleteError != nil {
 		return c.deleteError
 	}
 	if c.deleted == nil {
 		c.deleted = sets.String{}
 	}
-	metaObject, ok := obj.(metav1.Object)
-	if !ok {
-		return errors.New("object is not a metav1.Object")
-	}
 	if err := c.Client.Delete(ctx, obj, opts...); err != nil {
 		return err
 	}
-	c.deleted.Insert(metaObject.GetName())
+	c.deleted.Insert(obj.GetName())
 	return nil
 }
 
-type createErroringClient struct {
+type clientWrapper struct {
 	ctrlruntimeclient.Client
-	err error
+	createError              error
+	errOnDeleteWithFinalizer bool
 }
 
-func (c *createErroringClient) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
-	if c.err != nil {
-		return c.err
+func (c *clientWrapper) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	if c.createError != nil {
+		return c.createError
 	}
 	return c.Client.Create(ctx, obj, opts...)
+}
+
+func (c *clientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	if len(obj.GetFinalizers()) > 0 {
+		return fmt.Errorf("object still had finalizers when attempting to delete: %v", obj.GetFinalizers())
+	}
+	return c.Client.Delete(ctx, obj, opts...)
 }
 
 func TestSyncAbortedJob(t *testing.T) {
@@ -2245,7 +2411,7 @@ func TestSyncAbortedJob(t *testing.T) {
 					buildClients: map[string]ctrlruntimeclient.Client{cluster: podClient},
 				}
 				sync = func() error {
-					res, err := r.reconcile(pj)
+					res, err := r.reconcile(context.Background(), pj)
 					if res != nil {
 						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
 					}
@@ -2276,7 +2442,7 @@ type indexingClient struct {
 	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
 }
 
-func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.ObjectList, opts ...ctrlruntimeclient.ListOption) error {
 	if err := c.Client.List(ctx, list, opts...); err != nil {
 		return err
 	}

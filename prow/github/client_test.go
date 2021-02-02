@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/rsa"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -27,6 +28,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -35,11 +37,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
 
 	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/version"
 )
 
 type testTime struct {
@@ -65,6 +69,7 @@ func getClient(url string) *client {
 		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
+			throttle: throttler{throttlerDelegate: &throttlerDelegate{}},
 			getToken: getToken,
 			censor: func(content []byte) []byte {
 				return content
@@ -95,7 +100,7 @@ func TestRequestRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -116,7 +121,7 @@ func TestAbuseRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -136,7 +141,7 @@ func TestRetry404(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -151,7 +156,7 @@ func TestRetryBase(t *testing.T) {
 	c.initialDelay = time.Microsecond
 	// One good endpoint:
 	c.bases = []string{c.bases[0]}
-	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -159,7 +164,7 @@ func TestRetryBase(t *testing.T) {
 	}
 	// Bad endpoint followed by good endpoint:
 	c.bases = []string{"not-a-valid-base", c.bases[0]}
-	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	resp, err = c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -167,35 +172,9 @@ func TestRetryBase(t *testing.T) {
 	}
 	// One bad endpoint:
 	c.bases = []string{"not-a-valid-base"}
-	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	_, err = c.requestRetry(http.MethodGet, "/", "", "", nil)
 	if err == nil {
 		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
-	}
-}
-
-func TestBotName(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/user" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, "{\"login\": \"wowza\"}")
-	}))
-	c := getClient(ts.URL)
-	botName, err := c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
-	}
-	ts.Close()
-	botName, err = c.BotName()
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if botName != "wowza" {
-		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
 	}
 }
 
@@ -616,12 +595,12 @@ func TestListIssueComments(t *testing.T) {
 	}
 }
 
-func TestAddLabel(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func addLabelHTTPServer(t *testing.T, org, repo string, number int, labels ...string) *httptest.Server {
+	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels" {
+		if r.URL.Path != fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
@@ -631,16 +610,60 @@ func TestAddLabel(t *testing.T) {
 		var ls []string
 		if err := json.Unmarshal(b, &ls); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ls) != 1 {
+		} else if len(ls) != len(labels) {
 			t.Errorf("Wrong length labels: %v", ls)
-		} else if ls[0] != "yay" {
-			t.Errorf("Wrong label: %s", ls[0])
+		}
+
+		for index, label := range labels {
+			if ls[index] != label {
+				t.Errorf("Wrong label: %s", ls[index])
+			}
 		}
 	}))
+}
+
+func TestAddLabel(t *testing.T) {
+	ts := addLabelHTTPServer(t, "k8s", "kuber", 5, "yay")
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.AddLabel("k8s", "kuber", 5, "yay"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestAddLabels(t *testing.T) {
+	testCases := []struct {
+		name   string
+		org    string
+		repo   string
+		number int
+		labels []string
+	}{
+		{
+			name:   "one label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 1,
+			labels: []string{"one"},
+		},
+		{
+			name:   "two label",
+			org:    "k8s",
+			repo:   "kuber",
+			number: 2,
+			labels: []string{"one", "two"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := addLabelHTTPServer(t, tc.org, tc.repo, tc.number, tc.labels...)
+			defer ts.Close()
+
+			c := getClient(ts.URL)
+			if err := c.AddLabels(tc.org, tc.repo, tc.number, tc.labels...); err != nil {
+				t.Errorf("Didn't expect error: %v", err)
+			}
+		})
 	}
 }
 
@@ -952,6 +975,7 @@ func TestReadPaginatedResults(t *testing.T) {
 		var labels []Label
 		err := c.readPaginatedResults(
 			tc.initialPath,
+			"",
 			"",
 			func() interface{} {
 				return &[]Label{}
@@ -1371,7 +1395,7 @@ func TestFindIssues(t *testing.T) {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		}
 		if len(result) != 1 {
-			t.Errorf("%s: unexpected number of results: %v", tc.name, len(result))
+			t.Fatalf("%s: unexpected number of results: %v", tc.name, len(result))
 		}
 		if result[0].Number != issueNum {
 			t.Errorf("%s: expected issue number %+v, got %+v", tc.name, issueNum, result[0].Number)
@@ -1597,10 +1621,10 @@ func TestEditTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.EditTeam(Team{ID: 0, Name: "frobber"}); err == nil {
+	if _, err := c.EditTeam("", Team{ID: 0, Name: "frobber"}); err == nil {
 		t.Errorf("client should reject id 0")
 	}
-	switch team, err := c.EditTeam(Team{ID: 63, Name: "frobber"}); {
+	switch team, err := c.EditTeam("", Team{ID: 63, Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1616,7 +1640,7 @@ func TestListTeamMembers(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers(1, RoleAll)
+	teamMembers, err := c.ListTeamMembers("", 1, RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
@@ -2417,9 +2441,9 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fake := &fakeHttpClient{}
-			c := &client{delegate: &delegate{client: fake}}
+			c := &client{delegate: &delegate{client: fake}, logger: logrus.NewEntry(logrus.New())}
 			tc.mod(c)
-			if _, err := c.doRequest("POST", "/hello", "", nil); err != nil {
+			if _, err := c.doRequest("POST", "/hello", "", "", nil); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if tc.expectedHeader == nil {
@@ -2436,6 +2460,7 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 		})
 	}
 }
+
 func TestListTeamRepos(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/repos",
 		[]Repo{
@@ -2450,7 +2475,7 @@ func TestListTeamRepos(t *testing.T) {
 	)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	repos, err := c.ListTeamRepos(1)
+	repos, err := c.ListTeamRepos("", 1)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(repos) != 1 {
@@ -2479,5 +2504,306 @@ func TestCreateFork(t *testing.T) {
 		if name != "other" {
 			t.Errorf("Unexpected fork name: %v", name)
 		}
+	}
+}
+
+func TestToCurl(t *testing.T) {
+	testCases := []struct {
+		name     string
+		request  *http.Request
+		expected string
+	}{
+		{
+			name:     "Authorization Header with bearer type gets masked",
+			request:  &http.Request{Method: http.MethodGet, URL: &url.URL{Scheme: "https", Host: "api.github.com"}, Header: http.Header{"Authorization": []string{"Bearer secret-token"}}},
+			expected: `curl -k -v -XGET  -H "Authorization: Bearer <masked>" 'https://api.github.com'`,
+		},
+		{
+			name:     "Authorization Header with unknown type gets masked",
+			request:  &http.Request{Method: http.MethodGet, URL: &url.URL{Scheme: "https", Host: "api.github.com"}, Header: http.Header{"Authorization": []string{"Definitely-not-valid secret-token"}}},
+			expected: `curl -k -v -XGET  -H "Authorization: <masked>" 'https://api.github.com'`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := toCurl(tc.request); result != tc.expected {
+				t.Errorf("result %s differs from expected %s", result, tc.expected)
+			}
+		})
+	}
+}
+
+type testRoundTripper struct {
+	rt func(*http.Request) (*http.Response, error)
+}
+
+func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	return rt.rt(r)
+}
+
+// TestAllMethodsThatDoRequestSetOrgHeader uses reflect to find all methods of the Client and
+// their arguments and calls them with an empty argument, then verifies via a RoundTripper that
+// all requests made had an org header set.
+func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
+	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	clientType := reflect.TypeOf(ghClient)
+	stringType := reflect.TypeOf("")
+	stringValue := reflect.ValueOf("org")
+
+	toSkip := sets.NewString(
+		// Doesn't support github apps
+		"Query",
+		// They fetch the user, which doesn't exist in case of github app.
+		// TODO: Split the search query by org when app auth is used
+		"FindIssues",
+	)
+
+	for i := 0; i < clientType.NumMethod(); i++ {
+		if toSkip.Has(clientType.Method(i).Name) {
+			continue
+		}
+		t.Run(clientType.Method(i).Name, func(t *testing.T) {
+
+			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+				if !strings.HasPrefix(r.URL.Path, "/app") {
+					var orgVal string
+					if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+						orgVal = v.(string)
+					}
+					if orgVal != "org" {
+						t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
+					}
+				}
+				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+			}}
+
+			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
+			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
+			clientValue := reflect.ValueOf(ghClient)
+
+			var args []reflect.Value
+			// First arg is self, so start with second arg
+			for j := 1; j < clientType.Method(i).Func.Type().NumIn(); j++ {
+				arg := reflect.New(clientType.Method(i).Func.Type().In(j)).Elem()
+				if arg.Kind() == reflect.Ptr && arg.IsNil() {
+					arg.Set(reflect.New(arg.Type().Elem()))
+				}
+
+				if arg.Type() == stringType {
+					arg.Set(stringValue)
+				}
+
+				// We can not deal with interface types genererically, as there
+				// is no automatic way to figure out the concrete values they
+				// can or should be set to.
+				if arg.Type().String() == "context.Context" {
+					arg.Set(reflect.ValueOf(context.Background()))
+				}
+				if arg.Type().String() == "interface {}" {
+					arg.Set(reflect.ValueOf(map[string]interface{}{}))
+				}
+
+				// Just set all strings to a nonEmpty string, otherwise the header will not get set
+				args = append(args, arg)
+			}
+
+			if clientType.Method(i).Type.IsVariadic() {
+				args[len(args)-1] = reflect.New(args[len(args)-1].Type().Elem()).Elem()
+			}
+
+			// We don't care about the result at all, the verification happens via the roundTripper
+			_ = clientValue.Method(i).Call(args)
+		})
+	}
+}
+
+func TestBotUserChecker(t *testing.T) {
+	const savedLogin = "botName"
+	testCases := []struct {
+		name         string
+		checkFor     string
+		usesAppsAuth bool
+		expectMatch  bool
+	}{
+		{
+			name:         "Bot suffix with apps auth is recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix with apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: true,
+			expectMatch:  true,
+		},
+		{
+			name:         "No suffix without apps auth is recognized",
+			checkFor:     savedLogin,
+			usesAppsAuth: false,
+			expectMatch:  true,
+		},
+		{
+			name:         "Suffix without apps auth is not recognized",
+			checkFor:     savedLogin + "[bot]",
+			usesAppsAuth: false,
+			expectMatch:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		c := &client{delegate: &delegate{usesAppsAuth: tc.usesAppsAuth, userData: &UserData{Login: savedLogin}}}
+
+		checker, err := c.BotUserChecker()
+		if err != nil {
+			t.Fatalf("failed to get user checker: %v", err)
+		}
+		if actualMatch := checker(tc.checkFor); actualMatch != tc.expectMatch {
+			t.Errorf("expect match: %t, got match: %t", tc.expectMatch, actualMatch)
+		}
+	}
+}
+
+func TestV4ClientSetsUserAgent(t *testing.T) {
+	// Make sure this is deterministic in tests
+	version.Version = "0"
+	var expectedUserAgent string
+	roundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
+		if got := r.Header.Get("User-Agent"); got != expectedUserAgent {
+			return nil, fmt.Errorf("expected User-Agent %q, got %q", expectedUserAgent, got)
+		}
+		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
+	}}
+
+	_, client := newClient(
+		logrus.Fields{},
+		func() []byte { return nil },
+		func(b []byte) []byte { return b },
+		"",
+		nil,
+		"",
+		false,
+		nil,
+		roundTripper,
+	)
+
+	t.Run("User agent gets set initially", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForPlugin changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForPlugin("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForPlugin call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("ForSubcomponent changes the user agent accordingly", func(t *testing.T) {
+		client := client.ForSubcomponent("test-plugin")
+		expectedUserAgent = "unset.test-plugin/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("The ForSubcomponent call doesn't manipulate the original client", func(t *testing.T) {
+		expectedUserAgent = "unset/0"
+		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestGetDirectory(t *testing.T) {
+	expectedContents := []DirectoryContent{
+		{
+			Type: "file",
+			Name: "bar",
+			Path: "foo/bar",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", ""); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
+	}
+}
+
+func TestGetDirectoryRef(t *testing.T) {
+	expectedContents := []DirectoryContent{
+		{
+			Type: "file",
+			Name: "bar.go",
+			Path: "foo/bar.go",
+		},
+		{
+			Type: "dir",
+			Name: "hello",
+			Path: "foo/hello",
+		},
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.URL.RawQuery != "ref=12345" {
+			t.Errorf("Bad request query: %s", r.URL.RawQuery)
+		}
+		b, err := json.Marshal(&expectedContents)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if contents, err := c.GetDirectory("k8s", "kuber", "foo", "12345"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(contents) != 2 {
+		t.Errorf("Expected two contents, found %d: %v", len(contents), contents)
+		return
+	} else if !reflect.DeepEqual(contents, expectedContents) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
 	}
 }

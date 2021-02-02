@@ -39,6 +39,7 @@ import (
 )
 
 const pluginName = "cherrypick"
+const defaultLabelPrefix = "cherrypick/"
 
 var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$`)
 var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
@@ -50,6 +51,7 @@ type githubClient interface {
 	CreateFork(org, repo string) (string, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
+	EnsureFork(forkingUser, org, repo string) (string, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
@@ -63,7 +65,7 @@ type githubClient interface {
 // HelpProvider construct the pluginhelp.PluginHelp for this plugin.
 func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
+		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requestor. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/cherrypick [branch]",
@@ -80,7 +82,7 @@ func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte
-	botName        string
+	botUser        *github.UserData
 	email          string
 
 	gc git.ClientFactory
@@ -97,6 +99,8 @@ type Server struct {
 	allowAll bool
 	// Create an issue on cherrypick conflict.
 	issueOnConflict bool
+	// Set a custom label prefix.
+	labelPrefix string
 
 	bare     *http.Client
 	patchURL string
@@ -209,7 +213,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	// TODO: Use a whitelist for allowed base and target branches.
+	// TODO: Use an allowlist for allowed base and target branches.
 	if baseBranch == targetBranch {
 		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
 		l.Info(resp)
@@ -298,10 +302,9 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	}
 
 	foundCherryPickLabels := false
-	labelPrefix := "cherrypick/"
 	for _, label := range labels {
-		if strings.HasPrefix(label.Name, labelPrefix) {
-			requestorToComments[pr.User.Login][label.Name[len(labelPrefix):]] = nil // leave this nil which indicates a label-initiated cherry-pick
+		if strings.HasPrefix(label.Name, s.labelPrefix) {
+			requestorToComments[pr.User.Login][label.Name[len(s.labelPrefix):]] = nil // leave this nil which indicates a label-initiated cherry-pick
 			foundCherryPickLabels = true
 		}
 	}
@@ -394,12 +397,12 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		return err
 	}
 
-	if err := r.Config("user.name", s.botName); err != nil {
+	if err := r.Config("user.name", s.botUser.Login); err != nil {
 		return err
 	}
 	email := s.email
 	if email == "" {
-		email = fmt.Sprintf("%s@localhost", s.botName)
+		email = s.botUser.Email
 	}
 	if err := r.Config("user.email", email); err != nil {
 		return err
@@ -416,7 +419,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 			return err
 		}
 		for _, pr := range prs {
-			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botName, newBranch) {
+			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botUser.Login, newBranch) {
 				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
 				logger.Info(resp)
 				return s.createComment(org, repo, num, comment, resp)
@@ -464,7 +467,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 	} else {
 		cherryPickBody = cherrypicker.CreateCherrypickBody(num, "", releaseNoteFromParentPR(body))
 	}
-	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
+	head := fmt.Sprintf("%s:%s", s.botUser.Login, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
 	if err != nil {
 		resp := fmt.Sprintf("new pull request could not be created: %v", err)
@@ -514,61 +517,15 @@ func (s *Server) createIssue(org, repo, title, body string, num int, comment *gi
 func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	s.repoLock.Lock()
 	defer s.repoLock.Unlock()
+	fork := s.botUser.Login + "/" + repo
 
-	// Fork repo if it doesn't exist.
-	fork := s.botName + "/" + repo
-	if !repoExists(fork, s.repos) {
-		if name, err := s.ghc.CreateFork(org, repo); err != nil {
-			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
-		} else {
-			// we got a fork but it may be named differently
-			repo = name
-		}
-		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
-			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
-		}
-		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
+	// fork repo if it doesn't exsit
+	if _, err := s.ghc.EnsureFork(s.botUser.Login, org, repo); err != nil {
+		return repo, err
 	}
+
+	s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
 	return repo, nil
-}
-
-func waitForRepo(owner, name string, ghc githubClient) error {
-	// Wait for at most 5 minutes for the fork to appear on GitHub.
-	// The documentation instructs us to contact support if this
-	// takes longer than five minutes.
-	after := time.After(6 * time.Minute)
-	tick := time.Tick(30 * time.Second)
-
-	var ghErr string
-	for {
-		select {
-		case <-tick:
-			repo, err := ghc.GetRepo(owner, name)
-			if err != nil {
-				ghErr = fmt.Sprintf(": %v", err)
-				logrus.WithError(err).Warn("Error getting bot repository.")
-				continue
-			}
-			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo.Repo}) {
-				return nil
-			}
-		case <-after:
-			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
-		}
-	}
-}
-
-func repoExists(repo string, repos []github.Repo) bool {
-	for _, r := range repos {
-		if !r.Fork {
-			continue
-		}
-		if r.FullName == repo {
-			return true
-		}
-	}
-	return false
 }
 
 // getPatch gets the patch for the provided PR and creates a local

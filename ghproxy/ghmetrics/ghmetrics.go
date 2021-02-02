@@ -79,6 +79,17 @@ var timeoutDuration = prometheus.NewHistogramVec(
 	[]string{"token_hash", "path", "user_agent"},
 )
 
+// cacheEntryAge tells us about the age of responses
+// that came from the cache.
+var cacheEntryAge = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "ghcache_cache_entry_age_seconds",
+		Help:    "The age of cache entries by API path.",
+		Buckets: []float64{5, 900, 1800, 3600, 7200, 14400},
+	},
+	[]string{"token_hash", "path", "user_agent"},
+)
+
 var muxTokenUsage, muxRequestMetrics sync.Mutex
 var lastGitHubResponse time.Time
 
@@ -88,6 +99,7 @@ func init() {
 	prometheus.MustRegister(ghRequestDurationHistVec)
 	prometheus.MustRegister(cacheCounter)
 	prometheus.MustRegister(timeoutDuration)
+	prometheus.MustRegister(cacheEntryAge)
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
@@ -152,6 +164,10 @@ func userAgentWithoutVersion(userAgent string) string {
 // CollectCacheRequestMetrics records a cache outcome for a specific path
 func CollectCacheRequestMetrics(mode, path, userAgent, tokenHash string) {
 	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Inc()
+}
+
+func CollectCacheEntryAgeMetrics(age float64, path, userAgent, tokenHash string) {
+	cacheEntryAge.With(prometheus.Labels{"path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent), "token_hash": tokenHash}).Observe(age)
 }
 
 // CollectRequestTimeoutMetrics publishes the duration of timed-out requests by

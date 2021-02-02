@@ -65,7 +65,7 @@ postsubmits:
         - bash
         args:
         - -c
-        - "cd dns && make dry-run-local"
+        - "cd dns && make push-local"
   - name: post-k8sio-deploy-prow-build-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
@@ -81,7 +81,7 @@ postsubmits:
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         command:
         - bash
         args:
@@ -105,7 +105,7 @@ postsubmits:
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         command:
         - bash
         args:

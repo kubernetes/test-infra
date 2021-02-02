@@ -7,7 +7,7 @@
 {{range $log := .LogViews}}
   <div>
     <button class="show-all-button" data-artifact="{{$log.ArtifactName}}">Show all hidden lines</button>
-    <a href="{{$log.ArtifactLink}}" style="padding-left:15px;">Raw {{$log.ArtifactName}}<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+    {{if .ShowRawLog}}<a href="{{$log.ArtifactLink}}" style="padding-left:15px;">Raw {{$log.ArtifactName}}<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>{{end}}
     <div class="loglines" id="{{$log.ArtifactName}}-content" style="font-family: monospace; margin-top: 15px;">
       {{range $g := $log.LineGroups}}
         {{if $g.Skip}}

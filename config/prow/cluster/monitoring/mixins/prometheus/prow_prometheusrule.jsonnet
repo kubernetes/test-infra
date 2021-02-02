@@ -1,4 +1,4 @@
-local alerts = (import 'prometheus.libsonnet').prometheusAlerts;
+local rules = (import 'prometheus.libsonnet').prometheusAlerts;
 
 {
 	"apiVersion": "monitoring.coreos.com/v1",
@@ -11,5 +11,5 @@ local alerts = (import 'prometheus.libsonnet').prometheusAlerts;
 		"name": "prometheus-prow-rules",
 		"namespace": "prow-monitoring"
 	},
-	"spec": alerts
+	"spec": rules
 }

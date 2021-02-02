@@ -39,7 +39,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-var pullCommitRe = regexp.MustCompile(`^[-\w]+:\w{40},\d+:(\w{40})$`)
+var pullCommitRe = regexp.MustCompile(`^[-\.\w]+:\w{40},\d+:(\w{40})$`)
 
 type prHistoryTemplate struct {
 	Link    string
@@ -283,7 +283,10 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		}
 		bucketName := parsedBucket.Host
 		storageProvider := parsedBucket.Scheme
-		bucket := blobStorageBucket{bucketName, storageProvider, opener}
+		bucket, err := newBlobStorageBucket(bucketName, storageProvider, config, opener)
+		if err != nil {
+			return template, err
+		}
 		for storagePath := range storagePaths {
 			jobPrefixes, err := bucket.listSubDirs(ctx, storagePath)
 			if err != nil {
@@ -328,7 +331,7 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		}
 	}
 
-	elapsed := time.Now().Sub(start)
+	elapsed := time.Since(start)
 	logrus.WithField("duration", elapsed.String()).Infof("loaded %s", prHistoryURL.Path)
 
 	return template, nil

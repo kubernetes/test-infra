@@ -56,9 +56,7 @@ func TestJokesMedium(t *testing.T) {
 		fmt.Fprintf(w, `{"joke": "%s"}`, j)
 	}))
 	defer ts.Close()
-	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
-	}
+	fc := fakegithub.NewFakeClient()
 
 	comment := "/joke"
 
@@ -150,9 +148,7 @@ func TestJokes(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
 		e := &github.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,
