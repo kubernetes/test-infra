@@ -6,7 +6,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         args:
         - make
         - lint
@@ -24,7 +24,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         args:
         - make
         - test
