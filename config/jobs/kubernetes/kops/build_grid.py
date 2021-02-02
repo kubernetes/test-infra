@@ -203,6 +203,7 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return True
     return float(k8s_version) > float(kops_version)
 
+# pylint: disable=too-many-arguments
 def build_test(cloud='aws',
                distro=None,
                networking=None,
