@@ -15,7 +15,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -56,7 +56,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
@@ -111,7 +111,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-cc9840e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
         args:
           - --timeout=140
           - --repo=k8s.io/kubernetes=master
