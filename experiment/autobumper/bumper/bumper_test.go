@@ -1000,3 +1000,101 @@ func TestMakeCommitSummary(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateSummary(t *testing.T) {
+	beforeCommit := "2b1234567"
+	afterCommit := "3a1234567"
+	beforeDate := "20210128"
+	afterDate := "20210129"
+	beforeCommit2 := "1c1234567"
+	afterCommit2 := "4f1234567"
+	beforeDate2 := "20210125"
+	afterDate2 := "20210126"
+	unsummarizedOutHeader := `Multiple distinct Test changes:
+
+Commits | Dates | Images
+--- | --- | ---`
+
+	unsummarizedOutLine := "github.com/test/repo/compare/%s...%s | %s&nbsp;&#x2192;&nbsp;%s | %s"
+
+	sampleImages := map[string]string{
+		fmt.Sprintf("gcr.io/bumped/bumpName:v%s-%s", beforeDate, beforeCommit):      fmt.Sprintf("v%s-%s", afterDate, afterCommit),
+		fmt.Sprintf("gcr.io/variant/name:v%s-%s-first", beforeDate, beforeCommit):   fmt.Sprintf("v%s-%s", afterDate, afterCommit),
+		fmt.Sprintf("gcr.io/variant/name:v%s-%s-second", beforeDate, beforeCommit):  fmt.Sprintf("v%s-%s", afterDate, afterCommit),
+		fmt.Sprintf("gcr.io/inconsistent/first:v%s-%s", beforeDate2, beforeCommit2): fmt.Sprintf("v%s-%s", afterDate2, afterCommit2),
+		fmt.Sprintf("gcr.io/inconsistent/second:v%s-%s", beforeDate, beforeCommit):  fmt.Sprintf("v%s-%s", afterDate, afterCommit),
+	}
+	testCases := []struct {
+		testName  string
+		name      string
+		repo      string
+		prefix    string
+		summarize bool
+		images    map[string]string
+		expected  string
+	}{
+		{
+			testName:  "Image not bumped unsummarized",
+			name:      "Test",
+			repo:      "repo",
+			prefix:    "gcr.io/none",
+			summarize: true,
+			images:    sampleImages,
+			expected:  "No Test changes.",
+		},
+		{
+			testName:  "Image not bumped summarized",
+			name:      "Test",
+			repo:      "repo",
+			prefix:    "gcr.io/none",
+			summarize: true,
+			images:    sampleImages,
+			expected:  "No Test changes.",
+		},
+		{
+			testName:  "Image bumped: summarized",
+			name:      "Test",
+			repo:      "github.com/test/repo",
+			prefix:    "gcr.io/bumped",
+			summarize: true,
+			images:    sampleImages,
+			expected:  fmt.Sprintf("Test changes: github.com/test/repo/compare/%s...%s (%s → %s)", beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate)),
+		},
+		{
+			testName:  "Image bumped: not summarized",
+			name:      "Test",
+			repo:      "github.com/test/repo",
+			prefix:    "gcr.io/bumped",
+			summarize: false,
+			images:    sampleImages,
+			expected:  fmt.Sprintf("%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "bumpName")),
+		},
+		{
+			testName:  "Image bumped: not summarized",
+			name:      "Test",
+			repo:      "github.com/test/repo",
+			prefix:    "gcr.io/variant",
+			summarize: false,
+			images:    sampleImages,
+			expected:  fmt.Sprintf("%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "name(first), name(second)")),
+		},
+		{
+			testName:  "Image bumped, inconsistent: not summarized",
+			name:      "Test",
+			repo:      "github.com/test/repo",
+			prefix:    "gcr.io/inconsistent",
+			summarize: false,
+			images:    sampleImages,
+			expected:  fmt.Sprintf("%s\n%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit2, afterCommit2, formatTagDate(beforeDate2), formatTagDate(afterDate2), "first"), fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "second")),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(tc.expected, generateSummary(tc.name, tc.repo, tc.prefix, tc.summarize, tc.images)); diff != "" {
+				t.Errorf("generateSummary returned unexpected value (-want +got):\n%s", diff)
+			}
+
+		})
+
+	}
+}
