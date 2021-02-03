@@ -84,6 +84,11 @@ func New(o Options, hmacTokenGenerator func() []byte, logger *logrus.Entry) *Git
 	return githubEventServer
 }
 
+// GetServeMuxHandler return the github's event server serveMuxHandler.
+func (g *GitHubEventServer) GetServeMuxHandler() *serveMuxHandler {
+	return g.serveMuxHandler
+}
+
 // ListenAndServe runs the http server
 func (g *GitHubEventServer) ListenAndServe() error {
 	return g.httpServer.ListenAndServe()
