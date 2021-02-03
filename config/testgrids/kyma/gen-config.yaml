@@ -39,6 +39,13 @@ dashboards:
     test_group_name: kyma-gke-weekly
   - code_search_url_template:
       url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Evaluation profile Kyma Azure Gardener integration job.
+    name: kyma-integration-evaluation-gardener-azure
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-evaluation-gardener-azure
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: Kyma AWS Gardener integration job.
     name: kyma-integration-gardener-aws
     open_bug_template:
@@ -72,6 +79,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-integration-k3s
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Production profile Kyma Azure Gardener integration job.
+    name: kyma-integration-production-gardener-azure
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-integration-production-gardener-azure
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE central-connector job.
@@ -337,6 +351,8 @@ test_groups:
   name: kyma-gke-nightly
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly
   name: kyma-gke-weekly
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-evaluation-gardener-azure
+  name: kyma-integration-evaluation-gardener-azure
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-aws
   name: kyma-integration-gardener-aws
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-azure
@@ -347,6 +363,8 @@ test_groups:
   name: kyma-integration-gardener-gcp-parallel
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-k3s
   name: kyma-integration-k3s
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-production-gardener-azure
+  name: kyma-integration-production-gardener-azure
 - gcs_prefix: kyma-prow-logs/logs/post-master-compass-gke-integration
   name: post-master-compass-gke-integration
 - days_of_results: 60
