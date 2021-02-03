@@ -2807,3 +2807,30 @@ func TestGetDirectoryRef(t *testing.T) {
 		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedContents, contents)
 	}
 }
+
+func TestCreatePullRequestReviewComment(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/pulls/5/comments" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var rc ReviewComment
+		if err := json.Unmarshal(b, &rc); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if rc.Body != "hello" {
+			t.Errorf("Wrong body: %s", rc.Body)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CreatePullRequestReviewComment("k8s", "kuber", 5, ReviewComment{Body: "hello"}); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}

@@ -123,6 +123,7 @@ type PullRequestClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
 	GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error)
 	ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error)
+	CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error
 	ListReviews(org, repo string, number int) ([]Review, error)
 	ClosePR(org, repo string, number int) error
 	ReopenPR(org, repo string, number int) error
@@ -4212,4 +4213,29 @@ func (c *client) GetDirectory(org, repo, dirpath, commit string) ([]DirectoryCon
 	}
 
 	return res, nil
+}
+
+// CreatePullRequestReviewComment creates a review comment on a PR.
+//
+// See also: https://docs.github.com/en/rest/reference/pulls#create-a-review-comment-for-a-pull-request
+func (c *client) CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error {
+	c.log("CreatePullRequestReviewComment", org, repo, number, rc)
+
+	// TODO: remove custom Accept headers when their respective API fully launches.
+	acceptHeaders := []string{
+		// https://developer.github.com/changes/2016-05-12-reactions-api-preview/
+		"application/vnd.github.squirrel-girl-preview",
+		// https://developer.github.com/changes/2019-10-03-multi-line-comments/
+		"application/vnd.github.comfort-fade-preview+json",
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		accept:      strings.Join(acceptHeaders, ", "),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", org, repo, number),
+		org:         org,
+		requestBody: &rc,
+		exitCodes:   []int{201},
+	}, nil)
+	return err
 }
