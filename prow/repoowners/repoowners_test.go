@@ -37,7 +37,8 @@ import (
 )
 
 var (
-	testFiles = map[string][]byte{
+	defaultBranch = "master" // TODO(fejta): localgit.DefaultBranch()
+	testFiles     = map[string][]byte{
 		"foo": []byte(`approvers:
 - bob`),
 		"OWNERS": []byte(`approvers:
@@ -162,9 +163,15 @@ func getTestClient(
 	if err != nil {
 		return nil, nil, err
 	}
+
+	if localgit.DefaultBranch("") != defaultBranch {
+		localGit.InitialBranch = defaultBranch
+	}
+
 	if err := localGit.MakeFakeRepo("org", "repo"); err != nil {
 		return nil, nil, fmt.Errorf("cannot make fake repo: %v", err)
 	}
+
 	if err := localGit.AddCommit("org", "repo", files); err != nil {
 		return nil, nil, fmt.Errorf("cannot add initial commit: %v", err)
 	}
@@ -184,7 +191,7 @@ func getTestClient(
 				}
 			}
 		}
-		if err := localGit.Checkout("org", "repo", "master"); err != nil {
+		if err := localGit.Checkout("org", "repo", defaultBranch); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -303,7 +310,7 @@ func testOwnersDirBlacklist(clients localgit.Clients, t *testing.T) {
 		}
 		defer cleanup()
 
-		ro, err := client.LoadRepoOwners("org", "repo", "master")
+		ro, err := client.LoadRepoOwners("org", "repo", defaultBranch)
 		if err != nil {
 			t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 		}
@@ -433,7 +440,7 @@ func testOwnersRegexpFiltering(clients localgit.Clients, t *testing.T) {
 	}
 	defer cleanup()
 
-	r, err := client.LoadRepoOwners("org", "repo", "master")
+	r, err := client.LoadRepoOwners("org", "repo", defaultBranch)
 	if err != nil {
 		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 	}
@@ -609,7 +616,7 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 		},
 		{
 			name:   "OWNERS from master branch while release branch diverges",
-			branch: strP("master"),
+			branch: strP(defaultBranch),
 			extraBranchesAndFiles: map[string]map[string][]byte{
 				"release-1.10": {
 					"src/doc/OWNERS": []byte("approvers:\n - maggie\n"),
@@ -893,7 +900,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			}
 			t.Cleanup(cleanup)
 
-			base := "master"
+			base := defaultBranch
+			defer cleanup()
+
 			if test.branch != nil {
 				base = *test.branch
 			}
@@ -904,7 +913,7 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			ro := r.(*RepoOwners)
 			if test.expectedReusable {
 				if ro.baseDir != "cache" {
-					t.Error("expected cache must be reused, but not")
+					t.Fatalf("expected cache must be reused, but got baseDir %q", ro.baseDir)
 				}
 				return
 			} else {
@@ -1004,7 +1013,7 @@ func testLoadRepoAliases(clients localgit.Clients, t *testing.T) {
 			continue
 		}
 
-		branch := "master"
+		branch := defaultBranch
 		if test.branch != nil {
 			branch = *test.branch
 		}

@@ -30,6 +30,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 func TestClone(t *testing.T) {
 	testClone(localgit.New, t)
 }
@@ -204,12 +206,12 @@ func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
 			}
 		}
 		mergeMaster = func() {
-			if _, err := lg.Merge("foo", "bar", "master"); err != nil {
+			if _, err := lg.Merge("foo", "bar", defaultBranch); err != nil {
 				t.Fatalf("Rebasing commit: %v", err)
 			}
 		}
 		rebaseMaster = func() {
-			if _, err := lg.Rebase("foo", "bar", "master"); err != nil {
+			if _, err := lg.Rebase("foo", "bar", defaultBranch); err != nil {
 				t.Fatalf("Rebasing commit: %v", err)
 			}
 		}
@@ -248,7 +250,7 @@ func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
 		checkoutPR(tt.prNum)
 	}
 	// switch back to master and create a new commit 'ouch'
-	checkoutBranch("master")
+	checkoutBranch(defaultBranch)
 	addCommit("ouch")
 	masterSHA, err := lg.RevParse("foo", "bar", "HEAD")
 	if err != nil {
@@ -386,14 +388,14 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 				commitsToMerge = append(commitsToMerge, headRef)
 			}
 			if len(tc.prBranches) > 0 {
-				if err := lg.Checkout(org, repo, "master"); err != nil {
+				if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 					t.Fatalf("failed to run git checkout master: %v", err)
 				}
 			}
 
 			var baseSHA string
 			if tc.setBaseSHA {
-				baseSHA, err = lg.RevParse(org, repo, "master")
+				baseSHA, err = lg.RevParse(org, repo, defaultBranch)
 				if err != nil {
 					t.Fatalf("failed to run git rev-parse master: %v", err)
 				}
