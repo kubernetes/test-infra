@@ -17,13 +17,7 @@ limitations under the License.
 package hook
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -37,249 +31,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-// Server implements http.Handler. It validates incoming GitHub webhooks and
-// then dispatches them to the appropriate plugins.
-type Server struct {
-	ClientAgent    *plugins.ClientAgent
-	Plugins        *plugins.ConfigAgent
-	ConfigAgent    *config.Agent
-	TokenGenerator func() []byte
-	Metrics        *githubeventserver.Metrics
-	RepoEnabled    func(org, repo string) bool
-
-	// c is an http client used for dispatching events
-	// to external plugin services.
-	c http.Client
-	// Tracks running handlers for graceful shutdown
-	wg sync.WaitGroup
-}
-
-// ServeHTTP validates an incoming webhook and puts it into the event channel.
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator)
-	if counter, err := s.Metrics.ResponseCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"status-code": resp,
-		}).WithError(err).Error("Failed to get metric for reporting webhook status code")
-	} else {
-		counter.Inc()
-	}
-
-	if !ok {
-		return
-	}
-	fmt.Fprint(w, "Event received. Have a nice day.")
-
-	if err := s.demuxEvent(eventType, eventGUID, payload, r.Header); err != nil {
-		logrus.WithError(err).Error("Error parsing event.")
-	}
-}
-
-func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
-	l := logrus.WithFields(
-		logrus.Fields{
-			eventTypeField:   eventType,
-			github.EventGUID: eventGUID,
-		},
-	)
-	// We don't want to fail the webhook due to a metrics error.
-	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(eventType); err != nil {
-		l.WithError(err).Warn("Failed to get metric for eventType " + eventType)
-	} else {
-		counter.Inc()
-	}
-	var srcRepo string
-	switch eventType {
-	case "issues":
-		var i github.IssueEvent
-		if err := json.Unmarshal(payload, &i); err != nil {
-			return err
-		}
-		i.GUID = eventGUID
-		srcRepo = i.Repo.FullName
-		if s.RepoEnabled(i.Repo.Owner.Login, i.Repo.Name) {
-			s.wg.Add(1)
-			go s.handleIssueEvent(l, i)
-		}
-	case "issue_comment":
-		var ic github.IssueCommentEvent
-		if err := json.Unmarshal(payload, &ic); err != nil {
-			return err
-		}
-		ic.GUID = eventGUID
-		srcRepo = ic.Repo.FullName
-		if s.RepoEnabled(ic.Repo.Owner.Login, ic.Repo.Name) {
-			s.wg.Add(1)
-			go s.handleIssueCommentEvent(l, ic)
-		}
-	case "pull_request":
-		var pr github.PullRequestEvent
-		if err := json.Unmarshal(payload, &pr); err != nil {
-			return err
-		}
-		pr.GUID = eventGUID
-		srcRepo = pr.Repo.FullName
-		if s.RepoEnabled(pr.Repo.Owner.Login, pr.Repo.Name) {
-			s.wg.Add(1)
-			go s.handlePullRequestEvent(l, pr)
-		}
-	case "pull_request_review":
-		var re github.ReviewEvent
-		if err := json.Unmarshal(payload, &re); err != nil {
-			return err
-		}
-		re.GUID = eventGUID
-		srcRepo = re.Repo.FullName
-		if s.RepoEnabled(re.Repo.Owner.Login, re.Repo.Name) {
-			s.wg.Add(1)
-			go s.handleReviewEvent(l, re)
-		}
-	case "pull_request_review_comment":
-		var rce github.ReviewCommentEvent
-		if err := json.Unmarshal(payload, &rce); err != nil {
-			return err
-		}
-		rce.GUID = eventGUID
-		srcRepo = rce.Repo.FullName
-		if s.RepoEnabled(rce.Repo.Owner.Login, rce.Repo.Name) {
-			s.wg.Add(1)
-			go s.handleReviewCommentEvent(l, rce)
-		}
-	case "push":
-		var pe github.PushEvent
-		if err := json.Unmarshal(payload, &pe); err != nil {
-			return err
-		}
-		pe.GUID = eventGUID
-		srcRepo = pe.Repo.FullName
-		if s.RepoEnabled(pe.Repo.Owner.Login, pe.Repo.Name) {
-			s.wg.Add(1)
-			go s.handlePushEvent(l, pe)
-		}
-	case "status":
-		var se github.StatusEvent
-		if err := json.Unmarshal(payload, &se); err != nil {
-			return err
-		}
-		se.GUID = eventGUID
-		srcRepo = se.Repo.FullName
-		if s.RepoEnabled(se.Repo.Owner.Login, se.Repo.Name) {
-			s.wg.Add(1)
-			go s.handleStatusEvent(l, se)
-		}
-	default:
-		l.Debug("Ignoring unhandled event type. (Might still be handled by external plugins.)")
-	}
-	// Demux events only to external plugins that require this event.
-	if external := s.needDemux(eventType, srcRepo); len(external) > 0 {
-		go s.demuxExternal(l, external, payload, h)
-	}
-	return nil
-}
-
-// needDemux returns whether there are any external plugins that need to
-// get the present event.
-func (s *Server) needDemux(eventType, orgRepo string) []plugins.ExternalPlugin {
-	var matching []plugins.ExternalPlugin
-	split := strings.Split(orgRepo, "/")
-	srcOrg := split[0]
-	var srcRepo string
-	if len(split) > 1 {
-		srcRepo = split[1]
-	}
-	if !s.RepoEnabled(srcOrg, srcRepo) {
-		return nil
-	}
-
-	for repo, plugins := range s.Plugins.Config().ExternalPlugins {
-		// Make sure the repositories match
-		if repo != orgRepo && repo != srcOrg {
-			continue
-		}
-
-		// Make sure the events match
-		for _, p := range plugins {
-			if len(p.Events) == 0 {
-				matching = append(matching, p)
-			} else {
-				for _, et := range p.Events {
-					if et != eventType {
-						continue
-					}
-					matching = append(matching, p)
-					break
-				}
-			}
-		}
-	}
-	return matching
-}
-
-// demuxExternal dispatches the provided payload to the external plugins.
-func (s *Server) demuxExternal(l *logrus.Entry, externalPlugins []plugins.ExternalPlugin, payload []byte, h http.Header) {
-	h.Set("User-Agent", "ProwHook")
-	for _, p := range externalPlugins {
-		s.wg.Add(1)
-		go func(p plugins.ExternalPlugin) {
-			defer s.wg.Done()
-			if err := s.dispatch(p.Endpoint, payload, h); err != nil {
-				l.WithError(err).WithField("external-plugin", p.Name).Error("Error dispatching event to external plugin.")
-			} else {
-				l.WithField("external-plugin", p.Name).Info("Dispatched event to external plugin")
-			}
-		}(p)
-	}
-}
-
-// dispatch creates a new request using the provided payload and headers
-// and dispatches the request to the provided endpoint.
-func (s *Server) dispatch(endpoint string, payload []byte, h http.Header) error {
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(payload))
-	if err != nil {
-		return err
-	}
-	req.Header = h
-	resp, err := s.do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	rb, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("response has status %q and body %q", resp.Status, string(rb))
-	}
-	return nil
-}
-
-// GracefulShutdown implements a graceful shutdown protocol. It handles all requests sent before
-// receiving the shutdown signal.
-func (s *Server) GracefulShutdown() {
-	s.wg.Wait() // Handle remaining requests
-}
-
-func (s *Server) do(req *http.Request) (*http.Response, error) {
-	var resp *http.Response
-	var err error
-	backoff := 100 * time.Millisecond
-	maxRetries := 5
-
-	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = s.c.Do(req)
-		if err == nil {
-			break
-		}
-		time.Sleep(backoff)
-		backoff *= 2
-	}
-	return resp, err
-}
-
-const failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
-
-const eventTypeField = "event-type"
+const (
+	failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
+	eventTypeField         = "event-type"
+)
 
 var (
 	nonCommentIssueActions = map[github.IssueEventAction]bool{
@@ -315,17 +70,29 @@ var (
 	}
 )
 
-func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  re.Repo.Owner.Login,
-		github.RepoLogField: re.Repo.Name,
-		github.PrLogField:   re.PullRequest.Number,
-		"review":            re.Review.ID,
-		"reviewer":          re.Review.User.Login,
-		"url":               re.Review.HTMLURL,
-	})
+// Server implements http.Handler. It validates incoming GitHub webhooks and
+// then dispatches them to the appropriate plugins.
+type Server struct {
+	ClientAgent *plugins.ClientAgent
+	Plugins     *plugins.ConfigAgent
+	ConfigAgent *config.Agent
+	Metrics     *githubeventserver.Metrics
+	RepoEnabled func(org, repo string) bool
+
+	// c is an http client used for dispatching events
+	// to external plugin services.
+	c http.Client
+	// Tracks running handlers for graceful shutdown
+	wg sync.WaitGroup
+}
+
+func (s *Server) HandleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
+	if !s.RepoEnabled(re.Repo.Owner.Login, re.Repo.Name) {
+		return
+	}
+
 	l.Infof("Review %s.", re.Action)
+
 	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewEventHandler) {
@@ -371,17 +138,12 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	)
 }
 
-func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  rce.Repo.Owner.Login,
-		github.RepoLogField: rce.Repo.Name,
-		github.PrLogField:   rce.PullRequest.Number,
-		"review":            rce.Comment.ReviewID,
-		"commenter":         rce.Comment.User.Login,
-		"url":               rce.Comment.HTMLURL,
-	})
+func (s *Server) HandleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
+	if !s.RepoEnabled(rce.Repo.Owner.Login, rce.Repo.Name) {
+		return
+	}
 	l.Infof("Review comment %s.", rce.Action)
+
 	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewCommentEventHandler) {
@@ -428,16 +190,12 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	)
 }
 
-func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  pr.Repo.Owner.Login,
-		github.RepoLogField: pr.Repo.Name,
-		github.PrLogField:   pr.Number,
-		"author":            pr.PullRequest.User.Login,
-		"url":               pr.PullRequest.HTMLURL,
-	})
+func (s *Server) HandlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
+	if !s.RepoEnabled(pr.Repo.Owner.Login, pr.Repo.Name) {
+		return
+	}
 	l.Infof("Pull request %s.", pr.Action)
+
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.PullRequestHandler) {
@@ -486,15 +244,12 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	)
 }
 
-func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  pe.Repo.Owner.Name,
-		github.RepoLogField: pe.Repo.Name,
-		"ref":               pe.Ref,
-		"head":              pe.After,
-	})
+func (s *Server) HandlePushEvent(l *logrus.Entry, pe github.PushEvent) {
+	if !s.RepoEnabled(pe.Repo.Owner.Login, pe.Repo.Name) {
+		return
+	}
 	l.Info("Push event.")
+
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.PushEventHandler) {
@@ -511,16 +266,12 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 	}
 }
 
-func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  i.Repo.Owner.Login,
-		github.RepoLogField: i.Repo.Name,
-		github.PrLogField:   i.Issue.Number,
-		"author":            i.Issue.User.Login,
-		"url":               i.Issue.HTMLURL,
-	})
+func (s *Server) HandleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
+	if !s.RepoEnabled(i.Repo.Owner.Login, i.Repo.Name) {
+		return
+	}
 	l.Infof("Issue %s.", i.Action)
+
 	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueHandler) {
@@ -569,16 +320,12 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	)
 }
 
-func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  ic.Repo.Owner.Login,
-		github.RepoLogField: ic.Repo.Name,
-		github.PrLogField:   ic.Issue.Number,
-		"author":            ic.Comment.User.Login,
-		"url":               ic.Comment.HTMLURL,
-	})
+func (s *Server) HandleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
+	if !s.RepoEnabled(ic.Repo.Owner.Login, ic.Repo.Name) {
+		return
+	}
 	l.Infof("Issue comment %s.", ic.Action)
+
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueCommentHandler) {
@@ -626,17 +373,12 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	)
 }
 
-func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
-	defer s.wg.Done()
-	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  se.Repo.Owner.Login,
-		github.RepoLogField: se.Repo.Name,
-		"context":           se.Context,
-		"sha":               se.SHA,
-		"state":             se.State,
-		"id":                se.ID,
-	})
+func (s *Server) HandleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
+	if !s.RepoEnabled(se.Repo.Owner.Login, se.Repo.Name) {
+		return
+	}
 	l.Infof("Status description %s.", se.Description)
+
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.StatusEventHandler) {
