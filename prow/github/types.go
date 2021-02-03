@@ -923,11 +923,11 @@ type ReviewComment struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// Position will be nil if the code has changed such that the comment is no
 	// longer relevant.
-	Position  *int     `json:"position"`
-	Side      DiffSide `json:"side"`
-	StartSide DiffSide `json:"start_side"`
-	Line      int      `json:"line"`
-	StartLine int      `json:"start_line"`
+	Position  *int     `json:"position,omitempty"`
+	Side      DiffSide `json:"side,omitempty"`
+	StartSide DiffSide `json:"start_side,omitempty"`
+	Line      int      `json:"line,omitempty"`
+	StartLine int      `json:"start_line,omitempty"`
 }
 
 // ReviewAction is the action that a review can be made with.
