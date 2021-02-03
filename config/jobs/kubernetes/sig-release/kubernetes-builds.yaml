@@ -67,46 +67,6 @@ periodics:
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
-- name: ci-kubernetes-build-k8s-infra
-  interval: 1h
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210130-12516b2
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=240
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --extra-version-markers=k8s-master
-      - --registry=gcr.io/k8s-staging-ci-images
-      - --release=k8s-release-dev
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: "7"
-          memory: "34Gi"
-        requests:
-          cpu: "7"
-          memory: "34Gi"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta"
-    testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-testing-canaries
-    testgrid-tab-name: build-k8s-infra-master
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-
 - name: ci-kubernetes-build-canary
   interval: 1h
   cluster: k8s-infra-prow-build
