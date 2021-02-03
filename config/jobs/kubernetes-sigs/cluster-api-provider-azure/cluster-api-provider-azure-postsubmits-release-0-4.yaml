@@ -1,6 +1,6 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: postsubmits-cluster-api-provider-azure-e2e-full-master
+  - name: postsubmits-cluster-api-provider-azure-e2e-full-master-release-0-4
     decorate: true
     decoration_config:
       timeout: 2h
@@ -11,7 +11,7 @@ postsubmits:
       preset-azure-anonymous-pull: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     branches:
-    - master
+    - release-0-4
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.18
@@ -30,5 +30,5 @@ postsubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-postsubmit-capi-e2e-full-main
+      testgrid-tab-name: capz-postsubmit-capi-e2e-full-release-0-4
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
