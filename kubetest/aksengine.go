@@ -1298,6 +1298,12 @@ func (c *aksEngineDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, 
 			if o.StorageTestDriverPath != "" {
 				t.StorageTestDriver = filepath.Join(util.K8sSigs(csiDriverName), o.StorageTestDriverPath)
 			}
+			t.KubeRoot = "."
+			kubeConfig := os.Getenv("KUBECONFIG")
+			if kubeConfig != "" {
+				t.Kubeconfig = kubeConfig
+			}
+			t.Provider = "azure"
 			return t, nil
 		} else {
 			return &GinkgoCSIDriverTester{
