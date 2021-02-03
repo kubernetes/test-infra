@@ -69,6 +69,7 @@ reviewers:
 - alice`),
 		"src/dir/conformance/OWNERS": []byte(`options:
   no_parent_owners: true
+  auto_approve_unowned_subfolders: true
 approvers:
 - mml`),
 		"docs/file.md": []byte(`---
@@ -458,6 +459,7 @@ func TestLoadRepoOwnersV2(t *testing.T) {
 }
 
 func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name              string
 		mdEnabled         bool
@@ -498,7 +500,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -528,7 +531,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -561,7 +565,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -597,7 +602,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -632,7 +638,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -662,7 +669,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 		},
@@ -712,7 +720,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 			cacheOptions: &cacheOptions{},
@@ -746,7 +755,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 			cacheOptions: &cacheOptions{
@@ -779,7 +789,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 			cacheOptions: &cacheOptions{
@@ -813,7 +824,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 			cacheOptions: &cacheOptions{
@@ -859,7 +871,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
-					NoParentOwners: true,
+					NoParentOwners:               true,
+					AutoApproveUnownedSubfolders: true,
 				},
 			},
 			cacheOptions: &cacheOptions{
@@ -871,71 +884,68 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("Running scenario %q", test.name)
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, false, nil, nil, test.extraBranchesAndFiles, test.cacheOptions, clients)
-		if err != nil {
-			t.Errorf("Error creating test client: %v.", err)
-			continue
-		}
-		defer cleanup()
-
-		base := "master"
-		if test.branch != nil {
-			base = *test.branch
-		}
-		r, err := client.LoadRepoOwners("org", "repo", base)
-		if err != nil {
-			t.Errorf("Unexpected error loading RepoOwners: %v.", err)
-			continue
-		}
-		ro := r.(*RepoOwners)
-		if test.expectedReusable {
-			if ro.baseDir != "cache" {
-				t.Error("expected cache must be reused, but not")
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			t.Logf("Running scenario %q", test.name)
+			client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, false, nil, nil, test.extraBranchesAndFiles, test.cacheOptions, clients)
+			if err != nil {
+				t.Fatalf("Error creating test client: %v.", err)
 			}
-			continue
-		} else {
-			if ro.baseDir == "cache" {
-				t.Error("expected cache should not be reused, but reused")
-				continue
-			}
-		}
-		if ro.baseDir == "" {
-			t.Errorf("Expected 'baseDir' to be populated.")
-			continue
-		}
-		if (ro.RepoAliases != nil) != test.aliasesFileExists {
-			t.Errorf("Expected 'RepoAliases' to be poplulated: %t, but got %t.", test.aliasesFileExists, ro.RepoAliases != nil)
-			continue
-		}
-		if ro.enableMDYAML != test.mdEnabled {
-			t.Errorf("Expected 'enableMdYaml' to be: %t, but got %t.", test.mdEnabled, ro.enableMDYAML)
-			continue
-		}
+			t.Cleanup(cleanup)
 
-		check := func(field string, expected map[string]map[string]sets.String, got map[string]map[*regexp.Regexp]sets.String) {
-			converted := map[string]map[string]sets.String{}
-			for path, m := range got {
-				converted[path] = map[string]sets.String{}
-				for re, s := range m {
-					var pattern string
-					if re != nil {
-						pattern = re.String()
-					}
-					converted[path][pattern] = s
+			base := "master"
+			if test.branch != nil {
+				base = *test.branch
+			}
+			r, err := client.LoadRepoOwners("org", "repo", base)
+			if err != nil {
+				t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+			}
+			ro := r.(*RepoOwners)
+			if test.expectedReusable {
+				if ro.baseDir != "cache" {
+					t.Error("expected cache must be reused, but not")
+				}
+				return
+			} else {
+				if ro.baseDir == "cache" {
+					t.Fatal("expected cache should not be reused, but reused")
 				}
 			}
-			if !reflect.DeepEqual(expected, converted) {
-				t.Errorf("Expected %s to be:\n%+v\ngot:\n%+v.", field, expected, converted)
+			if ro.baseDir == "" {
+				t.Fatal("Expected 'baseDir' to be populated.")
 			}
-		}
-		check("approvers", test.expectedApprovers, ro.approvers)
-		check("reviewers", test.expectedReviewers, ro.reviewers)
-		check("required_reviewers", test.expectedRequiredReviewers, ro.requiredReviewers)
-		check("labels", test.expectedLabels, ro.labels)
-		if !reflect.DeepEqual(test.expectedOptions, ro.options) {
-			t.Errorf("Expected options to be:\n%#v\ngot:\n%#v.", test.expectedOptions, ro.options)
-		}
+			if (ro.RepoAliases != nil) != test.aliasesFileExists {
+				t.Fatalf("Expected 'RepoAliases' to be poplulated: %t, but got %t.", test.aliasesFileExists, ro.RepoAliases != nil)
+			}
+			if ro.enableMDYAML != test.mdEnabled {
+				t.Fatalf("Expected 'enableMdYaml' to be: %t, but got %t.", test.mdEnabled, ro.enableMDYAML)
+			}
+
+			check := func(field string, expected map[string]map[string]sets.String, got map[string]map[*regexp.Regexp]sets.String) {
+				converted := map[string]map[string]sets.String{}
+				for path, m := range got {
+					converted[path] = map[string]sets.String{}
+					for re, s := range m {
+						var pattern string
+						if re != nil {
+							pattern = re.String()
+						}
+						converted[path][pattern] = s
+					}
+				}
+				if !reflect.DeepEqual(expected, converted) {
+					t.Errorf("Expected %s to be:\n%+v\ngot:\n%+v.", field, expected, converted)
+				}
+			}
+			check("approvers", test.expectedApprovers, ro.approvers)
+			check("reviewers", test.expectedReviewers, ro.reviewers)
+			check("required_reviewers", test.expectedRequiredReviewers, ro.requiredReviewers)
+			check("labels", test.expectedLabels, ro.labels)
+			if !reflect.DeepEqual(test.expectedOptions, ro.options) {
+				t.Errorf("Expected options to be:\n%#v\ngot:\n%#v.", test.expectedOptions, ro.options)
+			}
+		})
 	}
 }
 

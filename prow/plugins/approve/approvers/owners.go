@@ -46,11 +46,18 @@ type Repo interface {
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
+	IsAutoApproveUnownedSubfolders(directory string) bool
 	Filenames() ownersconfig.Filenames
 }
 
 // Owners provides functionality related to owners of a specific code change.
 type Owners struct {
+	// filenamesUnfiltered contains all files in a given PR, including those
+	// that do not need approval because of IsAutoApproveUnownedSubfolders
+	filenamesUnfiltered []string
+	// filenames refers to the files in a given PR, not to OWNERS files. Files
+	// that are a directory below an Owners file with IsAutoApproveUnownedSubfolders
+	// are excluded here but kept in filenamesUnfiltered.
 	filenames []string
 	repo      Repo
 	seed      int64
@@ -60,15 +67,15 @@ type Owners struct {
 
 // NewOwners consturcts a new Owners instance. filenames is the slice of files changed.
 func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
-	return Owners{filenames: filenames, repo: r, seed: s, log: log}
+	return Owners{filenamesUnfiltered: filenames, filenames: filenames, repo: r, seed: s, log: log}
 }
 
 // GetApprovers returns a map from ownersFiles -> people that are approvers in them
 func (o Owners) GetApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
-	for fn := range o.GetOwnersSet() {
-		ownersToApprovers[fn] = o.repo.Approvers(fn).Set()
+	for ownersFilename := range o.GetOwnersSet() {
+		ownersToApprovers[ownersFilename] = o.repo.Approvers(ownersFilename).Set()
 	}
 
 	return ownersToApprovers
@@ -176,11 +183,26 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
-	for _, fn := range o.filenames {
-		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
+	for idx, toApprove := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
+		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
+		// the file from our filenames list, because it doesn't need approval
+		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
+			o.filenames = removeFromStringSlice(o.filenames, idx)
+		} else {
+			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+		}
 	}
 	o.removeSubdirs(owners)
 	return owners
+}
+
+func removeFromStringSlice(slice []string, idx int) []string {
+	var prevElemIdx int
+	if idx > 0 {
+		prevElemIdx = idx - 1
+	}
+	return slice[prevElemIdx : idx+1]
 }
 
 // GetShuffledApprovers shuffles the potential approvers so that we don't
@@ -252,9 +274,9 @@ type Approvers struct {
 	ManuallyApproved func() bool
 }
 
-// IntersectSetsCase runs the intersection between to sets.String in a
-// case-insensitive way. It returns the name with the case of "one".
-func IntersectSetsCase(one, other sets.String) sets.String {
+// CaseInsensitiveIntersection runs the intersection between to sets.String in a
+// case-insensitive way. It returns the lowercased intersection.
+func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 	lower := sets.NewString()
 	for item := range other {
 		lower.Insert(strings.ToLower(item))
@@ -383,7 +405,7 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
 	currentApprovers := ap.GetCurrentApproversSetCased()
-	for fn, potentialApprovers := range ap.owners.GetApprovers() {
+	for ownersFilename, potentialApprovers := range ap.owners.GetApprovers() {
 		// The order of parameter matters here:
 		// - currentApprovers is the list of github handles that have approved
 		// - potentialApprovers is the list of handles in the OWNER
@@ -392,14 +414,14 @@ func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 		// We want to keep the syntax of the github handle
 		// rather than the potential mis-cased username found in
 		// the OWNERS file, that's why it's the first parameter.
-		filesApprovers[fn] = IntersectSetsCase(currentApprovers, potentialApprovers)
+		filesApprovers[ownersFilename] = CaseInsensitiveIntersection(currentApprovers, potentialApprovers)
 	}
 
 	return filesApprovers
 }
 
 // NoIssueApprovers returns the list of people who have "no-issue"
-// approved the pull-request. They are included in the list iff they can
+// approved the pull-request. They are included in the list if they can
 // approve one of the files.
 func (ap Approvers) NoIssueApprovers() map[string]Approval {
 	nia := map[string]Approval{}
@@ -433,7 +455,7 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 
 // GetFiles returns owners files that still need approval.
 func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
-	allOwnersFiles := []File{}
+	var allOwnersFiles []File
 	filesApprovers := ap.GetFilesApprovers()
 	for _, file := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[file]) == 0 {
@@ -493,7 +515,7 @@ func (ap Approvers) GetCCs() []string {
 // returns true, the PR may still not be fully approved depending on the associated issue
 // requirement
 func (ap Approvers) AreFilesApproved() bool {
-	return len(ap.owners.filenames) != 0 && ap.UnapprovedFiles().Len() == 0
+	return (len(ap.owners.filenames) != 0 || len(ap.owners.filenamesUnfiltered) != 0) && ap.UnapprovedFiles().Len() == 0
 }
 
 // RequirementsMet returns a bool indicating whether the PR has met all approval requirements:
@@ -509,11 +531,7 @@ func (ap Approvers) RequirementsMet() bool {
 // IsApproved returns a bool indicating whether the PR is fully approved.
 // If a human manually added the approved label, this returns true, ignoring normal approval rules.
 func (ap Approvers) IsApproved() bool {
-	reqsMet := ap.RequirementsMet()
-	if !reqsMet && ap.ManuallyApproved() {
-		return true
-	}
-	return reqsMet
+	return ap.RequirementsMet() || ap.ManuallyApproved()
 }
 
 // ListApprovals returns the list of approvals
