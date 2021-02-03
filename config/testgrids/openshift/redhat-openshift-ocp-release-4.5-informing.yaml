@@ -181,6 +181,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ocp-4.5-e2e-ovirt
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.5-e2e-ovirt
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ocp-4.5-e2e-vsphere
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1126,33 +1153,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-ovirt-4.5
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-ovirt-4.5
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1662,6 +1662,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-ocp-4.5-e2e-metal-ipi-compact
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.5-e2e-metal-ipi-ipv4
   name: periodic-ci-openshift-release-master-ocp-4.5-e2e-metal-ipi-ipv4
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.5-e2e-ovirt
+  name: periodic-ci-openshift-release-master-ocp-4.5-e2e-ovirt
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.5-e2e-vsphere
   name: periodic-ci-openshift-release-master-ocp-4.5-e2e-vsphere
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.5-e2e-vsphere-serial
@@ -1750,9 +1752,6 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-openstack-4.5
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-openstack-serial-4.5
   name: release-openshift-ocp-installer-e2e-openstack-serial-4.5
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-4.5
-  name: release-openshift-ocp-installer-e2e-ovirt-4.5
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
   name: release-openshift-ocp-installer-e2e-ovirt-upgrade-4.4-stable-to-4.5-ci
 - days_of_results: 60
