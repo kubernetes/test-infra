@@ -1,6 +1,5 @@
 {
   prometheusAlerts+:: {
-    local comps = $._config.components,
     groups+: [
       {
         name: 'ci-absent',
@@ -19,16 +18,7 @@
               message: '@test-infra-oncall The service %s has been down for 5 minutes.' % name,
             },
           }
-          for name in [
-              comps.crier,
-              comps.deck,
-              comps.ghproxy,
-              comps.hook,
-              comps.horologium,
-              comps.prowControllerManager,
-              comps.sinker,
-              comps.tide,
-          ]
+          for name in $._config.ciAbsents.components
         ],
       },
     ],
