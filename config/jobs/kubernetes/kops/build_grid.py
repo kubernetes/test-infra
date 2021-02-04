@@ -242,6 +242,7 @@ def build_test(cloud='aws',
                networking=None,
                container_runtime=None,
                k8s_version='latest',
+               kops_channel='alpha',
                kops_version=None,
                kops_zones=None,
                name_override=None,
@@ -299,6 +300,9 @@ def build_test(cloud='aws',
         raise Exception('missing required k8s_version')
 
     kops_args = ""
+    if kops_channel:
+        kops_args = kops_args + " --channel=" + kops_channel
+
     if networking:
         kops_args = kops_args + " --networking=" + networking
 
@@ -419,6 +423,7 @@ def build_test(cloud='aws',
         'k8s_version': k8s_version,
         'kops_version': kops_version,
         'container_runtime': container_runtime,
+        'kops_channel': kops_channel,
     }
     if feature_flags:
         spec['feature_flags'] = ','.join(feature_flags)
@@ -594,6 +599,7 @@ def generate_distros():
                        networking='calico',
                        container_runtime='containerd',
                        k8s_version='stable',
+                       kops_channel='stable',
                        name_override='kops-aws-distro-image' + distro,
                        extra_dashboards=['kops-distros'],
                        interval='8h',
