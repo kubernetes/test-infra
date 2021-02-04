@@ -108,7 +108,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-days-of-results: "30"
@@ -145,7 +145,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-days-of-results: "30"
@@ -182,7 +182,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-days-of-results: "30"
@@ -259,7 +259,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.17
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-1.17
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
@@ -334,7 +334,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=45m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-updown
@@ -346,7 +346,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release

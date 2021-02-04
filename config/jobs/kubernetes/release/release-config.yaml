@@ -29,7 +29,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
         resources:
           requests:
             memory: "6Gi"
