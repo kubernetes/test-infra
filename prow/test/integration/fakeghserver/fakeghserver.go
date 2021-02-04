@@ -191,6 +191,9 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string
 			if r.Method == http.MethodGet { // List
 				var issues []prowgh.IssueComment
 				issues, err = ghc.ListIssueComments(org, repo, id)
+				if err != nil {
+					return "", http.StatusInternalServerError, err
+				}
 				var content []byte
 				content, err = json.Marshal(issues)
 				return string(content), http.StatusOK, err
