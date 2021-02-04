@@ -84,6 +84,7 @@ type Label struct {
 // There is also a Default list of labels applied to every Repo
 type Configuration struct {
 	Repos   map[string]RepoConfig `json:"repos,omitempty"`
+	Orgs    map[string]RepoConfig `json:"orgs,omitempty"`
 	Default RepoConfig            `json:"default"`
 }
 
@@ -239,6 +240,9 @@ func stringInSortedSlice(a string, list []string) bool {
 func (c Configuration) Labels() []Label {
 	var labelarrays [][]Label
 	labelarrays = append(labelarrays, c.Default.Labels)
+	for _, org := range c.Orgs {
+		labelarrays = append(labelarrays, org.Labels)
+	}
 	for _, repo := range c.Repos {
 		labelarrays = append(labelarrays, repo.Labels)
 	}
@@ -265,7 +269,7 @@ func (c Configuration) Labels() []Label {
 // Ensures the config does not duplicate label names between default and repo
 func (c Configuration) validate(orgs string) error {
 	// Check default labels
-	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
+	defaultSeen, err := validate(c.Default.Labels, "default", make(map[string]string))
 	if err != nil {
 		return fmt.Errorf("invalid config: %v", err)
 	}
@@ -273,21 +277,34 @@ func (c Configuration) validate(orgs string) error {
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
 	sort.Strings(sortedOrgs)
-	// Check other repos labels
+
+	// Check org-level labels for duplicities with default labels
+	orgSeen := map[string]map[string]string{}
+	for org, orgConfig := range c.Orgs {
+		if orgSeen[org], err = validate(orgConfig.Labels, org, defaultSeen); err != nil {
+			return fmt.Errorf("invalid config: %v", err)
+		}
+	}
+
 	for repo, repoconfig := range c.Repos {
-		// Will complain if a label is both in default and repo
-		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
+		data := strings.Split(repo, "/")
+		if len(data) != 2 {
+			return fmt.Errorf("invalid repo name '%s', expected org/repo form", repo)
+		}
+		org := data[0]
+		if _, ok := orgSeen[org]; !ok {
+			orgSeen[org] = defaultSeen
+		}
+
+		// Check repo labels for duplicities with default and org-level labels
+		if _, err := validate(repoconfig.Labels, repo, orgSeen[org]); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
 		// If orgs have been specified, warn if repo isn't under orgs
-		if len(orgs) != 0 {
-			data := strings.Split(repo, "/")
-			if len(data) == 2 {
-				if !stringInSortedSlice(data[0], sortedOrgs) {
-					logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
-				}
-			}
+		if len(orgs) > 0 && !stringInSortedSlice(org, sortedOrgs) {
+			logrus.WithField("orgs", orgs).WithField("org", org).WithField("repo", repo).Warn("Repo isn't inside orgs")
 		}
+
 	}
 	return nil
 }
@@ -472,6 +489,9 @@ func copyLabelMap(originalMap map[string]Label) map[string]Label {
 func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates, error) {
 	// Find required, dead and archaic labels
 	defaultRequired, defaultArchaic, defaultDead := classifyLabels(config.Default.Labels, make(map[string]Label), make(map[string]Label), make(map[string]Label), time.Now(), nil)
+	if orgLabels, ok := config.Orgs[org]; ok {
+		defaultRequired, defaultArchaic, defaultDead = classifyLabels(orgLabels.Labels, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
+	}
 
 	var validationErrors []error
 	var actions []Update
@@ -811,8 +831,31 @@ func writeDocs(template string, output string, config Configuration) error {
 	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, issueTarget)})
 	desc = "all repos, only for PRs"
 	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, prTarget)})
+	// Let's sort orgs
+	var orgs []string
+	for org := range config.Orgs {
+		orgs = append(orgs, org)
+	}
+	sort.Strings(orgs)
+	// And append their labels
+	for _, org := range orgs {
+		lead := fmt.Sprintf("all repos in %s", org)
+		if l := LabelsForTarget(config.Orgs[org].Labels, bothTarget); len(l) > 0 {
+			desc = lead + ", for both issues and PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsForTarget(config.Orgs[org].Labels, issueTarget); len(l) > 0 {
+			desc = lead + ", only for issues"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsForTarget(config.Orgs[org].Labels, prTarget); len(l) > 0 {
+			desc = lead + ", only for PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+	}
+
 	// Let's sort repos
-	repos := make([]string, 0)
+	var repos []string
 	for repo := range config.Repos {
 		repos = append(repos, repo)
 	}
