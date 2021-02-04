@@ -1,0 +1,15 @@
+presets:
+# Credentials for using DigitalOcean Spaces test account. Used for kops tests.
+- labels:
+    preset-do-spaces-credential: "true"
+  env:
+  - name: DO_S3_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: spaces-digitalocean-s3
+        key: access-key
+  - name: DO_S3_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: spaces-digitalocean-s3
+        key: secret-key
