@@ -47,14 +47,15 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	continueOnError         bool
-	addedPresubmitDenylist  prowflagutil.Strings
-	addedPresubmitBlacklist prowflagutil.Strings
-	dryRun                  bool
-	kubernetes              prowflagutil.KubernetesOptions
-	github                  prowflagutil.GitHubOptions
-	storage                 prowflagutil.StorageClientOptions
-	instrumentationOptions  prowflagutil.InstrumentationOptions
+	continueOnError           bool
+	addedPresubmitDenylist    prowflagutil.Strings
+	addedPresubmitDenylistAll prowflagutil.Strings
+	addedPresubmitBlacklist   prowflagutil.Strings
+	dryRun                    bool
+	kubernetes                prowflagutil.KubernetesOptions
+	github                    prowflagutil.GitHubOptions
+	storage                   prowflagutil.StorageClientOptions
+	instrumentationOptions    prowflagutil.InstrumentationOptions
 
 	tokenBurst    int
 	tokensPerHour int
@@ -76,6 +77,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitDenylist, "denylist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
+	fs.Var(&o.addedPresubmitDenylistAll, "denylist-all", "Org or org/repo to ignore reconciling, set more than once to add more.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "[Will be deprecated after May 2021] Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -107,6 +109,11 @@ func (o *options) getDenyList() sets.String {
 	denyList = append(o.addedPresubmitBlacklist.Strings(), denyList...)
 
 	return sets.NewString(denyList...)
+}
+
+func (o *options) getDenyListAll() sets.String {
+	denyListAll := o.addedPresubmitDenylistAll.Strings()
+	return sets.NewString(denyListAll...)
 }
 
 func main() {
@@ -158,8 +165,7 @@ func main() {
 		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
-	denyList := o.getDenyList()
-	c := statusreconciler.NewController(o.continueOnError, denyList, opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, o.getDenyList(), o.getDenyListAll(), opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)
 	interrupts.Run(func(ctx context.Context) {
 		c.Run(ctx)
 	})
