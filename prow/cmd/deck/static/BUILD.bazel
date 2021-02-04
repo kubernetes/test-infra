@@ -1,8 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "jasmine_node_test", "rollup_bundle", "ts_library")
 
 ts_library(
     name = "api",
@@ -55,6 +53,7 @@ jasmine_node_test(
     srcs = [
         ":prow_test_lib",
     ],
+    templated_args = ["--bazel_patch_module_resolver"],
     deps = [
         "@npm//jasmine",
     ],
@@ -62,7 +61,6 @@ jasmine_node_test(
 
 rollup_bundle(
     name = "prow_bundle",
-    enable_code_splitting = False,
     entry_point = ":prow/prow.ts",
     deps = [
         ":prow",
@@ -81,7 +79,6 @@ ts_library(
 
 rollup_bundle(
     name = "plugin_help_bundle",
-    enable_code_splitting = False,
     entry_point = ":plugin-help/plugin-help.ts",
     deps = [
         ":plugin_help",
@@ -101,7 +98,6 @@ ts_library(
 
 rollup_bundle(
     name = "pr_bundle",
-    enable_code_splitting = False,
     entry_point = "pr/pr.ts",
     deps = [
         ":pr",
@@ -121,7 +117,6 @@ ts_library(
 
 rollup_bundle(
     name = "tide_bundle",
-    enable_code_splitting = False,
     entry_point = ":tide/tide.ts",
     deps = [
         ":tide",
@@ -141,7 +136,6 @@ ts_library(
 
 rollup_bundle(
     name = "tide_history_bundle",
-    enable_code_splitting = False,
     entry_point = ":tide-history/tide-history.ts",
     deps = [
         ":tide_history",
@@ -160,7 +154,6 @@ ts_library(
 
 rollup_bundle(
     name = "command_help_bundle",
-    enable_code_splitting = False,
     entry_point = ":command-help/command-help.ts",
     deps = [
         ":command_help",
@@ -192,7 +185,6 @@ ts_library(
 
 rollup_bundle(
     name = "spyglass_bundle",
-    enable_code_splitting = False,
     entry_point = ":spyglass/spyglass.ts",
     deps = [
         ":spyglass",
@@ -202,7 +194,6 @@ rollup_bundle(
 
 rollup_bundle(
     name = "spyglass_lens_bundle",
-    enable_code_splitting = False,
     entry_point = ":spyglass/lens.ts",
     deps = [
         ":spyglass_common",
