@@ -27,7 +27,7 @@ template = """
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: {{job_timeout}}
   spec:
     containers:
     - command:
@@ -42,7 +42,7 @@ template = """
       - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract={{extract}}
-      - --ginkgo-parallel
+      - --ginkgo-parallel={{test_parallelism}}
       - --kops-args={{kops_args}}
       - --kops-feature-flags={{kops_feature_flags}}
       - --kops-image={{kops_image}}
@@ -51,7 +51,7 @@ template = """
       - --kops-zones={{kops_zones}}
       - --provider=aws
       - --test_args={{test_args}}
-      - --timeout=60m
+      - --timeout={{test_timeout}}
       image: {{e2e_image}}
       imagePullPolicy: Always
       resources:
@@ -72,7 +72,7 @@ kubetest2_template = """
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: {{job_timeout}}
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -99,7 +99,7 @@ kubetest2_template = """
           --test=kops \\
           -- \\
           --test-package-marker={{marker}} \\
-          --parallel 25 \\
+          --parallel {{test_parallelism}} \\
           --skip-regex="{{skip_regex}}"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -126,6 +126,7 @@ run_daily = [
     'kops-grid-scenario-public-jwks',
     'kops-grid-scenario-arm64',
     'kops-grid-scenario-aws-cloud-controller-manager',
+    'kops-grid-scenario-serial-test-for-timeout',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -214,8 +215,10 @@ def build_test(cloud='aws',
                feature_flags=(),
                extra_flags=None,
                extra_dashboards=None,
-               interval=None):
-    # pylint: disable=too-many-statements,too-many-branches
+               interval=None,
+               test_parallelism=25,
+               test_timeout_minutes=60):
+    # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
         return
@@ -372,6 +375,10 @@ def build_test(cloud='aws',
     y = y.replace('{{extract}}', extract)
     y = y.replace('{{e2e_image}}', e2e_image)
     y = y.replace('{{kops_image}}', kops_image)
+
+    y = y.replace('{{test_parallelism}}', str(test_parallelism))
+    y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
+    y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
 
     # specific to kubetest2
     if use_kubetest2:
@@ -541,6 +548,16 @@ def generate():
                extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                             '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
                extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'])
+
+    # A special test to diagnose test timeouts
+    # cf https://github.com/kubernetes/test-infra/issues/20738
+    build_test(force_name="scenario-serial-test-for-timeout",
+               cloud="aws",
+               networking="calico",
+               distro="amzn2",
+               k8s_version="1.20",
+               test_parallelism=1,
+               test_timeout_minutes=300)
 
     print("")
     print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
