@@ -41,7 +41,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
         securityContext:
           privileged: true
         command:
@@ -61,7 +61,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
         securityContext:
           privileged: true
         command:
