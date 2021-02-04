@@ -476,7 +476,7 @@ periodics:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
       - name: CSI_SNAPSHOTTER_VERSION
-        value: "v3.0.3"
+        value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -610,7 +610,7 @@ periodics:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
       - name: CSI_SNAPSHOTTER_VERSION
-        value: "v3.0.3"
+        value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
@@ -698,7 +698,7 @@ periodics:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
       - name: CSI_SNAPSHOTTER_VERSION
-        value: "v3.0.3"
+        value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       - name: CSI_PROW_DEPLOYMENT

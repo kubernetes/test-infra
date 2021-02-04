@@ -265,6 +265,34 @@ pull_alwaysrun() {
     fi
 }
 
+# version_gt returns true if arg1 is greater than arg2.
+#
+# This function expects versions to be one of the following formats:
+#   X.Y.Z, release-X.Y.Z, vX.Y.Z
+#
+#   where X,Y, and Z are any number.
+#
+# Partial versions (1.2, release-1.2) work as well.
+# The follow substrings are stripped before version comparison:
+#   - "v"
+#   - "release-"
+#
+# Usage:
+# version_gt release-1.3 v1.2.0  (returns true)
+# version_gt v1.1.1 v1.2.0  (returns false)
+# version_gt 1.1.1 v1.2.0  (returns false)
+# version_gt 1.3.1 v1.2.0  (returns true)
+# version_gt 1.1.1 release-1.2.0  (returns false)
+# version_gt 1.2.0 1.2.2  (returns false)
+function version_gt() {
+    versions=$(for ver in "$@"; do ver=${ver#release-}; ver=${ver#kubernetes-}; echo ${ver#v}; done)
+    greaterVersion=${1#"release-"};
+    greaterVersion=${greaterVersion#"kubernetes-"};
+    greaterVersion=${greaterVersion#"v"};
+    test "$(printf '%s' "$versions" | sort -V | head -n 1)" != "$greaterVersion"
+}
+
+
 snapshotter_version() {
     local kubernetes="$1"
     local canary="$2"
@@ -280,14 +308,11 @@ snapshotter_version() {
         #
         # Additional jobs could be created to cover version
         # skew, if desired.
-        case "$kubernetes" in
-            1.20)
-                echo '"v4.0.0"'
-                ;;
-            *)
-                echo '"v3.0.3"'
-                ;;
-        esac
+        if [ "$kubernetes" == "latest" ] || [ "$kubernetes" == "master" ] || version_gt "$kubernetes" 1.19; then
+            echo '"v4.0.0"'
+        else
+            echo '"v3.0.3"'
+        fi
     fi
 }
 
