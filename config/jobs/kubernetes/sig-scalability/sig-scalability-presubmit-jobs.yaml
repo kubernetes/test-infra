@@ -28,6 +28,7 @@ presubmits:
         - --timeout=120
         - --scenario=kubernetes_e2e
         - --
+        - --check-leaked-resources
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -427,6 +428,7 @@ presubmits:
         - --timeout=120
         - --scenario=kubernetes_e2e
         - --
+        - --check-leaked-resources
         - --cluster=
         - --extract=ci/latest
         - --gcp-nodes=100
