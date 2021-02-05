@@ -22,16 +22,22 @@ readonly IMAGES=(
     busybox
     cuda-vector-add
     echoserver
+    glusterdynamic-provisioner
+    httpd
+    httpd-new
     ipc-utils
     jessie-dnsutils
     kitten
     metadata-concealment
     nautilus
+    nginx
+    nginx-new
     node-perf/tf-wide-deep
     node-perf/npb-ep
     node-perf/npb-is
     nonewprivs
     nonroot
+    perl
     pets/redis-installer
     pets/peer-finder
     pets/zookeeper-installer
