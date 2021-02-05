@@ -197,6 +197,11 @@ periodics:
     testgrid-dashboards: sig-release-releng-blocking, sig-release-1.18-informing, sig-testing-canaries
     testgrid-tab-name: build-1.18-canary
   cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.18
   interval: 1h
   labels:
     preset-dind-enabled: "true"
@@ -207,26 +212,24 @@ periodics:
     - 2241179
   spec:
     containers:
-    - args:
-      - --repo=k8s.io/kubernetes=release-1.18
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=240
-      - --scenario=kubernetes_build
-      - --
-      - --release=k8s-release-dev
+    - command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
       - --allow-dup
-      - --extra-version-markers=k8s-stable2
+      - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20210130-12516b2
+      - --extra-version-markers=k8s-stable3
+      image: gcr.io/k8s-staging-releng/k8s-ci-builder:v20201128-v0.6.0-6-g6313f696-default
       name: ""
       resources:
         limits:
-          cpu: 7300m
-          memory: 34Gi
+          cpu: "7"
+          memory: "34Gi"
         requests:
-          cpu: 7300m
-          memory: 34Gi
+          cpu: "7"
+          memory: "34Gi"
       securityContext:
         privileged: true
 - annotations:
