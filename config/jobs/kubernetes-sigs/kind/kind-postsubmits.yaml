@@ -1,7 +1,7 @@
 # sigs.k8s.io/kind postsubmits
 postsubmits:
   kubernetes-sigs/kind:
-  - name: ci-kind-unit
+  - name: ci-kind-test
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -13,7 +13,7 @@ postsubmits:
         command:
         - runner.sh
         - make
-        - unit
+        - test
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

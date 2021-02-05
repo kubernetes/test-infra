@@ -1,5 +1,5 @@
 periodics:
-- name: ci-kind-unit
+- name: ci-kind-test
   interval: 6h
   decorate: true
   extra_refs:
@@ -16,7 +16,7 @@ periodics:
       command:
       - wrapper.sh
       - make
-      - unit
+      - test
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
