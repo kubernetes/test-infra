@@ -217,7 +217,8 @@ def build_test(cloud='aws',
                extra_dashboards=None,
                interval=None,
                test_parallelism=25,
-               test_timeout_minutes=60):
+               test_timeout_minutes=60,
+               skip_override=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
@@ -315,6 +316,8 @@ def build_test(cloud='aws',
     if networking == "cilium":
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
+    if skip_override:
+        skip_regex = skip_override
     test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
