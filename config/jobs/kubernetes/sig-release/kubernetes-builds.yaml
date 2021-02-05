@@ -104,7 +104,9 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-testing-canaries
+    fork-per-release: "true"
+    fork-per-release-replacements: "k8s-master -> k8s-beta"
+    testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-testing-canaries
     testgrid-tab-name: build-master-canary
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
