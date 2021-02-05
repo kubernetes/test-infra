@@ -728,6 +728,42 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: doc.test.multicluster_istio.io_postsubmit
+    name: doc.test.multicluster_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: doc.test.multicluster_istio.io_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: doc.test.profile_default_istio.io_postsubmit
+    name: doc.test.profile_default_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: doc.test.profile_default_istio.io_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: doc.test.profile_demo_istio.io_postsubmit
+    name: doc.test.profile_demo_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: doc.test.profile_demo_istio.io_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
+    description: doc.test.profile_none_istio.io_postsubmit
+    name: doc.test.profile_none_istio.io_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio.io/issues/
+    test_group_name: doc.test.profile_none_istio.io_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio.io/compare/<start-custom-0>...<end-custom-0>
     description: gencheck_istio.io_postsubmit
     name: gencheck_istio.io_postsubmit
     open_bug_template:
@@ -3911,11 +3947,11 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: daily-fortio-performance-benchmark-release-1.8
-    name: daily-fortio-performance-benchmark-release-1.8
+    description: daily-fortio-performance-benchmark-release-1.9
+    name: daily-fortio-performance-benchmark-release-1.9
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: daily-fortio-performance-benchmark-release-1.8
+    test_group_name: daily-fortio-performance-benchmark-release-1.9
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -3929,11 +3965,11 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: daily-nighthawk-performance-benchmark-release-1.8
-    name: daily-nighthawk-performance-benchmark-release-1.8
+    description: daily-nighthawk-performance-benchmark-release-1.9
+    name: daily-nighthawk-performance-benchmark-release-1.9
     open_bug_template:
       url: https://github.com/istio/tools/issues/
-    test_group_name: daily-nighthawk-performance-benchmark-release-1.8
+    test_group_name: daily-nighthawk-performance-benchmark-release-1.9
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -4290,14 +4326,14 @@ test_groups:
 - gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark
   name: daily-fortio-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.8
-  name: daily-fortio-performance-benchmark-release-1.8
+- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.9
+  name: daily-fortio-performance-benchmark-release-1.9
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark
   name: daily-nighthawk-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.8
-  name: daily-nighthawk-performance-benchmark-release-1.8
+- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.9
+  name: daily-nighthawk-performance-benchmark-release-1.9
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-boutique-rollback-master-1.9
   name: istio-boutique-rollback-master-1.9
@@ -4740,11 +4776,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/unit-tests_istio_release-1.9_postsubmit
   name: unit-tests_istio_release-1.9_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/doc.test.multicluster_istio.io_postsubmit
+  name: doc.test.multicluster_istio.io_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.multicluster_istio.io_release-1.8_postsubmit
   name: doc.test.multicluster_istio.io_release-1.8_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.multicluster_istio.io_release-1.9_postsubmit
   name: doc.test.multicluster_istio.io_release-1.9_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/doc.test.profile_default_istio.io_postsubmit
+  name: doc.test.profile_default_istio.io_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.profile_default_istio.io_release-1.8_postsubmit
   name: doc.test.profile_default_istio.io_release-1.8_postsubmit
@@ -4752,11 +4794,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/doc.test.profile_default_istio.io_release-1.9_postsubmit
   name: doc.test.profile_default_istio.io_release-1.9_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/doc.test.profile_demo_istio.io_postsubmit
+  name: doc.test.profile_demo_istio.io_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.profile_demo_istio.io_release-1.8_postsubmit
   name: doc.test.profile_demo_istio.io_release-1.8_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.profile_demo_istio.io_release-1.9_postsubmit
   name: doc.test.profile_demo_istio.io_release-1.9_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/doc.test.profile_none_istio.io_postsubmit
+  name: doc.test.profile_none_istio.io_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/doc.test.profile_none_istio.io_release-1.8_postsubmit
   name: doc.test.profile_none_istio.io_release-1.8_postsubmit
