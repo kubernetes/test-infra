@@ -18,7 +18,7 @@ import zlib
 import yaml
 
 template = """
-- name: e2e-kops-grid{{suffix}}
+- name: {{job_name}}
   interval: '{{interval}}'
   cron: '{{cron}}'
   labels:
@@ -63,7 +63,7 @@ template = """
 """
 
 kubetest2_template = """
-- name: e2e-kops-grid{{suffix}}
+- name: {{job_name}}
   cron: '{{cron}}'
   interval: '{{interval}}'
   labels:
@@ -154,35 +154,28 @@ def simple_hash(s):
     # & 0xffffffff avoids python2/python3 compatibility
     return zlib.crc32(s.encode()) & 0xffffffff
 
-runs_per_week = 0
-job_count = 0
-
 def build_cron(key):
-    global job_count # pylint: disable=global-statement
-    global runs_per_week # pylint: disable=global-statement
-
+    runs_per_week = 0
     minute = simple_hash("minutes:" + key) % 60
     hour = simple_hash("hours:" + key) % 24
     day_of_week = simple_hash("day_of_week:" + key) % 7
 
-    job_count += 1
-
     # run Ubuntu 20.04 (Focal) jobs more frequently
     if "u2004" in key:
         runs_per_week += 7
-        return "%d %d * * *" % (minute, hour)
+        return "%d %d * * *" % (minute, hour), runs_per_week
 
     # run hotlist jobs more frequently
     if key in run_hourly:
         runs_per_week += 24 * 7
-        return "%d * * * *" % (minute)
+        return "%d * * * *" % (minute), runs_per_week
 
     if key in run_daily:
         runs_per_week += 7
-        return "%d %d * * *" % (minute, hour)
+        return "%d %d * * *" % (minute, hour), runs_per_week
 
     runs_per_week += 1
-    return "%d %d * * %d" % (minute, hour, day_of_week)
+    return "%d %d * * %d" % (minute, hour, day_of_week), runs_per_week
 
 def remove_line_with_prefix(s, prefix):
     keep = []
@@ -204,6 +197,11 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return True
     return float(k8s_version) > float(kops_version)
 
+##############
+# Build Test #
+##############
+
+# Returns a string representing the prow job YAML and the number of job invocations per week
 def build_test(cloud='aws',
                distro=None,
                networking=None,
@@ -211,19 +209,20 @@ def build_test(cloud='aws',
                k8s_version='latest',
                kops_version=None,
                kops_zones=None,
-               force_name=None,
+               name_override=None,
                feature_flags=(),
                extra_flags=None,
                extra_dashboards=None,
                interval=None,
                test_parallelism=25,
-               test_timeout_minutes=60):
+               test_timeout_minutes=60,
+               skip_override=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
-        return
+        return None
     if should_skip_newer_k8s(k8s_version, kops_version):
-        return
+        return None
 
     if distro is None:
         kops_ssh_user = 'ubuntu'
@@ -315,6 +314,8 @@ def build_test(cloud='aws',
     if networking == "cilium":
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
+    if skip_override:
+        skip_regex = skip_override
     test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
@@ -331,11 +332,10 @@ def build_test(cloud='aws',
     if container_runtime:
         suffix += "-" + container_runtime
 
-    if force_name:
-        suffix = "-" + force_name
-
     # We current have an issue with long cluster names; let's hash and warn if we encounter them
     cluster_name = "e2e-kops" + suffix
+    if name_override:
+        cluster_name = name_override
     if len(cluster_name) > 32:
         md5 = hashlib.md5(cluster_name.encode('utf-8'))
         cluster_name = cluster_name[0:20] + "--" + md5.hexdigest()[0:10]
@@ -346,10 +346,14 @@ def build_test(cloud='aws',
 
     tab = 'kops-grid' + suffix
 
-    if tab in skip_jobs:
-        return
+    if name_override:
+        tab = name_override
 
-    cron = build_cron(tab)
+    if tab in skip_jobs:
+        return None
+    job_name = 'e2e-' + tab
+
+    cron, runs_per_week = build_cron(tab)
 
     # As kubetest2 adds support for additional configurations we can reduce this conditional
     # and migrate more of the grid jobs to kubetest2
@@ -361,6 +365,7 @@ def build_test(cloud='aws',
         y = kubetest2_template
     y = y.replace('{{cluster_name}}', cluster_name)
     y = y.replace('{{suffix}}', suffix)
+    y = y.replace('{{job_name}}', job_name)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{kops_args}}', kops_args)
     y = y.replace('{{test_args}}', test_args)
@@ -380,12 +385,10 @@ def build_test(cloud='aws',
     y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
     y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
 
+
     # specific to kubetest2
     if use_kubetest2:
-        if networking:
-            y = y.replace('{{networking}}', networking)
-        else:
-            y = remove_line_with_prefix(y, "--networking=")
+        y = y.replace('{{networking}}', networking or 'kubenet')
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
         y = y.replace('{{container_runtime}}', container_runtime)
@@ -460,11 +463,14 @@ def build_test(cloud='aws',
 
     extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
-    print("")
-    print("# " + jsonspec)
-    print(y.strip())
+    output = f"\n# {jsonspec}\n{y.strip()}\n"
     for line in extra.splitlines():
-        print("  " + line)
+        output += f"  {line}\n"
+    return output, runs_per_week
+
+####################
+# Grid Definitions #
+####################
 
 networking_options = [
     None,
@@ -504,63 +510,122 @@ container_runtimes = [
     "containerd",
 ]
 
-def generate():
-    print("# Test scenarios generated by build-grid.py (do not manually edit)")
-    print("periodics:")
+############################
+# kops-periodics-grid.yaml #
+############################
+def generate_grid():
+    results = []
+    # pylint: disable=too-many-nested-blocks
     for container_runtime in container_runtimes:
         for networking in networking_options:
             for distro in distro_options:
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
-                        build_test(cloud="aws",
-                                   distro=distro,
-                                   extra_dashboards=['kops-grid'],
-                                   k8s_version=k8s_version,
-                                   kops_version=kops_version,
-                                   networking=networking,
-                                   container_runtime=container_runtime)
+                        results.append(
+                            build_test(cloud="aws",
+                                       distro=distro,
+                                       extra_dashboards=['kops-grid'],
+                                       k8s_version=k8s_version,
+                                       kops_version=kops_version,
+                                       networking=networking,
+                                       container_runtime=container_runtime)
+                        )
+    return filter(None, results)
 
+#############################
+# kops-periodics-misc2.yaml #
+#############################
+def generate_misc():
     # A one-off scenario testing arm64
     # TODO: Would be nice to default the arm image, perhaps based on the instance type
-    build_test(force_name="scenario-arm64",
-               cloud="aws",
-               distro="u2004",
-               kops_zones=['us-east-2b'],
-               extra_flags=['--node-size=m6g.large',
-                            '--master-size=m6g.large',
-                            '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106'], # pylint: disable=line-too-long
-               extra_dashboards=['kops-misc'])
+    results = [
+        build_test(name_override="kops-grid-scenario-arm64",
+                   cloud="aws",
+                   distro="u2004",
+                   kops_zones=['us-east-2b'],
+                   extra_flags=['--node-size=m6g.large',
+                                '--master-size=m6g.large',
+                                '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106'], # pylint: disable=line-too-long
+                   extra_dashboards=['kops-misc']),
 
-    # A special test for JWKS
-    build_test(force_name="scenario-public-jwks",
-               cloud="aws",
-               distro="u2004",
-               feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
-               extra_flags=['--api-loadbalancer-type=public'],
-               extra_dashboards=['kops-misc'])
 
-    # A special test for AWS Cloud-Controller-Manager
-    build_test(force_name="scenario-aws-cloud-controller-manager",
-               cloud="aws",
-               distro="u2004",
-               k8s_version="1.19",
-               feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-               extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                            '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
-               extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'])
+        # A special test for JWKS
+        build_test(name_override="kops-grid-scenario-public-jwks",
+                   cloud="aws",
+                   distro="u2004",
+                   feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
+                   extra_flags=['--api-loadbalancer-type=public'],
+                   extra_dashboards=['kops-misc']),
 
-    # A special test to diagnose test timeouts
-    # cf https://github.com/kubernetes/test-infra/issues/20738
-    build_test(force_name="scenario-serial-test-for-timeout",
-               cloud="aws",
-               networking="calico",
-               distro="amzn2",
-               k8s_version="1.20",
-               test_parallelism=1,
-               test_timeout_minutes=300)
+        # A special test for AWS Cloud-Controller-Manager
+        build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="1.19",
+                   feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
+                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
+                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
-    print("")
-    print("# %d jobs, total of %d runs per week" % (job_count, runs_per_week))
+        # A special test to diagnose test timeouts
+        # cf https://github.com/kubernetes/test-infra/issues/20738
+        build_test(name_override="kops-grid-scenario-serial-test-for-timeout",
+                   cloud="aws",
+                   networking="calico",
+                   distro="amzn2",
+                   k8s_version="1.20",
+                   test_parallelism=1,
+                   test_timeout_minutes=300)
+    ]
+    return results
+
+###############################
+# kops-periodics-distros.yaml #
+###############################
+def generate_distros():
+    distros = ['debian9', 'debian10', 'ubuntu1804', 'ubuntu2004', 'centos7', 'centos8',
+               'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
+    results = []
+    for distro in distros:
+        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        results.append(
+            build_test(distro=distro_short,
+                       networking='calico',
+                       container_runtime='containerd',
+                       k8s_version='stable',
+                       name_override='kops-aws-distro-image' + distro,
+                       extra_dashboards=['kops-distros'],
+                       interval='8h',
+                       skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+                       )
+        )
+    return results
+
+
+########################
+# YAML File Generation #
+########################
+files = {
+    'kops-periodics-grid.yaml': generate_grid,
+    'kops-periodics-misc2.yaml': generate_misc,
+    'kops-periodics-distros.yaml': generate_distros
+}
+
+def main():
+    for filename, generate_func in files.items():
+        print(f"Generating {filename}")
+        output = []
+        runs_per_week = 0
+        job_count = 0
+        for res in generate_func():
+            output.append(res[0])
+            runs_per_week += res[1]
+            job_count += 1
+        output.insert(0, f"# Test scenarios generated by {__file__} (do not manually edit)\n")
+        output.insert(1, f"# {job_count} jobs, total of {runs_per_week} runs per week\n")
+        output.insert(2, "periodics:\n")
+        with open(filename, 'w') as fd:
+            fd.write(''.join(output))
 
 if __name__ == "__main__":
-    generate()
+    main()
