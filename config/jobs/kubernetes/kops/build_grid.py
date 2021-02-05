@@ -387,12 +387,10 @@ def build_test(cloud='aws',
     y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
     y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
 
+
     # specific to kubetest2
     if use_kubetest2:
-        if networking:
-            y = y.replace('{{networking}}', networking)
-        else:
-            y = remove_line_with_prefix(y, "--networking=")
+        y = y.replace('{{networking}}', networking or 'kubenet')
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
         y = y.replace('{{container_runtime}}', container_runtime)
