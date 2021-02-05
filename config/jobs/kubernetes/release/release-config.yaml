@@ -84,7 +84,7 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-kube-cross
-    optional: false
+    optional: true
     decorate: true
     run_if_changed: '^images\/build\/cross\/'
     path_alias: k8s.io/release
