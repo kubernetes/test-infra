@@ -358,7 +358,7 @@ def build_test(cloud='aws',
 
     # As kubetest2 adds support for additional configurations we can reduce this conditional
     # and migrate more of the grid jobs to kubetest2
-    use_kubetest2 = container_runtime == 'containerd' and distro == 'u2004' and \
+    use_kubetest2 = container_runtime == 'containerd' and \
         len(feature_flags) == 0 and extra_flags is None and kops_zones is None
 
     y = template
