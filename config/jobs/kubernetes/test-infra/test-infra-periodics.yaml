@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210129-4ddcfd3-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
       command:
       - hack/bazel.sh
       args:

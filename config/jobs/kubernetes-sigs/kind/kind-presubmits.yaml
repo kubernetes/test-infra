@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210129-4ddcfd3-experimental
+      - image: gcr.io/k8s-testimages/krte:v20210204-b06ec78-experimental
         command:
         - wrapper.sh
         - make
@@ -311,7 +311,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210129-4ddcfd3-1.17
+      - image: gcr.io/k8s-testimages/krte:v20210204-b06ec78-1.17
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"

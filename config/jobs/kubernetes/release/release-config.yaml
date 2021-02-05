@@ -29,7 +29,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-b06ec78-master
         resources:
           requests:
             memory: "6Gi"
@@ -91,7 +91,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+        - image: gcr.io/k8s-testimages/image-builder:v20210204-b06ec78
           command:
             - /run.sh
           args:
