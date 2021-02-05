@@ -211,6 +211,9 @@ func (bucket blobStorageBucket) listSubDirs(ctx context.Context, prefix string) 
 
 // Lists all keys with given prefix.
 func (bucket blobStorageBucket) listAll(ctx context.Context, prefix string) ([]string, error) {
+	if !strings.HasSuffix(prefix, "/") {
+		prefix = prefix + "/"
+	}
 	it, err := bucket.Opener.Iterator(ctx, fmt.Sprintf("%s://%s/%s", bucket.storageProvider, bucket.name, prefix), "")
 	if err != nil {
 		return nil, err
