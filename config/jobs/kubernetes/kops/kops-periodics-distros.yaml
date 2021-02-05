@@ -12,28 +12,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagedebian9.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=admin
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: admin
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -49,7 +60,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-deb9, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-deb9, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian9
 
@@ -63,28 +74,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagedebian10.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=admin
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=136693071363/debian-10-amd64-20201207-477
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=136693071363/debian-10-amd64-20201207-477 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: admin
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -100,7 +122,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-deb10, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-deb10, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian10
 
@@ -114,28 +136,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imageubuntu1804.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -151,7 +184,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u1804, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u1804, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu1804
 
@@ -184,7 +217,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201 --networking=calico --container-runtime=containerd" \
+          --create-args="--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1 --networking=calico --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -227,28 +260,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagecentos7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=centos
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=125523088429/CentOS 7.9.2009 x86_64
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=125523088429/CentOS 7.9.2009 x86_64 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: centos
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -264,7 +308,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-centos7, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-centos7, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagecentos7
 
@@ -278,28 +322,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagecentos8.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=centos
-      - --env=KUBE_SSH_USER=centos
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=125523088429/CentOS 8.3.2011 x86_64
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=125523088429/CentOS 8.3.2011 x86_64 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: centos
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -315,7 +370,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-centos8, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-centos8, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagecentos8
 
@@ -329,28 +384,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imag--48dfe9fb04.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ec2-user
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ec2-user
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -366,7 +432,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageamazonlinux2
 
@@ -380,28 +446,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagerhel7.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ec2-user
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ec2-user
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -417,7 +494,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-rhel7, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-rhel7, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagerhel7
 
@@ -431,28 +508,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imagerhel8.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ec2-user
-      - --env=KUBE_SSH_USER=ec2-user
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2 --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ec2-user
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -468,7 +556,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-rhel8, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-rhel8, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagerhel8
 
@@ -482,28 +570,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-aws-distro-imageflatcar.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=core
-      - --env=KUBE_SSH_USER=core
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel=25
-      - --kops-args=--networking=calico --container-runtime=containerd
-      - --kops-image=075585003325/Flatcar-stable-2605.11.0-hvm
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image=075585003325/Flatcar-stable-2605.11.0-hvm --networking=calico --container-runtime=containerd" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: core
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
       imagePullPolicy: Always
       resources:
@@ -519,6 +618,6 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageflatcar

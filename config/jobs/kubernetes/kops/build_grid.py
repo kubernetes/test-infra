@@ -197,6 +197,41 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return True
     return float(k8s_version) > float(kops_version)
 
+def distro_info(distro):
+    if distro == 'amzn2':
+        kops_ssh_user = 'ec2-user'
+        kops_image = '137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2'
+    elif distro == 'centos7':
+        kops_ssh_user = 'centos'
+        kops_image = "125523088429/CentOS 7.9.2009 x86_64"
+    elif distro == 'centos8':
+        kops_ssh_user = 'centos'
+        kops_image = "125523088429/CentOS 8.3.2011 x86_64"
+    elif distro == 'deb9':
+        kops_ssh_user = 'admin'
+        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842'
+    elif distro == 'deb10':
+        kops_ssh_user = 'admin'
+        kops_image = '136693071363/debian-10-amd64-20201207-477'
+    elif distro == 'flatcar':
+        kops_ssh_user = 'core'
+        kops_image = '075585003325/Flatcar-stable-2605.11.0-hvm'
+    elif distro == 'u1804':
+        kops_ssh_user = 'ubuntu'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
+    elif distro == 'u2004' or distro is None:
+        kops_ssh_user = 'ubuntu'
+        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1'
+    elif distro == 'rhel7':
+        kops_ssh_user = 'ec2-user'
+        kops_image = '309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2'
+    elif distro == 'rhel8':
+        kops_ssh_user = 'ec2-user'
+        kops_image = '309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2'
+    else:
+        raise Exception('unknown distro ' + distro)
+    return kops_image, kops_ssh_user
+
 ##############
 # Build Test #
 ##############
@@ -219,46 +254,12 @@ def build_test(cloud='aws',
                skip_override=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
-    if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
+    if container_runtime == "containerd" and kops_version == "1.18":
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
 
-    if distro is None:
-        kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1'
-    elif distro == 'amzn2':
-        kops_ssh_user = 'ec2-user'
-        kops_image = '137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2'
-    elif distro == 'centos7':
-        kops_ssh_user = 'centos'
-        kops_image = "125523088429/CentOS 7.9.2009 x86_64"
-    elif distro == 'centos8':
-        kops_ssh_user = 'centos'
-        kops_image = "125523088429/CentOS 8.3.2011 x86_64"
-    elif distro == 'deb9':
-        kops_ssh_user = 'admin'
-        kops_image = '379101102735/debian-stretch-hvm-x86_64-gp2-2020-10-31-2842'
-    elif distro == 'deb10':
-        kops_ssh_user = 'admin'
-        kops_image = '136693071363/debian-10-amd64-20201207-477'
-    elif distro == 'flatcar':
-        kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2605.11.0-hvm'
-    elif distro == 'u1804':
-        kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
-    elif distro == 'u2004':
-        kops_ssh_user = 'ubuntu'
-        kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201201'
-    elif distro == 'rhel7':
-        kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-7.9_HVM_GA-20200917-x86_64-0-Hourly2-GP2'
-    elif distro == 'rhel8':
-        kops_ssh_user = 'ec2-user'
-        kops_image = '309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2'
-    else:
-        raise Exception('unknown distro ' + distro)
+    kops_image, kops_ssh_user = distro_info(distro)
 
     if container_runtime is None:
         container_runtime = 'docker'
@@ -357,7 +358,7 @@ def build_test(cloud='aws',
 
     # As kubetest2 adds support for additional configurations we can reduce this conditional
     # and migrate more of the grid jobs to kubetest2
-    use_kubetest2 = container_runtime == 'containerd' and distro == 'u2004' and \
+    use_kubetest2 = container_runtime == 'containerd' and \
         len(feature_flags) == 0 and extra_flags is None and kops_zones is None
 
     y = template
