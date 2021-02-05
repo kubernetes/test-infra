@@ -236,7 +236,7 @@ presets:
     preset-e2e-scalability-containerd: "true"
   env:
   - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
-    value: "10m"
+    value: "15m"
   - name: KUBE_CONTAINER_RUNTIME
     value: "containerd"
 
