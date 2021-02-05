@@ -867,7 +867,7 @@ func TestControllerReconcile(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name: "ignored org skips creation, still does retire and migrate",
+			name: "ignored org skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -892,7 +892,7 @@ func TestControllerReconcile(t *testing.T) {
 			},
 		},
 		{
-			name: "ignored org/repo skips creation, still does retire and migrate",
+			name: "ignored org/repo skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -912,6 +912,56 @@ func TestControllerReconcile(t *testing.T) {
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org/repo skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org/repo"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
