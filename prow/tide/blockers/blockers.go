@@ -71,8 +71,10 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 
 // FindAll finds issues with label in the specified orgs/repos that should block tide.
 func FindAll(ghc githubClient, log *logrus.Entry, label, orgRepoTokens string) (Blockers, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 	issues, err := search(
-		context.Background(),
+		ctx,
 		ghc,
 		log,
 		blockerQuery(label, orgRepoTokens),
