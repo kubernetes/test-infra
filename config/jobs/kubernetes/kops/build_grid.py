@@ -577,7 +577,28 @@ def generate_misc():
                    test_parallelism=1,
                    test_timeout_minutes=300)
     ]
+    return results
 
+###############################
+# kops-periodics-distros.yaml #
+###############################
+def generate_distros():
+    distros = ['debian9', 'debian10', 'ubuntu1804', 'ubuntu2004', 'centos7', 'centos8',
+               'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
+    results = []
+    for distro in distros:
+        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        results.append(
+            build_test(distro=distro_short,
+                       networking='calico',
+                       container_runtime='containerd',
+                       k8s_version='stable',
+                       name_override='kops-aws-distro-image' + distro,
+                       extra_dashboards=['kops-distros'],
+                       interval='8h',
+                       skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+                       )
+        )
     return results
 
 
@@ -587,6 +608,7 @@ def generate_misc():
 files = {
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
+    'kops-periodics-distros.yaml': generate_distros
 }
 
 def main():
