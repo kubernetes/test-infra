@@ -321,7 +321,7 @@ periodics:
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
-- name: ci-kubernetes-e2e-windows-containerd-gce-1-18
+- name: ci-kubernetes-e2e-windows-containerd-gce-1-20
   decorate: true
   decoration_config:
     timeout: 4h0m0s
@@ -342,7 +342,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/latest-1.18
+      - --extract=ci/latest-1.20
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -363,12 +363,12 @@ periodics:
         value: win2019
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-1.20
       name: ""
       resources: {}
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
-    testgrid-tab-name: gce-windows-2019-containerd-1.18
+    testgrid-tab-name: gce-windows-2019-containerd-1.20
 
 - name: ci-kubernetes-e2e-windows-node-throughput
   interval: 6h
