@@ -16,7 +16,7 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-  - name: pull-kind-unit
+  - name: pull-kind-test
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -28,7 +28,7 @@ presubmits:
         command:
         - wrapper.sh
         - make
-        - unit
+        - test
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
