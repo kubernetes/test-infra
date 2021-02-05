@@ -254,7 +254,7 @@ def build_test(cloud='aws',
                skip_override=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
-    if container_runtime == "containerd" and (kops_version == "1.18" or networking in (None, "kopeio")): # pylint: disable=line-too-long
+    if container_runtime == "containerd" and kops_version == "1.18":
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
