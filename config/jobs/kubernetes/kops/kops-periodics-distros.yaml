@@ -2,7 +2,7 @@
 # 10 jobs, total of 16 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb9", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb9", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagedebian9
   interval: '8h'
   labels:
@@ -58,13 +58,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb9
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-deb9, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian9
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagedebian10
   interval: '8h'
   labels:
@@ -120,13 +121,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb10
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-deb10, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian10
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u1804", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u1804", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageubuntu1804
   interval: '8h'
   labels:
@@ -182,13 +184,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u1804
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u1804, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu1804
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageubuntu2004
   interval: '8h'
   labels:
@@ -244,13 +247,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu2004
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "centos7", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "centos7", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagecentos7
   interval: '8h'
   labels:
@@ -306,13 +310,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: centos7
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-centos7, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagecentos7
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "centos8", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "centos8", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagecentos8
   interval: '8h'
   labels:
@@ -368,13 +373,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: centos8
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-centos8, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagecentos8
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageamazonlinux2
   interval: '8h'
   labels:
@@ -430,13 +436,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: amzn2
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-amzn2, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageamazonlinux2
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel7", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel7", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagerhel7
   interval: '8h'
   labels:
@@ -492,13 +499,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: rhel7
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-rhel7, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagerhel7
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagerhel8
   interval: '8h'
   labels:
@@ -554,13 +562,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: rhel8
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-rhel8, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagerhel8
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "k8s_version": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageflatcar
   interval: '8h'
   labels:
@@ -616,6 +625,7 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: flatcar
     test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: stable
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops

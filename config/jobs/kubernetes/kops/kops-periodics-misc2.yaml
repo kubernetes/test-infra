@@ -2,7 +2,7 @@
 # 4 jobs, total of 28 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106", "k8s_version": "latest", "kops_version": null, "kops_zones": "us-east-2b", "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "kops_zones": "us-east-2b", "networking": null}
 - name: e2e-kops-grid-scenario-arm64
   cron: '33 16 * * *'
   labels:
@@ -27,7 +27,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel=25
-      - --kops-args=--container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
+      - --kops-args=--channel=alpha --container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -49,6 +49,7 @@ periodics:
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/extra_flags: --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
     test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/kops_zones: us-east-2b
     test.kops.k8s.io/networking: ''
@@ -56,7 +57,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM,PublicJWKS", "k8s_version": "latest", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM,PublicJWKS", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-public-jwks
   cron: '53 4 * * *'
   labels:
@@ -81,7 +82,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel=25
-      - --kops-args=--container-runtime=docker --api-loadbalancer-type=public
+      - --kops-args=--channel=alpha --container-runtime=docker --api-loadbalancer-type=public
       - --kops-feature-flags=UseServiceAccountIAM,PublicJWKS
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -104,13 +105,14 @@ periodics:
     test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public
     test.kops.k8s.io/feature_flags: UseServiceAccountIAM,PublicJWKS
     test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-public-jwks
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager
   cron: '28 22 * * *'
   labels:
@@ -135,7 +137,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable-1.19
       - --ginkgo-parallel=25
-      - --kops-args=--container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
+      - --kops-args=--channel=alpha --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
       - --kops-feature-flags=EnableExternalCloudController,SpecOverrideFlag
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -158,13 +160,14 @@ periodics:
     test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
     test.kops.k8s.io/feature_flags: EnableExternalCloudController,SpecOverrideFlag
     test.kops.k8s.io/k8s_version: '1.19'
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.19, kops-latest, kops-misc, provider-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "amzn2", "k8s_version": "1.20", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "amzn2", "k8s_version": "1.20", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-scenario-serial-test-for-timeout
   cron: '14 0 * * *'
   labels:
@@ -189,7 +192,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable-1.20
       - --ginkgo-parallel=1
-      - --kops-args=--networking=calico --container-runtime=docker
+      - --kops-args=--channel=alpha --networking=calico --container-runtime=docker
       - --kops-image=137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -209,6 +212,7 @@ periodics:
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: amzn2
     test.kops.k8s.io/k8s_version: '1.20'
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-amzn2, kops-k8s-1.20, kops-latest, sig-cluster-lifecycle-kops
