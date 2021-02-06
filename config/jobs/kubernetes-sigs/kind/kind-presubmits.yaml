@@ -260,7 +260,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-20
-    path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
     spec:
       containers:
       - command:
@@ -295,7 +295,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.189
+      base_ref: release-1.19
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
@@ -307,7 +307,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-19
-    path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
     spec:
       containers:
       - command:
