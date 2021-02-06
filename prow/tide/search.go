@@ -58,7 +58,8 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time, or
 	var totalCost, remaining int
 	var ret []PullRequest
 	var sq searchQuery
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 	for {
 		log.Debug("Sending query")
 		if err := query(ctx, &sq, vars, org); err != nil {
