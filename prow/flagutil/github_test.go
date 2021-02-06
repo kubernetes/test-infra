@@ -17,8 +17,10 @@ limitations under the License.
 package flagutil
 
 import (
+	"fmt"
 	"testing"
 
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -72,5 +74,27 @@ func TestGitHubOptions_Validate(t *testing.T) {
 				t.Errorf("%s: unexpected graphql endpoint", testCase.name)
 			}
 		})
+	}
+}
+
+// TestGitHubOptionsConstructsANewClientOnEachInvocation verifies that multiple invocations do not
+// return the same client. This is important for components that use multiple clients with different
+// settings, like for example for the throttling.
+func TestGitHubOptionsConstructsANewClientOnEachInvocation(t *testing.T) {
+	o := &GitHubOptions{}
+	secretAgent := &secret.Agent{}
+
+	firstClient, err := o.githubClient(secretAgent, false)
+	if err != nil {
+		t.Fatalf("failed to construct first client: %v", err)
+	}
+	secondClient, err := o.githubClient(secretAgent, false)
+	if err != nil {
+		t.Fatalf("failed to construct second client: %v", err)
+	}
+
+	firstClientAddr, secondClientAddr := fmt.Sprintf("%p", firstClient), fmt.Sprintf("%p", secondClient)
+	if firstClientAddr == secondClientAddr {
+		t.Error("got the same client twice on subsequent invocation")
 	}
 }
