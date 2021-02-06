@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go/build"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -86,7 +87,10 @@ func readRepo(ctx context.Context, path string) (string, error) {
 	}
 	def, err := findRepo(wd, path)
 	if err != nil { // If k8s/test-infra is not under GOPATH, find under GOPATH.
-		def, err = findRepo(filepath.Join(os.Getenv("GOPATH"), "src"), path)
+		pkg, err := build.Default.Import(path, build.Default.GOPATH, build.FindOnly|build.IgnoreVendor)
+		if err == nil {
+			def = pkg.Dir
+		}
 	}
 	if err != nil {
 		logrus.WithError(err).WithField("repo", path).Warn("could not find repo")
