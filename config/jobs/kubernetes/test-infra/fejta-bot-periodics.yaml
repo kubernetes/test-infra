@@ -72,7 +72,7 @@ periodics:
       - |-
         --comment=Unknown CLA label state. Rechecking for CLA labels.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /check-cla
       - --template
       - --ceiling=10
@@ -112,7 +112,7 @@ periodics:
         Reopen the issue with `/reopen`.
         Mark the issue as fresh with `/remove-lifecycle rotten`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /close
       - --template
       - --ceiling=10
@@ -211,7 +211,7 @@ periodics:
 
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /lifecycle rotten
       - --template
       - --ceiling=10
@@ -254,7 +254,7 @@ periodics:
 
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /lifecycle stale
       - --template
       - --ceiling=10
