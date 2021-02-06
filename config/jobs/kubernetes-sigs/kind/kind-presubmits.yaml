@@ -243,8 +243,6 @@ presubmits:
             cpu: 2000m
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - always_run: true
-    branches:
-    - release-1.20
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -290,8 +288,6 @@ presubmits:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - always_run: true
-    branches:
-    - release-1.19
     extra_refs:
     - org: kubernetes
       repo: kubernetes
