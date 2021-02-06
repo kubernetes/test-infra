@@ -85,6 +85,9 @@ func readRepo(ctx context.Context, path string) (string, error) {
 		return "", fmt.Errorf("workingDir: %v", err)
 	}
 	def, err := findRepo(wd, path)
+	if err != nil { // If k8s/test-infra is not under GOPATH, find under GOPATH.
+		def, err = findRepo(filepath.Join(os.Getenv("GOPATH"), "src"), path)
+	}
 	if err != nil {
 		logrus.WithError(err).WithField("repo", path).Warn("could not find repo")
 	}
