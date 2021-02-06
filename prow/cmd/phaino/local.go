@@ -87,7 +87,8 @@ func readRepo(ctx context.Context, path string) (string, error) {
 	}
 	def, err := findRepo(wd, path)
 	if err != nil { // If k8s/test-infra is not under GOPATH, find under GOPATH.
-		pkg, err := build.Default.Import(path, build.Default.GOPATH, build.FindOnly|build.IgnoreVendor)
+		pkg, err2 := build.Default.Import(path, build.Default.GOPATH, build.FindOnly|build.IgnoreVendor)
+		err = err2
 		if err == nil {
 			def = pkg.Dir
 		}
