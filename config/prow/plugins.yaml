@@ -241,15 +241,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.17:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
         release-1.18:
             - cpanato # Release Manager
             - feiskyer # Release Manager
@@ -326,7 +317,6 @@ milestone_applier:
     release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
-    release-1.17: v1.17
   kubernetes/org:
     main: v1.21
   kubernetes/release:
