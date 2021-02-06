@@ -35,6 +35,9 @@ import (
 )
 
 func realPath(p string) (string, error) {
+	if p == "" {
+		return "", errors.New("cannot find repo")
+	}
 	return filepath.Abs(os.ExpandEnv(p))
 }
 
@@ -80,7 +83,7 @@ func pathAlias(r prowapi.Refs) string {
 	return r.PathAlias
 }
 
-func readRepo(ctx context.Context, path string) (string, error) {
+func readRepo(ctx context.Context, path string, readUserInput func(string, string) (string, error)) (string, error) {
 	wd, err := workingDir()
 	if err != nil {
 		return "", fmt.Errorf("workingDir: %v", err)
@@ -96,12 +99,7 @@ func readRepo(ctx context.Context, path string) (string, error) {
 	if err != nil {
 		logrus.WithError(err).WithField("repo", path).Warn("could not find repo")
 	}
-	fmt.Fprintf(os.Stderr, "local /path/to/%s", path)
-	if def != "" {
-		fmt.Fprintf(os.Stderr, " [%s]", def)
-	}
-	fmt.Fprint(os.Stderr, ": ")
-	out, err := scanln(ctx)
+	out, err := readUserInput(path, def)
 	if err != nil {
 		return "", fmt.Errorf("scan: %v", err)
 	}
@@ -254,6 +252,16 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 
 	var workingDir string
 
+	var readUserInput func(string, string) (string, error)
+	readUserInput = func(path, def string) (string, error) {
+		fmt.Fprintf(os.Stderr, "local /path/to/%s", path)
+		if def != "" {
+			fmt.Fprintf(os.Stderr, " [%s]", def)
+		}
+		fmt.Fprint(os.Stderr, ": ")
+		return scanln(ctx)
+	}
+
 	if decoration != nil {
 		var refs []prowapi.Refs
 		if pj.Spec.Refs != nil {
@@ -262,7 +270,7 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		refs = append(refs, pj.Spec.ExtraRefs...)
 		for _, ref := range refs {
 			path := pathAlias(ref)
-			repo, err := readRepo(ctx, path)
+			repo, err := readRepo(ctx, path, readUserInput)
 			if err != nil {
 				return nil, fmt.Errorf("bad repo(%s): %v", path, err)
 			}

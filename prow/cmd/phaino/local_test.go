@@ -17,11 +17,101 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"go/build"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 )
+
+func TestReadRepo(t *testing.T) {
+	dir, err := ioutil.TempDir("", "read-repo")
+	if err != nil {
+		t.Fatalf("Cannot create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	cases := []struct {
+		name      string
+		goal      string
+		wd        string
+		gopath    string
+		dirs      []string
+		userInput string
+		expected  string
+		err       bool
+	}{
+		{
+			name:     "find from local",
+			goal:     "k8s.io/test-infra2",
+			wd:       path.Join(dir, "find_from_local", "go/src/k8s.io/test-infra2"),
+			expected: path.Join(dir, "find_from_local", "go/src/k8s.io/test-infra2"),
+		},
+		{
+			name:   "find from explicit gopath",
+			goal:   "k8s.io/test-infra2",
+			gopath: path.Join(dir, "find_from_explicit_gopath"),
+			wd:     path.Join(dir, "find_from_explicit_gopath_random", "random"),
+			dirs: []string{
+				path.Join(dir, "find_from_explicit_gopath", "src", "k8s.io/test-infra2"),
+			},
+			expected: path.Join(dir, "find_from_explicit_gopath", "src", "k8s.io/test-infra2"),
+		},
+		{
+			name:   "not exist",
+			goal:   "k8s.io/test-infra2",
+			gopath: path.Join(dir, "not_exist", "random1"),
+			wd:     path.Join(dir, "not_exist", "random2"),
+			err:    true,
+		},
+		{
+			name:      "not exist due to user error",
+			goal:      "k8s.io/test-infra2",
+			wd:        path.Join(dir, "not_exist_due_to_user_error", "go/src/k8s.io/test-infra2"),
+			expected:  "/random/other/path",
+			userInput: "/random/other/path",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.dirs = append(tc.dirs, tc.wd)
+			for _, d := range tc.dirs {
+				if err := os.MkdirAll(d, 0755); err != nil {
+					t.Fatalf("Cannot create subdir %q: %v", d, err)
+				}
+			}
+
+			// build.Default was loaded while imported, override it directly.
+			oldGopath := build.Default.GOPATH
+			defer func() {
+				build.Default.GOPATH = oldGopath
+			}()
+			build.Default.GOPATH = tc.gopath
+
+			// Trick the system to think it's running in bazel and wd is tc.wd.
+			oldPwd := os.Getenv("BUILD_WORKING_DIRECTORY")
+			defer os.Setenv("BUILD_WORKING_DIRECTORY", oldPwd)
+			os.Setenv("BUILD_WORKING_DIRECTORY", tc.wd)
+
+			actual, err := readRepo(context.Background(), tc.goal, func(path, def string) (string, error) {
+				return tc.userInput, nil
+			})
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Error("Failed to get an error")
+			case actual != tc.expected:
+				t.Errorf("Actual %q != expected %q", actual, tc.expected)
+			}
+		})
+	}
+}
 
 func TestFindRepo(t *testing.T) {
 	cases := []struct {
