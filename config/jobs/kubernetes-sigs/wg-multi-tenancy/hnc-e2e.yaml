@@ -1,0 +1,66 @@
+# For more information on these tests (especially how to generate the images),
+# see
+# https://github.com/kubernetes-sigs/multi-tenancy/tree/master/incubator/hnc/hack/prow-e2e
+#
+# When updating this test, please update the periodics (below) in the same way
+# if applicable.
+postsubmits:
+  kubernetes-sigs/multi-tenancy:
+  - name: hnc-postsubmit-test
+    annotations:
+      testgrid-dashboards: wg-multi-tenancy-hnc
+      testgrid-tab-name: postsubmit-tests
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5 # No idea what this should be for HNC
+    path_alias: sigs.k8s.io/multi-tenancy
+    run_if_changed: "incubator/hnc/.*"
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
+        # The default command in the image runs the tests, but apparently
+        # decorated containers must have a command anyway.
+        command: ["./run-e2e.sh"]
+        securityContext:
+          privileged: true # Required for docker-in-docker
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+
+# The periodics are the same as the postsubmits, but we run them occasionally
+# to ensure there's no flakiness during periods where there aren't lots of
+# submissions. Please keep them as closely in sync as possible.
+periodics:
+- name: hnc-periodic-test
+  annotations:
+    testgrid-dashboards: wg-multi-tenancy-hnc
+    testgrid-tab-name: periodic-e2e-tests
+    testgrid-alert-email: aludwin@google.com # will change to a group when it's stable
+    testgrid-num-failures-to-alert: "1"
+  interval: 12h # Will reduce to 48h as soon as we know it's working (@adrianludwin, Feb 2021)
+  always_run: true # Different from the postsubmit; copied from kind periodics
+  decorate: true
+  decoration_config:
+    timeout: 1h
+  path_alias: sigs.k8s.io/multi-tenancy
+  labels:
+    preset-kind-volume-mounts: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
+      # The default command in the image runs the tests, but apparently
+      # decorated containers must have a command anyway.
+      command: ["./run-e2e.sh"]
+      securityContext:
+        privileged: true # Required for docker-in-docker
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
