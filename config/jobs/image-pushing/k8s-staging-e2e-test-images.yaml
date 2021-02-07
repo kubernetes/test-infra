@@ -198,6 +198,16 @@ postsubmits:
             - name: WHAT
               value: "echoserver"
     - name: post-kubernetes-push-e2e-glusterdynamic-provisioner-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -227,6 +237,16 @@ postsubmits:
             - name: WHAT
               value: "glusterdynamic-provisioner"
     - name: post-kubernetes-push-e2e-httpd-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -256,6 +276,16 @@ postsubmits:
             - name: WHAT
               value: "httpd"
     - name: post-kubernetes-push-e2e-httpd-new-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -480,6 +510,16 @@ postsubmits:
             - name: WHAT
               value: "nautilus"
     - name: post-kubernetes-push-e2e-nginx-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -509,6 +549,16 @@ postsubmits:
             - name: WHAT
               value: "nginx"
     - name: post-kubernetes-push-e2e-nginx-new-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
@@ -733,6 +783,16 @@ postsubmits:
             - name: WHAT
               value: "nonroot"
     - name: post-kubernetes-push-e2e-perl-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images
