@@ -50,14 +50,32 @@ func TestReadRepo(t *testing.T) {
 			expected: path.Join(dir, "find_from_local", "go/src/k8s.io/test-infra2"),
 		},
 		{
+			name:     "find from local fallback",
+			goal:     "k8s.io/test-infra2",
+			wd:       path.Join(dir, "find_from_local_fallback", "go/src/test-infra2"),
+			expected: path.Join(dir, "find_from_local_fallback", "go/src/test-infra2"),
+		},
+		{
 			name:   "find from explicit gopath",
 			goal:   "k8s.io/test-infra2",
 			gopath: path.Join(dir, "find_from_explicit_gopath"),
 			wd:     path.Join(dir, "find_from_explicit_gopath_random", "random"),
 			dirs: []string{
 				path.Join(dir, "find_from_explicit_gopath", "src", "k8s.io/test-infra2"),
+				path.Join(dir, "find_from_explicit_gopath_random", "src", "test-infra2"),
 			},
 			expected: path.Join(dir, "find_from_explicit_gopath", "src", "k8s.io/test-infra2"),
+		},
+		{
+			name:   "prefer gopath",
+			goal:   "k8s.io/test-infra2",
+			gopath: path.Join(dir, "prefer_gopath"),
+			wd:     path.Join(dir, "prefer_gopath_random", "random"),
+			dirs: []string{
+				path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
+				path.Join(dir, "prefer_gopath", "src", "test-infra2"),
+			},
+			expected: path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
 		},
 		{
 			name:   "not exist",
@@ -113,7 +131,7 @@ func TestReadRepo(t *testing.T) {
 	}
 }
 
-func TestFindRepo(t *testing.T) {
+func TestFindRepoFromLocal(t *testing.T) {
 	cases := []struct {
 		name     string
 		goal     string
@@ -188,7 +206,7 @@ func TestFindRepo(t *testing.T) {
 			wd := filepath.Join(dir, tc.wd)
 			expected := filepath.Join(dir, tc.expected)
 
-			actual, err := findRepo(wd, tc.goal)
+			actual, err := findRepoFromLocal(wd, tc.goal)
 			switch {
 			case err != nil:
 				if !tc.err {
