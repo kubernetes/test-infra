@@ -10,6 +10,7 @@ presubmits:
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     max_concurrency: 10
     branches:
+    - ^main$
     - ^master$
     spec:
       containers:
@@ -51,6 +52,7 @@ presubmits:
     run_if_changed: '^infra/gcp/backup_tools/'
     max_concurrency: 1
     branches:
+    - ^main$
     - ^master$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test

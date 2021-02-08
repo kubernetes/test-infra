@@ -11,7 +11,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
@@ -30,6 +30,9 @@ postsubmits:
     decorate: true
     max_concurrency: 1
     run_if_changed: '^groups/groups.yaml'
+    branches:
+    - ^main$
+    - ^master$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -51,6 +54,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^dns/zone-configs/"
     branches:
+    - ^main$
     - ^master$
     annotations:
       testgrid-create-test-group: 'true'
@@ -72,6 +76,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
     branches:
+    - ^main$
     - ^master$
     annotations:
       testgrid-create-test-group: 'true'
@@ -96,6 +101,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
     branches:
+    - ^main$
     - ^master$
     annotations:
       testgrid-create-test-group: 'true'
