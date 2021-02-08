@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	jiraclient "k8s.io/test-infra/prow/jira"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakeJiraClient struct {
@@ -90,6 +91,7 @@ func TestHandle(t *testing.T) {
 	testCases := []struct {
 		name                   string
 		event                  github.GenericCommentEvent
+		cfg                    *plugins.Jira
 		existingIssues         []jira.Issue
 		existingLinks          map[string][]jira.RemoteLink
 		expectedNewLinks       []jira.RemoteLink
@@ -227,6 +229,18 @@ func TestHandle(t *testing.T) {
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3"}}}},
 		},
+		{
+			name: "Valid issue in disabled project, case insensitive matching and no link",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue",
+				Body:       "Some text and also ENTERPRISE-4",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			cfg:            &plugins.Jira{DisabledJiraProjects: []string{"Enterprise"}},
+			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -237,7 +251,7 @@ func TestHandle(t *testing.T) {
 			}
 			githubClient := &fakeGitHubClient{}
 
-			if err := handle(jiraClient, githubClient, logrus.NewEntry(logrus.New()), &tc.event); err != nil {
+			if err := handle(jiraClient, githubClient, tc.cfg, logrus.NewEntry(logrus.New()), &tc.event); err != nil {
 				t.Fatalf("handle failed: %v", err)
 			}
 
