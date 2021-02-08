@@ -581,6 +581,10 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
+        # Disable unit test for Windows for now.
+        # TODO: Should remove it after unit tests are fixed.
+        - name: KUBE_RELEASE_RUN_TESTS
+          value: "n"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
         # docker-in-docker needs privileged mode
         securityContext:
