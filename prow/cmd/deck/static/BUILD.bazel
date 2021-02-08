@@ -232,14 +232,14 @@ filegroup(
 filegroup(
     name = "all-scripts",
     srcs = [
-        ":command_help_bundle",
-        ":plugin_help_bundle",
-        ":pr_bundle",
-        ":prow_bundle",
-        ":spyglass_bundle",
-        ":spyglass_lens_bundle",
-        ":tide_bundle",
-        ":tide_history_bundle",
+        ":command_help_bundle.min",
+        ":plugin_help_bundle.min",
+        ":pr_bundle.min",
+        ":prow_bundle.min",
+        ":spyglass_bundle.min",
+        ":spyglass_lens_bundle.min",
+        ":tide_bundle.min",
+        ":tide_history_bundle.min",
     ],
 )
 
