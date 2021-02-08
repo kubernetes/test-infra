@@ -50,7 +50,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-b06ec78-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

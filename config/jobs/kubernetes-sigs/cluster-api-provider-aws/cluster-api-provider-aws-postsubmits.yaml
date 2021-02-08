@@ -14,7 +14,7 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-b06ec78-1.19
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -50,7 +50,7 @@ postsubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-b06ec78-1.19
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
             command:
               - "runner.sh"
               - "./scripts/ci-conformance.sh"
