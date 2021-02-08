@@ -385,7 +385,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		}
 	}()
 	if err := r.Checkout(targetBranch); err != nil {
-		resp := fmt.Sprintf("cannot checkout %s: %v", targetBranch, err)
+		resp := fmt.Sprintf("cannot checkout `%s`: %v", targetBranch, err)
 		logger.Warningf(resp)
 		return s.createComment(org, repo, num, comment, resp)
 	}
