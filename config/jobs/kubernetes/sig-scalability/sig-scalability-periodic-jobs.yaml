@@ -113,6 +113,7 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
     testgrid-num-failures-to-alert: '1'
@@ -315,6 +316,7 @@ periodics:
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}, gcp-project=k8s-jenkins-blocking-kubemark -> gcp-project-type=scalability-project, us-central1-f -> us-east1-b"
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-master-500
     testgrid-num-failures-to-alert: '1'
@@ -382,6 +384,7 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
     testgrid-num-failures-to-alert: '1'
