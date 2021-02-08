@@ -215,6 +215,11 @@ periodics:
           - --env-passthrough=PULL_BASE_REF
           - --gcb-config=cloudbuild-nightly.yaml
           - .
+        env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+        - name: PULL_BASE_REF
+          value: master
   annotations:
     # this is the name of some testgrid dashboard to report to.
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
