@@ -1,8 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "jasmine_node_test", "rollup_bundle", "ts_library")
 
 ts_library(
     name = "utils",
@@ -23,6 +21,7 @@ jasmine_node_test(
     srcs = [
         ":utils_test_lib",
     ],
+    templated_args = ["--bazel_patch_module_resolver"],
     deps = [
         "@npm//jasmine",
     ],
@@ -48,7 +47,6 @@ ts_library(
 
 rollup_bundle(
     name = "zz.browser_bundle",
-    enable_code_splitting = False,
     entry_point = ":browser.ts",
     deps = [
         ":browser",

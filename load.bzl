@@ -19,10 +19,10 @@ def repositories():
     if not native.existing_rule("io_k8s_repo_infra"):
         http_archive(
             name = "io_k8s_repo_infra",
-            strip_prefix = "repo-infra-0.1.3",
-            sha256 = "46933bedbd22bc6a26ec6116d0d3e1475ad6b23447648d19abd6493241323311",
+            sha256 = "2f30f87259fed7262d9b95b2665e3d3ecd928d174a4f0356063bc99056b6f84c",
+            strip_prefix = "repo-infra-0.2.0",
             urls = [
-                "https://github.com/kubernetes/repo-infra/archive/v0.1.3.tar.gz",
+                "https://github.com/kubernetes/repo-infra/archive/v0.2.0.tar.gz",
             ],
         )
 
@@ -43,8 +43,8 @@ def repositories():
     # https://github.com/bazelbuild/rules_nodejs
     http_archive(
         name = "build_bazel_rules_nodejs",
-        sha256 = "9abd649b74317c9c135f4810636aaa838d5bea4913bfa93a85c2f52a919fdaf3",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.36.0/rules_nodejs-0.36.0.tar.gz"],
+        sha256 = "dd4dc46066e2ce034cba0c81aa3e862b27e8e8d95871f567359f7a534cccb666",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.1.0/rules_nodejs-3.1.0.tar.gz"],
     )
 
     # Python setup
