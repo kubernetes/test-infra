@@ -183,7 +183,7 @@ presubmits:
     optional: true
     decorate: true
     skip_report: false
-    skip_branches: ["^(k8s_1.12.0-beta.1|release-0.4|release-1.0)$"]
+    skip_branches: ["^(k8s_1.12.0-beta.1|release-0.4|release-1.0|release-2.1)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -275,7 +275,7 @@ presubmits:
     optional: true
     decorate: true
     skip_report: false
-    skip_branches: ["^(k8s_1.12.0-beta.1|release-0.4|release-1.0)$"]
+    skip_branches: ["^(k8s_1.12.0-beta.1|release-0.4|release-1.0|release-2.1)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
