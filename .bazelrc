@@ -1,10 +1,8 @@
+common --experimental_allow_incremental_repository_updates
+
 # populate env used for stamping builds etc
 build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
-
-# https://github.com/kubernetes/test-infra/issues/13140
-build --incompatible_disable_deprecated_attr_params=false
-query --incompatible_disable_deprecated_attr_params=false
 
 # enable data race detection
 test --features=race --test_output=errors
