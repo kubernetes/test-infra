@@ -47,8 +47,7 @@ type GitHubOptions struct {
 	AppID             string
 	AppPrivateKeyPath string
 
-	// These two will only be set after a github client was retrieved for the first time
-	client             github.Client
+	// This will only be set after a github client was retrieved for the first time
 	appsTokenGenerator github.GitHubAppTokenGenerator
 }
 
@@ -105,9 +104,15 @@ func (o *GitHubOptions) Validate(bool) error {
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
 func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (github.Client, error) {
-	if o.client != nil {
-		return o.client.WithFields(fields), nil
+	client, err := o.githubClient(secretAgent, dryRun)
+	if err != nil {
+		return nil, err
 	}
+	return client.WithFields(fields), nil
+}
+
+func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (github.Client, error) {
+	fields := logrus.Fields{}
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		logrus.Warn("empty -github-token-path, will use anonymous github client")
@@ -146,23 +151,20 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 	if dryRun {
 		if o.AppPrivateKeyPath != "" {
 			appsTokenGenerator, client := github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
-			o.client = client
 			o.appsTokenGenerator = appsTokenGenerator
-			return o.client, nil
+			return client, nil
 		}
-		o.client = github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-		return o.client, nil
+		client := github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		return client, nil
 	}
 	if o.AppPrivateKeyPath != "" {
 		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
-		o.client = client
 		o.appsTokenGenerator = appsTokenGenerator
-		return o.client, nil
+		return client, nil
 
 	}
 
-	o.client = github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	return o.client, nil
+	return github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 }
 
 // GitHubClient returns a GitHub client.
