@@ -337,7 +337,8 @@ milestone_applier:
     main: v1.21
     master: v1.21
   kubernetes/kops:
-    master: v1.20
+    master: v1.21
+    release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
