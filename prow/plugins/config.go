@@ -73,6 +73,7 @@ type Configuration struct {
 	Heart                Heart                        `json:"heart,omitempty"`
 	Label                Label                        `json:"label,omitempty"`
 	Lgtm                 []Lgtm                       `json:"lgtm,omitempty"`
+	Jira                 *Jira                        `json:"jira,omitempty"`
 	MilestoneApplier     map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
 	RepoMilestone        map[string]Milestone         `json:"repo_milestone,omitempty"`
 	Project              ProjectConfig                `json:"project_config,omitempty"`
@@ -326,6 +327,14 @@ type Lgtm struct {
 	// StickyLgtmTeam specifies the GitHub team whose members are trusted with sticky LGTM,
 	// which eliminates the need to re-lgtm minor fixes/updates.
 	StickyLgtmTeam string `json:"trusted_team_for_sticky_lgtm,omitempty"`
+}
+
+// Jira holds the config for the jira plugin.
+type Jira struct {
+	// DisabledJiraProjects are projects for which we will never try to create a link,
+	// for example including `enterprise` here would disable linking for all issues
+	// that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
+	DisabledJiraProjects []string `json:"disabled_jira_projects,omitempty"`
 }
 
 // Cat contains the configuration for the cat plugin.

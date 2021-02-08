@@ -60,10 +60,10 @@ type githubClient interface {
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.JiraClient, pc.GitHubClient, pc.Logger, &e)
+	return handle(pc.JiraClient, pc.GitHubClient, pc.PluginConfig.Jira, pc.Logger, &e)
 }
 
-func handle(jc jiraclient.Client, ghc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Nothing to do on deletion
 	if e.Action == github.GenericCommentActionDeleted {
 		return nil
@@ -71,6 +71,7 @@ func handle(jc jiraclient.Client, ghc githubClient, log *logrus.Entry, e *github
 
 	issueCandidateNames := issueNameRegex.FindAllString(e.Body, -1)
 	issueCandidateNames = append(issueCandidateNames, issueNameRegex.FindAllString(e.IssueTitle, -1)...)
+	issueCandidateNames = filterOutDisabledJiraProjects(issueCandidateNames, cfg)
 	if len(issueCandidateNames) == 0 {
 		return nil
 	}
@@ -219,4 +220,22 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 	log.Info("Created jira link")
 
 	return nil
+}
+
+func filterOutDisabledJiraProjects(candidateNames []string, cfg *plugins.Jira) []string {
+	if cfg == nil {
+		return candidateNames
+	}
+
+	var result []string
+	for _, excludedProject := range cfg.DisabledJiraProjects {
+		for _, candidate := range candidateNames {
+			if strings.HasPrefix(strings.ToLower(candidate), strings.ToLower(excludedProject)) {
+				continue
+			}
+			result = append(result, candidate)
+		}
+	}
+
+	return result
 }

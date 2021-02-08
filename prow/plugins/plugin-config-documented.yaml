@@ -386,6 +386,12 @@ help:
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
+jira:
+    # DisabledJiraProjects are projects for which we will never try to create a link,
+    # for example including `enterprise` here would disable linking for all issues
+    # that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
+    disabled_jira_projects:
+      - ""
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
