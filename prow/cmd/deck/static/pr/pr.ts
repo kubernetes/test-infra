@@ -243,7 +243,7 @@ window.onload = () => {
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     }
     const request = createXMLHTTPRequest((r) => {
-        const prData = JSON.parse(r.responseText);
+        const prData = JSON.parse(r.responseText) as UserData;
         redraw(prData);
         loadProgress(false);
     }, () => {
