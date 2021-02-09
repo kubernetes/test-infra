@@ -218,10 +218,12 @@ index 1ea52dc..5bd70a9 100644
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
+	t.Parallel()
 	testCherryPickIC(localgit.New, t)
 }
 
 func TestCherryPickICV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickIC(localgit.NewV2, t)
 }
 
@@ -316,10 +318,12 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 }
 
 func TestCherryPickPR(t *testing.T) {
+	t.Parallel()
 	testCherryPickPR(localgit.New, t)
 }
 
 func TestCherryPickPRV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickPR(localgit.NewV2, t)
 }
 
@@ -487,10 +491,12 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 }
 
 func TestCherryPickPRWithLabels(t *testing.T) {
+	t.Parallel()
 	testCherryPickPRWithLabels(localgit.New, t)
 }
 
 func TestCherryPickPRWithLabelsV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickPRWithLabels(localgit.NewV2, t)
 }
 
@@ -670,6 +676,7 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 }
 
 func TestCherryPickCreateIssue(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		org       string
 		repo      string
@@ -711,7 +718,7 @@ func TestCherryPickCreateIssue(t *testing.T) {
 			ghc: ghc,
 		}
 
-		if err := s.createIssue(tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
+		if err := s.createIssue(logrus.WithField("test", t.Name()), tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
