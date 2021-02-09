@@ -154,6 +154,7 @@ periodics:
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-2004: "true"
   spec:
     containers:
     - command:
@@ -199,6 +200,7 @@ periodics:
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-2004: "true"
   spec:
     containers:
     - command:
