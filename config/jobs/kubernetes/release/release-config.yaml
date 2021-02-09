@@ -85,11 +85,12 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-kube-cross
     optional: true
+    cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/cross\/'
     path_alias: k8s.io/release
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: gcb-builder-releng-test
       containers:
         - image: gcr.io/k8s-testimages/image-builder:v20210204-b06ec78
           command:
@@ -102,6 +103,13 @@ presubmits:
           env:
             - name: LOG_TO_STDOUT
               value: "y"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-image-kube-cross
