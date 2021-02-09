@@ -507,6 +507,7 @@ presubmits:
             - --env=CL2_ENABLE_DNS_PROGRAMMING=true
             - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
             - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+            - --env=NODE_PRELOAD_IMAGES=gcr.io/k8s-testimages/perf-tests-util/scratch:1,gcr.io/k8s-testimages/perf-tests-util/scratch:2,gcr.io/k8s-testimages/perf-tests-util/scratch:3,gcr.io/k8s-testimages/perf-tests-util/scratch:4,gcr.io/k8s-testimages/perf-tests-util/scratch:5,gcr.io/k8s-testimages/perf-tests-util/scratch:6,gcr.io/k8s-testimages/perf-tests-util/scratch:7,gcr.io/k8s-testimages/perf-tests-util/scratch:8,gcr.io/k8s-testimages/perf-tests-util/scratch:9,gcr.io/k8s-testimages/perf-tests-util/scratch:10
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
