@@ -1,9 +1,9 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-v1alpha4
+- name: periodic-cluster-api-provider-azure-conformance-v1alpha3-release-0-4
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 12h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: release-0-4
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -28,14 +28,14 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-v1alpha4-main
+    testgrid-tab-name: capz-periodic-conformance-v1alpha3-release-0-4
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-conformance-v1alpha4-with-ci-artifacts
+- name: periodic-cluster-api-provider-azure-conformance-v1alpha3-with-ci-artifacts-release-0-4
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 12h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -43,11 +43,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: release-0-4
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -63,14 +63,14 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, provider-azure-upstream, provider-azure-periodic
-    testgrid-tab-name: capz-periodic-conformance-v1alpha4-k8s-main
+    testgrid-tab-name: capz-periodic-conformance-v1alpha3-k8s-main-release-0-4
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-capi-e2e
+- name: periodic-cluster-api-provider-azure-capi-e2e-release-0-4
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 12h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -79,11 +79,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: release-0-4
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -97,48 +97,13 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-main
+    testgrid-tab-name: capz-periodic-capi-e2e-release-0-4
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-coverage
-  interval: 12h
-  decorate: true
-  path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: master
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
-      command:
-      - runner.sh
-      - bash
-      args:
-      - -c
-      - |
-        result=0
-        ./scripts/ci-test-coverage.sh || result=$?
-        cp coverage.* ${ARTIFACTS}
-        cd ../../k8s.io/test-infra/gopherage
-        GO111MODULE=on go build .
-        ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-        ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-        exit $result
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-full
+- name: periodic-cluster-api-provider-azure-e2e-full-release-0-4
   decorate: true
   decoration_config:
     timeout: 2h
-  interval: 12h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -147,11 +112,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: release-0-4
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210201-77bfce8-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -167,5 +132,5 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-full-main
+    testgrid-tab-name: capz-periodic-capi-e2e-full-release-0-4
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
