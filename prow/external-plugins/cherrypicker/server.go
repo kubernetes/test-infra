@@ -107,6 +107,15 @@ type Server struct {
 
 	repoLock sync.Mutex
 	repos    []github.Repo
+	mapLock  sync.Mutex
+	lockMap  map[cherryPickRequest]*sync.Mutex
+}
+
+type cherryPickRequest struct {
+	org          string
+	repo         string
+	pr           int
+	targetBranch string
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
@@ -366,6 +375,21 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
 func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
+	var lock *sync.Mutex
+	func() {
+		s.mapLock.Lock()
+		defer s.mapLock.Unlock()
+		if _, ok := s.lockMap[cherryPickRequest{org, repo, num, targetBranch}]; !ok {
+			if s.lockMap == nil {
+				s.lockMap = map[cherryPickRequest]*sync.Mutex{}
+			}
+			s.lockMap[cherryPickRequest{org, repo, num, targetBranch}] = &sync.Mutex{}
+		}
+		lock = s.lockMap[cherryPickRequest{org, repo, num, targetBranch}]
+	}()
+	lock.Lock()
+	defer lock.Unlock()
+
 	forkName, err := s.ensureForkExists(org, repo)
 	if err != nil {
 		resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
@@ -515,8 +539,6 @@ func (s *Server) createIssue(org, repo, title, body string, num int, comment *gi
 
 // ensureForkExists ensures a fork of org/repo exists for the bot.
 func (s *Server) ensureForkExists(org, repo string) (string, error) {
-	s.repoLock.Lock()
-	defer s.repoLock.Unlock()
 	fork := s.botUser.Login + "/" + repo
 
 	// fork repo if it doesn't exsit
@@ -524,6 +546,8 @@ func (s *Server) ensureForkExists(org, repo string) (string, error) {
 		return repo, err
 	}
 
+	s.repoLock.Lock()
+	defer s.repoLock.Unlock()
 	s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
 	return repo, nil
 }
