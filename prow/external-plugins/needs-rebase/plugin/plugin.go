@@ -103,6 +103,12 @@ func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
 	repo := pr.Base.Repo.Name
 	number := pr.Number
 	sha := pr.Head.SHA
+	*log = *log.WithFields(logrus.Fields{
+		github.OrgLogField:  org,
+		github.RepoLogField: repo,
+		github.PrLogField:   number,
+		"head-sha":          sha,
+	})
 
 	mergeable, err := ghc.IsMergeable(org, repo, number, sha)
 	if err != nil {
