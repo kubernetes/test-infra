@@ -9,7 +9,7 @@ postsubmits:
         description: Builds the auditlogger image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -31,7 +31,7 @@ postsubmits:
         description: Builds the snoopdb image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
