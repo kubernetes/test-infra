@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sync"
@@ -759,4 +760,47 @@ func TestCherryPickCreateIssue(t *testing.T) {
 		}
 
 	}
+}
+
+func TestHandleLocks(t *testing.T) {
+	t.Parallel()
+	s := &Server{
+		ghc:     &threadUnsafeFGHC{fghc: &fghc{}},
+		botUser: &github.UserData{},
+	}
+
+	routine1Done := make(chan struct{})
+	routine2Done := make(chan struct{})
+
+	l := logrus.WithField("test", t.Name())
+
+	go func() {
+		defer close(routine1Done)
+		if err := s.handle(l, "", &github.IssueComment{}, "org", "repo", "targetBranch", "title", "body", 0); err != nil {
+			t.Errorf("routine failed: %v", err)
+		}
+	}()
+	go func() {
+		defer close(routine2Done)
+		if err := s.handle(l, "", &github.IssueComment{}, "org", "repo", "targetBranch", "title", "body", 0); err != nil {
+			t.Errorf("routine failed: %v", err)
+		}
+	}()
+
+	<-routine1Done
+	<-routine2Done
+
+	if actual := s.ghc.(*threadUnsafeFGHC).orgRepoCountCalled; actual != 2 {
+		t.Errorf("expected two EnsureFork calls, got %d", actual)
+	}
+}
+
+type threadUnsafeFGHC struct {
+	*fghc
+	orgRepoCountCalled int
+}
+
+func (tuf *threadUnsafeFGHC) EnsureFork(login, org, repo string) (string, error) {
+	tuf.orgRepoCountCalled++
+	return "", errors.New("that is enough")
 }
