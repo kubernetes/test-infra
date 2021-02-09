@@ -42,21 +42,6 @@ container_image(
     ],
 )
 
-sh_test(
-    name = "validate-static-files",
-    srcs = [
-        "validate-static-files.sh",
-    ],
-    args = [
-        "$(locations :templates)",
-        "$(locations //prow/cmd/deck/static)",
-    ],
-    data = [
-        ":templates",
-        "//prow/cmd/deck/static",
-    ],
-)
-
 go_binary(
     name = NAME,
     data = [

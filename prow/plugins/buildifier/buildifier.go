@@ -125,8 +125,8 @@ func uniqProblems(problems []string) []string {
 
 // problemsInFiles runs buildifier on the files. It returns a map from the file to
 // a list of problems with that file.
-func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]bool, error) {
-	problems := map[string]bool{}
+func problemsInFiles(r git.RepoClient, files map[string]string) (map[string][]string, error) {
+	problems := make(map[string][]string)
 	for f := range files {
 		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
@@ -138,10 +138,13 @@ func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]bool
 		if err != nil {
 			return nil, fmt.Errorf("parsing as Bazel file %v", err)
 		}
-		beforeRewrite := build.FormatWithoutRewriting(content)
+		beforeRewrite := build.Format(content)
+		var info build.RewriteInfo
+		build.Rewrite(content, &info)
 		ndata := build.Format(content)
 		if !bytes.Equal(src, ndata) && !bytes.Equal(src, beforeRewrite) {
-			problems[f] = true
+			// TODO(mattmoor): This always seems to be empty?
+			problems[f] = uniqProblems(info.Log)
 		}
 	}
 	return problems, nil

@@ -66,17 +66,22 @@ load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
 
 k8s_repositories()
 
-# TODO(fejta): node repositories
-load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
-    # Updating yarn.lock? Set frozen_lockfile=False,
-    frozen_lockfile = True,
     package_json = "//:package.json",
     quiet = True,
     yarn_lock = "//:yarn.lock",
 )
+
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
+
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
+
+ts_setup_workspace()
 
 load("@rules_python//python:pip.bzl", "pip_import")
 

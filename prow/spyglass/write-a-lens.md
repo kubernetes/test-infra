@@ -95,8 +95,6 @@ a template called `template.html`, a typescript file called `sample.ts`, a style
 # Note that the important parts are the `name` arguments, which you should not change unless
 # you know what you're doing. You can change the filenames in `srcs` freely, as long as they
 # match the ways you reference them in code.
-load("//def:ts.bzl", "rollup_bundle", "ts_library")
-
 ts_library(
     name = "script",
     srcs = ["sample.ts"],
@@ -107,6 +105,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
+    enable_code_splitting = False,
     entry_point = ":sample.ts",
     deps = [
         ":script",
@@ -124,7 +123,7 @@ filegroup(
     srcs = [
         "style.css",
         "magic.png",
-        ":script_bundle.min",
+        ":script_bundle",
     ],
     visibility = ["//visibility:public"],
 )
