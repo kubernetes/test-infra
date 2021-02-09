@@ -381,7 +381,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 2h
-    always_run: false
+    always_run: true
     optional: true
     path_alias: k8s.io/kubernetes
     branches:
