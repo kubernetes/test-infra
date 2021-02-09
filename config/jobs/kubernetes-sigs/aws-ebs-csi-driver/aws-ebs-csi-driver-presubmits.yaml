@@ -112,3 +112,27 @@ presubmits:
       testgrid-tab-name: pull-migration-test-latest
       description: aws ebs csi driver migration test on latest kubernetes
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test-latest
+    always_run: false
+    decorate: true
+    skip_branches:
+      - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-external-test-latest
+      description: kubernetes/kubernetes external test on latest kubernetes
+      testgrid-num-columns-recent: '30'
