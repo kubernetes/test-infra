@@ -92,7 +92,7 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
-          --create-args="--image={{kops_image}} --networking={{networking}} --container-runtime={{container_runtime}}" \\
+          --create-args="--image='{{kops_image}}' --networking={{networking}} --container-runtime={{container_runtime}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
