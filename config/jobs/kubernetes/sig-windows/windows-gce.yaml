@@ -223,7 +223,7 @@ periodics:
         value: "win2004"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210204-d375b29-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
