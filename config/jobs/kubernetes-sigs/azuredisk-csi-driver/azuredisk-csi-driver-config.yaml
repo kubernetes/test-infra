@@ -601,7 +601,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-containerd
     decorate: true
-    always_run: false
+    always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
