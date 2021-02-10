@@ -17,8 +17,21 @@ load("@npm//@bazel/terser:index.bzl", _terser_minified = "terser_minified")
 load("@npm//@bazel/jasmine:index.bzl", _jasmine_node_test = "jasmine_node_test")
 load("@npm//@bazel/typescript:index.bzl", _ts_library = "ts_library")
 
-def rollup_bundle(name, format = "esm", **kw):
-    _rollup_bundle(name = name, format = format, **kw)
+def rollup_bundle(name, format = "esm", config_file = "//:rollup.config.js", **kw):
+    deps = kw.pop("deps") or []
+    deps.extend([
+        "@npm//@rollup/plugin-node-resolve",
+        "@npm//@rollup/plugin-commonjs",
+        "@npm//@rollup/plugin-json",
+    ])
+
+    _rollup_bundle(
+        name = name,
+        format = format,
+        config_file = config_file,
+        deps = deps,
+        **kw
+    )
     _terser_minified(
         name = name + ".min",
         src = name + ".js",
