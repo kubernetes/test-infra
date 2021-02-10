@@ -509,6 +509,10 @@ type Plank struct {
 	JobURLPrefixDisableAppendStorageProvider bool `json:"jobURLPrefixDisableAppendStorageProvider,omitempty"`
 }
 
+// DefaultDecorationConfigEntry contains a DecorationConfig and a set of regexp
+// filters to use to determine if the config should be used as a default for a
+// given ProwJob. When multiple of these entries match a ProwJob, they are all
+// merged with later entries overriding values from earlier entries.
 type DefaultDecorationConfigEntry struct {
 	// Matching/filtering fields
 
@@ -532,10 +536,14 @@ type DefaultDecorationConfigEntry struct {
 	Config *prowapi.DecorationConfig `json:"config,omitempty"`
 }
 
+// Matches returns true iff all the filters for the entry match a job.
 func (d *DefaultDecorationConfigEntry) Matches(repo, cluster string) bool {
 	return d.Repo.MatchString(repo) && d.Cluster.MatchString(cluster)
 }
 
+// MergeDefaultDecorationConfig finds all matching DefaultDecorationConfigEntry
+// for a job and merges them sequentially before merging into the job's own
+// DecorationConfig. Configs merged later override values from earlier configs.
 func (p *Plank) MergeDefaultDecorationConfig(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
 	var merged *prowapi.DecorationConfig
 	for _, entry := range p.DefaultDecorationConfigs {
@@ -609,14 +617,20 @@ func DefaultDecorationMapToSliceTesting(m map[string]*prowapi.DecorationConfig) 
 	return slice
 }
 
+// FinalizeDefaultDecorationConfigs prepares the entries of
+// Plank.DefaultDecorationConfigs for use finalizing job config.
+// It parses the value of p.DefaultDecorationConfigsRaw into either the old map
+// format or the new slice format:
+// Old format: map[string]*prowapi.DecorationConfig where the key is org,
+//             org/repo, or "*".
+// New format: []*DefaultDecorationConfigEntry
+// If the old format is parsed it is converted to the new format, then all
+// filter regexp are compiled.
 func (p *Plank) FinalizeDefaultDecorationConfigs() error {
 	if p.DefaultDecorationConfigsRaw == nil {
 		return nil
 	}
 	// Try parsing either accepted config format.
-	// Old format: map[string]*prowapi.DecorationConfig where the key is org,
-	//             org/repo, or "*".
-	// New format: []*DefaultDecorationConfigEntry
 	var old map[string]*prowapi.DecorationConfig
 	if oldErr := yaml.Unmarshal(*p.DefaultDecorationConfigsRaw, &old); oldErr != nil {
 		if newErr := yaml.Unmarshal(*p.DefaultDecorationConfigsRaw, &p.DefaultDecorationConfigs); newErr != nil {
