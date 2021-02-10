@@ -132,9 +132,10 @@ label:
 lgtm:
 - repos:
   - bazelbuild
-  - kubernetes/repo-infra
   - kubernetes-sigs/boskos
   - kubernetes-sigs/kind
+  - kubernetes/k8s.io
+  - kubernetes/repo-infra
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
