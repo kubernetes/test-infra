@@ -87,6 +87,98 @@ periodics:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: ci-win1909-provider-gcp-compute-persistent-disk-csi-driver
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
+- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019-migration
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-migration.sh
+      - --timeout=120m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      - name: KUBE_FEATURE_GATES
+        value: "CSIMigrationGCE=true"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-win2019-provider-gcp-compute-persistent-disk-csi-driver-migration
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
+- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-1909-migration
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-migration.sh
+      - --timeout=180m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win1909"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      - name: KUBE_FEATURE_GATES
+        value: "CSIMigrationGCE=true"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-win1909-provider-gcp-compute-persistent-disk-csi-driver-migration
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
