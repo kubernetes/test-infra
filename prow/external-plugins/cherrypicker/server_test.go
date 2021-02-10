@@ -101,7 +101,13 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 }
 
 func (f *fghc) EnsureFork(forkingUser, org, repo string) (string, error) {
-	return "", nil
+	if repo == "changeme" {
+		return "changed", nil
+	}
+	if repo == "error" {
+		return repo, errors.New("errors")
+	}
+	return repo, nil
 }
 
 var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
@@ -800,6 +806,63 @@ func TestHandleLocks(t *testing.T) {
 	if actual := s.ghc.(*threadUnsafeFGHC).orgRepoCountCalled; actual != 2 {
 		t.Errorf("expected two EnsureFork calls, got %d", actual)
 	}
+}
+
+func TestEnsureForkExists(t *testing.T) {
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
+
+	ghc := &fghc{}
+
+	s := &Server{
+		botUser: botUser,
+		ghc:     ghc,
+		repos:   []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+	}
+
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected string
+		errors   bool
+	}{
+		{
+			name:     "Repo name does not change after ensured",
+			org:      "whatever",
+			repo:     "repo",
+			expected: "repo",
+			errors:   false,
+		},
+		{
+			name:     "EnsureFork changes repo name",
+			org:      "whatever",
+			repo:     "changeme",
+			expected: "changed",
+			errors:   false,
+		},
+		{
+			name:     "EnsureFork errors",
+			org:      "whatever",
+			repo:     "error",
+			expected: "error",
+			errors:   true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res, err := s.ensureForkExists(tc.org, tc.repo)
+			if tc.errors && err == nil {
+				t.Errorf("expected error, but did not get one")
+			}
+			if !tc.errors && err != nil {
+				t.Errorf("expected no error, but got one")
+			}
+			if res != tc.expected {
+				t.Errorf("expected %s but got %s", tc.expected, res)
+			}
+		})
+	}
+
 }
 
 type threadUnsafeFGHC struct {
