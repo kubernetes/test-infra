@@ -1109,3 +1109,86 @@ func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
 		}
 	}
 }
+
+// Prow jobs should use pod-utils instead of relying on bootstrap
+// https://github.com/kubernetes/test-infra/issues/20760
+func TestKubernetesProwJobsShouldUsePodUtils(t *testing.T) {
+	total := 0
+	fails := 0
+	for _, job := range allStaticJobs() {
+		total++
+		// Only consider Pods
+		// TODO(https://github.com/kubernetes/test-infra/issues/14343): remove kubeflow exemption when job configs migrated
+		if job.Spec == nil || strings.HasPrefix("kubeflow", job.Name) {
+			continue
+		}
+		usesPodUtils := cfg.ShouldDecorate(&c.JobConfig, job.UtilityConfig)
+		if !usesPodUtils {
+			// bootstrap jobs don't use multiple containers
+			container := job.Spec.Containers[0]
+			repos := []string{}
+			scenario := ""
+			for _, arg := range container.Args {
+				if strings.HasPrefix(arg, "--repo=") {
+					repos = append(repos, strings.TrimPrefix(arg, "--repo="))
+				}
+				if strings.HasPrefix(arg, "--scenario=") {
+					scenario = strings.TrimPrefix(arg, "--scenario=")
+				}
+			}
+			fails++
+			if len(repos) > 0 {
+				t.Logf("%v: %v: should use pod-utils, found bootstrap args to clone: %v", job.SourcePath, job.Name, repos)
+			} else if scenario != "" {
+				t.Logf("%v: %v: should use pod-utils, found --scenario=%v, implies clone: [kubernetes/test-infra]", job.SourcePath, job.Name, scenario)
+			} else {
+				t.Logf("%v: %v: should use pod-utils, unknown case", job.SourcePath, job.Name)
+			}
+		}
+	}
+	if fails > 0 {
+		t.Logf("%v/%v jobs do not use pod-utils", fails, total)
+	}
+}
+
+// Prow jobs should use kubetest2 instead of deprecated scenarios
+// https://github.com/kubernetes/test-infra/tree/master/scenarios#deprecation-notice
+func TestKubernetesProwJobsShouldNotUseDeprecatedScenarios(t *testing.T) {
+	total := 0
+	fails := 0
+	for _, job := range allStaticJobs() {
+		total++
+		// Only consider Pods
+		if job.Spec == nil {
+			continue
+		}
+		// bootstrap jobs don't use multiple containers
+		container := job.Spec.Containers[0]
+		// might also be good proxy for "relies on bootstrap"
+		// if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap")
+		scenario := ""
+		r, _ := regexp.Compile(".*/scenarios/([a-z0-9_]+).py.*")
+		for _, cmd := range container.Command {
+			if submatches := r.FindStringSubmatch(cmd); submatches != nil {
+				scenario = submatches[1]
+			}
+		}
+		if scenario != "" {
+			fails++
+			t.Logf("%v: %v: should not be using deprecated scenarios, is directly invoking: %v", job.SourcePath, job.Name, scenario)
+			continue
+		}
+		for _, arg := range container.Args {
+			if strings.HasPrefix(arg, "--scenario=") {
+				scenario = strings.TrimPrefix(arg, "--scenario=")
+			}
+		}
+		if scenario != "" {
+			fails++
+			t.Logf("%v: %v: should not be using deprecated scenarios, is invoking via bootrap: %v", job.SourcePath, job.Name, scenario)
+		}
+	}
+	if fails > 0 {
+		t.Logf("%v/%v jobs using deprecated scenarios", fails, total)
+	}
+}
