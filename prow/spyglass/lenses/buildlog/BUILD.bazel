@@ -1,6 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "rollup_bundle", "ts_library")
 
 go_library(
     name = "go_default_library",
@@ -24,7 +23,6 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    enable_code_splitting = False,
     entry_point = ":buildlog.ts",
     deps = [
         ":script",
@@ -35,7 +33,7 @@ filegroup(
     name = "resources",
     srcs = [
         "buildlog.css",
-        ":script_bundle",
+        ":script_bundle.min",
     ],
     visibility = ["//visibility:public"],
 )
