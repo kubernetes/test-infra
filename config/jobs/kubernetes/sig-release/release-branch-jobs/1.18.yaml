@@ -270,6 +270,7 @@ periodics:
 - annotations:
     fork-per-release-cron: 0 21 * * *
     fork-per-release-generic-suffix: "true"
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: kubemark-1.18-500
