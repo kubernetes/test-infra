@@ -1051,6 +1051,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to release engineering security
+        name: area/release-eng/security
+        target: both
+        addedBy: label
   kubernetes/sig-release:
     labels:
       - color: 0052cc
@@ -1069,6 +1074,11 @@ repos:
         name: area/release-eng
         previously:
           - name: area/release-infra
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to release engineering security
+        name: area/release-eng/security
         target: both
         addedBy: label
       - color: 0052cc
