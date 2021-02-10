@@ -89,6 +89,7 @@ periodics:
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=30
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
       - --test=false
@@ -162,6 +163,7 @@ periodics:
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
