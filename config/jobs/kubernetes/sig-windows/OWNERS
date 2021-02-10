@@ -1,16 +1,18 @@
 reviewers:
-- benmoss
+- chewong
 - ddebroy
+- jayunit100
 - jeremyje
-- michmike
-- PatrickLang
+- jsturtevant
+- marosset
 - pjh
 approvers:
-- benmoss
+- chewong
 - ddebroy
+- jayunit100
 - jeremyje
-- michmike
-- PatrickLang
+- jsturtevant
+- marosset
 - pjh
 
 labels:
