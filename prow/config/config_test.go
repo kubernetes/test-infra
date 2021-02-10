@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -714,6 +715,73 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: pStr("default-service-account"),
+			},
+		},
+		{
+			name: "new format; global, org, repo, cluster, org+cluster",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+  - repo: "^org/"
+    config:
+      timeout: 1h
+  - repo: "^org/repo$"
+    config:
+      timeout: 3h
+  - cluster: "^trusted$"
+    config:
+      grace_period: 30s
+  - repo: "^org/foo$"
+    cluster: "^trusted$"
+    config:
+      grace_period: 1m
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  cluster: trusted
+  extra_refs:
+  - org: org
+    repo: foo
+    base_ref: master
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."
+`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 1 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 1 * time.Minute},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
 				},
 				GCSCredentialsSecret: pStr("default-service-account"),
 			},
@@ -3638,12 +3706,369 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 	}
 }
 
+func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
+	tcs := []struct {
+		name     string
+		raw      []byte
+		expected []*DefaultDecorationConfigEntry
+	}{
+		{
+			name:     "omitted config",
+			raw:      nil,
+			expected: nil,
+		},
+		{
+			name: "old format; global only",
+			raw: []byte(`
+'*':
+  timeout: 2h
+  grace_period: 15s
+  utility_images:
+    clonerefs: "clonerefs:default"
+    initupload: "initupload:default"
+    entrypoint: "entrypoint:default"
+    sidecar: "sidecar:default"
+  gcs_configuration:
+    bucket: "default-bucket"
+    path_strategy: "legacy"
+    default_org: "kubernetes"
+    default_repo: "kubernetes"
+  gcs_credentials_secret: "default-service-account"
+`),
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					Repo:       regexp.MustCompile(".*"),
+					RepoRaw:    ".*",
+					Cluster:    regexp.MustCompile(".*"),
+					ClusterRaw: ".*",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+			},
+		},
+		{
+			name: "old format; org repo ordered",
+			raw: []byte(`
+'*':
+  timeout: 2h
+  grace_period: 15s
+  utility_images:
+    clonerefs: "clonerefs:default"
+    initupload: "initupload:default"
+    entrypoint: "entrypoint:default"
+    sidecar: "sidecar:default"
+  gcs_configuration:
+    bucket: "default-bucket"
+    path_strategy: "legacy"
+    default_org: "kubernetes"
+    default_repo: "kubernetes"
+  gcs_credentials_secret: "default-service-account"
+'org/repo':
+  timeout: 1h
+'org':
+  timeout: 3h
+`),
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					Repo:       regexp.MustCompile(".*"),
+					RepoRaw:    ".*",
+					Cluster:    regexp.MustCompile(".*"),
+					ClusterRaw: ".*",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+				{
+					Repo:       regexp.MustCompile("^org/.*"),
+					RepoRaw:    "^org/.*",
+					Cluster:    regexp.MustCompile(".*"),
+					ClusterRaw: ".*",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					Repo:       regexp.MustCompile("^org/repo$"),
+					RepoRaw:    "^org/repo$",
+					Cluster:    regexp.MustCompile(".*"),
+					ClusterRaw: ".*",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
+					},
+				},
+			},
+		},
+		{
+			name: "new format; global only",
+			raw: []byte(`
+- config:
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+`),
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					Repo:       regexp.MustCompile(""),
+					RepoRaw:    "",
+					Cluster:    regexp.MustCompile(""),
+					ClusterRaw: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+			},
+		},
+		{
+			name: "new format; global, org, repo, cluster, org+cluster",
+			raw: []byte(`
+- config:
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+- repo: "^org/"
+  config:
+    timeout: 1h
+- repo: "^org/repo$"
+  config:
+    timeout: 3h
+- cluster: "^trusted$"
+  config:
+    grace_period: 30s
+- repo: "^org/foo$"
+  cluster: "^trusted$"
+  config:
+    grace_period: 1m
+`),
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					Repo:       regexp.MustCompile(""),
+					RepoRaw:    "",
+					Cluster:    regexp.MustCompile(""),
+					ClusterRaw: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+				{
+					Repo:       regexp.MustCompile("^org/"),
+					RepoRaw:    "^org/",
+					Cluster:    regexp.MustCompile(""),
+					ClusterRaw: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
+					},
+				},
+				{
+					Repo:       regexp.MustCompile("^org/repo$"),
+					RepoRaw:    "^org/repo$",
+					Cluster:    regexp.MustCompile(""),
+					ClusterRaw: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					Repo:       regexp.MustCompile(""),
+					RepoRaw:    "",
+					Cluster:    regexp.MustCompile("^trusted$"),
+					ClusterRaw: "^trusted$",
+					Config: &prowapi.DecorationConfig{
+						GracePeriod: &prowapi.Duration{Duration: 30 * time.Second},
+					},
+				},
+				{
+					Repo:       regexp.MustCompile("^org/foo$"),
+					RepoRaw:    "^org/foo$",
+					Cluster:    regexp.MustCompile("^trusted$"),
+					ClusterRaw: "^trusted$",
+					Config: &prowapi.DecorationConfig{
+						GracePeriod: &prowapi.Duration{Duration: 1 * time.Minute},
+					},
+				},
+			},
+		},
+	}
+
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			raw := json.RawMessage(tc.raw)
+			p := Plank{
+				DefaultDecorationConfigsRaw: &raw,
+			}
+			if err := p.FinalizeDefaultDecorationConfigs(); err != nil {
+				t.Errorf("error finalizing DefaultDecorationConfigs: %w", err)
+			}
+			if diff := cmp.Diff(tc.expected, p.DefaultDecorationConfigs, cmpopts.IgnoreUnexported(regexp.Regexp{})); diff != "" {
+				t.Errorf("expected result diff: %s", diff)
+			}
+		})
+	}
+}
+
+// complexConfig is shared by multiple test cases that test DefaultDecorationConfig
+// merging logic. It configures the upload bucket based on the org/repo and
+// uses either a GCS secret or k8s SA depending on the cluster.
+// A specific 'override' org overrides some fields in the trusted cluster only.
+var complexConfig = &Config{
+	JobConfig: JobConfig{
+		DecorateAllJobs: true,
+	},
+	ProwConfig: ProwConfig{
+		Plank: Plank{
+			DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+				{
+					Repo:    regexp.MustCompile(".*"),
+					Cluster: regexp.MustCompile(".*"),
+					Config: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:global",
+							InitUpload: "initupload:global",
+							Entrypoint: "entrypoint:global",
+							Sidecar:    "sidecar:global",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "global",
+							PathStrategy: "explicit",
+						},
+					},
+				},
+				{
+					Repo:    regexp.MustCompile("^org/"),
+					Cluster: regexp.MustCompile(".*"),
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "org-specific",
+							PathStrategy: "explicit",
+						},
+					},
+				},
+				{
+					Repo:    regexp.MustCompile("^org/repo$"),
+					Cluster: regexp.MustCompile(".*"),
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "repo-specific",
+							PathStrategy: "explicit",
+						},
+					},
+				},
+				{
+					Repo:    regexp.MustCompile(".*"),
+					Cluster: regexp.MustCompile("default"),
+					Config: &prowapi.DecorationConfig{
+						GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+					},
+				},
+				{
+					Repo:    regexp.MustCompile(".*"),
+					Cluster: regexp.MustCompile("trusted"),
+					Config: &prowapi.DecorationConfig{
+						DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+					},
+				},
+				{
+					Repo:    regexp.MustCompile("override"),
+					Cluster: regexp.MustCompile("trusted"),
+					Config: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs: "clonerefs:override",
+						},
+						DefaultServiceAccountName: pStr(""),
+						GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+					},
+				},
+			},
+		},
+	},
+}
+
 func TestSetDecorationDefaults(t *testing.T) {
 	yes := true
 	no := false
+
 	testCases := []struct {
 		id            string
 		repo          string
+		cluster       string
 		config        *Config
 		utilityConfig UtilityConfig
 		expected      *prowapi.DecorationConfig
@@ -4320,12 +4745,109 @@ func TestSetDecorationDefaults(t *testing.T) {
 				},
 			},
 		},
+		{
+			id:     "unrecognized org, no cluster => use global + default cluster configs",
+			config: complexConfig,
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "unrecognized repo and explicit 'default' cluster => use global + org + default cluster configs",
+			config:  complexConfig,
+			cluster: "default",
+			repo:    "org/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "org-specific",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "recognized repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
+			config:  complexConfig,
+			cluster: "trusted",
+			repo:    "org/repo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "repo-specific",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+			},
+		},
+		{
+			id:      "override org and in trusted cluster => use global + trusted cluster + override configs",
+			config:  complexConfig,
+			cluster: "trusted",
+			repo:    "override/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:override",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr(""),
+				GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+			},
+		},
+		{
+			id:      "override org and in default cluster => use global + default cluster configs",
+			config:  complexConfig,
+			cluster: "default",
+			repo:    "override/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			presubmit := &Presubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
-			postsubmit := &Postsubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
+			c := &Config{}
+			jb := &JobBase{Cluster: tc.cluster, UtilityConfig: tc.utilityConfig}
+			c.defaultJobBase(jb)
+			presubmit := &Presubmit{JobBase: *jb}
+			postsubmit := &Postsubmit{JobBase: *jb}
 
 			setPresubmitDecorationDefaults(tc.config, presubmit, tc.repo)
 			if diff := cmp.Diff(presubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
@@ -4345,6 +4867,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 	no := false
 	testCases := []struct {
 		id            string
+		cluster       string
 		config        *Config
 		utilityConfig UtilityConfig
 		expected      *prowapi.DecorationConfig
@@ -4623,11 +5146,134 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 			},
 		},
+		{
+			id:     "no extraRefs[0] or cluster => use global + default cluster configs",
+			config: complexConfig,
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has org and explicit 'default' cluster => use global + org + default cluster configs",
+			config:  complexConfig,
+			cluster: "default",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "org-specific",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
+			config:  complexConfig,
+			cluster: "trusted",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "repo-specific",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has override org and explicit 'trusted' cluster => use global + trusted cluster + override configs",
+			config:  complexConfig,
+			cluster: "trusted",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "override",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:override",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr(""),
+				GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+			},
+		},
+		{
+			id:     "extraRefs[0] has override org and no cluster => use global + default cluster configs",
+			config: complexConfig,
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "override",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			periodic := &Periodic{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
+			c := &Config{}
+			periodic := &Periodic{JobBase: JobBase{Cluster: tc.cluster, UtilityConfig: tc.utilityConfig}}
+			c.defaultJobBase(&periodic.JobBase)
 			setPeriodicDecorationDefaults(tc.config, periodic)
 			if diff := cmp.Diff(periodic.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
 				t.Error(diff)

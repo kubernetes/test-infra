@@ -919,7 +919,7 @@ func (d *Deck) ShouldValidateStorageBuckets() bool {
 func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
-		if dc.Config.GCSConfiguration != nil {
+		if dc.Config != nil && dc.Config.GCSConfiguration != nil && dc.Config.GCSConfiguration.Bucket != "" {
 			knownBuckets.Insert(dc.Config.GCSConfiguration.Bucket)
 		}
 	}
@@ -1395,6 +1395,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 
 // defaultPresubmits defaults the presubmits for one repo
 func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	c.defaultPresubmitFields(presubmits)
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
@@ -1402,7 +1403,6 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 			errs = append(errs, err)
 		}
 	}
-	c.defaultPresubmitFields(presubmits)
 	if err := SetPresubmitRegexes(presubmits); err != nil {
 		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
@@ -1412,6 +1412,7 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 
 // defaultPostsubmits defaults the postsubmits for one repo
 func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	c.defaultPostsubmitFields(postsubmits)
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
@@ -1419,7 +1420,6 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 			errs = append(errs, err)
 		}
 	}
-	c.defaultPostsubmitFields(postsubmits)
 	if err := SetPostsubmitRegexes(postsubmits); err != nil {
 		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
@@ -1428,15 +1428,14 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 
 // defaultPeriodics defaults c.Periodics
 func defaultPeriodics(c *Config) error {
+	c.defaultPeriodicFields(c.Periodics)
 	var errs []error
-
 	for i := range c.Periodics {
 		setPeriodicDecorationDefaults(c, &c.Periodics[i])
 		if err := resolvePresets(c.Periodics[i].Name, c.Periodics[i].Labels, c.Periodics[i].Spec, c.Presets); err != nil {
 			errs = append(errs, err)
 		}
 	}
-	c.defaultPeriodicFields(c.Periodics)
 	return utilerrors.NewAggregate(errs)
 }
 
