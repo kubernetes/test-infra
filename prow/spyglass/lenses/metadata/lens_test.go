@@ -145,7 +145,7 @@ func TestHintFromPodInfo(t *testing.T) {
 		},
 		{
 			name:     "stuck images are reported by name",
-			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master". Check your images.`,
+			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master". Check your images. Full message: "rpc error: code = Unknown desc"`,
 			info: k8sreporter.PodReport{
 				Pod: &v1.Pod{
 					ObjectMeta: metav1.ObjectMeta{
@@ -168,7 +168,43 @@ func TestHintFromPodInfo(t *testing.T) {
 								Ready: false,
 								State: v1.ContainerState{
 									Waiting: &v1.ContainerStateWaiting{
-										Reason: "ImagePullBackOff",
+										Reason:  "ImagePullBackOff",
+										Message: "rpc error: code = Unknown desc",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "stuck images are reported by name - errimagepull",
+			expected: `The test container could not start because it could not pull "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master". Check your images. Full message: "rpc error: code = Unknown desc"`,
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Waiting: &v1.ContainerStateWaiting{
+										Reason:  "ErrImagePull",
+										Message: "rpc error: code = Unknown desc",
 									},
 								},
 							},
