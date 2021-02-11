@@ -447,7 +447,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
       env:
       - name: CL2_CONTAINER_IMAGE
-        value: "gcr.io/gke-release/pause-win:1.2.1"
+        value: "k8s.gcr.io/pause:3.4.1"
       - name: CL2_WMI_EXPORTER_URL
         value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
