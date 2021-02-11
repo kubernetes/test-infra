@@ -53,11 +53,6 @@ periodics:
       - |
         echo "Ensure gcloud creds are working" >&2
         gcloud config list
-        echo -n "Calculate github user from token: " >&2
-        GH_TOKEN=$(cat /etc/github-token/oauth)
-        GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
-        FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
-        echo "$GH_USER" >&2
         echo "Running Audit Script to dump GCP configuration to yaml" >&2
         push ./audit
         ./audit-gcp.sh
@@ -68,11 +63,15 @@ periodics:
         go build -o ../k8s.io/pr-creator robots/pr-creator/main.go
         popd
 
-        echo "Prepare commit for possible PR"
-        # Values pulled from config/prow/autobump-config.yaml
-        # and logic from prow/cmd/autobump.sh
-        git config user.name "CNCF CI Bot"
-        git config user.email "cncf-ci@ii.coop"
+        echo -n "Calculate github user, name, and email from token: " >&2
+        GH_TOKEN=$(cat /etc/github-token/token)
+        GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login
+        GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name
+        GH_EMAIL=$(curl -H "Authorization: token $GH_TOKEN" -H "X-Oauth-Scope: user:email" "https://api.github.com/user/emails" 2>/dev/null | jq -r '.[] | select( .primary == true ) | .email')
+        FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
+        echo "Prepare commit for possible PR via $GH_USER" >&2
+        git config user.name ${GH_NAME}
+        git config user.email ${GH_EMAIL}
         git add --all -u
         git commit -m "audit: update as of $(date +%Y-%m-%d)"
         echo -e "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}:..." >&2
@@ -82,7 +81,7 @@ periodics:
         title="audit: update as of $(date +%Y-%m-%d)"
         body="Audit Updates\n/wg k8s-infra"
         /pr-creator \
-          --github-token-path=/etc/github-token/oauth \
+          --github-token-path=/etc/github-token/token \
           --org=kubernetes --repo=k8s.io --branch=main \
           --source="${GH_USER}:${FORK_GH_BRANCH}" \
           --head-branch="${FORK_GH_BRANCH}" \
@@ -96,7 +95,7 @@ periodics:
     volumes:
     - name: github
       secret:
-        secretName: oauth-token
+        secretName: cncf-ci-github-token
 
 postsubmits:
   kubernetes/k8s.io:
