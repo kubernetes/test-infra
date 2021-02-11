@@ -47,10 +47,37 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string, dc *yamlcfg.DefaultConfiguration) error {
+type prowAwareConfigurator struct {
+	prowConfig            *prowConfig.Config
+	defaultTestgridConfig *yamlcfg.DefaultConfiguration
+
+	updateDescription bool
+	prowJobConfigPath string
+	prowJobURLPrefix  string
+}
+
+func (pac *prowAwareConfigurator) tabDescriptionForProwJob(j prowConfig.JobBase) string {
+	fields := []string{}
+	fields = append(fields, fmt.Sprintf("prowjob_name: %v", j.Name))
+	if pac.prowJobURLPrefix != "" {
+		url := pac.prowJobURLPrefix + strings.TrimPrefix(j.SourcePath, pac.prowJobConfigPath)
+		fields = append(fields, fmt.Sprintf("prowjob_config_url: %v", url))
+	}
+	if d := j.Annotations[descriptionAnnotation]; d != "" {
+		fields = append(fields, fmt.Sprintf("prowjob_description: %v", d))
+		if !pac.updateDescription {
+			return d
+		}
+	}
+	return strings.Join(fields, "\n")
+}
+
+func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string) error {
 	tabName := j.Name
 	testGroupName := j.Name
-	description := j.Name
+
+	pc := pac.prowConfig
+	dc := pac.defaultTestgridConfig
 
 	mustMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "true"
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
@@ -139,9 +166,8 @@ func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Con
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
 		tabName = tn
 	}
-	if d := j.Annotations[descriptionAnnotation]; d != "" {
-		description = d
-	}
+
+	description := pac.tabDescriptionForProwJob(j)
 
 	if addToDashboards {
 		firstDashboard := true
@@ -233,17 +259,16 @@ func sortPresubmits(pre map[string][]prowConfig.Presubmit) []string {
 	return preRepos
 }
 
-func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.DefaultConfiguration, prowConfigAgent *prowConfig.Agent) error {
-	pc := prowConfigAgent.Config()
-	if pc == nil {
+func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *configpb.Configuration) error {
+	if pac.prowConfig == nil {
 		return nil
 	}
-	jobs := prowConfigAgent.Config().JobConfig
+	jobs := pac.prowConfig.JobConfig
 
 	per := jobs.AllPeriodics()
 	sortPeriodics(per)
 	for _, j := range per {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcile); err != nil {
+		if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PeriodicJob, ""); err != nil {
 			return err
 		}
 	}
@@ -252,7 +277,7 @@ func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.Defau
 	postReposSorted := sortPostsubmits(post)
 	for _, orgrepo := range postReposSorted {
 		for _, j := range post[orgrepo] {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, orgrepo, reconcile); err != nil {
+			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PostsubmitJob, orgrepo); err != nil {
 				return err
 			}
 		}
@@ -262,7 +287,7 @@ func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.Defau
 	preReposSorted := sortPresubmits(pre)
 	for _, orgrepo := range preReposSorted {
 		for _, j := range pre[orgrepo] {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, orgrepo, reconcile); err != nil {
+			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PresubmitJob, orgrepo); err != nil {
 				return err
 			}
 		}

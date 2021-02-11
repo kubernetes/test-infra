@@ -29,16 +29,21 @@ import (
 
 const ProwDefaultGCSPath = "pathPrefix/"
 const ProwJobName = "TestJob"
+const ProwJobSourcePath = "jobs/org/repo/testjob.yaml"
+const ProwJobURLPrefix = "https://go.k8s.io/prowjobs/"
 const ExampleRepository = "test/repo"
+const ProwJobDefaultDescription = "prowjob_name: " + ProwJobName
 
 func Test_applySingleProwjobAnnotations(t *testing.T) {
 	tests := []*struct {
-		name           string
-		initialConfig  config.Configuration
-		prowJobType    prowapi.ProwJobType
-		annotations    map[string]string
-		expectedConfig config.Configuration
-		expectError    bool
+		name              string
+		initialConfig     config.Configuration
+		updateDescription bool
+		prowJobURLPrefix  string
+		prowJobType       prowapi.ProwJobType
+		annotations       map[string]string
+		expectedConfig    config.Configuration
+		expectError       bool
 	}{
 		{
 			name:           "Presubmit with no Annotations: no change",
@@ -135,7 +140,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
@@ -183,7 +188,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
@@ -202,7 +207,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
@@ -260,7 +265,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 							},
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
@@ -275,13 +280,53 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			},
 		},
 		{
-			name: "Full Annotations",
+			name: "Add job to existing dashboard with --prowjob-url-prefix configured",
+			initialConfig: config.Configuration{
+				Dashboards: []*config.Dashboard{
+					{Name: "Wash"},
+				},
+			},
+			prowJobURLPrefix: ProwJobURLPrefix,
+			prowJobType:      prowapi.PostsubmitJob,
+			annotations: map[string]string{
+				"testgrid-dashboards": "Wash",
+			},
+			expectedConfig: config.Configuration{
+				TestGroups: []*config.TestGroup{
+					{
+						Name:      ProwJobName,
+						GcsPrefix: ProwDefaultGCSPath + "logs/" + ProwJobName,
+					},
+				},
+				Dashboards: []*config.Dashboard{
+					{
+						Name: "Wash",
+						DashboardTab: []*config.DashboardTab{
+							{
+								Name:          ProwJobName,
+								Description:   ProwJobDefaultDescription + "\nprowjob_config_url: " + ProwJobURLPrefix + ProwJobSourcePath,
+								TestGroupName: ProwJobName,
+								CodeSearchUrlTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Full Annotations with --update-description enabled",
 			initialConfig: config.Configuration{
 				Dashboards: []*config.Dashboard{
 					{Name: "Ouija"},
 				},
 			},
-			prowJobType: prowapi.PostsubmitJob,
+			updateDescription: true,
+			prowJobType:       prowapi.PostsubmitJob,
 			annotations: map[string]string{
 				"testgrid-dashboards":                "Ouija",
 				"testgrid-tab-name":                  "Planchette",
@@ -311,7 +356,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          "Planchette",
-								Description:   "spooky scary",
+								Description:   ProwJobDefaultDescription + "\nprowjob_description: spooky scary",
 								TestGroupName: ProwJobName,
 								AlertOptions: &config.DashboardTabAlertOptions{
 									AlertMailToAddresses: "ghost@example.com",
@@ -332,12 +377,19 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			pac := prowAwareConfigurator{
+				prowConfig:            fakeProwConfig(),
+				defaultTestgridConfig: nil,
+				prowJobURLPrefix:      test.prowJobURLPrefix,
+				updateDescription:     test.updateDescription,
+			}
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
+				SourcePath:  ProwJobSourcePath,
 			}
 
-			err := applySingleProwjobAnnotations(&test.initialConfig, fakeProwConfig(), job, test.prowJobType, ExampleRepository, nil)
+			err := pac.applySingleProwjobAnnotations(&test.initialConfig, job, test.prowJobType, ExampleRepository)
 
 			if test.expectError {
 				if err == nil {
@@ -455,7 +507,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								ResultsText:   "Default Text",
 								CodeSearchUrlTemplate: &config.LinkTemplate{
@@ -503,7 +555,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								ResultsText:   "Default Text",
 								CodeSearchUrlTemplate: &config.LinkTemplate{
@@ -523,7 +575,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 						DashboardTab: []*config.DashboardTab{
 							{
 								Name:          ProwJobName,
-								Description:   ProwJobName,
+								Description:   ProwJobDefaultDescription,
 								TestGroupName: ProwJobName,
 								ResultsText:   "Default Text",
 								CodeSearchUrlTemplate: &config.LinkTemplate{
@@ -550,12 +602,17 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 				test.initialConfig = &config.Configuration{}
 			}
 
+			pac := prowAwareConfigurator{
+				prowConfig:            fakeProwConfig(),
+				defaultTestgridConfig: defaultConfig,
+			}
+
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
 			}
 
-			err := applySingleProwjobAnnotations(test.initialConfig, fakeProwConfig(), job, test.prowJobType, ExampleRepository, defaultConfig)
+			err := pac.applySingleProwjobAnnotations(test.initialConfig, job, test.prowJobType, ExampleRepository)
 
 			if test.expectedConfig == nil {
 				if err == nil {
