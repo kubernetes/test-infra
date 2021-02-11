@@ -11,7 +11,7 @@ postsubmits:
       preset-azure-anonymous-pull: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     branches:
-    - release-0-4
+    - release-0.4
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-1.18
