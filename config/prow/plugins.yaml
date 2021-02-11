@@ -85,7 +85,10 @@ approve:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
+  - kubernetes-sigs/kubetest2
   - kubernetes-sigs/slack-infra
   - kubernetes/community
   - kubernetes/k8s.io
@@ -132,9 +135,13 @@ label:
 lgtm:
 - repos:
   - bazelbuild
-  - kubernetes/repo-infra
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
+  - kubernetes-sigs/kubetest2
+  - kubernetes/k8s.io
+  - kubernetes/repo-infra
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
