@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     skip_branches:
       - release-\d+.\d+ # per-release job
-    optional: true
+    optional: false
     skip_report: false
     path_alias: k8s.io/kubernetes
     annotations:
