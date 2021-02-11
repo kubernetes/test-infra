@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "ts_library")
 
 filegroup(
     name = "templates",
