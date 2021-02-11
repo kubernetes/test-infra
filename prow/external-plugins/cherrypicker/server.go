@@ -321,6 +321,10 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		return nil
 	}
 
+	if !foundCherryPickLabels && pre.Action == github.PullRequestActionLabeled {
+		return nil
+	}
+
 	// Figure out membership.
 	if !s.allowAll {
 		// TODO: Possibly cache this.
