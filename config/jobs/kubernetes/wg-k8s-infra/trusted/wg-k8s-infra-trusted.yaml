@@ -34,7 +34,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   - org: kubernetes
     repo: test-infra
     base_ref: master
