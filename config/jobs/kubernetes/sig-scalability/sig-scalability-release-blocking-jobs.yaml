@@ -26,6 +26,8 @@ periodics:
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
