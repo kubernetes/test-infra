@@ -560,7 +560,8 @@ func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	fork := s.botUser.Login + "/" + repo
 
 	// fork repo if it doesn't exsit
-	if _, err := s.ghc.EnsureFork(s.botUser.Login, org, repo); err != nil {
+	repo, err := s.ghc.EnsureFork(s.botUser.Login, org, repo)
+	if err != nil {
 		return repo, err
 	}
 
