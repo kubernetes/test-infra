@@ -160,9 +160,9 @@ Regardless of which object storage you choose, the below adjustments are always 
 
 ### Add the prow components to the cluster
 
-Apply the manifest you edited above by executing one of the following two commands:
+Apply the crd and the manifest you edited above by executing one of the following two commands:
 
-
+* `kubectl apply -f config/prow/cluster/prowjob_customresourcedefinition.yaml`
 * `kubectl apply -f config/prow/cluster/starter-s3.yaml`
 * `kubectl apply -f config/prow/cluster/starter-gcs.yaml`
 

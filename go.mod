@@ -74,7 +74,7 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
-	github.com/tektoncd/pipeline v0.13.1-0.20200625065359-44f22a067b75
+	github.com/tektoncd/pipeline v0.14.1-0.20200710073957-5eeb17f81999
 	go.uber.org/zap v1.15.0
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
@@ -100,6 +100,8 @@ require (
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/boskos v0.0.0-20200617235605-f289ba6555ba
 	sigs.k8s.io/controller-runtime v0.8.1-0.20210115141952-3c5b3583fd30
+	sigs.k8s.io/controller-tools v0.4.0
+	sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 

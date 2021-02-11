@@ -36,7 +36,8 @@ deepcopygen=$PWD/$2
 informergen=$PWD/$3
 listergen=$PWD/$4
 go_bindata=$PWD/$5
-do_clean=${6:-}
+controller_gen=$PWD/$6
+do_clean=${7:-}
 
 cleanup() {
   if [[ -n ${fake_gopath:-} ]]; then chmod u+rwx -R $fake_gopath && rm -rf $fake_gopath; fi
@@ -170,6 +171,14 @@ gen-spyglass-bindata(){
   cd -
 }
 
+gen-prowjob-crd(){
+  clean "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+  if [[ -z ${HOME:-} ]]; then export HOME=$PWD; fi
+  $controller_gen crd:preserveUnknownFields=false,crdVersions=v1beta1 paths=./prow/apis/prowjobs/v1 output:stdout |sed '/^$/d' >./config/prow/cluster/prowjob_customresourcedefinition.yaml
+  copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+  unset HOME
+}
+
 export GO111MODULE=off
 ensure-in-gopath
 old=${GOCACHE:-}
@@ -179,6 +188,7 @@ export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org
 "$go_sdk/bin/go" mod vendor
+export PATH=$PATH:$go_sdk/bin
 export GO111MODULE=off
 export GOCACHE=$old
 gen-deepcopy
@@ -186,4 +196,5 @@ gen-client
 gen-lister
 gen-informer
 gen-spyglass-bindata
+gen-prowjob-crd
 export GO111MODULE=on
