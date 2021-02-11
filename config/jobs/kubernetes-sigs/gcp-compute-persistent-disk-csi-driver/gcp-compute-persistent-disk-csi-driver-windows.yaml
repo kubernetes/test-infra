@@ -117,7 +117,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-migration.sh
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-k8s-windows-migration.sh
       - --timeout=120m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
@@ -163,7 +163,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-migration.sh
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-k8s-windows-migration.sh
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
