@@ -235,11 +235,12 @@ func hintFromPodInfo(buf []byte) string {
 	}
 
 	// There are cases where initContainers failed to start
-	var msg string
+	var msgs []string
 	for _, ic := range report.Pod.Status.InitContainerStatuses {
 		if ic.Ready {
 			continue
 		}
+		var msg string
 		// Init container not ready by the time this job failed
 		// The 3 different states should be mutually exclusive, if it happens
 		// that there are more than one, use the most severe one
@@ -250,9 +251,9 @@ func hintFromPodInfo(buf []byte) string {
 		} else if state := ic.State.Running; state != nil { // This shouldn't happen at all, just in case.
 			logrus.WithField("pod", report.Pod.Name).WithField("container", ic.Name).Warning("Init container is running but not ready")
 		}
-		msg = fmt.Sprintf("Init container %s not ready: (%s)", ic.Name, msg)
+		msgs = append(msgs, fmt.Sprintf("Init container %s not ready: (%s)", ic.Name, msg))
 	}
-	return msg
+	return strings.Join(msgs, "\n")
 }
 
 func hintFromProwJob(buf []byte) (string, bool) {
