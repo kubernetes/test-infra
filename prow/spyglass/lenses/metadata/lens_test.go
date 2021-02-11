@@ -326,6 +326,52 @@ func TestHintFromPodInfo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:     "init container failed to start",
+			expected: "Init container initupload not ready: (state: terminated, reason: \"Error\", message: \"failed fetching oauth2 token\")",
+			info: k8sreporter.PodReport{
+				Pod: &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "8ef160fc-46b6-11ea-a907-1a9873703b03",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
+							},
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						InitContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "initupload",
+								Ready: false,
+								State: v1.ContainerState{
+									Terminated: &v1.ContainerStateTerminated{
+										Reason:  "Error",
+										Message: "failed fetching oauth2 token",
+									},
+								},
+							},
+						},
+						ContainerStatuses: []v1.ContainerStatus{
+							{
+								Name:  "test",
+								Image: "gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-master",
+								Ready: false,
+								State: v1.ContainerState{
+									Waiting: &v1.ContainerStateWaiting{
+										Reason: "PodInitializing",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
