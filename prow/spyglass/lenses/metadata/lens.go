@@ -188,8 +188,8 @@ func hintFromPodInfo(buf []byte) string {
 	}
 	// Check if we have any images that didn't pull
 	for _, s := range append(report.Pod.Status.InitContainerStatuses, report.Pod.Status.ContainerStatuses...) {
-		if s.State.Waiting != nil && s.State.Waiting.Reason == "ImagePullBackOff" {
-			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images.", s.Name, s.Image)
+		if s.State.Waiting != nil && (s.State.Waiting.Reason == "ImagePullBackOff" || s.State.Waiting.Reason == "ErrImagePull") {
+			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images. Full message: %q", s.Name, s.Image, s.State.Waiting.Message)
 		}
 	}
 	// Check if we're trying to mount a volume
