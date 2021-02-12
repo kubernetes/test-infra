@@ -46,6 +46,10 @@ const (
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
+	// AutoApproveUnownedSubfolders will result in changes to a subpath of a given path
+	// that does not have an OWNERS file being auto-approved. This should be
+	// enabled with caution.
+	AutoApproveUnownedSubfolders bool `json:"auto_approve_unowned_subfolders,omitempty"`
 }
 
 // Config holds roles+usernames and labels for a directory considered as a unit of independent code
@@ -219,6 +223,7 @@ type RepoOwner interface {
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
 	IsNoParentOwners(path string) bool
+	IsAutoApproveUnownedSubfolders(directory string) bool
 	LeafApprovers(path string) sets.String
 	Approvers(path string) layeredsets.String
 	LeafReviewers(path string) sets.String
@@ -773,7 +778,7 @@ func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*
 	return ""
 }
 
-// FindApproverOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
+// FindApproverOwnersForFile returns the directory containing the OWNERS file furthest down the tree for a specified file
 // that contains an approvers section
 func (o *RepoOwners) FindApproverOwnersForFile(path string) string {
 	return findOwnersForFile(o.log, path, o.approvers)
@@ -794,6 +799,10 @@ func (o *RepoOwners) FindLabelsForFile(path string) sets.String {
 // IsNoParentOwners checks if an OWNERS file path refers to an OWNERS file with NoParentOwners enabled.
 func (o *RepoOwners) IsNoParentOwners(path string) bool {
 	return o.options[path].NoParentOwners
+}
+
+func (o *RepoOwners) IsAutoApproveUnownedSubfolders(ownersFilePath string) bool {
+	return o.options[ownersFilePath].AutoApproveUnownedSubfolders
 }
 
 // entriesForFile returns a set of users who are assignees to the

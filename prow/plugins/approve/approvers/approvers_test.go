@@ -17,12 +17,13 @@ limitations under the License.
 package approvers
 
 import (
-	"testing"
-
-	"github.com/sirupsen/logrus"
-
 	"net/url"
 	"reflect"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -220,15 +221,17 @@ func TestGetFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
-		testApprovers.RequireIssue = false
-		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", false)
-		}
-		calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
-		if !reflect.DeepEqual(test.expectedFiles, calculated) {
-			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
-		}
+		t.Run(test.testName, func(t *testing.T) {
+			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
+			testApprovers.RequireIssue = false
+			for approver := range test.currentlyApproved {
+				testApprovers.AddApprover(approver, "REFERENCE", false)
+			}
+			calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
+			if diff := cmp.Diff(test.expectedFiles, calculated, cmpopts.EquateEmpty(), cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
+				t.Errorf("expected files differ from actual: %s", diff)
+			}
+		})
 	}
 }
 
@@ -393,13 +396,15 @@ func TestIsApproved(t *testing.T) {
 		"c":       cApprovers,
 		"a/d":     dApprovers,
 		"a/combo": edcApprovers,
+		"d":       {},
 	}
 	tests := []struct {
-		testName          string
-		filenames         []string
-		currentlyApproved sets.String
-		testSeed          int64
-		isApproved        bool
+		testName               string
+		filenames              []string
+		allowFolderCreationMap map[string]bool
+		currentlyApproved      sets.String
+		testSeed               int64
+		isApproved             bool
 	}{
 		{
 			testName:          "Empty PR",
@@ -464,17 +469,62 @@ func TestIsApproved(t *testing.T) {
 			currentlyApproved: sets.NewString("Anne", "Ben", "Carol"),
 			isApproved:        true,
 		},
+		{
+			testName:               "File in folder with AllowFolderCreation does not get approved",
+			filenames:              []string{"a/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation gets approved",
+			filenames:              []string{"a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation whose ownersfile has no approvers gets approved",
+			filenames:              []string{"d/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"d": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation and other unapproved file does not get approved",
+			filenames:              []string{"b/unapproved.go", "a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation and approved file, approved",
+			filenames:              []string{"b/approved.go", "a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			currentlyApproved:      sets.NewString(bApprovers.List()[0]),
+			isApproved:             true,
+		},
+		{
+			testName:               "Nested subfolder in folder with AllowFolderCreation gets approved",
+			filenames:              []string{"a/new-folder/child/grandchild/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Change in folder with Owners whose parent has AllowFolderCreation does not get approved",
+			filenames:              []string{"a/d/new-file.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
-		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", false)
-		}
-		calculated := testApprovers.IsApproved()
-		if test.isApproved != calculated {
-			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
-		}
+		t.Run(test.testName, func(t *testing.T) {
+			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, func(fr *FakeRepo) { fr.autoApproveUnownedSubfolders = test.allowFolderCreationMap }), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
+			for approver := range test.currentlyApproved {
+				testApprovers.AddApprover(approver, "REFERENCE", false)
+			}
+			calculated := testApprovers.IsApproved()
+			if test.isApproved != calculated {
+				t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
+			}
+		})
 	}
 }
 
