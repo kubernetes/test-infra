@@ -28,6 +28,8 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 type Client interface {
@@ -71,6 +73,10 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 
 	retryingClient := retryablehttp.NewClient()
 	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: log}
+	retryingClient.HTTPClient.Transport = userAgentSettingTransport{
+		userAgent: version.UserAgent(),
+		upstream:  retryingClient.HTTPClient.Transport,
+	}
 
 	if o.BasicAuth != nil {
 		retryingClient.HTTPClient.Transport = &basicAuthRoundtripper{
@@ -81,6 +87,16 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 
 	jiraClient, err := jira.NewClient(retryingClient.StandardClient(), endpoint)
 	return &client{upstream: jiraClient, url: endpoint}, err
+}
+
+type userAgentSettingTransport struct {
+	userAgent string
+	upstream  http.RoundTripper
+}
+
+func (u userAgentSettingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Set("User-Agent", u.userAgent)
+	return u.upstream.RoundTrip(r)
 }
 
 type client struct {
