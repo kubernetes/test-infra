@@ -136,3 +136,29 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
+    - name: post-release-push-image-setcap
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+      decorate: true
+      run_if_changed: '^images\/build\/setcap\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210204-b06ec78
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --build-dir=.
+              - images/build/setcap
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
