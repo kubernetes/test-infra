@@ -155,13 +155,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: GitHub Release job for Kyma 1.19.
-    name: post-rel119-kyma-github-release
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel119-kyma-github-release
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE central-connector job for release 1.19.
     name: post-rel119-kyma-gke-central-connector
     open_bug_template:
@@ -213,13 +206,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: GitHub Release job for Kyma 1.18.
-    name: post-rel118-kyma-github-release
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel118-kyma-github-release
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE central-connector job for release 1.18.
     name: post-rel118-kyma-gke-central-connector
     open_bug_template:
@@ -269,13 +255,6 @@ dashboards:
     test_group_name: post-rel118-kyma-release-candidate
   name: kyma_release-1.18
 - dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: GitHub Release job for Kyma 1.17.
-    name: post-rel117-kyma-github-release
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-github-release
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE central-connector job for release 1.17.
@@ -393,9 +372,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration-k3s
   name: post-master-kyma-integration-k3s
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-github-release
-  name: post-rel117-kyma-github-release
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-central-connector
   name: post-rel117-kyma-gke-central-connector
@@ -418,9 +394,6 @@ test_groups:
   gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-release-candidate
   name: post-rel117-kyma-release-candidate
   num_failures_to_alert: 1
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-github-release
-  name: post-rel118-kyma-github-release
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-central-connector
   name: post-rel118-kyma-gke-central-connector
@@ -443,9 +416,6 @@ test_groups:
   gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-release-candidate
   name: post-rel118-kyma-release-candidate
   num_failures_to_alert: 1
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-github-release
-  name: post-rel119-kyma-github-release
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-gke-central-connector
   name: post-rel119-kyma-gke-central-connector
