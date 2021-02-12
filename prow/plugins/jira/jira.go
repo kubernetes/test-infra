@@ -17,6 +17,7 @@ limitations under the License.
 package jira
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -25,6 +26,7 @@ import (
 	"github.com/andygrunwald/go-jira"
 	"github.com/sirupsen/logrus"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -39,6 +41,7 @@ const (
 
 var (
 	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$)`)
+	projectCache   = &threadsafeSet{data: sets.String{}}
 )
 
 func extractCandidatesFromText(t string) []string {
@@ -79,10 +82,28 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 }
 
 func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent) error {
+	if projectCache.entryCount() == 0 {
+		projects, err := jc.ListProjects()
+		if err != nil {
+			return fmt.Errorf("failed to list jira projects: %w", err)
+		}
+		var projectNames []string
+		for _, project := range *projects {
+			projectNames = append(projectNames, strings.ToLower(project.Key))
+		}
+		projectCache.insert(projectNames...)
+	}
+
+	return handleWithProjectCache(jc, ghc, cfg, log, e, projectCache)
+}
+
+func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent, projectCache *threadsafeSet) error {
 	// Nothing to do on deletion
 	if e.Action == github.GenericCommentActionDeleted {
 		return nil
 	}
+
+	jc = &projectCachingJiraClient{jc, projectCache}
 
 	issueCandidateNames := extractCandidatesFromText(e.Body)
 	issueCandidateNames = append(issueCandidateNames, extractCandidatesFromText(e.IssueTitle)...)
@@ -91,6 +112,7 @@ func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logr
 		return nil
 	}
 
+	var errs []error
 	referencedIssues := sets.String{}
 	for _, match := range issueCandidateNames {
 		if referencedIssues.Has(match) {
@@ -99,7 +121,7 @@ func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logr
 		_, err := jc.GetIssue(match)
 		if err != nil {
 			if !jiraclient.IsNotFound(err) {
-				log.WithError(err).WithField("Issue", match).Error("Failed to get issue")
+				errs = append(errs, fmt.Errorf("failed to get issue %s: %w", match, err))
 			}
 			continue
 		}
@@ -118,11 +140,11 @@ func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logr
 	}
 
 	if err := updateComment(e, referencedIssues.UnsortedList(), jc.JiraURL(), ghc); err != nil {
-		log.WithError(err).Error("Failed to insert links into body")
+		errs = append(errs, fmt.Errorf("failed to update comment: %w", err))
 	}
 	wg.Wait()
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 func updateComment(e *github.GenericCommentEvent, validIssues []string, jiraBaseURL string, ghc githubClient) error {
@@ -253,4 +275,46 @@ func filterOutDisabledJiraProjects(candidateNames []string, cfg *plugins.Jira) [
 	}
 
 	return result
+}
+
+// projectCachingJiraClient caches 404 for projects and uses them to introduce
+// a fastpath in GetIssue for returning a 404.
+type projectCachingJiraClient struct {
+	jiraclient.Client
+	cache *threadsafeSet
+}
+
+func (c *projectCachingJiraClient) GetIssue(id string) (*jira.Issue, error) {
+	projectName := strings.ToLower(strings.Split(id, "-")[0])
+	if !c.cache.has(projectName) {
+		return nil, jiraclient.NewNotFoundError(errors.New("404 from cache"))
+	}
+	result, err := c.Client.GetIssue(id)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+type threadsafeSet struct {
+	data sets.String
+	lock sync.RWMutex
+}
+
+func (s *threadsafeSet) has(projectName string) bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.data.Has(projectName)
+}
+
+func (s *threadsafeSet) insert(projectName ...string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.data.Insert(projectName...)
+}
+
+func (s *threadsafeSet) entryCount() int {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return len(s.data)
 }

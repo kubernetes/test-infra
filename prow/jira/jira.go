@@ -36,6 +36,7 @@ type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
 	AddRemoteLink(id string, link *jira.RemoteLink) error
+	ListProjects() (*jira.ProjectList, error)
 	JiraClient() *jira.Client
 	JiraURL() string
 }
@@ -118,6 +119,14 @@ func (jc *client) GetIssue(id string) (*jira.Issue, error) {
 	}
 
 	return issue, nil
+}
+
+func (jc *client) ListProjects() (*jira.ProjectList, error) {
+	projects, response, err := jc.upstream.Project.GetList()
+	if err != nil {
+		return nil, JiraError(response, err)
+	}
+	return projects, nil
 }
 
 func IsNotFound(err error) bool {
