@@ -38,8 +38,23 @@ const (
 )
 
 var (
-	issueNameRegex = regexp.MustCompile(`\b[a-zA-Z]+-[0-9]+\b`)
+	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$)`)
 )
+
+func extractCandidatesFromText(t string) []string {
+	matches := issueNameRegex.FindAllStringSubmatch(t, -1)
+	if matches == nil {
+		return nil
+	}
+	var result []string
+	for _, match := range matches {
+		if len(match) < 2 {
+			continue
+		}
+		result = append(result, match[1])
+	}
+	return result
+}
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
@@ -69,8 +84,8 @@ func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logr
 		return nil
 	}
 
-	issueCandidateNames := issueNameRegex.FindAllString(e.Body, -1)
-	issueCandidateNames = append(issueCandidateNames, issueNameRegex.FindAllString(e.IssueTitle, -1)...)
+	issueCandidateNames := extractCandidatesFromText(e.Body)
+	issueCandidateNames = append(issueCandidateNames, extractCandidatesFromText(e.IssueTitle)...)
 	issueCandidateNames = filterOutDisabledJiraProjects(issueCandidateNames, cfg)
 	if len(issueCandidateNames) == 0 {
 		return nil

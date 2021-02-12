@@ -29,6 +29,73 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
+func TestRegex(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "Simple",
+			input:    "issue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with leading space",
+			input:    " issue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing space",
+			input:    "issue-123 ",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with leading newline",
+			input:    "\nissue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing newline",
+			input:    "issue-123\n",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing colon",
+			input:    "issue-123:",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Multiple matches",
+			input:    "issue-123\nissue-456",
+			expected: []string{"issue-123", "issue-456"},
+		},
+		{
+			name:  "Trailing character, no match",
+			input: "issue-123a",
+		},
+		{
+			name:     "Issue from url",
+			input:    "https://my-jira.com/browse/ABC-123",
+			expected: []string{"ABC-123"},
+		},
+		{
+			name:  "Trailing special characters, no match",
+			input: "rehearse-15676-pull",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := extractCandidatesFromText(tc.input)
+			if diff := cmp.Diff(tc.expected, result); diff != "" {
+				t.Errorf("expected differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
 type fakeJiraClient struct {
 	existingIssues []jira.Issue
 	existingLinks  map[string][]jira.RemoteLink
