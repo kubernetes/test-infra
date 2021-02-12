@@ -323,6 +323,7 @@ periodics:
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
