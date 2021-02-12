@@ -54,7 +54,7 @@ periodics:
         echo "Ensure gcloud creds are working" >&2
         gcloud config list
         echo "Running Audit Script to dump GCP configuration to yaml" >&2
-        push ./audit
+        pushd ./audit
         ./audit-gcp.sh
         popd
 
@@ -65,8 +65,8 @@ periodics:
 
         echo -n "Calculate github user, name, and email from token: " >&2
         GH_TOKEN=$(cat /etc/github-token/token)
-        GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login
-        GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name
+        GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login)
+        GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name)
         GH_EMAIL=$(curl -H "Authorization: token $GH_TOKEN" -H "X-Oauth-Scope: user:email" "https://api.github.com/user/emails" 2>/dev/null | jq -r '.[] | select( .primary == true ) | .email')
         FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
         echo "Prepare commit for possible PR via $GH_USER" >&2
