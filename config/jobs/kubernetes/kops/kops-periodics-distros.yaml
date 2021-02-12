@@ -37,6 +37,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -100,6 +101,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -163,6 +165,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -226,6 +229,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -289,6 +293,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -352,6 +357,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -415,6 +421,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -478,6 +485,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -541,6 +549,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
@@ -604,6 +613,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
