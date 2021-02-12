@@ -18757,6 +18757,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -18820,6 +18821,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -18883,6 +18885,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -18946,6 +18949,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19009,6 +19013,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19072,6 +19077,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19135,6 +19141,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19198,6 +19205,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19261,6 +19269,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19324,6 +19333,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19387,6 +19397,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19450,6 +19461,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19513,6 +19525,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19576,6 +19589,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19639,6 +19653,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19702,6 +19717,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19765,6 +19781,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19828,6 +19845,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19891,6 +19909,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -19954,6 +19973,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20017,6 +20037,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20080,6 +20101,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20143,6 +20165,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20206,6 +20229,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20269,6 +20293,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20332,6 +20357,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20395,6 +20421,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20458,6 +20485,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20521,6 +20549,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20584,6 +20613,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20647,6 +20677,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20710,6 +20741,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20773,6 +20805,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20836,6 +20869,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20899,6 +20933,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -20962,6 +20997,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21025,6 +21061,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21088,6 +21125,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21151,6 +21189,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21214,6 +21253,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21277,6 +21317,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21340,6 +21381,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21403,6 +21445,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21466,6 +21509,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21529,6 +21573,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21592,6 +21637,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21655,6 +21701,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21718,6 +21765,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21781,6 +21829,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21844,6 +21893,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21907,6 +21957,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -21970,6 +22021,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22033,6 +22085,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22096,6 +22149,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22159,6 +22213,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22222,6 +22277,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22285,6 +22341,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22348,6 +22405,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22411,6 +22469,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22474,6 +22533,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22537,6 +22597,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22600,6 +22661,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22663,6 +22725,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22726,6 +22789,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22789,6 +22853,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22852,6 +22917,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22915,6 +22981,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -22978,6 +23045,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23041,6 +23109,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23104,6 +23173,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23167,6 +23237,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23230,6 +23301,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23293,6 +23365,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23356,6 +23429,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23419,6 +23493,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23482,6 +23557,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23545,6 +23621,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23608,6 +23685,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23671,6 +23749,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23734,6 +23813,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23797,6 +23877,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23860,6 +23941,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23923,6 +24005,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -23986,6 +24069,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24049,6 +24133,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24112,6 +24197,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24175,6 +24261,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24238,6 +24325,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24301,6 +24389,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24364,6 +24453,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24427,6 +24517,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24490,6 +24581,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24553,6 +24645,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24616,6 +24709,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24679,6 +24773,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24742,6 +24837,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24805,6 +24901,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24868,6 +24965,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24931,6 +25029,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -24994,6 +25093,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25057,6 +25157,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25120,6 +25221,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25183,6 +25285,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25246,6 +25349,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25309,6 +25413,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25372,6 +25477,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25435,6 +25541,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25498,6 +25605,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25561,6 +25669,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25624,6 +25733,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25687,6 +25797,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25750,6 +25861,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -25813,6 +25925,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -25876,6 +25989,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -25939,6 +26053,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26002,6 +26117,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26065,6 +26181,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26128,6 +26245,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26191,6 +26309,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26254,6 +26373,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26317,6 +26437,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26380,6 +26501,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26443,6 +26565,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26506,6 +26629,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26569,6 +26693,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26632,6 +26757,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26695,6 +26821,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26758,6 +26885,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26821,6 +26949,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26884,6 +27013,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -26947,6 +27077,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27010,6 +27141,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27073,6 +27205,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27136,6 +27269,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27199,6 +27333,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27262,6 +27397,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27325,6 +27461,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27388,6 +27525,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27451,6 +27589,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27514,6 +27653,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27577,6 +27717,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27640,6 +27781,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27703,6 +27845,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27766,6 +27909,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27829,6 +27973,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27892,6 +28037,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -27955,6 +28101,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28018,6 +28165,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28081,6 +28229,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28144,6 +28293,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28207,6 +28357,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28270,6 +28421,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28333,6 +28485,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28396,6 +28549,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28459,6 +28613,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28522,6 +28677,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28585,6 +28741,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28648,6 +28805,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28711,6 +28869,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28774,6 +28933,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28837,6 +28997,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28900,6 +29061,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -28963,6 +29125,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29026,6 +29189,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29089,6 +29253,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29152,6 +29317,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29215,6 +29381,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29278,6 +29445,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT"
@@ -29341,6 +29509,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29404,6 +29573,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29467,6 +29637,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29530,6 +29701,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29593,6 +29765,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29656,6 +29829,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29719,6 +29893,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29782,6 +29957,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29845,6 +30021,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29908,6 +30085,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -29971,6 +30149,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30034,6 +30213,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30097,6 +30277,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30160,6 +30341,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30223,6 +30405,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30286,6 +30469,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30349,6 +30533,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30412,6 +30597,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30475,6 +30661,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30538,6 +30725,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30601,6 +30789,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30664,6 +30853,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30727,6 +30917,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30790,6 +30981,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30853,6 +31045,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30916,6 +31109,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -30979,6 +31173,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31042,6 +31237,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31105,6 +31301,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31168,6 +31365,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31231,6 +31429,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31294,6 +31493,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31357,6 +31557,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31420,6 +31621,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31483,6 +31685,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31546,6 +31749,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31609,6 +31813,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31672,6 +31877,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31735,6 +31941,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31798,6 +32005,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31861,6 +32069,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31924,6 +32133,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -31987,6 +32197,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32050,6 +32261,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32113,6 +32325,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32176,6 +32389,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32239,6 +32453,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32302,6 +32517,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32365,6 +32581,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32428,6 +32645,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32491,6 +32709,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32554,6 +32773,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32617,6 +32837,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32680,6 +32901,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32743,6 +32965,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32806,6 +33029,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32869,6 +33093,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32932,6 +33157,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -32995,6 +33221,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33058,6 +33285,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33121,6 +33349,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33184,6 +33413,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33247,6 +33477,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33310,6 +33541,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33373,6 +33605,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33436,6 +33669,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33499,6 +33733,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33562,6 +33797,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33625,6 +33861,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33688,6 +33925,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33751,6 +33989,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33814,6 +34053,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33877,6 +34117,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -33940,6 +34181,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34003,6 +34245,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34066,6 +34309,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34129,6 +34373,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34192,6 +34437,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34255,6 +34501,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34318,6 +34565,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34381,6 +34629,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34444,6 +34693,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34507,6 +34757,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34570,6 +34821,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34633,6 +34885,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34696,6 +34949,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34759,6 +35013,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34822,6 +35077,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34885,6 +35141,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -34948,6 +35205,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35011,6 +35269,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35074,6 +35333,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35137,6 +35397,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35200,6 +35461,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35263,6 +35525,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35326,6 +35589,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35389,6 +35653,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35452,6 +35717,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35515,6 +35781,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35578,6 +35845,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35641,6 +35909,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35704,6 +35973,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35767,6 +36037,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35830,6 +36101,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35893,6 +36165,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -35956,6 +36229,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36019,6 +36293,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.17.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36082,6 +36357,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36145,6 +36421,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.18.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36208,6 +36485,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36271,6 +36549,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.19.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
@@ -36334,6 +36613,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
           -- \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"

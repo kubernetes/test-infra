@@ -98,6 +98,7 @@ kubetest2_template = """
           --kubernetes-version={{k8s_deploy_url}} \\
           --test=kops \\
           -- \\
+          --test-args="-test.timeout={{test_timeout}}" \\
           --test-package-marker={{marker}} \\
           --parallel {{test_parallelism}} \\
           --skip-regex="{{skip_regex}}"
