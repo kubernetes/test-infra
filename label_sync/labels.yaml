@@ -1585,7 +1585,7 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-  kubernetes-sigs/service-apis:
+  kubernetes-sigs/gateway-api:
     labels:
       - color: c7def8
         description: Categorizes an issue as capturing a user story
