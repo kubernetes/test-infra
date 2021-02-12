@@ -1,14 +1,14 @@
 presubmits:
-  kubernetes-sigs/service-apis:
-  - name: pull-service-apis-verify
+  kubernetes-sigs/gateway-api:
+  - name: pull-gateway-api-verify
     annotations:
-      testgrid-dashboards: sig-network-service-apis
+      testgrid-dashboards: sig-network-gateway-api
       testgrid-tab-name: verify
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
     decorate: true
-    path_alias: sigs.k8s.io/service-apis
+    path_alias: sigs.k8s.io/gateway-api
     always_run: true
     skip_report: false
     spec:
@@ -23,15 +23,15 @@ presubmits:
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
-  - name: pull-service-apis-test
+  - name: pull-gateway-api-test
     annotations:
-      testgrid-dashboards: sig-network-service-apis
+      testgrid-dashboards: sig-network-gateway-api
       testgrid-tab-name: test
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
     decorate: true
-    path_alias: sigs.k8s.io/service-apis
+    path_alias: sigs.k8s.io/gateway-api
     always_run: true
     skip_report: false
     spec:
