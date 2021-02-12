@@ -116,7 +116,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '2'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
@@ -319,7 +319,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-master-500
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '2'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
