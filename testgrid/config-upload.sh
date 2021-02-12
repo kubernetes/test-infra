@@ -29,6 +29,8 @@ for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid/config; do
       --prow-config="${TESTINFRA_ROOT}/config/prow/config.yaml" \
       --prow-job-config="${TESTINFRA_ROOT}/config/jobs/" \
       --output="${output}" \
+      --prowjob-url-prefix="https://git.k8s.io/test-infra/config/jobs/" \
+      --update-description \
       --oneshot \
       --world-readable \
       "$@"

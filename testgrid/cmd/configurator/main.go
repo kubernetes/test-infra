@@ -64,6 +64,8 @@ type options struct {
 	prowConfig         string
 	prowJobConfig      string
 	defaultYAML        string
+	updateDescription  bool
+	prowJobURLPrefix   string
 }
 
 func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
@@ -78,6 +80,9 @@ func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
 	fs.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
 	fs.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
+	fs.BoolVar(&o.updateDescription, "update-description", false, "add prowjob info to description even if non-empty")
+	fs.StringVar(&o.prowJobURLPrefix, "prowjob-url-prefix", "", "for prowjob_config_url in descriptions: {prowjob-url-prefix}/{prowjob.sourcepath}")
+
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -210,7 +215,15 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 
 	}
 
-	if err := applyProwjobAnnotations(&c, d, prowConfigAgent); err != nil {
+	pac := prowAwareConfigurator{
+		defaultTestgridConfig: d,
+		prowConfig:            prowConfigAgent.Config(),
+		updateDescription:     opt.updateDescription,
+		prowJobConfigPath:     opt.prowJobConfig,
+		prowJobURLPrefix:      opt.prowJobURLPrefix,
+	}
+
+	if err := pac.applyProwjobAnnotations(&c); err != nil {
 		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
