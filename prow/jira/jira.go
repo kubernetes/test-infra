@@ -74,6 +74,11 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 
 	retryingClient := retryablehttp.NewClient()
 	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: log}
+	retryingClient.HTTPClient.Transport = &metricsTransport{
+		upstream:       retryingClient.HTTPClient.Transport,
+		pathSimplifier: pathSimplifier().Simplify,
+		recorder:       requestResults,
+	}
 	retryingClient.HTTPClient.Transport = userAgentSettingTransport{
 		userAgent: version.UserAgent(),
 		upstream:  retryingClient.HTTPClient.Transport,
