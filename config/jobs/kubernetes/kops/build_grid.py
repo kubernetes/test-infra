@@ -216,7 +216,7 @@ def distro_info(distro):
         kops_image = '136693071363/debian-10-amd64-20201207-477'
     elif distro == 'flatcar':
         kops_ssh_user = 'core'
-        kops_image = '075585003325/Flatcar-stable-2605.11.0-hvm'
+        kops_image = '075585003325/Flatcar-stable-2605.12.0-hvm'
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
