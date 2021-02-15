@@ -110,20 +110,18 @@ presubmits:
 
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
-    branches:
-    - master
     always_run: true
+    decorate: true
+    path_alias: k8s.io/dns
     labels:
       preset-service-account: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
         - "true"
 
 periodics:
