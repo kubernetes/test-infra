@@ -4110,6 +4110,7 @@ func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 
 	var checkRunList CheckRunList
 	_, err := c.request(&request{
+		accept:    "application/vnd.github.antiope-preview+json",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
 		org:       org,
