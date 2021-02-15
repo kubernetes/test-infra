@@ -1781,6 +1781,11 @@ func parseProwConfig(c *Config) error {
 		c.Sinker.TerminatedPodTTL = &metav1.Duration{Duration: c.Sinker.MaxPodAge.Duration}
 	}
 
+	if c.Tide.BatchAllowPending == nil {
+		batchAllowPending := false
+		c.Tide.BatchAllowPending = &batchAllowPending
+	}
+
 	if c.Tide.SyncPeriod == nil {
 		c.Tide.SyncPeriod = &metav1.Duration{Duration: time.Minute}
 	}
