@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes-sigs/custom-metrics-apiserver:
+  - name: pull-custom-metrics-apiserver-verify
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/custom-metrics-apiserver
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - make verify && git diff --exit-code
+    annotations:
+      testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
+      testgrid-tab-name: pr-verify
+  - name: pull-custom-metrics-apiserver-build-test-adapter
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/custom-metrics-apiserver
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - make build-test-adapter
+    annotations:
+      testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
+      testgrid-tab-name: pr-build-test-adapter
+  - name: pull-custom-metrics-apiserver-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/custom-metrics-apiserver
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - make test
+    annotations:
+      testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
+      testgrid-tab-name: pr-test
