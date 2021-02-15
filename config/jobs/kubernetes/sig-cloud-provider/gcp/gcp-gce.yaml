@@ -52,7 +52,6 @@ presubmits:
         - --provider=gce
         # Panic if anything mutates a shared informer cache
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
@@ -95,7 +94,6 @@ presubmits:
         - --provider=gce
         # Panic if anything mutates a shared informer cache
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
@@ -152,7 +150,6 @@ presubmits:
           --up \;
           --down \;
           --enable-cache-mutation-detector \;
-          --runtime-config=batch/v2alpha1=true \;
           --enable-pod-security-policy \;
           --test=ginkgo \;
           -- \;
@@ -194,7 +191,6 @@ presubmits:
         - --provider=gce
         # Panic if anything mutates a shared informer cache
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
@@ -251,7 +247,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
@@ -420,7 +415,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
