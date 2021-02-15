@@ -69,6 +69,13 @@ presubmits:
     always_run: false
     run_if_changed: '^pkg/.*/ipvs/'
     optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
     skip_report: false
     annotations:
       testgrid-create-test-group: "true"
@@ -81,14 +88,10 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=bazel
         - --cluster=
         - --env=KUBE_PROXY_MODE=ipvs
