@@ -2,9 +2,9 @@ dashboard_groups:
 - dashboard_names:
   - kyma_integration
   - kyma_control-plane
+  - kyma_release-1.20
   - kyma_release-1.19
   - kyma_release-1.18
-  - kyma_release-1.17
   - kyma-incubator_compass
   name: kyma
 dashboards:
@@ -146,12 +146,63 @@ dashboards:
     test_group_name: post-master-control-plane-gke-provisioner-integration
   - code_search_url_template:
       url: https://github.com/kyma-project/control-plane/compare/<start-custom-0>...<end-custom-0>
-    description: post-master-control-plane-integration
+    description: 'prowjob_name: post-master-control-plane-integration'
     name: post-master-control-plane-integration
     open_bug_template:
       url: https://github.com/kyma-project/control-plane/issues/
     test_group_name: post-master-control-plane-integration
   name: kyma_control-plane
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE central-connector job for release 1.20.
+    name: post-rel120-kyma-gke-central-connector
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-gke-central-connector
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE compass integration job for release 1.20.
+    name: post-rel120-kyma-gke-compass-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-gke-compass-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE integration job for release 1.20.
+    name: post-rel120-kyma-gke-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-gke-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: post-rel120-kyma-gke-release-upgrade'
+    name: post-rel120-kyma-gke-release-upgrade
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-gke-release-upgrade
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma GKE upgrade job for release 1.20.
+    name: post-rel120-kyma-gke-upgrade
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-gke-upgrade
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration job for release 1.20 .
+    name: post-rel120-kyma-integration
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-integration
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Release candidate job for Kyma 1.20.
+    name: post-rel120-kyma-release-candidate
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    test_group_name: post-rel120-kyma-release-candidate
+  name: kyma_release-1.20
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
@@ -176,7 +227,7 @@ dashboards:
     test_group_name: post-rel119-kyma-gke-integration
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: post-rel119-kyma-gke-release-upgrade
+    description: 'prowjob_name: post-rel119-kyma-gke-release-upgrade'
     name: post-rel119-kyma-gke-release-upgrade
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
@@ -227,7 +278,7 @@ dashboards:
     test_group_name: post-rel118-kyma-gke-integration
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: post-rel118-kyma-gke-release-upgrade
+    description: 'prowjob_name: post-rel118-kyma-gke-release-upgrade'
     name: post-rel118-kyma-gke-release-upgrade
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
@@ -254,57 +305,6 @@ dashboards:
       url: https://github.com/kyma-project/kyma/issues/
     test_group_name: post-rel118-kyma-release-candidate
   name: kyma_release-1.18
-- dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE central-connector job for release 1.17.
-    name: post-rel117-kyma-gke-central-connector
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-gke-central-connector
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE compass integration job for release 1.17.
-    name: post-rel117-kyma-gke-compass-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-gke-compass-integration
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE integration job for release 1.17.
-    name: post-rel117-kyma-gke-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-gke-integration
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: post-rel117-kyma-gke-release-upgrade
-    name: post-rel117-kyma-gke-release-upgrade
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-gke-release-upgrade
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE upgrade job for release 1.17.
-    name: post-rel117-kyma-gke-upgrade
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-gke-upgrade
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma integration job for release 1.17 .
-    name: post-rel117-kyma-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-integration
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Release candidate job for Kyma 1.17.
-    name: post-rel117-kyma-release-candidate
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    test_group_name: post-rel117-kyma-release-candidate
-  name: kyma_release-1.17
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-incubator/compass/compare/<start-custom-0>...<end-custom-0>
@@ -373,28 +373,6 @@ test_groups:
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-integration-k3s
   name: post-master-kyma-integration-k3s
 - days_of_results: 60
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-central-connector
-  name: post-rel117-kyma-gke-central-connector
-- gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-compass-integration
-  name: post-rel117-kyma-gke-compass-integration
-- days_of_results: 60
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-integration
-  name: post-rel117-kyma-gke-integration
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-release-upgrade
-  name: post-rel117-kyma-gke-release-upgrade
-  num_failures_to_alert: 1
-- days_of_results: 60
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-gke-upgrade
-  name: post-rel117-kyma-gke-upgrade
-- days_of_results: 60
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-integration
-  name: post-rel117-kyma-integration
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel117-kyma-release-candidate
-  name: post-rel117-kyma-release-candidate
-  num_failures_to_alert: 1
-- days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-central-connector
   name: post-rel118-kyma-gke-central-connector
 - gcs_prefix: kyma-prow-logs/logs/post-rel118-kyma-gke-compass-integration
@@ -437,4 +415,26 @@ test_groups:
 - days_of_results: 90
   gcs_prefix: kyma-prow-logs/logs/post-rel119-kyma-release-candidate
   name: post-rel119-kyma-release-candidate
+  num_failures_to_alert: 1
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-gke-central-connector
+  name: post-rel120-kyma-gke-central-connector
+- gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-gke-compass-integration
+  name: post-rel120-kyma-gke-compass-integration
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-gke-integration
+  name: post-rel120-kyma-gke-integration
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-gke-release-upgrade
+  name: post-rel120-kyma-gke-release-upgrade
+  num_failures_to_alert: 1
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-gke-upgrade
+  name: post-rel120-kyma-gke-upgrade
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-integration
+  name: post-rel120-kyma-integration
+- days_of_results: 90
+  gcs_prefix: kyma-prow-logs/logs/post-rel120-kyma-release-candidate
+  name: post-rel120-kyma-release-candidate
   num_failures_to_alert: 1
