@@ -769,6 +769,23 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 	return len(unsuccessful) == 0
 }
 
+// isFailingTests returns whether one or more contexts are failing.
+func isFailingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc contextChecker) bool {
+	log = log.WithFields(pr.logFields())
+	contexts, err := headContexts(log, ghc, &pr)
+	if err != nil {
+		log.WithError(err).Error("Getting head commit status contexts.")
+		// If we can't get the status of the commit, assume that it is failing.
+		return true
+	}
+	for _, ctx := range unsuccessfulContexts(contexts, cc, log) {
+		if ctx.State == githubql.StatusStateFailure || ctx.State == githubql.StatusStateError {
+			return true
+		}
+	}
+	return false
+}
+
 // unsuccessfulContexts determines which contexts from the list that we care about are
 // failed. For instance, we do not care about our own context.
 // If the branchProtection is set to only check for required checks, we will skip
@@ -1083,9 +1100,10 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	// we must choose the oldest PRs for the batch
 	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
 
+	batchAllowPending := (c.config().Tide.BatchAllowPending != nil && *c.config().Tide.BatchAllowPending)
 	var candidates []PullRequest
 	for _, pr := range sp.prs {
-		if isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
+		if (batchAllowPending && !isFailingTests(sp.log, c.ghc, pr, cc[int(pr.Number)])) || isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
 			candidates = append(candidates, pr)
 		}
 	}

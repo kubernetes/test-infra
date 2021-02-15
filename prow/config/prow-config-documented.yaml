@@ -948,6 +948,11 @@ tide:
     batch_size_limit:
         "": 0
 
+    # BatchAllowPending is a config that allows tide to select PRs that still have pending tests,
+    # this is intended to increase the likelihood of batch PRs.
+    # Note that failed or error status contexts will still preclude PR from being in a batch.
+    batch_skip_tests: false
+
     # BlockerLabel is an optional label that is used to identify merge blocking
     # GitHub issues.
     # Leave this blank to disable this feature and save 1 API token per sync loop.
