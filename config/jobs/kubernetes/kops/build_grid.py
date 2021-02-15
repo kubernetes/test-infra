@@ -320,6 +320,12 @@ def build_test(cloud='aws',
     if networking == "cilium":
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
+
+    # Test may be causing timeouts:
+    #  Kubectl cluster-info dump should check if cluster-info dump succeeds
+    # First step: skip; verify that it eliminates/reduces our timeouts
+    skip_regex += r'|check.if.cluster.info.dump.succeeds'
+
     if skip_override:
         skip_regex = skip_override
     test_args = r'--ginkgo.skip=' + skip_regex
