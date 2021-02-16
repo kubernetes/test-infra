@@ -10,56 +10,56 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
-    description: guest-agent-build
+    description: 'prowjob_name: guest-agent-build'
     name: guest-agent-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/issues/
     test_group_name: guest-agent-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/compare/<start-custom-0>...<end-custom-0>
-    description: gce-build
+    description: 'prowjob_name: gce-build'
     name: gce-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/issues/
     test_group_name: gce-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-diskexpand/compare/<start-custom-0>...<end-custom-0>
-    description: disk-expand-build
+    description: 'prowjob_name: disk-expand-build'
     name: disk-expand-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-diskexpand/issues/
     test_group_name: disk-expand-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/compare/<start-custom-0>...<end-custom-0>
-    description: oslogin-build
+    description: 'prowjob_name: oslogin-build'
     name: oslogin-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/issues/
     test_group_name: oslogin-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
-    description: osconfig-build
+    description: 'prowjob_name: osconfig-build'
     name: osconfig-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
     test_group_name: osconfig-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
-    description: osconfig-presubmit-gobuild
+    description: 'prowjob_name: osconfig-presubmit-gobuild'
     name: OSConfig presubmits - gobuild
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
     test_group_name: osconfig-presubmit-gobuild
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
-    description: osconfig-presubmit-gocheck
+    description: 'prowjob_name: osconfig-presubmit-gocheck'
     name: OSConfig presubmits - gocheck
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
     test_group_name: osconfig-presubmit-gocheck
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
-    description: osconfig-presubmit-gotest
+    description: 'prowjob_name: osconfig-presubmit-gotest'
     name: OSConfig presubmits - gotest
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
@@ -70,7 +70,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ci-oss-test-infra-autobump-knative-prow
+    description: 'prowjob_name: ci-oss-test-infra-autobump-knative-prow'
     name: autobump-knative-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
@@ -79,14 +79,14 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ci-oss-test-infra-autobump-prow
+    description: 'prowjob_name: ci-oss-test-infra-autobump-prow'
     name: autobump-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: ci-oss-test-infra-autobump-prow
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: ci-oss-test-infra-heartbeat
+    description: 'prowjob_name: ci-oss-test-infra-heartbeat'
     name: oss-prow-heartbeat
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
@@ -95,7 +95,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: testgrid-canary-autobump
+    description: 'prowjob_name: testgrid-canary-autobump'
     name: autobump-testgrid-canary
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
@@ -104,7 +104,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: post-oss-test-infra-deploy-knative-prow
+    description: 'prowjob_name: post-oss-test-infra-deploy-knative-prow'
     name: knative-prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
@@ -113,7 +113,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: post-oss-test-infra-deploy-prow
+    description: 'prowjob_name: post-oss-test-infra-deploy-prow'
     name: prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
@@ -122,7 +122,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: post-oss-test-infra-reconcile-hmacs
+    description: 'prowjob_name: post-oss-test-infra-reconcile-hmacs'
     name: hmacs-reconciliation
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
@@ -131,21 +131,21 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: post-oss-test-infra-upload-testgrid-config
+    description: 'prowjob_name: post-oss-test-infra-upload-testgrid-config'
     name: testgrid-upload
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
     test_group_name: post-oss-test-infra-upload-testgrid-config
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: post-testgrid-deploy-canary
+    description: 'prowjob_name: post-testgrid-deploy-canary'
     name: testgrid-deploy-canary
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
     test_group_name: post-testgrid-deploy-canary
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: post-testgrid-deploy-prod
+    description: 'prowjob_name: post-testgrid-deploy-prod'
     name: testgrid-deploy-prod
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
@@ -154,7 +154,7 @@ dashboards:
       alert_mail_to_addresses: slchase@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: push-testgrid-images
+    description: 'prowjob_name: push-testgrid-images'
     name: testgrid-push
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
@@ -163,7 +163,7 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
-    description: testgrid-prod-autobump
+    description: 'prowjob_name: testgrid-prod-autobump'
     name: autobump-testgrid-prod
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
@@ -409,7 +409,7 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: ci-en-server-performance
+    description: 'prowjob_name: ci-en-server-performance'
     name: performance
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
@@ -418,7 +418,7 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: ci-en-server-terraform-e2e
+    description: 'prowjob_name: ci-en-server-terraform-e2e'
     name: e2e
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
@@ -427,7 +427,7 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: ci-en-server-terraform-smoke
+    description: 'prowjob_name: ci-en-server-terraform-smoke'
     name: terraform-smoke
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
@@ -436,7 +436,7 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
-    description: ci-en-verification-server-e2e
+    description: 'prowjob_name: ci-en-verification-server-e2e'
     name: verification-e2e
     open_bug_template:
       url: https://github.com/google/exposure-notifications-verification-server/issues/
@@ -445,7 +445,7 @@ dashboards:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
     code_search_url_template:
       url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
-    description: ci-en-verification-server-terraform-smoke
+    description: 'prowjob_name: ci-en-verification-server-terraform-smoke'
     name: verification-terraform-smoke
     open_bug_template:
       url: https://github.com/google/exposure-notifications-verification-server/issues/
