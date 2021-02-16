@@ -1459,6 +1459,20 @@ dashboards:
     test_group_name: ci-knative-sandbox-eventing-kafka-broker-nightly-release
   name: knative-sandbox-eventing-kafka-broker
 - dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-natss/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-natss-0.19-dot-release
+    name: knative-sandbox-eventing-natss-0.19-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-natss/issues/
+    test_group_name: ci-knative-sandbox-eventing-natss-0.19-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-natss/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-natss-0.20-dot-release
+    name: knative-sandbox-eventing-natss-0.20-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-natss/issues/
+    test_group_name: ci-knative-sandbox-eventing-natss-0.20-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1468,15 +1482,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-natss/issues/
     test_group_name: ci-knative-sandbox-eventing-natss-auto-release
-  - alert_options:
-      alert_mail_to_addresses: serverless-engprod-sea@google.com
-    code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-natss/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-natss-dot-release
-    name: knative-sandbox-eventing-natss-dot-release
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-natss/issues/
-    test_group_name: ci-knative-sandbox-eventing-natss-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1515,6 +1520,20 @@ dashboards:
     test_group_name: ci-knative-sandbox-eventing-prometheus-nightly-release
   name: knative-sandbox-eventing-prometheus
 - dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-rabbitmq-0.19-dot-release
+    name: knative-sandbox-eventing-rabbitmq-0.19-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/issues/
+    test_group_name: ci-knative-sandbox-eventing-rabbitmq-0.19-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
+    name: knative-sandbox-eventing-rabbitmq-0.20-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/issues/
+    test_group_name: ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1524,15 +1543,6 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/eventing-rabbitmq/issues/
     test_group_name: ci-knative-sandbox-eventing-rabbitmq-auto-release
-  - alert_options:
-      alert_mail_to_addresses: serverless-engprod-sea@google.com
-    code_search_url_template:
-      url: https://github.com/knative-sandbox/eventing-rabbitmq/compare/<start-custom-0>...<end-custom-0>
-    description: ci-knative-sandbox-eventing-rabbitmq-dot-release
-    name: knative-sandbox-eventing-rabbitmq-dot-release
-    open_bug_template:
-      url: https://github.com/knative-sandbox/eventing-rabbitmq/issues/
-    test_group_name: ci-knative-sandbox-eventing-rabbitmq-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1596,6 +1606,13 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
+    name: knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -2038,6 +2055,20 @@ dashboards:
     open_bug_template:
       url: https://github.com/knative/serving/issues/
     test_group_name: ci-knative-serving-https
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-istio-head-mesh
+    name: knative-serving-istio-head-mesh
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-istio-head-mesh
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: ci-knative-serving-istio-head-no-mesh
+    name: knative-serving-istio-head-no-mesh
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    test_group_name: ci-knative-serving-istio-head-no-mesh
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: ci-knative-serving-istio-latest-mesh
@@ -2575,12 +2606,14 @@ test_groups:
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-kafka-nightly-release
   name: ci-knative-sandbox-eventing-kafka-nightly-release
   num_failures_to_alert: 1
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-0.19-dot-release
+  name: ci-knative-sandbox-eventing-natss-0.19-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-0.20-dot-release
+  name: ci-knative-sandbox-eventing-natss-0.20-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-auto-release
   name: ci-knative-sandbox-eventing-natss-auto-release
-  num_failures_to_alert: 1
-- alert_stale_results_hours: 170
-  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-dot-release
-  name: ci-knative-sandbox-eventing-natss-dot-release
   num_failures_to_alert: 1
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-nightly-release
   name: ci-knative-sandbox-eventing-natss-nightly-release
@@ -2597,12 +2630,14 @@ test_groups:
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-prometheus-nightly-release
   name: ci-knative-sandbox-eventing-prometheus-nightly-release
   num_failures_to_alert: 1
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-0.19-dot-release
+  name: ci-knative-sandbox-eventing-rabbitmq-0.19-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
+  name: ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-auto-release
   name: ci-knative-sandbox-eventing-rabbitmq-auto-release
-  num_failures_to_alert: 1
-- alert_stale_results_hours: 170
-  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-dot-release
-  name: ci-knative-sandbox-eventing-rabbitmq-dot-release
   num_failures_to_alert: 1
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-nightly-release
   name: ci-knative-sandbox-eventing-rabbitmq-nightly-release
@@ -2634,6 +2669,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
+  name: ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-auto-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-auto-release
   num_failures_to_alert: 1
@@ -2850,6 +2888,12 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-serving-https
   name: ci-knative-serving-https
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-serving-istio-head-mesh
+  name: ci-knative-serving-istio-head-mesh
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-serving-istio-head-no-mesh
+  name: ci-knative-serving-istio-head-no-mesh
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-serving-istio-latest-mesh
   name: ci-knative-serving-istio-latest-mesh
