@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
         command:
         - runner.sh
         args:
@@ -37,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
         command:
         - runner.sh
         args:
@@ -61,7 +61,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
         command:
         - runner.sh
         args:
@@ -92,7 +92,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
         command:
         - runner.sh
         - kubetest
