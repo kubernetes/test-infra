@@ -32,12 +32,12 @@ periodics:
     testgrid-alert-email: hh@ii.coop
     testgrid-num-failures-to-alert: '100'
   extra_refs:
-  - org: kubernetes
+  - org: ii
     repo: k8s.io
-    base_ref: main
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
+    base_ref: no-auditing-secrets
+  # - org: kubernetes
+  #   repo: test-infra
+  #   base_ref: master
   rerun_auth_config:
     github_users:
       - hh
@@ -45,50 +45,27 @@ periodics:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
     - name: audit
-      image: bash:5.1.4
-      # This image doesn't have bash
-      # image: golang:1.15.8-alpine3.13
-      # This image doesn't appear to be used anywhere...
-      # image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20201130-750d12f
+      image: gcr.io/k8s-staging-releng/releng-ci:latest
       command:
       - bash
       args:
       - -c
       - |
-        # set -x
-        # set -e
-        #apk --no-cache add curl python py-crcmod libc6-compat openssh-client git gnupg docker-cli make jq
-        # lib6-compat is a golang dependency
-        apk --no-cache add curl git jq python3 libc6-compat
-        # golang 1.15.8
-        export PATH=/usr/local/go/bin:${PATH}
-        curl -qL https://golang.org/dl/go1.15.8.linux-amd64.tar.gz 2>/dev/null \
-          | tar xzC /usr/local
-        go version
-        # Maybe there is a better image with golang-1.15 + gcloud?
-        export PATH=/google-cloud-sdk/bin:/workspace:${PATH}
-        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-        # gcloud-sdk install
-        mkdir -p /workspace
-        pushd /workspace
-        curl -qL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz 2>/dev/null \
-          | tar xzC /
-        gcloud components install bq gsutil
-        gcloud info > /workspace/gcloud-info.txt
-        gcloud version
-        popd
-
         echo "Ensure gcloud creds are working" >&2
         gcloud config list
         echo "Running Audit Script to dump GCP configuration to yaml" >&2
         pushd ./audit
         bash ./audit-gcp.sh
+        git status | grep deleted | awk '{print $2}' | xargs git checkout
         popd
 
-        echo "Generate pr-creator binary from k/test-infra/robots" >&2
-        pushd ../test-infra
-        go build -o ../k8s.io/pr-creator robots/pr-creator/main.go
-        popd
+        # echo "Generate pr-creator binary from k/test-infra/robots" >&2
+        # env
+        # ls /home/prow/go/src
+        # ls /home/prow/go/src/*/
+        # pushd $GOPATH/src/github.com/kubernetes/test-infra
+        # go build -o /workspace/pr-creator robots/pr-creator/main.go
+        # popd
 
         echo -n "Calculate github user, name, and email from token: " >&2
         # curl https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
@@ -98,6 +75,7 @@ periodics:
         GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login)
         GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name)
         GH_EMAIL=$(curl -H "Authorization: token $GH_TOKEN" -H "X-Oauth-Scope: user:email" "https://api.github.com/user/emails" 2>/dev/null | jq -r '.[] | select( .primary == true ) | .email')
+        FORK_GH_REPO=test-infra
         FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
         echo "Prepare commit for possible PR via $GH_USER" >&2
         git config user.name "${GH_NAME}"
@@ -105,28 +83,42 @@ periodics:
         git add --all audit
         git commit -m "audit: update as of $(date +%Y-%m-%d)"
         echo -e "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}:..." >&2
-        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}}" 2>/dev/null
+        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
 
         echo "Creating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into master..." >&2
+        curl -L \
+          https://github.com/cli/cli/releases/download/v1.5.0/gh_1.5.0_linux_amd64.tar.gz \
+          | tar xzvC /usr/local --strip-components=1
         title="audit: update as of $(date +%Y-%m-%d)"
         body="Audit Updates\n/wg k8s-infra"
-        ./pr-creator --help || true
-        ./pr-creator \
-          --github-token-path=/etc/github-token/token \
-          --org=kubernetes --repo=k8s.io --branch=main \
-          --source="${GH_USER}:${FORK_GH_BRANCH}" \
-          --head-branch="${FORK_GH_BRANCH}" \
-          --title="${title}" \
-          --body="${body}" \
-          --confirm
+        # /workspace/pr-creator --help || true
+        sleep 9999999
+        # /workspace/pr-creator \
+        #   --github-token-path=/etc/github-token/token \
+        #   --org=kubernetes --repo=k8s.io --branch=main \
+        #   --source="${GH_USER}:${FORK_GH_BRANCH}" \
+        #   --head-branch="${FORK_GH_BRANCH}" \
+        #   --title="${title}" \
+        #   --body="${body}" \
+        #   --confirm
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      - name: gcloud
+        mountPath: /root/.config/gcloud
+        readOnly: false
     volumes:
     - name: github
-      secret:
-        secretName: cncf-ci-github-token
+      # secret:
+      #   secretName: cncf-ci-github-token
+      hostPath:
+        path: /mnt/disks/kind-node/github
+        type: Directory
+    - name: gcloud
+      hostPath:
+        path: /mnt/disks/kind-node/gcloud
+        type: Directory
 
 postsubmits:
   kubernetes/k8s.io:
