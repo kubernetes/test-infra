@@ -1,0 +1,13 @@
+body {
+    padding-bottom: 20px;
+}
+.copy {
+    margin-left: 15px;
+}
+.link {
+    color: #fff;
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 14px;
+    font-family: monospace;
+}

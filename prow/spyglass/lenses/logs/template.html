@@ -1,0 +1,8 @@
+{{define "header"}}
+<link rel="stylesheet" href="logs.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+<button class="copy" data-link="{{.LogsURL}}">Copy</button><div class="link">{{.LogsURL}}</div>
+{{end}}
