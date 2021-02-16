@@ -26,6 +26,19 @@ local config = {
     ],
   },
 
+  ciAbsents: {
+    components: [
+      comps.crier,
+      comps.deck,
+      comps.ghproxy,
+      comps.hook,
+      comps.horologium,
+      comps.prowControllerManager,
+      comps.sinker,
+      comps.tide,
+    ],
+  },
+
   // Heartbeat jobs
   heartbeatJobs: [
     {name: 'ci-test-infra-prow-checkconfig', interval: '5m', alertInterval: '20m'},
