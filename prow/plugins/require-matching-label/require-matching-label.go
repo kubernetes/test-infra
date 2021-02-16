@@ -90,13 +90,21 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 				MissingComment: "Please add a label referencing the kind.",
 				GracePeriod:    "5s",
 			},
+			{
+				Org:             "org",
+				Repo:            "repo",
+				Issues:          true,
+				Regexp:          "^kind/feature$",
+				MatchingComment: "Please create a KEP instead.",
+				GracePeriod:     "5s",
+			},
 		},
 	})
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	return &pluginhelp.PluginHelp{
-			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
+			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. The plugin also allows adding a comment to issues and/or PRs that have the matching label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
 			Config: map[string]string{
 				"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
 			},
@@ -236,11 +244,23 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 			if cfg.MissingComment != "" {
 				msg := plugins.FormatSimpleResponse(e.author, cfg.MissingComment)
 				if err := ghc.CreateComment(e.org, e.repo, e.number, msg); err != nil {
-					log.WithError(err).Error("Failed to create comment.")
+					log.WithError(err).Error("Failed to create missing comment.")
 				}
 			}
 		}
 
+		if cfg.MatchingComment != "" {
+			if hasMatchingLabel {
+				msg := plugins.FormatSimpleResponse(e.author, cfg.MatchingComment)
+				if err := ghc.CreateComment(e.org, e.repo, e.number, msg); err != nil {
+					log.WithError(err).Error("Failed to create matching comment.")
+				}
+			} else {
+				cp.PruneComments(func(comment github.IssueComment) bool {
+					return strings.Contains(comment.Body, cfg.MatchingComment)
+				})
+			}
+		}
 	}
 	return nil
 }

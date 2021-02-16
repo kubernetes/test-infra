@@ -505,6 +505,10 @@ require_matching_label:
     # Defaults to '5s'.
     grace_period: ' '
 
+    # MatchingComment is the comment to post when an issue or PR contains
+    # labels matching the Regexp.
+    matching_comment: ' '
+
     # MissingComment is the comment to post when we add the MissingLabel to an
     # issue. This is typically used to explain why MissingLabel was added and
     # how to move forward.

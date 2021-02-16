@@ -632,6 +632,10 @@ type RequireMatchingLabel struct {
 	// Re is the compiled version of Regexp. It should not be specified in config.
 	Re *regexp.Regexp `json:"-"`
 
+	// MatchingComment is the comment to post when an issue or PR contains
+	// labels matching the Regexp.
+	MatchingComment string `json:"matching_comment,omitempty"`
+
 	// MissingLabel is the label to apply if an issue does not have any label
 	// matching the Regexp.
 	MissingLabel string `json:"missing_label,omitempty"`
