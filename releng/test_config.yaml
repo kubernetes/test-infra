@@ -522,22 +522,27 @@ k8sVersions:
   dev:
     args:
     - --extract=ci/latest
+    - --extract-ci-bucket=k8s-release-dev
     version: master
   beta:
     args:
     - --extract=ci/latest-1.20
+    - --extract-ci-bucket=k8s-release-dev
     version: '1.20'
   stable1:
     args:
     - --extract=ci/latest-1.19
+    - --extract-ci-bucket=k8s-release-dev
     version: '1.19'
   stable2:
     args:
     - --extract=ci/latest-1.18
+    - --extract-ci-bucket=k8s-release-dev
     version: '1.18'
   stable3:
     args:
     - --extract=ci/latest-1.17
+    - --extract-ci-bucket=k8s-release-dev
     version: '1.17'
 
 testSuites:

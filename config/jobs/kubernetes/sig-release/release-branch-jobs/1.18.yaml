@@ -24,6 +24,7 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable2
       - --extract=ci/latest
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
@@ -61,6 +62,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -100,6 +102,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -359,6 +362,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
