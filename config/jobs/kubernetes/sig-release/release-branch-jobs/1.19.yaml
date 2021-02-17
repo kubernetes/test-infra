@@ -215,7 +215,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-version-markers=k8s-stable1
+      - --extra-version-markers=k8s-stable2
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20210204-b06ec78
       name: ""
