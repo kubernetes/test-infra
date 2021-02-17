@@ -5,16 +5,17 @@ reviewers:
 - detiber
 - justinsb
 - krousey
-- maisem
 - vincepri
 approvers:
 - cpanato
 - detiber
 - justinsb
 - krousey
-- maisem
 - vincepri
 
 labels:
 - sig/cluster-lifecycle
 - area/provider/gcp
+
+emeritus_approvers:
+- maisem

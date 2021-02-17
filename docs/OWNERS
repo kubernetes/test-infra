@@ -2,10 +2,10 @@
 
 reviewers:
 - cblecker
-- mithrav
 - spiffxp
 approvers:
 - cblecker
-- mithrav
 - spiffxp
 
+emeritus_approvers:
+- mithrav
