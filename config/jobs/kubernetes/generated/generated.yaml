@@ -644,6 +644,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -690,6 +691,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -736,6 +738,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -775,6 +778,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -815,6 +819,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -855,6 +860,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -894,6 +900,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -934,6 +941,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -974,6 +982,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1013,6 +1022,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1053,6 +1063,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1093,6 +1104,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1132,6 +1144,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1172,6 +1185,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1212,6 +1226,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1251,6 +1266,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1291,6 +1307,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1331,6 +1348,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1370,6 +1388,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1410,6 +1429,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1450,6 +1470,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1489,6 +1510,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1529,6 +1551,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1569,6 +1592,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1607,6 +1631,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
@@ -1642,6 +1667,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
@@ -1677,6 +1703,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1716,6 +1743,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1753,6 +1781,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1791,6 +1820,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.20
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -1831,6 +1861,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
@@ -1866,6 +1897,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
@@ -1901,6 +1933,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -1940,6 +1973,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -1977,6 +2011,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -2015,6 +2050,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.19
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -2055,6 +2091,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
@@ -2090,6 +2127,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
@@ -2125,6 +2163,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -2163,6 +2202,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -2200,6 +2240,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -2238,6 +2279,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.18
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -2278,6 +2320,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
@@ -2313,6 +2356,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
@@ -2348,6 +2392,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -2386,6 +2431,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
@@ -2423,6 +2469,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
@@ -2461,6 +2508,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/latest-1.17
+      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       - --env=KUBE_PROXY_DAEMONSET=true
