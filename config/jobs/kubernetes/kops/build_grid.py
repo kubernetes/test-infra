@@ -96,9 +96,10 @@ kubetest2_template = """
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
+          --terraform-version={{terraform_version}} \\
           --test=kops \\
           -- \\
-          --test-args="-test.timeout={{test_timeout}}" \\
+          --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \\
           --test-package-marker={{marker}} \\
           --parallel {{test_parallelism}} \\
           --skip-regex="{{skip_regex}}"
@@ -128,6 +129,7 @@ run_daily = [
     'kops-grid-scenario-arm64',
     'kops-grid-scenario-aws-cloud-controller-manager',
     'kops-grid-scenario-serial-test-for-timeout',
+    'kops-grid-scenario-terraform',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -220,7 +222,7 @@ def distro_info(distro):
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
-    elif distro == 'u2004' or distro is None:
+    elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1'
     elif distro == 'rhel7':
@@ -239,7 +241,7 @@ def distro_info(distro):
 
 # Returns a string representing the prow job YAML and the number of job invocations per week
 def build_test(cloud='aws',
-               distro=None,
+               distro='u2004',
                networking=None,
                container_runtime=None,
                k8s_version='latest',
@@ -251,6 +253,7 @@ def build_test(cloud='aws',
                extra_flags=None,
                extra_dashboards=None,
                interval=None,
+               terraform_version=None,
                test_parallelism=25,
                test_timeout_minutes=60,
                skip_override=None):
@@ -405,6 +408,10 @@ def build_test(cloud='aws',
         y = y.replace('{{skip_regex}}', skip_regex)
         y = y.replace('{{container_runtime}}', container_runtime)
         y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+        if terraform_version:
+            y = y.replace('{{terraform_version}}', terraform_version)
+        else:
+            y = remove_line_with_prefix(y, '--terraform-version=')
 
     else:
         if kops_zones:
@@ -443,12 +450,8 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
+        'kops-distro-' + distro,
     ]
-
-    if distro:
-        dashboards.append('kops-distro-' + distro)
-    else:
-        dashboards.append('kops-distro-default')
 
     if k8s_version:
         dashboards.append('kops-k8s-' + k8s_version)
@@ -588,7 +591,15 @@ def generate_misc():
                    distro="amzn2",
                    k8s_version="1.20",
                    test_parallelism=1,
-                   test_timeout_minutes=300)
+                   test_timeout_minutes=300,
+                   extra_dashboards=['kops-misc']),
+
+
+        build_test(name_override="kops-grid-scenario-terraform",
+                   container_runtime='containerd',
+                   k8s_version="1.20",
+                   terraform_version="0.14.6",
+                   extra_dashboards=['kops-misc']),
     ]
     return results
 
