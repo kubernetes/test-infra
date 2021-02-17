@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - make
         args:
@@ -26,7 +26,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - make
         args:
@@ -44,7 +44,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - make
         args:
@@ -118,7 +118,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - make
         args:
@@ -139,7 +139,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - "make"
         args:
@@ -158,7 +158,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - "make"
         args:
@@ -184,7 +184,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - "make"
         args:
@@ -209,7 +209,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
         command:
         - "make"
         args:
