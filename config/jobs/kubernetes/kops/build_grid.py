@@ -220,7 +220,7 @@ def distro_info(distro):
     elif distro == 'u1804':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20201201'
-    elif distro == 'u2004' or distro is None:
+    elif distro == 'u2004':
         kops_ssh_user = 'ubuntu'
         kops_image = '099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1'
     elif distro == 'rhel7':
@@ -239,7 +239,7 @@ def distro_info(distro):
 
 # Returns a string representing the prow job YAML and the number of job invocations per week
 def build_test(cloud='aws',
-               distro=None,
+               distro='u2004',
                networking=None,
                container_runtime=None,
                k8s_version='latest',
@@ -443,12 +443,8 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
+        'kops-distro-' + distro,
     ]
-
-    if distro:
-        dashboards.append('kops-distro-' + distro)
-    else:
-        dashboards.append('kops-distro-default')
 
     if k8s_version:
         dashboards.append('kops-k8s-' + k8s_version)
