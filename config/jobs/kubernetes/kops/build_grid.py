@@ -96,6 +96,7 @@ kubetest2_template = """
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
+          --terraform-version={{terraform_version}} \\
           --test=kops \\
           -- \\
           --test-args="-test.timeout={{test_timeout}}" \\
@@ -128,6 +129,7 @@ run_daily = [
     'kops-grid-scenario-arm64',
     'kops-grid-scenario-aws-cloud-controller-manager',
     'kops-grid-scenario-serial-test-for-timeout',
+    'kops-grid-scenario-terraform',
 ]
 
 # These are job tab names of unsupported grid combinations
@@ -251,6 +253,7 @@ def build_test(cloud='aws',
                extra_flags=None,
                extra_dashboards=None,
                interval=None,
+               terraform_version=None,
                test_parallelism=25,
                test_timeout_minutes=60,
                skip_override=None):
@@ -405,6 +408,10 @@ def build_test(cloud='aws',
         y = y.replace('{{skip_regex}}', skip_regex)
         y = y.replace('{{container_runtime}}', container_runtime)
         y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+        if terraform_version:
+            y = y.replace('{{terraform_version}}', terraform_version)
+        else:
+            y = remove_line_with_prefix(y, '--terraform-version=')
 
     else:
         if kops_zones:
@@ -584,7 +591,15 @@ def generate_misc():
                    distro="amzn2",
                    k8s_version="1.20",
                    test_parallelism=1,
-                   test_timeout_minutes=300)
+                   test_timeout_minutes=300,
+                   extra_dashboards=['kops-misc']),
+
+
+        build_test(name_override="kops-grid-scenario-terraform",
+                   container_runtime='containerd',
+                   k8s_version="1.20",
+                   terraform_version="0.14.6",
+                   extra_dashboards=['kops-misc']),
     ]
     return results
 
