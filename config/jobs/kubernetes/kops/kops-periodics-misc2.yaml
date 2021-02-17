@@ -255,7 +255,7 @@ periodics:
           --terraform-version=0.14.6 \
           --test=kops \
           -- \
-          --test-args="-test.timeout=60m" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"

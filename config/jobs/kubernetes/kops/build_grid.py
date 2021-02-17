@@ -99,7 +99,7 @@ kubetest2_template = """
           --terraform-version={{terraform_version}} \\
           --test=kops \\
           -- \\
-          --test-args="-test.timeout={{test_timeout}}" \\
+          --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \\
           --test-package-marker={{marker}} \\
           --parallel {{test_parallelism}} \\
           --skip-regex="{{skip_regex}}"
