@@ -40,8 +40,6 @@ go_library(
         "@com_github_azure_go_autorest_autorest//:go_default_library",
         "@com_github_azure_go_autorest_autorest//azure:go_default_library",
         "@com_github_azure_go_autorest_autorest_adal//:go_default_library",
-        "@com_github_docker_docker//api/types:go_default_library",
-        "@com_github_docker_docker//client:go_default_library",
         "@com_github_pelletier_go_toml//:go_default_library",
         "@com_github_satori_go_uuid//:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
