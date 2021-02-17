@@ -3,10 +3,14 @@
 ### Context
 Prow uploads a host of artifacts throughout the life cycle of a job. Two of these artifacts that are present in each run are `started.json` and `finished.json` which contain a host of information pertaining to the job/run. These files have existed through the evolution of Kubernetes CI: from Jenkins -> Containerized Jenkins -> Bootstrap Containerized Jenkins -> Bootstrap Prow -> PodUtils. As of 2021, all jobs exist within either Bootstrap Prow or PodUtils. As the CI has evolved, so has `started/finished.json` and it's function.
 
+Examples:
+[started.json](https://storage.googleapis.com/kubernetes-jenkins/pr-logs/pull/test-infra/20825/pull-test-infra-yamllint/1359751085224366080/started.json)
+[finished.json](https://storage.googleapis.com/kubernetes-jenkins/pr-logs/pull/test-infra/20825/pull-test-infra-yamllint/1359751085224366080/finished.json)
+
 Related Issues:
 
-1. #3412: What is the origin and porous for the fields in these files?
-2. #111000: This isn't a source of truth and prow/pod/gcs are not in sync
+1. #3412: What is the origin and purpose for the fields in these files?
+2. #11100: This isn't a source of truth and prow/pod/gcs are not in sync
 3. #10699: Unify *.json structures, was partially covered as part of #10703
 
 ## Format Source of Truth
