@@ -891,7 +891,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
@@ -933,7 +932,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
@@ -979,7 +977,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
@@ -1030,7 +1027,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
@@ -1076,7 +1072,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
@@ -1195,7 +1190,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m
