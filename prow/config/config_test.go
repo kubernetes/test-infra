@@ -342,6 +342,7 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 }
 
 func TestDecorationRawYaml(t *testing.T) {
+	t.Parallel()
 	var testCases = []struct {
 		name        string
 		expectError bool
@@ -660,16 +661,68 @@ periodics:
 				GCSCredentialsSecret: pStr("explicit-service-account"),
 			},
 		},
+		{
+			name: "Just the timeout is overwritten via more specific default_decoration_config ",
+			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+        mediaTypes:
+          log: text/plain
+      gcs_credentials_secret: "default-service-account"
+    'org/repo':
+      timeout: 4h
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  extra_refs:
+  - org: org
+    repo: repo
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 4 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: pStr("default-service-account"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// save the config
-			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-			if err != nil {
-				t.Fatalf("fail to make tempdir: %v", err)
-			}
-			defer os.RemoveAll(prowConfigDir)
+			prowConfigDir := t.TempDir()
 
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {

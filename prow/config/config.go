@@ -803,7 +803,9 @@ func (d *Deck) ShouldValidateStorageBuckets() bool {
 func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
-		knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		if dc.GCSConfiguration != nil {
+			knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		}
 	}
 	for _, j := range c.Periodics {
 		if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
