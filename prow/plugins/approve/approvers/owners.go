@@ -556,6 +556,16 @@ func (ap Approvers) ListNoIssueApprovals() []Approval {
 	return approvals
 }
 
+// AssignedCCs returns potential approvers that are already assigned
+func (ap Approvers) AssignedCCs() []string {
+	return sets.NewString(ap.GetCCs()...).Intersection(ap.assignees).List()
+}
+
+// SuggestedCCs returns potential approvers that are not already assigned
+func (ap Approvers) SuggestedCCs() []string {
+	return sets.NewString(ap.GetCCs()...).Difference(ap.assignees).List()
+}
+
 // File in an interface for files
 type File interface {
 	String() string
@@ -633,8 +643,18 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
-You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
+{{ if len .ap.SuggestedCCs -}}
+{{- if len .ap.AssignedCCs -}}
+To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- else -}}
+To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- end}}
+You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
+{{- else -}}
+{{- if len .ap.AssignedCCs -}}
+To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- end}}
+{{- end}}
 {{- end}}
 
 {{if not .ap.RequireIssue -}}
