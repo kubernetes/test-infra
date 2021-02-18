@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -94,7 +94,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -134,7 +134,7 @@ periodics:
     description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -190,7 +190,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -233,7 +233,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -277,7 +277,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/issue-creator:v20210218-8412872812
       command:
       - /app/robots/issue-creator/app.binary
       args:
@@ -306,7 +306,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210217-8c724915ff
+    - image: gcr.io/k8s-prow/commenter:v20210218-8412872812
       command:
       - /app/robots/commenter/app.binary
       args:
