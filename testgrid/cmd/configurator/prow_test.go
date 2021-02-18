@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"path"
 	"reflect"
 	"testing"
 
@@ -31,6 +32,7 @@ const ProwDefaultGCSPath = "pathPrefix/"
 const ProwJobName = "TestJob"
 const ProwJobSourcePath = "jobs/org/repo/testjob.yaml"
 const ProwJobURLPrefix = "https://go.k8s.io/prowjobs/"
+const ProwJobURLPrefixConfig = "https://config.go.k8s.io/"
 const ExampleRepository = "test/repo"
 const ProwJobDefaultDescription = "prowjob_name: " + ProwJobName
 
@@ -630,6 +632,216 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 		})
 	}
 
+}
+
+func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
+	tests := []*struct {
+		name                 string
+		prowConfig           *prowConfig.Config
+		expectedDashboardTab config.DashboardTab
+	}{
+		{
+			name: "job url prefix without specific sufix",
+			prowConfig: &prowConfig.Config{
+				ProwConfig: prowConfig.ProwConfig{
+					Plank: prowConfig.Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									PathPrefix: ProwDefaultGCSPath,
+								},
+							},
+						},
+						JobURLPrefixConfig: map[string]string{
+							"*": ProwJobURLPrefixConfig,
+						},
+					},
+				},
+			},
+			expectedDashboardTab: config.DashboardTab{
+				Name:          ProwJobName,
+				Description:   ProwJobDefaultDescription,
+				TestGroupName: ProwJobName,
+				CodeSearchUrlTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+				},
+				OpenBugTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/issues/",
+				},
+				OpenTestTemplate: &config.LinkTemplate{
+					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+				},
+			},
+		},
+		{
+			name: "job url prefix ends in /view, kept",
+			prowConfig: &prowConfig.Config{
+				ProwConfig: prowConfig.ProwConfig{
+					Plank: prowConfig.Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									PathPrefix: ProwDefaultGCSPath,
+								},
+							},
+						},
+						JobURLPrefixConfig: map[string]string{
+							"*": path.Join(ProwJobURLPrefixConfig, "view"),
+						},
+					},
+				},
+			},
+			expectedDashboardTab: config.DashboardTab{
+				Name:          ProwJobName,
+				Description:   ProwJobDefaultDescription,
+				TestGroupName: ProwJobName,
+				CodeSearchUrlTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+				},
+				OpenBugTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/issues/",
+				},
+				OpenTestTemplate: &config.LinkTemplate{
+					Url: path.Join(ProwJobURLPrefixConfig, "view", "<gcs_prefix>", "<changelist>"),
+				},
+			},
+		},
+		{
+			name: "job url prefix ends in /gcs, removed",
+			prowConfig: &prowConfig.Config{
+				ProwConfig: prowConfig.ProwConfig{
+					Plank: prowConfig.Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									PathPrefix: ProwDefaultGCSPath,
+								},
+							},
+						},
+						JobURLPrefixConfig: map[string]string{
+							"*": path.Join(ProwJobURLPrefixConfig, "gcs"),
+						},
+					},
+				},
+			},
+			expectedDashboardTab: config.DashboardTab{
+				Name:          ProwJobName,
+				Description:   ProwJobDefaultDescription,
+				TestGroupName: ProwJobName,
+				CodeSearchUrlTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+				},
+				OpenBugTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/issues/",
+				},
+				OpenTestTemplate: &config.LinkTemplate{
+					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+				},
+			},
+		},
+		{
+			name: "job url prefix for org is prefered over *",
+			prowConfig: &prowConfig.Config{
+				ProwConfig: prowConfig.ProwConfig{
+					Plank: prowConfig.Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									PathPrefix: ProwDefaultGCSPath,
+								},
+							},
+						},
+						JobURLPrefixConfig: map[string]string{
+							"*":    "https://some.other.url",
+							"test": ProwJobURLPrefixConfig,
+						},
+					},
+				},
+			},
+			expectedDashboardTab: config.DashboardTab{
+				Name:          ProwJobName,
+				Description:   ProwJobDefaultDescription,
+				TestGroupName: ProwJobName,
+				CodeSearchUrlTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+				},
+				OpenBugTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/issues/",
+				},
+				OpenTestTemplate: &config.LinkTemplate{
+					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+				},
+			},
+		},
+		{
+			name: "job url prefix for org/repo is prefered over org and *",
+			prowConfig: &prowConfig.Config{
+				ProwConfig: prowConfig.ProwConfig{
+					Plank: prowConfig.Plank{
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									PathPrefix: ProwDefaultGCSPath,
+								},
+							},
+						},
+						JobURLPrefixConfig: map[string]string{
+							"*":         "https://some.other.url",
+							"test":      "https://even.another.url",
+							"test/repo": ProwJobURLPrefixConfig,
+						},
+					},
+				},
+			},
+			expectedDashboardTab: config.DashboardTab{
+				Name:          ProwJobName,
+				Description:   ProwJobDefaultDescription,
+				TestGroupName: ProwJobName,
+				CodeSearchUrlTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+				},
+				OpenBugTemplate: &config.LinkTemplate{
+					Url: "https://github.com/test/repo/issues/",
+				},
+				OpenTestTemplate: &config.LinkTemplate{
+					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			initialConfig := &config.Configuration{
+				Dashboards: []*config.Dashboard{
+					{Name: "Pizza"},
+				},
+			}
+			annotations := map[string]string{
+				"testgrid-dashboards": "Pizza",
+			}
+
+			pac := prowAwareConfigurator{
+				prowConfig: test.prowConfig,
+			}
+			job := prowConfig.JobBase{
+				Name:        ProwJobName,
+				Annotations: annotations,
+				SourcePath:  ProwJobSourcePath,
+			}
+
+			err := pac.applySingleProwjobAnnotations(initialConfig, job, prowapi.PresubmitJob, ExampleRepository)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			actual := initialConfig.Dashboards[0].DashboardTab[0]
+			if !reflect.DeepEqual(actual, &test.expectedDashboardTab) {
+				t.Errorf("Configurations did not match; got %s, expected %s", actual.String(), test.expectedDashboardTab.String())
+			}
+		})
+	}
 }
 
 func TestSortPresubmitRepoOrder(t *testing.T) {

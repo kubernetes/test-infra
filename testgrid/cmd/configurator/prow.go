@@ -29,6 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	prowGCS "k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -191,12 +192,32 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 					Url: fmt.Sprintf("https://github.com/%s/issues/", repo),
 				}
 			}
+
+			// create simple ProwJob from JobBase including repo info to get the job url prefix
+			pjSpec := pjutil.PeriodicSpec(prowConfig.Periodic{JobBase: j})
+			if repo != "" {
+				items := strings.Split(repo, "/")
+				pjSpec.ExtraRefs = []prowapi.Refs{{Org: items[0]}}
+				if len(items) > 1 {
+					pjSpec.ExtraRefs[0].Repo = items[1]
+				}
+			}
+			pj := pjutil.NewProwJob(pjSpec, nil, nil)
+			jobURLPrefix := pac.prowConfig.Plank.GetJobURLPrefix(&pj)
+			var openTestLinkTemplate *configpb.LinkTemplate
+			if jobURLPrefix != "" {
+				openTestLinkTemplate = &configpb.LinkTemplate{
+					Url: path.Join(jobURLPrefix, "<gcs_prefix>", "<changelist>"),
+				}
+			}
+
 			dt := &configpb.DashboardTab{
 				Name:                  tabName,
 				TestGroupName:         testGroupName,
 				Description:           description,
 				CodeSearchUrlTemplate: codeSearchLinkTemplate,
 				OpenBugTemplate:       openBugLinkTemplate,
+				OpenTestTemplate:      openTestLinkTemplate,
 			}
 			if firstDashboard {
 				firstDashboard = false
