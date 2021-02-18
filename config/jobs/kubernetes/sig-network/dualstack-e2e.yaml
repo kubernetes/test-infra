@@ -192,7 +192,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes-iptables.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
@@ -245,7 +245,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
@@ -301,7 +301,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
@@ -354,7 +354,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes-iptables.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
