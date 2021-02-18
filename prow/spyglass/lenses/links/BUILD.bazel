@@ -1,10 +1,10 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("//def:ts.bzl", "rollup_bundle", "ts_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["logs.go"],
-    importpath = "k8s.io/test-infra/prow/spyglass/lenses/logs",
+    srcs = ["links.go"],
+    importpath = "k8s.io/test-infra/prow/spyglass/lenses/links",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/spyglass/api:go_default_library",
@@ -15,7 +15,7 @@ go_library(
 
 ts_library(
     name = "script",
-    srcs = ["logs.ts"],
+    srcs = ["links.ts"],
     deps = [
         "//prow/spyglass/lenses:lens_api",
     ],
@@ -23,7 +23,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    entry_point = ":logs.ts",
+    entry_point = ":links.ts",
     deps = [
         ":script",
     ],
@@ -38,7 +38,7 @@ filegroup(
 filegroup(
     name = "resources",
     srcs = [
-        "logs.css",
+        "links.css",
         ":script_bundle.min",
     ],
     visibility = ["//visibility:public"],
@@ -56,4 +56,10 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["links_test.go"],
+    embed = [":go_default_library"],
 )
