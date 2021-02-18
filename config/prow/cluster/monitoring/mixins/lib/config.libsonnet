@@ -63,7 +63,7 @@ local config = {
 
   // Boskos endpoints to be monitored
   boskosResourcetypes: [
-    {job: "k8s-prow-builds-boskos", type: "aws-account", friendly: "AWS account"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-boskos", type: "aws-account", friendly: "AWS account"},
     {job: "k8s-prow-builds-boskos", type: "gce-project", friendly: "GCE project"},
     {job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
     {job: "k8s-prow-builds-boskos", type: "gke-project", friendly: "GKE project"},
