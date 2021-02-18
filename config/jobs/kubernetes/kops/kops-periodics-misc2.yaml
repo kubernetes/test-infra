@@ -255,6 +255,7 @@ periodics:
           --terraform-version=0.14.6 \
           --test=kops \
           -- \
+          --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.20.txt \
           --parallel 25 \
