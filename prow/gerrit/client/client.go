@@ -40,6 +40,8 @@ const (
 	GerritInstance = "prow.k8s.io/gerrit-instance"
 	// GerritRevision is the SHA of current patchset from a gerrit change
 	GerritRevision = "prow.k8s.io/gerrit-revision"
+	// GerritPatchset is the numeric ID of the current patchset
+	GerritPatchset = "prow.k8s.io/gerrit-patchset"
 	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
 	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 

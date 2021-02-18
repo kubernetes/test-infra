@@ -302,6 +302,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+		labels[client.GerritPatchset] = string(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
