@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logs
+package links
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"path/filepath"
+	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/spyglass/api"
@@ -30,9 +31,11 @@ import (
 )
 
 const (
-	name     = "logs"
-	title    = "Master and node logs"
+	name     = "links"
+	title    = "Debugging links"
 	priority = 20
+
+	bytesLimit = 10 * 1024
 )
 
 func init() {
@@ -74,21 +77,44 @@ func renderTemplate(resourceDir, block string, params interface{}) (string, erro
 	return buf.String(), nil
 }
 
+// humanReadableName translates a fileName to human readable name, e.g.:
+// * master-and-node-logs.txt -> "Master and node logs"
+// * dashboard.link.txt -> "Dashboard"
+func humanReadableName(name string) string {
+	name = strings.TrimSuffix(name, ".link.txt")
+	name = strings.TrimSuffix(name, ".txt")
+	words := strings.Split(name, "-")
+	if len(words) > 0 {
+		words[0] = strings.Title(words[0])
+	}
+	return strings.Join(words, " ")
+}
+
 // Body renders link to logs.
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
-	if len(artifacts) == 0 {
-		return "No artifacts found"
-	}
-	content, err := artifacts[0].ReadAll()
-	if err != nil {
-		logrus.WithError(err).Warn("Failed to read artifact file.")
-		return fmt.Sprintf("Failed to read artifact file: %v", err)
+	type link struct {
+		Name string
+		URL  string
 	}
 
+	var links []link
+	for _, artifact := range artifacts {
+		content, err := artifact.ReadAtMost(bytesLimit)
+		if err != nil {
+			logrus.WithError(err).Warnf("Failed to read artifact file: %q", artifact.JobPath())
+		}
+		links = append(links, link{
+			Name: humanReadableName(filepath.Base(artifact.JobPath())),
+			URL:  strings.TrimSpace(string(content)),
+		})
+	}
+
+	sort.Slice(links, func(i, j int) bool { return links[i].Name < links[j].Name })
+
 	params := struct {
-		LogsURL string
+		Links []link
 	}{
-		LogsURL: strings.TrimSpace(string(content)),
+		Links: links,
 	}
 
 	output, err := renderTemplate(resourceDir, "body", params)
