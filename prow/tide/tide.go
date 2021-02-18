@@ -1136,11 +1136,22 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var errs []error
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	tideConfig := c.config().Tide
+
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
 		mergeMethod, err := prMergeMethod(tideConfig, &pr)
 		if err != nil {
 			log.WithError(err).Error("Failed to determine merge method.")
+			errs = append(errs, err)
+			failed = append(failed, int(pr.Number))
+			continue
+		}
+
+		// Ensure tide context has success state, otherwise PR merge will fail if branch protection
+		// in github is enabled and the loop to change tide context hasn't done it already
+		err = setTideStatusSuccess(pr, c.ghc, c.config(), log)
+		if err != nil {
+			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
 			errs = append(errs, err)
 			failed = append(failed, int(pr.Number))
 			continue
@@ -1181,6 +1192,23 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		}
 	}
 	return fmt.Errorf("failed merging %v%s: %v", failed, batch, utilerrors.NewAggregate(errs))
+}
+
+// setTideStatusSuccess calls github api to change tide status context to success
+func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, log *logrus.Entry) error {
+	if err := ghc.CreateStatus(
+		string(pr.Repository.Owner.Login),
+		string(pr.Repository.Name),
+		string(pr.HeadRefOID),
+		github.Status{
+			Context:   statusContext,
+			State:     "success",
+			TargetURL: targetURL(cfg, &pr, log),
+		}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // tryMerge attempts 1 merge and returns a bool indicating if we should try
