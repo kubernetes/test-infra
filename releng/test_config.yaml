@@ -672,7 +672,7 @@ nodeK8sVersions:
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210215-1596cdf-1.20
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-1.20
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
