@@ -4092,3 +4092,61 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 		})
 	}
 }
+
+func TestSetTideStatusSuccess(t *testing.T) {
+	testcases := []struct {
+		name string
+
+		hasContext bool
+		state      githubql.StatusState
+	}{
+		{
+			name: "existing success status tide context",
+
+			hasContext: true,
+			state:      githubql.StatusStateSuccess,
+		},
+		{
+			name: "existing failed status tide context",
+
+			hasContext: true,
+			state:      githubql.StatusStateFailure,
+		},
+		{
+			name: "existing pending status tide context",
+
+			hasContext: true,
+			state:      githubql.StatusStatePending,
+		},
+		{
+			name: "no tide context",
+
+			hasContext: false,
+		},
+	}
+	for _, tc := range testcases {
+		var pr PullRequest
+		pr.Commits.Nodes = []struct{ Commit Commit }{{}}
+		if tc.hasContext {
+			pr.Commits.Nodes[0].Commit.Status.Contexts = []Context{
+				{
+					Context: githubql.String(statusContext),
+					State:   tc.state,
+				},
+			}
+		}
+		log := logrus.WithField("component", "tide")
+		_, err := log.String()
+		if err != nil {
+			t.Fatalf("Failed to get log output before testing: %v", err)
+		}
+		ghc := &fgc{}
+		err = setTideStatusSuccess(pr, ghc, &config.Config{}, log)
+		if err != nil {
+			t.Fatalf("For case %s: error setting tide context success: %v", tc.name, err)
+		}
+		if !ghc.setStatus {
+			t.Errorf("For case %s: should set but didn't", tc.name)
+		}
+	}
+}
