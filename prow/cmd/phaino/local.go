@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go/build"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -34,6 +35,9 @@ import (
 )
 
 func realPath(p string) (string, error) {
+	if p == "" {
+		return "", errors.New("cannot find repo")
+	}
 	return filepath.Abs(os.ExpandEnv(p))
 }
 
@@ -79,21 +83,23 @@ func pathAlias(r prowapi.Refs) string {
 	return r.PathAlias
 }
 
-func readRepo(ctx context.Context, path string) (string, error) {
+func readRepo(ctx context.Context, path string, readUserInput func(string, string) (string, error)) (string, error) {
 	wd, err := workingDir()
 	if err != nil {
 		return "", fmt.Errorf("workingDir: %v", err)
 	}
-	def, err := findRepo(wd, path)
+	// First finding repo from under GOPATH, then fall back from local path.
+	// Prefers GOPATH as it's more accurate, as finding from local path performs
+	// an aggressive searching, could return "${PWD}/src/test-infra" when search
+	// for "someother-org/test-infra".
+	def, err := findRepoUnderGopath(path)
+	if err != nil { // Fall back to find repo from local
+		def, err = findRepoFromLocal(wd, path)
+	}
 	if err != nil {
 		logrus.WithError(err).WithField("repo", path).Warn("could not find repo")
 	}
-	fmt.Fprintf(os.Stderr, "local /path/to/%s", path)
-	if def != "" {
-		fmt.Fprintf(os.Stderr, " [%s]", def)
-	}
-	fmt.Fprint(os.Stderr, ": ")
-	out, err := scanln(ctx)
+	out, err := readUserInput(path, def)
 	if err != nil {
 		return "", fmt.Errorf("scan: %v", err)
 	}
@@ -103,6 +109,15 @@ func readRepo(ctx context.Context, path string) (string, error) {
 	return realPath(out)
 }
 
+func findRepoUnderGopath(path string) (string, error) {
+	fmt.Fprintf(os.Stderr, "fallback to GOPATH: %s\n: ", build.Default.GOPATH)
+	pkg, err := build.Default.Import(path, build.Default.GOPATH, build.FindOnly|build.IgnoreVendor)
+	if err != nil {
+		return "", err
+	}
+	return pkg.Dir, nil
+}
+
 func workingDir() (string, error) {
 	if wd := os.Getenv("BUILD_WORKING_DIRECTORY"); wd != "" {
 		return wd, nil // running via bazel run
@@ -110,14 +125,14 @@ func workingDir() (string, error) {
 	return os.Getwd() // running outside bazel
 }
 
-// findRepo will attempt to find a repo in logical locations under path.
+// findRepoFromLocal will attempt to find a repo in logical locations under path.
 //
 // It will first try to find foo/bar somewhere under $PWD or a $PWD dir.
 // AKA if $PWD is /go/src it will match /go/src/foo/bar, /go/foo/bar or /foo/bar
 // Next it will look for the basename somewhere under $PWD or a $PWD dir.
 // AKA if $PWD is /go/src it will match /go/src/bar, /go/bar or /bar
 // If both of these strategies fail it will return an error.
-func findRepo(wd, path string) (string, error) {
+func findRepoFromLocal(wd, path string) (string, error) {
 	opwd, err := realPath(wd)
 	if err != nil {
 		return "", fmt.Errorf("wd not found: %v", err)
@@ -246,6 +261,16 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 
 	var workingDir string
 
+	var readUserInput func(string, string) (string, error)
+	readUserInput = func(path, def string) (string, error) {
+		fmt.Fprintf(os.Stderr, "local /path/to/%s", path)
+		if def != "" {
+			fmt.Fprintf(os.Stderr, " [%s]", def)
+		}
+		fmt.Fprint(os.Stderr, ": ")
+		return scanln(ctx)
+	}
+
 	if decoration != nil {
 		var refs []prowapi.Refs
 		if pj.Spec.Refs != nil {
@@ -254,7 +279,7 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		refs = append(refs, pj.Spec.ExtraRefs...)
 		for _, ref := range refs {
 			path := pathAlias(ref)
-			repo, err := readRepo(ctx, path)
+			repo, err := readRepo(ctx, path, readUserInput)
 			if err != nil {
 				return nil, fmt.Errorf("bad repo(%s): %v", path, err)
 			}
