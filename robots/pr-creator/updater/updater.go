@@ -95,6 +95,9 @@ func updatePRWithQueryTokens(org, repo, title, body, queryTokensString string, g
 
 func EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
 	n, err := EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, "head:"+headBranch, allowMods, gc)
+	if err != nil {
+		return n, err
+	}
 
 	if len(labels) == 0 {
 		return n, nil

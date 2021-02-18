@@ -115,6 +115,9 @@ func TestCheckoutPRV2(t *testing.T) {
 
 func testCheckoutPR(clients localgit.Clients, t *testing.T) {
 	lg, c, err := clients()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Error cleaning LocalGit: %v", err)
@@ -161,6 +164,9 @@ func TestMergeCommitsExistBetweenV2(t *testing.T) {
 
 func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
 	lg, c, err := clients()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Cleaning up localgit: %v", err)
