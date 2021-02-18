@@ -25,7 +25,7 @@ postsubmits:
       - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
         # The default command in the image runs the tests, but apparently
         # decorated containers must have a command anyway.
-        command: ["./run-e2e.sh"]
+        command: ["wrapper.sh", "./run-e2e-tests.sh"]
         securityContext:
           privileged: true # Required for docker-in-docker
         resources:
@@ -43,7 +43,7 @@ periodics:
     testgrid-tab-name: periodic-e2e-tests
     testgrid-alert-email: aludwin@google.com # will change to a group when it's stable
     testgrid-num-failures-to-alert: "1"
-  interval: 12h # Will reduce to 48h as soon as we know it's working (@adrianludwin, Feb 2021)
+  interval: 48h
   always_run: true # Different from the postsubmit; copied from kind periodics
   decorate: true
   decoration_config:
@@ -57,7 +57,7 @@ periodics:
     - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
       # The default command in the image runs the tests, but apparently
       # decorated containers must have a command anyway.
-      command: ["./run-e2e.sh"]
+      command: ["wrapper.sh", "./run-e2e-tests.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker
       resources:
