@@ -740,7 +740,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 			},
 		},
 		{
-			name: "job url prefix for org is prefered over *",
+			name: "job url prefix for org is preferred over *",
 			prowConfig: &prowConfig.Config{
 				ProwConfig: prowConfig.ProwConfig{
 					Plank: prowConfig.Plank{
@@ -774,7 +774,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 			},
 		},
 		{
-			name: "job url prefix for org/repo is prefered over org and *",
+			name: "job url prefix for org/repo is preferred over org and *",
 			prowConfig: &prowConfig.Config{
 				ProwConfig: prowConfig.ProwConfig{
 					Plank: prowConfig.Plank{
