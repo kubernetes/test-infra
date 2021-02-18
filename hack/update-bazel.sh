@@ -17,10 +17,43 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if ! command -v bazel &>/dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
+
+bazel-from-image() {
+	if [ -x "$(command -v docker)" ]; then
+	    CONTAINER_ENGINE=docker
+	elif [ -x "$(command -v podman)" ]; then
+	    CONTAINER_ENGINE=podman
+	else
+		echo "There is no docker or podman installed. Please use hack/update-bazel.sh script instead."
+		exit 1
+	fi
+
+	WORKDIR=$(pwd)
+	TEST_INFRA_PATH=${WORKDIR%/hack}
+
+
+	$CONTAINER_ENGINE run --user $(id -u):$(id -g) --volume ${TEST_INFRA_PATH}:/test-infra:Z \
+	--workdir /test-infra --rm gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-test-infra $@
+}
+
+bazel-direct() {
+  bazel $@
+}
+
+bazel-from-bazelisk() {
+  bazelisk $@
+}
+
+if [[ "$1" == "--from-image" ]]; then
+	bazel=bazel-from-image
+elif [ -x "$(command -v bazelisk)" ]; then
+  bazel=bazel-from-bazelisk
+elif [ -x "$(command -v bazel)" ]; then
+  bazel=bazel-direct
+else
+  bazel=bazel-from-image
 fi
 
-set -o xtrace
-bazel run @io_k8s_repo_infra//hack:update-bazel
+"$bazel" run @io_k8s_repo_infra//hack:update-bazel
+
+exit $?
