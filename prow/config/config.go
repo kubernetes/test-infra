@@ -29,6 +29,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -802,7 +803,9 @@ func (d *Deck) ShouldValidateStorageBuckets() bool {
 func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
-		knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		if dc.GCSConfiguration != nil {
+			knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		}
 	}
 	for _, j := range c.Periodics {
 		if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
@@ -961,7 +964,7 @@ func Load(prowConfig, jobConfig string, additionals ...func(*Config) error) (c *
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
-			c, err = nil, fmt.Errorf("panic loading config: %v", r)
+			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
 	c, err = loadConfig(prowConfig, jobConfig)
