@@ -2232,7 +2232,7 @@ func (c *client) GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error
 //
 // See https://developer.github.com/v3/repos/branches/#list-branches
 func (c *client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, error) {
-	durationLogger := c.log("GetBranches", org, repo)
+	durationLogger := c.log("GetBranches", org, repo, onlyProtected)
 	defer durationLogger()
 
 	var branches []Branch
