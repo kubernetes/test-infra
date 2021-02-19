@@ -742,7 +742,11 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	spec.Containers = append(spec.Containers, *sidecar)
 
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
-		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
+		// Unless the user's asked for something specific, we want to set the grace period on the Pod to
+		// a reasonable value, as the overall grace period for the Pod must encompass both the time taken
+		// to gracefully terminate the test process *and* the time taken to process and upload the resulting
+		// artifacts to the cloud. As a reasonable rule of thumb, assume a 80/20 split between these tasks.
+		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds()) * 5 / 4
 		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
 	}
 
