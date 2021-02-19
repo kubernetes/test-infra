@@ -25,8 +25,6 @@ import (
 	"os/exec"
 	"time"
 
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/test-infra/kubetest/e2e"
@@ -103,17 +101,19 @@ func (d *Deployer) Up() error {
 }
 
 // IsUp returns nil if the apiserver is running, or the error received while checking.
+// TODO(Q-Lee): check that relevant components have started. May consider checking addons.
 func (d *Deployer) IsUp() error {
-	_, err := d.isAPIServerUp()
-	return err
-}
-
-func (d *Deployer) isAPIServerUp() (*v1.ComponentStatusList, error) {
 	if d.apiserver == nil {
-		return nil, fmt.Errorf("no apiserver client available")
+		return fmt.Errorf("no apiserver client available")
 	}
-	//TODO(Q-Lee): check that relevant components have started. May consider checking addons.
-	return d.apiserver.CoreV1().ComponentStatuses().List(context.TODO(), metav1.ListOptions{})
+	body, err := d.apiserver.CoreV1().RESTClient().Get().AbsPath("/healthz").Do(context.TODO()).Raw()
+	if err == nil && string(body) == "ok" {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf("apiserver is not healthy")
 }
 
 // DumpClusterLogs is a no-op.
