@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -36,6 +37,8 @@ const (
 	priority = 20
 
 	bytesLimit = 10 * 1024
+
+	defaultGCSBrowserPrefix = "https://gcsweb.k8s.io/gcs/"
 )
 
 func init() {
@@ -90,22 +93,56 @@ func humanReadableName(name string) string {
 	return strings.Join(words, " ")
 }
 
+// Config is an optional configuration for links lens.
+type Config struct {
+	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
+}
+
+func parseConfig(raw json.RawMessage) (*Config, error) {
+	c := &Config{
+		GCSBrowserPrefix: defaultGCSBrowserPrefix,
+	}
+	if len(raw) == 0 {
+		return c, nil
+	}
+	return c, json.Unmarshal(raw, c)
+}
+
+func clickableLink(url string, c *Config) string {
+	if strings.HasPrefix(url, "gs://") {
+		return c.GCSBrowserPrefix + strings.TrimPrefix(url, "gs://")
+	}
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		return url
+	}
+	return ""
+}
+
 // Body renders link to logs.
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+	c, err := parseConfig(config)
+	if err != nil {
+		logrus.WithError(err).Warn("Failed to parse config")
+		return fmt.Sprintf("Error: Failed to parse config %q: %v", config, err)
+	}
 	type link struct {
 		Name string
 		URL  string
+		Link string
 	}
 
 	var links []link
 	for _, artifact := range artifacts {
 		content, err := artifact.ReadAtMost(bytesLimit)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			logrus.WithError(err).Warnf("Failed to read artifact file: %q", artifact.JobPath())
+			continue
 		}
+		url := strings.TrimSpace(string(content))
 		links = append(links, link{
 			Name: humanReadableName(filepath.Base(artifact.JobPath())),
-			URL:  strings.TrimSpace(string(content)),
+			URL:  url,
+			Link: clickableLink(url, c),
 		})
 	}
 
