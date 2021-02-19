@@ -1020,7 +1020,7 @@ func TestProwJobToPod_setsTerminationGracePeriodSeconds(t *testing.T) {
 					},
 				},
 			},
-			expectedTerminationGracePeriodSeconds: 10,
+			expectedTerminationGracePeriodSeconds: 12,
 		},
 		{
 			name: "Existing GracePeriodSeconds is not overwritten",

@@ -108,7 +108,7 @@ spec:
     - mountPath: /tools
       name: tools
   restartPolicy: Never
-  terminationGracePeriodSeconds: 10
+  terminationGracePeriodSeconds: 12
   volumes:
   - emptyDir: {}
     name: logs

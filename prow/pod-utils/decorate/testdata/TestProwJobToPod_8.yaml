@@ -131,7 +131,7 @@ spec:
       name: tools
   restartPolicy: Never
   serviceAccountName: default-SA
-  terminationGracePeriodSeconds: 10
+  terminationGracePeriodSeconds: 12
   volumes:
   - emptyDir: {}
     name: logs
