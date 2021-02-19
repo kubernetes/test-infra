@@ -3,6 +3,8 @@ presubmits:
   # We currently have two, network-policies , and ipvs...
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
+    branches:
+    - master
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
