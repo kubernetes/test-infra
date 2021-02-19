@@ -676,73 +676,13 @@ plugins:
   - verify-owners   # Validates OWNERS file changes in PRs.
   - wip   # Applies a label to PRs with wip in the title to block merge
 
-  kubeflow/arena:
-  - trigger
-
-  kubeflow/batch-predict:
-  - trigger
-
-  kubeflow/caffe2-operator:
-  - trigger
-
-  kubeflow/chainer-operator:
-  - trigger
-
-  kubeflow/common:
-  - trigger
-
-  kubeflow/community-infra:
-  - trigger
-
-  kubeflow/examples:
-  - trigger
-
-  kubeflow/experimental-seldon:
-  - trigger
-
-  kubeflow/fairing:
-  - trigger
-
   kubeflow/gcp-blueprints:
-  - trigger
-
-  kubeflow/internal-acls:
-  - trigger
-
-  kubeflow/kfp-tekton:
-  - trigger
-
-  kubeflow/kfp-tekton-backend:
-  - trigger
-
-  kubeflow/kubebench:
   - trigger
 
   kubeflow/kubeflow:
   - trigger
 
-  kubeflow/metadata:
-  - trigger
-
-  kubeflow/mpi-operator:
-  - trigger
-
-  kubeflow/mxnet-operator:
-  - trigger
-
-  kubeflow/reporting:
-  - trigger
-
   kubeflow/testing:
-  - trigger
-
-  kubeflow/tf-operator:
-  - trigger
-
-  kubeflow/website:
-  - trigger
-
-  kubeflow/xgboost-operator:
   - trigger
 
   kubernetes:
