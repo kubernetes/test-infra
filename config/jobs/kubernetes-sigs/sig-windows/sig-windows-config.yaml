@@ -491,7 +491,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -545,7 +545,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-azure, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -600,7 +600,7 @@ periodics:
         privileged: true
   annotations:
     fork-per-release: "true"
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic, sig-windows-releases, sig-release-master-informing
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic, sig-release-master-informing, sig-windows-signal
     testgrid-tab-name: aks-engine-azure-windows-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

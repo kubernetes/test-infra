@@ -92,7 +92,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-releases, sig-release-master-informing
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-signal
     testgrid-tab-name: gce-windows-2019-master
     description: Runs tests on a Kubernetes cluster with Windows 2019 nodes on GCE
 
@@ -137,7 +137,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
+    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing, sig-windows-signal
     testgrid-tab-name: gce-windows-1909-master
     description: Runs tests on a Kubernetes cluster with Windows 1909 nodes on GCE
 
@@ -183,7 +183,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
+    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing, sig-windows-signal
     testgrid-tab-name: gce-windows-20h2-master
     description: Runs tests on a Kubernetes cluster with Windows 20H2 nodes on GCE
 
