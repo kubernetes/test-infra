@@ -88,7 +88,7 @@ type Server struct {
 
 	gc git.ClientFactory
 	// Used for unit testing
-	push func(newBranch string, force bool) error
+	push func(forkName, newBranch string, force bool) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -404,7 +404,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.ClientFor(org, forkName)
+	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
 		return fmt.Errorf("failed to get git client for %s/%s: %w", org, forkName, err)
 	}
@@ -483,12 +483,12 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		return utilerrors.NewAggregate(errs)
 	}
 
-	push := r.PushToFork
+	push := r.PushToNamedFork
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(newBranch, true); err != nil {
+	if err := push(forkName, newBranch, true); err != nil {
 		logger.WithError(err).Warn("failed to push chery-picked changes to GitHub")
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		return utilerrors.NewAggregate([]error{err, s.createComment(logger, org, repo, num, comment, resp)})
