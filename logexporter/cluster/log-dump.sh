@@ -864,7 +864,7 @@ function dump_logs() {
 function main() {
   setup
   kube::util::ensure-temp-dir
-  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
     report_dir="${KUBE_TEMP}/logs"
     mkdir -p "${report_dir}"
     echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.txt"
@@ -875,7 +875,7 @@ function main() {
 
   dump_logs
 
-  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
     echo "Uploading '${report_dir}' to '${gcs_artifacts_dir}'"
 
     if gsutil ls "${gcs_artifacts_dir}" > /dev/null; then
