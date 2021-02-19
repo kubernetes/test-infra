@@ -1,30 +1,4 @@
 postsubmits:
-  kubeflow/examples:
-  - name: kubeflow-examples-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/examples.
-  kubeflow/internal-acls:
-  - name: kubeflow-internal-acls-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for kubeflow/internal-acls.
   kubeflow/gcp-blueprints:
   - name: kubeflow-gcp-blueprints-postsubmit
     cluster: kubeflow
@@ -54,20 +28,6 @@ postsubmits:
       # TODO: use a public email group
       testgrid-alert-email: kubeflow-engineering@google.com
       testgrid-num-failures-to-alert: "3"
-
-  kubeflow/website:
-  - name: kubeflow-website-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit kubeflow/website.
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
     cluster: kubeflow
