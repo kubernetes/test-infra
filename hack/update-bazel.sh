@@ -44,7 +44,7 @@ bazel-from-bazelisk() {
   bazelisk $@
 }
 
-if [[ "$1" == "--from-image" ]]; then
+if [[ "${1:-}" == "--from-image" ]]; then
 	bazel=bazel-from-image
 elif [ -x "$(command -v bazelisk)" ]; then
   bazel=bazel-from-bazelisk
