@@ -867,7 +867,7 @@ function main() {
   if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
     report_dir="${KUBE_TEMP}/logs"
     mkdir -p "${report_dir}"
-    echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.txt"
+    echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.link.txt"
     echo "Dumping logs temporarily to '${report_dir}'. Will upload to '${gcs_artifacts_dir}' later."
   else
     report_dir="${local_report_dir}"
