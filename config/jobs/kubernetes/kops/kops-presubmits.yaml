@@ -130,10 +130,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            memory: "2Gi"
+            memory: "3Gi"
           requests:
             cpu: "2"
-            memory: "2Gi"
+            memory: "3Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
       testgrid-tab-name: e2e-kubetest2
