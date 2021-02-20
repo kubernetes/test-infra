@@ -113,10 +113,10 @@ kubetest2_template = """
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
 """
 
 # We support rapid focus on a few tests of high concern

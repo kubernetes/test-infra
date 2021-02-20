@@ -18771,10 +18771,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -18836,10 +18836,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -18901,10 +18901,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -18966,10 +18966,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19031,10 +19031,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19096,10 +19096,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19161,10 +19161,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19226,10 +19226,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19291,10 +19291,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19356,10 +19356,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19421,10 +19421,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19486,10 +19486,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19551,10 +19551,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19616,10 +19616,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19681,10 +19681,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19746,10 +19746,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19811,10 +19811,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19876,10 +19876,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -19941,10 +19941,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20006,10 +20006,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20071,10 +20071,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20136,10 +20136,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20201,10 +20201,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20266,10 +20266,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20331,10 +20331,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20396,10 +20396,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20461,10 +20461,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20526,10 +20526,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20591,10 +20591,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20656,10 +20656,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20721,10 +20721,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20786,10 +20786,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20851,10 +20851,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20916,10 +20916,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -20981,10 +20981,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21046,10 +21046,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21111,10 +21111,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21176,10 +21176,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21241,10 +21241,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21306,10 +21306,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21371,10 +21371,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21436,10 +21436,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21501,10 +21501,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21566,10 +21566,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21631,10 +21631,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21696,10 +21696,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21761,10 +21761,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21826,10 +21826,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21891,10 +21891,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -21956,10 +21956,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22021,10 +22021,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22086,10 +22086,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22151,10 +22151,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22216,10 +22216,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22281,10 +22281,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22346,10 +22346,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22411,10 +22411,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22476,10 +22476,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22541,10 +22541,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22606,10 +22606,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22671,10 +22671,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22736,10 +22736,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22801,10 +22801,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22866,10 +22866,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22931,10 +22931,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -22996,10 +22996,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23061,10 +23061,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23126,10 +23126,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23191,10 +23191,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23256,10 +23256,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23321,10 +23321,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23386,10 +23386,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23451,10 +23451,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23516,10 +23516,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23581,10 +23581,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23646,10 +23646,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23711,10 +23711,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23776,10 +23776,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23841,10 +23841,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23906,10 +23906,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -23971,10 +23971,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24036,10 +24036,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24101,10 +24101,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24166,10 +24166,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24231,10 +24231,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24296,10 +24296,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24361,10 +24361,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24426,10 +24426,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24491,10 +24491,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24556,10 +24556,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24621,10 +24621,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24686,10 +24686,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24751,10 +24751,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24816,10 +24816,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24881,10 +24881,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -24946,10 +24946,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25011,10 +25011,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25076,10 +25076,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25141,10 +25141,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25206,10 +25206,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25271,10 +25271,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25336,10 +25336,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25401,10 +25401,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25466,10 +25466,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25531,10 +25531,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25596,10 +25596,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25661,10 +25661,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25726,10 +25726,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25791,10 +25791,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25856,10 +25856,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25921,10 +25921,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -25986,10 +25986,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26051,10 +26051,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26116,10 +26116,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26181,10 +26181,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26246,10 +26246,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26311,10 +26311,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26376,10 +26376,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26441,10 +26441,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26506,10 +26506,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26571,10 +26571,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26636,10 +26636,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26701,10 +26701,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26766,10 +26766,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26831,10 +26831,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26896,10 +26896,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -26961,10 +26961,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27026,10 +27026,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27091,10 +27091,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27156,10 +27156,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27221,10 +27221,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27286,10 +27286,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27351,10 +27351,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27416,10 +27416,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27481,10 +27481,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27546,10 +27546,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27611,10 +27611,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27676,10 +27676,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27741,10 +27741,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27806,10 +27806,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27871,10 +27871,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -27936,10 +27936,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28001,10 +28001,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28066,10 +28066,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28131,10 +28131,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28196,10 +28196,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28261,10 +28261,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28326,10 +28326,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28391,10 +28391,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28456,10 +28456,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28521,10 +28521,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28586,10 +28586,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28651,10 +28651,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28716,10 +28716,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28781,10 +28781,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28846,10 +28846,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28911,10 +28911,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -28976,10 +28976,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29041,10 +29041,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29106,10 +29106,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29171,10 +29171,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29236,10 +29236,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29301,10 +29301,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29366,10 +29366,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29431,10 +29431,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29496,10 +29496,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29561,10 +29561,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29626,10 +29626,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29691,10 +29691,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29756,10 +29756,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29821,10 +29821,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29886,10 +29886,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -29951,10 +29951,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30016,10 +30016,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30081,10 +30081,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30146,10 +30146,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30211,10 +30211,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30276,10 +30276,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30341,10 +30341,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30406,10 +30406,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30471,10 +30471,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30536,10 +30536,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30601,10 +30601,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30666,10 +30666,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30731,10 +30731,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30796,10 +30796,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30861,10 +30861,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30926,10 +30926,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -30991,10 +30991,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31056,10 +31056,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31121,10 +31121,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31186,10 +31186,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31251,10 +31251,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31316,10 +31316,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31381,10 +31381,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31446,10 +31446,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31511,10 +31511,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31576,10 +31576,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31641,10 +31641,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31706,10 +31706,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31771,10 +31771,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31836,10 +31836,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31901,10 +31901,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -31966,10 +31966,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32031,10 +32031,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32096,10 +32096,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32161,10 +32161,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32226,10 +32226,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32291,10 +32291,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32356,10 +32356,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32421,10 +32421,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32486,10 +32486,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32551,10 +32551,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32616,10 +32616,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32681,10 +32681,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32746,10 +32746,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32811,10 +32811,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32876,10 +32876,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -32941,10 +32941,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33006,10 +33006,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33071,10 +33071,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33136,10 +33136,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33201,10 +33201,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33266,10 +33266,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33331,10 +33331,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33396,10 +33396,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33461,10 +33461,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33526,10 +33526,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33591,10 +33591,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33656,10 +33656,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33721,10 +33721,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33786,10 +33786,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33851,10 +33851,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33916,10 +33916,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -33981,10 +33981,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34046,10 +34046,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34111,10 +34111,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34176,10 +34176,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34241,10 +34241,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34306,10 +34306,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34371,10 +34371,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34436,10 +34436,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34501,10 +34501,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34566,10 +34566,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34631,10 +34631,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34696,10 +34696,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34761,10 +34761,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34826,10 +34826,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34891,10 +34891,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -34956,10 +34956,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35021,10 +35021,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35086,10 +35086,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35151,10 +35151,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35216,10 +35216,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35281,10 +35281,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35346,10 +35346,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35411,10 +35411,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35476,10 +35476,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35541,10 +35541,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35606,10 +35606,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35671,10 +35671,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35736,10 +35736,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35801,10 +35801,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35866,10 +35866,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35931,10 +35931,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -35996,10 +35996,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36061,10 +36061,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36126,10 +36126,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36191,10 +36191,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36256,10 +36256,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36321,10 +36321,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36386,10 +36386,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36451,10 +36451,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36516,10 +36516,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36581,10 +36581,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36646,10 +36646,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36711,10 +36711,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36776,10 +36776,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36841,10 +36841,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -36906,10 +36906,10 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
