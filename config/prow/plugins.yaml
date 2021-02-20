@@ -62,12 +62,12 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/kops
   - kubernetes/website
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
   - kubernetes/enhancements
-  - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
   - kubernetes-csi
@@ -141,6 +141,7 @@ lgtm:
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
   - kubernetes/k8s.io
+  - kubernetes/kops
   - kubernetes/repo-infra
   - kubernetes/test-infra
   review_acts_as_lgtm: true
