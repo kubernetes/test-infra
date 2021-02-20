@@ -31,12 +31,14 @@ interface RepoOptions {
     pulls: {[key: string]: boolean};
     batches: {[key: string]: boolean};
     states: {[key: string]: boolean};
+    clusters: {[key: string]: boolean};
 }
 
 function optionsForRepo(repository: string): RepoOptions {
     const opts: RepoOptions = {
         authors: {},
         batches: {},
+        clusters: {},
         jobs: {},
         pulls: {},
         repos: {},
@@ -47,6 +49,7 @@ function optionsForRepo(repository: string): RepoOptions {
     for (const build of allBuilds.items) {
         const {
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 refs: {
@@ -59,6 +62,7 @@ function optionsForRepo(repository: string): RepoOptions {
         } = build;
 
         opts.types[type] = true;
+        opts.clusters[cluster] = true;
         const repoKey = `${org}/${repo}`;
         if (repoKey) {
             opts.repos[repoKey] = true;
@@ -102,6 +106,8 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     }
     const ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
+    const cs = Object.keys(opts.clusters).sort();
+    addOptions(cs, "cluster");
 }
 
 function adjustScroll(el: Element): void {
@@ -479,6 +485,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const authorSel = getSelection("author");
     const jobSel = getSelectionFuzzySearch("job", "job-input");
     const stateSel = getSelection("state");
+    const clusterSel = getSelection("cluster");
 
     if (pushState && window.history && window.history.pushState !== undefined) {
         if (args.length > 0) {
@@ -506,6 +513,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
                 name: prowJobName = "",
             },
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 agent = "",
@@ -532,6 +540,9 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
             continue;
         }
         if (!equalSelected(stateSel, state)) {
+            continue;
+        }
+        if (!equalSelected(clusterSel, cluster)) {
             continue;
         }
         if (!jobSel.test(job)) {
