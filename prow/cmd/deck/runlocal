@@ -16,15 +16,23 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${DIR}"
 cd localdata
-HOST="https://prow.k8s.io"
-if [[ "${1}" == "openshift" ]]; then
+HOST=${1:-"https://prow.k8s.io"}
+if [[ "${HOST}" == "openshift" ]]; then
 	HOST="https://deck-ci.svc.ci.openshift.org"
 fi
 
+echo "fetching localdata from ${HOST}"
 curl "${HOST}/prowjobs.js" > prowjobs.json
 curl "${HOST}/tide.js?var=tideData" > tide.js
 curl "${HOST}/tide-history.js?var=tideHistory" > tide-history.js
 curl "${HOST}/plugin-help.js?var=allHelp" > plugin-help.js
 curl "${HOST}/pr-data.js" > pr-data.js
 
-bazel run //prow/cmd/deck:deck -- --pregenerated-data=${DIR}/localdata --static-files-location=./prow/cmd/deck/static --template-files-location=./prow/cmd/deck/template --spyglass-files-location=./prow/spyglass/lenses --config-path "${DIR}/../../../config/prow/config.yaml" --spyglass --gcs-no-auth
+bazel run //prow/cmd/deck:deck -- \
+  --pregenerated-data=${DIR}/localdata \
+  --static-files-location=./prow/cmd/deck/static \
+  --template-files-location=./prow/cmd/deck/template \
+  --spyglass-files-location=./prow/spyglass/lenses \
+  --config-path "${DIR}/../../../config/prow/config.yaml" \
+  --spyglass \
+  --gcs-no-auth
