@@ -408,11 +408,15 @@ func (r *Repo) Am(path string) error {
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
 func (r *Repo) Push(branch string, force bool) error {
+	return r.PushToNamedFork(r.user, branch, force)
+}
+
+func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, r.repo)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, forkName)
 	var co *exec.Cmd
 	if !force {
 		co = r.gitCommand("push", remote, branch)
@@ -425,6 +429,7 @@ func (r *Repo) Push(branch string, force bool) error {
 		return fmt.Errorf("pushing failed, output: %q, error: %v", string(out), err)
 	}
 	return nil
+
 }
 
 // CheckoutPullRequest does exactly that.
