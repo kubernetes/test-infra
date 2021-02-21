@@ -242,6 +242,44 @@ can be error-prone, and it'll be painful when you want to replace the hmac token
 In such case, it's recommended to use the [hmac](/prow/cmd/hmac/README.md) tool to automatically manage the webhooks
 and hmac tokens for you via declarative configuration.
 
+## Deploying with GitHub Enterprise
+
+When using GitHub Enterpise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or 
+without the `api` subdomain:
+* with the `api` subdomain the endpoints are:
+   * v3: `https://api.<<github-hostname>>`
+   * graphql: `https://api.<<github-hostname>>/graphql`
+* without the `api` subdomain the endpoints are:
+  * v3: `https://<<github-hostname>>/api/v3`
+  * graphql: `https://<<github-hostname>>/api/graphql`
+
+Prow component configuration:
+* `ghproxy`: 
+  * configure arg: `--upstream=<<v3-endpoint>>`
+  * the `ghproxy` will not be able to proxy graphql requests when GHE is not using the `api` subdomain 
+    (because it tries to use the wrong context path for graphql)
+
+* `crier`, `deck`, `hook`, `status-reconciler`, `tide`, `prow-controller-manager`:
+  * configure args:
+    * `--github-endpoint=http://ghproxy`
+    * `--github-endpoint=<<v3-endpoint>>`
+    * with `api` subdomain:    
+      * `--github-graphql-endpoint=http://ghproxy/graphql`
+    * without `api` subdomain:
+      * `--github-graphql-endpoint=<<graphql-endpoint>>`
+
+* `deck`, `hook`, `tide`, `prow-controller-manager`:
+  * configure arg: `--github-host=<<github-hostname>>`
+
+Prow global configuration (`config.yaml`):
+* configure `github.link_url: "https://<<github-hostname>>"`
+
+ProwJob configuration:
+* ensure that `clone_uri` and `path_alias` are always set:
+  * `clone_uri`: `https://<<github-hostname>>/<<org>>/<<repo>>.git`
+  * `path_alias`: `<<github-hostname>>/<<org>>/<<repo>>`
+* it might be necessary to configure `plank.default_decoration_configs[].ssh_host_fingerprints`
+
 ## Next Steps
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
