@@ -76,7 +76,10 @@ func (pac *prowAwareConfigurator) tabDescriptionForProwJob(j prowConfig.JobBase)
 func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, pj prowapi.ProwJob) error {
 	tabName := j.Name
 	testGroupName := j.Name
-	repo := fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
+	var repo string
+	if pj.Spec.Refs != nil {
+		repo = fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
+	}
 
 	pc := pac.prowConfig
 	dc := pac.defaultTestgridConfig
