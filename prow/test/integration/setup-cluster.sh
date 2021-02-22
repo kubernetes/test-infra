@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2020 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ function deploy_prow() {
   do_kubectl apply -f ${CONFIG_ROOT_DIR}/cluster
 
   echo "Wait until nginx is ready"
-  for _ in 1 2 3; do
+  for _ in $(seq 1 5); do
     if do_kubectl wait --namespace ingress-nginx \
       --for=condition=ready pod \
       --selector=app.kubernetes.io/component=controller \

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2020 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,21 @@ set -o nounset
 set -o pipefail
 
 readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
+readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
+readonly PROW_COMPONENTS="sinker crier fakeghserver"
+
+function do_kubectl() {
+  kubectl --context=${DEFAULT_CONTEXT} $@
+}
+
+if [[ -n "${ARTIFACTS:-}" && -d "${ARTIFACTS}" ]]; then
+  log_dir="${ARTIFACTS}/prow_pod_logs"
+  mkdir -p "${log_dir}"
+  for app in ${PROW_COMPONENTS}; do
+    do_kubectl logs svc/$app >"${log_dir}/${app}.log"
+  done
+fi
 
 kind delete cluster --name "${DEFAULT_CLUSTER_NAME}"
 container_hash="$(docker ps -q -f name="${DEFAULT_REGISTRY_NAME}" 2>/dev/null || true)"

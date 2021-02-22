@@ -19,10 +19,8 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-bazel=$(command -v bazelisk || command -v bazel)
-
 code=0
-(set -o xtrace && "$bazel" "$@") || code=$?
+(set -o xtrace && bazel "$@") || code=$?
 # Cleanup happens any way and shouldn't fail.
 coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
 (set -o xtrace && "$coalesce") || true
