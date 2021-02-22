@@ -8,7 +8,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - make verify && git diff --exit-code
+        - make
+        args:
+        - verify
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-verify
@@ -20,7 +22,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - make build-test-adapter
+        - make
+        args:
+        - build-test-adapter
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-build-test-adapter
@@ -32,7 +36,9 @@ presubmits:
       containers:
       - image: golang:1.15
         command:
-        - make test
+        - make
+        args:
+        - test
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-test
