@@ -468,6 +468,201 @@ func TestDeleteRef(t *testing.T) {
 	}
 }
 
+func TestListFileCommits(t *testing.T) {
+	githubResponse := []byte(`
+[
+  {
+    "sha": "5833e02133690c6d608f66ef369e85865ede51de",
+    "node_id": "MDY6Q29tbWl0Mjk2ODI0MjU5OjU4MzNlMDIxMzM2OTBjNmQ2MDhmNjZlZjM2OWU4NTg2NWVkZTUxZGU=",
+    "commit": {
+      "author": {
+        "name": "Rustin Liu",
+        "email": "rustin.liu@gmail.com",
+        "date": "2021-01-17T15:29:04Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2021-01-17T15:29:04Z"
+      },
+      "message": "chore: update README.md (#281)\n\n* chore: update README.md\r\n\r\n* chore: update README.md",
+      "tree": {
+        "sha": "0cbce1df534461fb686a4d97f7e1549657f45594",
+        "url": "https://api.github.com/repos/ti-community-infra/tichi/git/trees/0cbce1df534461fb686a4d97f7e1549657f45594"
+      },
+      "url": "https://api.github.com/repos/ti-community-infra/tichi/git/commits/5833e02133690c6d608f66ef369e85865ede51de",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsBcBAABCAAQBQJgBFfACRBK7hj4Ov3rIwAAdHIIAAdRO4WoBZPAcLREqPuSPX+h\nM1CpnIyytSoF8QesyCffLkCWbFwswMhPLM4aXW55EeSZKeEZyghb0Ehz0ZN1b3Zx\nJzFaHeydih2S5rTFk6MCn8ZY1oSZuA3spauqEJ8RxAoaHSmZ+Zq5ykQ9qar4rLto\n3LgpMkr+z137cTfeJ5iUQZPih8AsTS3/YAmUtPLMOanNKLtMDfD1xVj4luOqXz6X\nV0UFwQs/F+4HDvVAnwmh3soMxrKZ+ZOcSAGZYP6EjR75gaUy4EmRNUkVQxxNbJ11\nY4LV0j7ShFsRPQrSfBByhKL0Ug7uAiHGLGYCxW1wkULg4hArklS0YFFfuvZwhws=\n=ujFx\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree 0cbce1df534461fb686a4d97f7e1549657f45594\nparent 9e00ae5d353eb520b58a7440757f9d715572009f\nauthor Rustin Liu <rustin.liu@gmail.com> 1610897344 +0800\ncommitter GitHub <noreply@github.com> 1610897344 +0800\n\nchore: update README.md (#281)\n\n* chore: update README.md\r\n\r\n* chore: update README.md"
+      }
+    },
+    "url": "https://api.github.com/repos/ti-community-infra/tichi/commits/5833e02133690c6d608f66ef369e85865ede51de",
+    "html_url": "https://github.com/ti-community-infra/tichi/commit/5833e02133690c6d608f66ef369e85865ede51de",
+    "comments_url": "https://api.github.com/repos/ti-community-infra/tichi/commits/5833e02133690c6d608f66ef369e85865ede51de/comments",
+    "author": {
+      "login": "hi-rustin",
+      "id": 29879298,
+      "node_id": "MDQ6VXNlcjI5ODc5Mjk4",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29879298?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hi-rustin",
+      "html_url": "https://github.com/hi-rustin",
+      "followers_url": "https://api.github.com/users/hi-rustin/followers",
+      "following_url": "https://api.github.com/users/hi-rustin/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hi-rustin/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hi-rustin/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hi-rustin/subscriptions",
+      "organizations_url": "https://api.github.com/users/hi-rustin/orgs",
+      "repos_url": "https://api.github.com/users/hi-rustin/repos",
+      "events_url": "https://api.github.com/users/hi-rustin/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hi-rustin/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "9e00ae5d353eb520b58a7440757f9d715572009f",
+        "url": "https://api.github.com/repos/ti-community-infra/tichi/commits/9e00ae5d353eb520b58a7440757f9d715572009f",
+        "html_url": "https://github.com/ti-community-infra/tichi/commit/9e00ae5d353eb520b58a7440757f9d715572009f"
+      }
+    ]
+  },
+  {
+    "sha": "68af84c32436c16564e1ac3c6ac36090d5d0baee",
+    "node_id": "MDY6Q29tbWl0Mjk2ODI0MjU5OjY4YWY4NGMzMjQzNmMxNjU2NGUxYWMzYzZhYzM2MDkwZDVkMGJhZWU=",
+    "commit": {
+      "author": {
+        "name": "Rustin Liu",
+        "email": "rustin.liu@gmail.com",
+        "date": "2021-01-14T08:34:14Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2021-01-14T08:34:14Z"
+      },
+      "message": "chore: rename project (#265)",
+      "tree": {
+        "sha": "853d8d79ab3fe498fcb415fb71ac8901de0272df",
+        "url": "https://api.github.com/repos/ti-community-infra/tichi/git/trees/853d8d79ab3fe498fcb415fb71ac8901de0272df"
+      },
+      "url": "https://api.github.com/repos/ti-community-infra/tichi/git/commits/68af84c32436c16564e1ac3c6ac36090d5d0baee",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsBcBAABCAAQBQJgAAIGCRBK7hj4Ov3rIwAAdHIIAFdNBdgiG48GtiSXpbwXCpiq\nLTvCiJEkoRsuggNKlhvXvt3xEeVki8T0WcrKY70mkdNA11ie9PXdHLSowGyFYFRS\n9FwEUBKLBTYIyTpgvuBcUb17/M3QnobmIF1X66T/vxnqy8xvny6kRUk8qsxhLi6K\n5v61mHt3J5F+DwFhVaUVniMnUnQTdW+o9Utd8zEkKbT2pJkvi6cSAiQK6RqIBD7l\nZTBWgKtvrk75u1xBfqcTRRe00qmJdW+OmgPIhRKP9PGRLOrHUeLBs8Ov1YaSBa08\njd92057tt8tigiQBBgo6cTMlK0tupIf+YS5es3eNNVYkEdfxeZ8fRgwghfOLNAQ=\n=5STI\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree 853d8d79ab3fe498fcb415fb71ac8901de0272df\nparent a17a9df826165b832476c13c5f93ed8e7b58f2ce\nauthor Rustin Liu <rustin.liu@gmail.com> 1610613254 +0800\ncommitter GitHub <noreply@github.com> 1610613254 +0800\n\nchore: rename project (#265)\n\n"
+      }
+    },
+    "url": "https://api.github.com/repos/ti-community-infra/tichi/commits/68af84c32436c16564e1ac3c6ac36090d5d0baee",
+    "html_url": "https://github.com/ti-community-infra/tichi/commit/68af84c32436c16564e1ac3c6ac36090d5d0baee",
+    "comments_url": "https://api.github.com/repos/ti-community-infra/tichi/commits/68af84c32436c16564e1ac3c6ac36090d5d0baee/comments",
+    "author": {
+      "login": "hi-rustin",
+      "id": 29879298,
+      "node_id": "MDQ6VXNlcjI5ODc5Mjk4",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29879298?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hi-rustin",
+      "html_url": "https://github.com/hi-rustin",
+      "followers_url": "https://api.github.com/users/hi-rustin/followers",
+      "following_url": "https://api.github.com/users/hi-rustin/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hi-rustin/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hi-rustin/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hi-rustin/subscriptions",
+      "organizations_url": "https://api.github.com/users/hi-rustin/orgs",
+      "repos_url": "https://api.github.com/users/hi-rustin/repos",
+      "events_url": "https://api.github.com/users/hi-rustin/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hi-rustin/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "a17a9df826165b832476c13c5f93ed8e7b58f2ce",
+        "url": "https://api.github.com/repos/ti-community-infra/tichi/commits/a17a9df826165b832476c13c5f93ed8e7b58f2ce",
+        "html_url": "https://github.com/ti-community-infra/tichi/commit/a17a9df826165b832476c13c5f93ed8e7b58f2ce"
+      }
+    ]
+  }
+]`)
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		expectedPath := "/repos/org/repo/commits"
+		if r.URL.Path != expectedPath {
+			t.Errorf("expected path %s, got path %s", expectedPath, r.URL.Path)
+		}
+		expectRequestURI := "/repos/org/repo/commits?path=README.md&per_page=100"
+		if r.URL.RequestURI() != expectRequestURI {
+			t.Errorf("expected request URI %s, got request URI %s", expectRequestURI, r.URL.RequestURI())
+		}
+		w.Write(githubResponse)
+	}))
+	defer ts.Close()
+
+	c := getClient(ts.URL)
+	commits, err := c.ListFileCommits("org", "repo", "README.md")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(commits) != 2 {
+		t.Errorf("Expected two commits, found %d: %v", len(commits), commits)
+		return
+	}
+	if commits[0].Author.Login != "hi-rustin" {
+		t.Errorf("Wrong author login for index 0: %v", commits[0])
+	}
+	if commits[1].Author.Login != "hi-rustin" {
+		t.Errorf("Wrong author login for index 1: %v", commits[1])
+	}
+}
+
 func TestGetSingleCommit(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
