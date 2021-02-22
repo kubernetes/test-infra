@@ -635,28 +635,17 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
 func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 	tests := []*struct {
-		name                 string
-		jobURLPrefixConfig   map[string]string
-		expectedDashboardTab config.DashboardTab
+		name                     string
+		jobURLPrefixConfig       map[string]string
+		expectedOpenTestTemplate *config.LinkTemplate
 	}{
 		{
 			name: "job url prefix without specific suffix",
 			jobURLPrefixConfig: map[string]string{
 				"*": ProwJobURLPrefixConfig,
 			},
-			expectedDashboardTab: config.DashboardTab{
-				Name:          ProwJobName,
-				Description:   ProwJobDefaultDescription,
-				TestGroupName: ProwJobName,
-				CodeSearchUrlTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
-				},
-				OpenBugTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/issues/",
-				},
-				OpenTestTemplate: &config.LinkTemplate{
-					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
-				},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -664,19 +653,8 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			jobURLPrefixConfig: map[string]string{
 				"*": "https://config.go.k8s.io/view",
 			},
-			expectedDashboardTab: config.DashboardTab{
-				Name:          ProwJobName,
-				Description:   ProwJobDefaultDescription,
-				TestGroupName: ProwJobName,
-				CodeSearchUrlTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
-				},
-				OpenBugTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/issues/",
-				},
-				OpenTestTemplate: &config.LinkTemplate{
-					Url: "https://config.go.k8s.io/view/<gcs_prefix>/<changelist>",
-				},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/view/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -684,19 +662,8 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			jobURLPrefixConfig: map[string]string{
 				"*": "https://config.go.k8s.io/gcs",
 			},
-			expectedDashboardTab: config.DashboardTab{
-				Name:          ProwJobName,
-				Description:   ProwJobDefaultDescription,
-				TestGroupName: ProwJobName,
-				CodeSearchUrlTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
-				},
-				OpenBugTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/issues/",
-				},
-				OpenTestTemplate: &config.LinkTemplate{
-					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
-				},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -705,19 +672,8 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"*":    "https://some.other.url",
 				"test": ProwJobURLPrefixConfig,
 			},
-			expectedDashboardTab: config.DashboardTab{
-				Name:          ProwJobName,
-				Description:   ProwJobDefaultDescription,
-				TestGroupName: ProwJobName,
-				CodeSearchUrlTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
-				},
-				OpenBugTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/issues/",
-				},
-				OpenTestTemplate: &config.LinkTemplate{
-					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
-				},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -727,19 +683,8 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"test":      "https://even.another.url",
 				"test/repo": ProwJobURLPrefixConfig,
 			},
-			expectedDashboardTab: config.DashboardTab{
-				Name:          ProwJobName,
-				Description:   ProwJobDefaultDescription,
-				TestGroupName: ProwJobName,
-				CodeSearchUrlTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
-				},
-				OpenBugTemplate: &config.LinkTemplate{
-					Url: "https://github.com/test/repo/issues/",
-				},
-				OpenTestTemplate: &config.LinkTemplate{
-					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
-				},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 			},
 		},
 	}
@@ -772,9 +717,9 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			actual := initialConfig.Dashboards[0].DashboardTab[0]
-			if !reflect.DeepEqual(actual, &test.expectedDashboardTab) {
-				t.Errorf("Configurations did not match; got %s, expected %s", actual.String(), test.expectedDashboardTab.String())
+			actual := initialConfig.Dashboards[0].DashboardTab[0].OpenTestTemplate
+			if !reflect.DeepEqual(actual, test.expectedOpenTestTemplate) {
+				t.Errorf("Configurations did not match; got %s, expected %s", actual.String(), test.expectedOpenTestTemplate.String())
 			}
 		})
 	}
