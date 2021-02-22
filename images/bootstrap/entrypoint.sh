@@ -19,6 +19,10 @@ set -o pipefail
 
 # get test-infra for latest bootstrap etc
 git clone https://github.com/kubernetes/test-infra
+cd test-infra
+git fetch origin pull/20273/head
+git checkout FETCH_HEAD
+cd ..
 
 BOOTSTRAP_UPLOAD_BUCKET_PATH=${BOOTSTRAP_UPLOAD_BUCKET_PATH:-"gs://kubernetes-jenkins/logs"}
 
