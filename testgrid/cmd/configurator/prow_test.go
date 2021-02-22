@@ -633,7 +633,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
 }
 
-func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
+func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 	tests := []*struct {
 		name                 string
 		jobURLPrefixConfig   map[string]string
