@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
@@ -25,6 +26,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const ProwDefaultGCSPath = "pathPrefix/"
@@ -383,13 +385,15 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				prowJobURLPrefix:      test.prowJobURLPrefix,
 				updateDescription:     test.updateDescription,
 			}
-			job := prowConfig.JobBase{
+			jobBase := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
 				SourcePath:  ProwJobSourcePath,
 			}
 
-			err := pac.applySingleProwjobAnnotations(&test.initialConfig, job, test.prowJobType, ExampleRepository)
+			pj := genProwJob(jobBase, test.prowJobType, ExampleRepository)
+
+			err := pac.applySingleProwjobAnnotations(&test.initialConfig, jobBase, pj)
 
 			if test.expectError {
 				if err == nil {
@@ -607,12 +611,14 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 				defaultTestgridConfig: defaultConfig,
 			}
 
-			job := prowConfig.JobBase{
+			jobBase := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
 			}
 
-			err := pac.applySingleProwjobAnnotations(test.initialConfig, job, test.prowJobType, ExampleRepository)
+			pj := genProwJob(jobBase, test.prowJobType, ExampleRepository)
+
+			err := pac.applySingleProwjobAnnotations(test.initialConfig, jobBase, pj)
 
 			if test.expectedConfig == nil {
 				if err == nil {
@@ -726,13 +732,15 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				pac.defaultTestgridConfig = test.defaultConfig
 			}
 
-			job := prowConfig.JobBase{
+			jobBase := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: annotations,
 				SourcePath:  ProwJobSourcePath,
 			}
 
-			err := pac.applySingleProwjobAnnotations(initialConfig, job, prowapi.PresubmitJob, ExampleRepository)
+			pj := genProwJob(jobBase, prowapi.PresubmitJob, ExampleRepository)
+
+			err := pac.applySingleProwjobAnnotations(initialConfig, jobBase, pj)
 
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
@@ -1110,4 +1118,32 @@ func fakeProwConfig() *prowConfig.Config {
 			},
 		},
 	}
+}
+
+func genProwJob(jobBase prowConfig.JobBase, jobType prowapi.ProwJobType, orgrepo string) prowapi.ProwJob {
+	if jobType == prowapi.PeriodicJob {
+		pjSpec := pjutil.PeriodicSpec(prowConfig.Periodic{JobBase: jobBase})
+		return pjutil.NewProwJob(pjSpec, nil, nil)
+	}
+
+	items := strings.Split(orgrepo, "/")
+	if jobType == prowapi.PostsubmitJob {
+		pjSpec := pjutil.PostsubmitSpec(
+			prowConfig.Postsubmit{JobBase: jobBase},
+			prowapi.Refs{
+				Org:  items[0],
+				Repo: items[1],
+			},
+		)
+		return pjutil.NewProwJob(pjSpec, nil, nil)
+	}
+
+	pjSpec := pjutil.PresubmitSpec(
+		prowConfig.Presubmit{JobBase: jobBase},
+		prowapi.Refs{
+			Org:  items[0],
+			Repo: items[1],
+		},
+	)
+	return pjutil.NewProwJob(pjSpec, nil, nil)
 }
