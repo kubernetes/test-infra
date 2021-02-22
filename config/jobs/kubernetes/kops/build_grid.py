@@ -636,8 +636,10 @@ def generate_network_plugins():
     results = []
     skip_base = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler'# pylint: disable=line-too-long
     for plugin in plugins:
-        networking_arg = plugin.replace('-', '') # amazon vpc cni uses --networking=amazonvpc
+        networking_arg = plugin
         skip_regex = skip_base
+        if plugin == 'amazon-vpc':
+            networking_arg = 'amazonvpc'
         if plugin == 'cilium':
             skip_regex += r'|should.set.TCP.CLOSE_WAIT'
         else:
@@ -646,6 +648,7 @@ def generate_network_plugins():
             skip_regex += r'|Services.*rejected.*endpoints'
         if plugin == 'kuberouter':
             skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
+            networking_arg = 'kube-router'
         results.append(
             build_test(
                 container_runtime='containerd',
