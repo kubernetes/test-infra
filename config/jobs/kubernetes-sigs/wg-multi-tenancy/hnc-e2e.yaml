@@ -23,9 +23,7 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
-        # The default command in the image runs the tests, but apparently
-        # decorated containers must have a command anyway.
-        command: ["wrapper.sh", "./run-e2e-tests.sh"]
+        command: ["wrapper.sh", "/start/run-e2e-tests.sh"]
         securityContext:
           privileged: true # Required for docker-in-docker
         resources:
@@ -55,9 +53,7 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
-      # The default command in the image runs the tests, but apparently
-      # decorated containers must have a command anyway.
-      command: ["wrapper.sh", "./run-e2e-tests.sh"]
+      command: ["wrapper.sh", "/start/run-e2e-tests.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker
       resources:
