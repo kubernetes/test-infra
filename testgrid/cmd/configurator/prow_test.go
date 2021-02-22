@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"path"
 	"reflect"
 	"testing"
 
@@ -669,7 +668,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 					Url: "https://github.com/test/repo/issues/",
 				},
 				OpenTestTemplate: &config.LinkTemplate{
-					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 				},
 			},
 		},
@@ -686,7 +685,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 							},
 						},
 						JobURLPrefixConfig: map[string]string{
-							"*": path.Join(ProwJobURLPrefixConfig, "view"),
+							"*": "https://config.go.k8s.io/view",
 						},
 					},
 				},
@@ -702,7 +701,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 					Url: "https://github.com/test/repo/issues/",
 				},
 				OpenTestTemplate: &config.LinkTemplate{
-					Url: path.Join(ProwJobURLPrefixConfig, "view", "<gcs_prefix>", "<changelist>"),
+					Url: "https://config.go.k8s.io/view/<gcs_prefix>/<changelist>",
 				},
 			},
 		},
@@ -719,7 +718,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 							},
 						},
 						JobURLPrefixConfig: map[string]string{
-							"*": path.Join(ProwJobURLPrefixConfig, "gcs"),
+							"*": "https://config.go.k8s.io/gcs",
 						},
 					},
 				},
@@ -735,7 +734,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 					Url: "https://github.com/test/repo/issues/",
 				},
 				OpenTestTemplate: &config.LinkTemplate{
-					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 				},
 			},
 		},
@@ -769,7 +768,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 					Url: "https://github.com/test/repo/issues/",
 				},
 				OpenTestTemplate: &config.LinkTemplate{
-					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 				},
 			},
 		},
@@ -804,7 +803,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 					Url: "https://github.com/test/repo/issues/",
 				},
 				OpenTestTemplate: &config.LinkTemplate{
-					Url: path.Join(ProwJobURLPrefixConfig, "<gcs_prefix>", "<changelist>"),
+					Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 				},
 			},
 		},

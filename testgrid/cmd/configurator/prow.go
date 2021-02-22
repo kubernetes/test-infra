@@ -207,7 +207,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 			var openTestLinkTemplate *configpb.LinkTemplate
 			if jobURLPrefix != "" {
 				openTestLinkTemplate = &configpb.LinkTemplate{
-					Url: path.Join(jobURLPrefix, "<gcs_prefix>", "<changelist>"),
+					Url: strings.TrimRight(jobURLPrefix, "/") + "/<gcs_prefix>/<changelist>",
 				}
 			}
 
