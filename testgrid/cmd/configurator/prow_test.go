@@ -636,7 +636,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 	tests := []*struct {
 		name                 string
-		prowConfig           *prowConfig.Config
+		jobURLPrefixConfig           map[string]string
 		expectedDashboardTab config.DashboardTab
 	}{
 		{
