@@ -636,6 +636,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 	tests := []*struct {
 		name                     string
 		jobURLPrefixConfig       map[string]string
+		defaultConfig            *yamlcfg.DefaultConfiguration
 		expectedOpenTestTemplate *config.LinkTemplate
 	}{
 		{
@@ -686,6 +687,23 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
 			},
 		},
+		{
+			name: "default config is overwritten",
+			jobURLPrefixConfig: map[string]string{
+				"*": "https://config.go.k8s.io/",
+			},
+			defaultConfig: &yamlcfg.DefaultConfiguration{
+				DefaultTestGroup: &config.TestGroup{},
+				DefaultDashboardTab: &config.DashboardTab{
+					OpenTestTemplate: &config.LinkTemplate{ //Overwritten
+						Url: "https://example.com/open_test",
+					},
+				},
+			},
+			expectedOpenTestTemplate: &config.LinkTemplate{
+				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -704,6 +722,10 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			pac := prowAwareConfigurator{
 				prowConfig: prowCfg,
 			}
+			if test.defaultConfig != nil {
+				pac.defaultTestgridConfig = test.defaultConfig
+			}
+
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: annotations,
