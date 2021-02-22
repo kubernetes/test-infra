@@ -401,6 +401,50 @@ periodics:
           cpu: "4"
           memory: 12Gi
 - annotations:
+    testgrid-dashboards: sig-release-1.20-blocking, sig-testing-canaries
+    testgrid-tab-name: bazel-build-1.20-canary
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.20
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  interval: 6h
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-service-account: "true"
+  name: periodic-kubernetes-bazel-build-1-20-canary
+  cluster: k8s-infra-prow-build
+  rerun_auth_config:
+    github_team_ids:
+    - 2241179
+  spec:
+    containers:
+    - args:
+      - -c
+      - |
+        set -o errexit
+        gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+        ../test-infra/scenarios/kubernetes_bazel.py \
+            --config=unit \
+            "--build=//... -//vendor/..." \
+            --release=//build/release-tars \
+            --gcs=gs://k8s-release-dev/ci-periodic \
+            --version-suffix=-bazel
+      command:
+      - bash
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-1.20
+      name: ""
+      resources:
+        limits:
+          cpu: "4"
+          memory: 12Gi
+        requests:
+          cpu: "4"
+          memory: 12Gi
+- annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.20-blocking, google-unit
     testgrid-tab-name: bazel-test-1.20
