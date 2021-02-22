@@ -641,7 +641,7 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 		expectedDashboardTab config.DashboardTab
 	}{
 		{
-			name: "job url prefix without specific sufix",
+			name: "job url prefix without specific suffix",
 			prowConfig: &prowConfig.Config{
 				ProwConfig: prowConfig.ProwConfig{
 					Plank: prowConfig.Plank{
