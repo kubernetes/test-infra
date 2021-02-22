@@ -627,14 +627,47 @@ def generate_distros():
         )
     return results
 
+#######################################
+# kops-periodics-network-plugins.yaml #
+#######################################
+def generate_network_plugins():
+
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
+    results = []
+    skip_base = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler'# pylint: disable=line-too-long
+    for plugin in plugins:
+        networking_arg = plugin.replace('-', '') # amazon vpc cni uses --networking=amazonvpc
+        skip_regex = skip_base
+        if plugin == 'cilium':
+            skip_regex += r'|should.set.TCP.CLOSE_WAIT'
+        else:
+            skip_regex += r'|Services.*functioning.*NodePort'
+        if plugin in ['calico', 'canal', 'weave', 'cilium']:
+            skip_regex += r'|Services.*rejected.*endpoints'
+        if plugin == 'kuberouter':
+            skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
+        results.append(
+            build_test(
+                container_runtime='containerd',
+                k8s_version='stable',
+                kops_channel='stable',
+                name_override='kops-aws-cni-' + plugin,
+                networking=networking_arg,
+                extra_dashboards=['kops-network-plugins'],
+                interval='8h',
+                skip_override=skip_regex
+            )
+        )
+    return results
 
 ########################
 # YAML File Generation #
 ########################
 files = {
+    'kops-periodics-distros.yaml': generate_distros,
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
-    'kops-periodics-distros.yaml': generate_distros
+    'kops-periodics-network-plugins.yaml': generate_network_plugins
 }
 
 def main():
