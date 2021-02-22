@@ -31,7 +31,6 @@ const ProwDefaultGCSPath = "pathPrefix/"
 const ProwJobName = "TestJob"
 const ProwJobSourcePath = "jobs/org/repo/testjob.yaml"
 const ProwJobURLPrefix = "https://go.k8s.io/prowjobs/"
-const ProwJobURLPrefixConfig = "https://config.go.k8s.io/"
 const ExampleRepository = "test/repo"
 const ProwJobDefaultDescription = "prowjob_name: " + ProwJobName
 
@@ -642,7 +641,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 		{
 			name: "job url prefix without specific suffix",
 			jobURLPrefixConfig: map[string]string{
-				"*": ProwJobURLPrefixConfig,
+				"*": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
 				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
@@ -670,7 +669,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			name: "job url prefix for org is preferred over *",
 			jobURLPrefixConfig: map[string]string{
 				"*":    "https://some.other.url",
-				"test": ProwJobURLPrefixConfig,
+				"test": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
 				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
@@ -681,7 +680,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			jobURLPrefixConfig: map[string]string{
 				"*":         "https://some.other.url",
 				"test":      "https://even.another.url",
-				"test/repo": ProwJobURLPrefixConfig,
+				"test/repo": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
 				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
