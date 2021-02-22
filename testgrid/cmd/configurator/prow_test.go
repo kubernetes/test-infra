@@ -636,26 +636,13 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 	tests := []*struct {
 		name                 string
-		jobURLPrefixConfig           map[string]string
+		jobURLPrefixConfig   map[string]string
 		expectedDashboardTab config.DashboardTab
 	}{
 		{
 			name: "job url prefix without specific sufix",
-			prowConfig: &prowConfig.Config{
-				ProwConfig: prowConfig.ProwConfig{
-					Plank: prowConfig.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									PathPrefix: ProwDefaultGCSPath,
-								},
-							},
-						},
-						JobURLPrefixConfig: map[string]string{
-							"*": ProwJobURLPrefixConfig,
-						},
-					},
-				},
+			jobURLPrefixConfig: map[string]string{
+				"*": ProwJobURLPrefixConfig,
 			},
 			expectedDashboardTab: config.DashboardTab{
 				Name:          ProwJobName,
@@ -674,21 +661,8 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 		},
 		{
 			name: "job url prefix ends in /view, kept",
-			prowConfig: &prowConfig.Config{
-				ProwConfig: prowConfig.ProwConfig{
-					Plank: prowConfig.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									PathPrefix: ProwDefaultGCSPath,
-								},
-							},
-						},
-						JobURLPrefixConfig: map[string]string{
-							"*": "https://config.go.k8s.io/view",
-						},
-					},
-				},
+			jobURLPrefixConfig: map[string]string{
+				"*": "https://config.go.k8s.io/view",
 			},
 			expectedDashboardTab: config.DashboardTab{
 				Name:          ProwJobName,
@@ -707,21 +681,8 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 		},
 		{
 			name: "job url prefix ends in /gcs, removed",
-			prowConfig: &prowConfig.Config{
-				ProwConfig: prowConfig.ProwConfig{
-					Plank: prowConfig.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									PathPrefix: ProwDefaultGCSPath,
-								},
-							},
-						},
-						JobURLPrefixConfig: map[string]string{
-							"*": "https://config.go.k8s.io/gcs",
-						},
-					},
-				},
+			jobURLPrefixConfig: map[string]string{
+				"*": "https://config.go.k8s.io/gcs",
 			},
 			expectedDashboardTab: config.DashboardTab{
 				Name:          ProwJobName,
@@ -740,22 +701,9 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 		},
 		{
 			name: "job url prefix for org is preferred over *",
-			prowConfig: &prowConfig.Config{
-				ProwConfig: prowConfig.ProwConfig{
-					Plank: prowConfig.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									PathPrefix: ProwDefaultGCSPath,
-								},
-							},
-						},
-						JobURLPrefixConfig: map[string]string{
-							"*":    "https://some.other.url",
-							"test": ProwJobURLPrefixConfig,
-						},
-					},
-				},
+			jobURLPrefixConfig: map[string]string{
+				"*":    "https://some.other.url",
+				"test": ProwJobURLPrefixConfig,
 			},
 			expectedDashboardTab: config.DashboardTab{
 				Name:          ProwJobName,
@@ -774,23 +722,10 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 		},
 		{
 			name: "job url prefix for org/repo is preferred over org and *",
-			prowConfig: &prowConfig.Config{
-				ProwConfig: prowConfig.ProwConfig{
-					Plank: prowConfig.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									PathPrefix: ProwDefaultGCSPath,
-								},
-							},
-						},
-						JobURLPrefixConfig: map[string]string{
-							"*":         "https://some.other.url",
-							"test":      "https://even.another.url",
-							"test/repo": ProwJobURLPrefixConfig,
-						},
-					},
-				},
+			jobURLPrefixConfig: map[string]string{
+				"*":         "https://some.other.url",
+				"test":      "https://even.another.url",
+				"test/repo": ProwJobURLPrefixConfig,
 			},
 			expectedDashboardTab: config.DashboardTab{
 				Name:          ProwJobName,
@@ -820,8 +755,10 @@ func Test_applySingleProwjobAnnotations_AutomaticFieldPopulation(t *testing.T) {
 				"testgrid-dashboards": "Pizza",
 			}
 
+			prowCfg := fakeProwConfig()
+			prowCfg.Plank.JobURLPrefixConfig = test.jobURLPrefixConfig
 			pac := prowAwareConfigurator{
-				prowConfig: test.prowConfig,
+				prowConfig: prowCfg,
 			}
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
