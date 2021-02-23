@@ -396,6 +396,10 @@ repo_milestone:
     maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
     maintainers_friendly_name: Cluster API Provider GCP Maintainers
+  kubernetes-sigs/cluster-api-provider-nested:
+    maintainers_id: 4158805
+    maintainers_team: cluster-api-provider-nested-maintainers
+    maintainers_friendly_name: Cluster API Provider Nested Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
@@ -923,6 +927,15 @@ plugins:
   - require-matching-label
   - override
 
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+
+  kubernetes-sigs/cluster-api-provider-docker:
+  - milestone
+
   kubernetes-sigs/cluster-api-provider-gcp:
   - milestone
   - milestonestatus
@@ -930,17 +943,12 @@ plugins:
   - require-matching-label
   - override
 
-  kubernetes-sigs/cluster-api-provider-digitalocean:
-  - milestone
-  - milestonestatus
-  - release-note
-  - require-matching-label
-
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - milestone
-
-  kubernetes-sigs/cluster-api-provider-docker:
+  
+  kubernetes-sigs/cluster-api-provider-nested:
   - milestone
+  - override
 
   kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
   - milestone
