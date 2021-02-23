@@ -135,23 +135,6 @@ run_daily = [
 
 # These are job tab names of unsupported grid combinations
 skip_jobs = [
-    # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
-    'kops-grid-cilium-amzn2',
-    'kops-grid-cilium-amzn2-k18',
-    'kops-grid-cilium-centos7',
-    'kops-grid-cilium-centos7-k17',
-    'kops-grid-cilium-centos7-k17-ko19',
-    'kops-grid-cilium-centos7-k18',
-    'kops-grid-cilium-centos7-k18-ko19',
-    'kops-grid-cilium-centos7-ko19',
-    'kops-grid-cilium-deb9',
-    'kops-grid-cilium-deb9-k18',
-    'kops-grid-cilium-rhel7',
-    'kops-grid-cilium-rhel7-k17',
-    'kops-grid-cilium-rhel7-k17-ko19',
-    'kops-grid-cilium-rhel7-k18',
-    'kops-grid-cilium-rhel7-k18-ko19',
-    'kops-grid-cilium-rhel7-ko19',
 ]
 
 def simple_hash(s):
@@ -262,6 +245,12 @@ def build_test(cloud='aws',
 
     if container_runtime == "containerd" and kops_version == "1.18":
         return None
+    # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
+    if networking == "cilium":
+        if distro in ["amzn2", "rhel7", "centos7"]:
+            return None
+        if distro == "deb9" and (k8s_version != "1.17" or kops_version != "1.18"):
+            return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
 
