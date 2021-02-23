@@ -35,9 +35,9 @@ periodics:
   - org: ii
     repo: k8s.io
     base_ref: no-auditing-secrets
-  # - org: kubernetes
-  #   repo: test-infra
-  #   base_ref: master
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   rerun_auth_config:
     github_users:
       - hh
@@ -59,13 +59,13 @@ periodics:
         git status | grep deleted | awk '{print $2}' | xargs git checkout
         popd
 
-        # echo "Generate pr-creator binary from k/test-infra/robots" >&2
-        # env
-        # ls /home/prow/go/src
-        # ls /home/prow/go/src/*/
-        # pushd $GOPATH/src/github.com/kubernetes/test-infra
-        # go build -o /workspace/pr-creator robots/pr-creator/main.go
-        # popd
+        echo "Generate pr-creator binary from k/test-infra/robots" >&2
+        env
+        ls /home/prow/go/src
+        ls /home/prow/go/src/*/
+        pushd $GOPATH/src/github.com/kubernetes/test-infra
+        go build -o /workspace/pr-creator robots/pr-creator/main.go
+        popd
 
         echo -n "Calculate github user, name, and email from token: " >&2
         # curl https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
@@ -75,7 +75,7 @@ periodics:
         GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login)
         GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name)
         GH_EMAIL=$(curl -H "Authorization: token $GH_TOKEN" -H "X-Oauth-Scope: user:email" "https://api.github.com/user/emails" 2>/dev/null | jq -r '.[] | select( .primary == true ) | .email')
-        FORK_GH_REPO=test-infra
+        FORK_GH_REPO=k8s.io
         FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
         echo "Prepare commit for possible PR via $GH_USER" >&2
         git config user.name "${GH_NAME}"
@@ -92,6 +92,7 @@ periodics:
         title="audit: update as of $(date +%Y-%m-%d)"
         body="Audit Updates\n/wg k8s-infra"
         # /workspace/pr-creator --help || true
+        # Using the sleep to debug / kuebctl exec into the pod
         sleep 9999999
         # /workspace/pr-creator \
         #   --github-token-path=/etc/github-token/token \
