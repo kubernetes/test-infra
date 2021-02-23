@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func makeStamp(t time.Time) gerrit.Timestamp {
@@ -344,6 +345,7 @@ func TestProcessChange(t *testing.T) {
 		pjRef            string
 		shouldError      bool
 		shouldSkipReport bool
+		expectedLabels   map[string]string
 	}{
 		{
 			name: "no revisions errors out",
@@ -382,6 +384,34 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 2,
 			pjRef: "refs/changes/00/1/1",
+		},
+		{
+			name: "jobs should trigger with correct labels",
+			change: client.ChangeInfo{
+				CurrentRevision: "rev42",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"rev42": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+						Number:  42,
+					},
+				},
+			},
+			numPJ: 2,
+			pjRef: "refs/changes/00/1/1",
+			expectedLabels: map[string]string{
+				client.GerritRevision:    "rev42",
+				client.GerritPatchset:    "42",
+				client.GerritReportLabel: client.CodeReview,
+				kube.CreatedByProw:       "true",
+				kube.ProwJobTypeLabel:    "presubmit",
+				kube.ProwJobAnnotation:   "always-runs-all-branches",
+				kube.OrgLabel:            "gerrit",
+				kube.RepoLabel:           "test-infra",
+				kube.PullLabel:           "0",
+			},
 		},
 		{
 			name: "multiple revisions",
@@ -954,6 +984,11 @@ func TestProcessChange(t *testing.T) {
 				}
 				if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
 					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
+				}
+				if tc.expectedLabels != nil {
+					if !equality.Semantic.DeepEqual(tc.expectedLabels, prowjobs[0].Labels) {
+						t.Errorf("diff between expected and actual labels:%s", diff.ObjectReflectDiff(tc.expectedLabels, prowjobs[0].Labels))
+					}
 				}
 			}
 			if tc.shouldSkipReport {
