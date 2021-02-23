@@ -600,7 +600,7 @@ def generate_distros():
                        networking='calico',
                        container_runtime='containerd',
                        k8s_version='stable',
-                       kops_channel='stable',
+                       kops_channel='alpha',
                        name_override='kops-aws-distro-image' + distro,
                        extra_dashboards=['kops-distros'],
                        interval='8h',
@@ -635,7 +635,7 @@ def generate_network_plugins():
             build_test(
                 container_runtime='containerd',
                 k8s_version='stable',
-                kops_channel='stable',
+                kops_channel='alpha',
                 name_override='kops-aws-cni-' + plugin,
                 networking=networking_arg,
                 extra_dashboards=['kops-network-plugins'],

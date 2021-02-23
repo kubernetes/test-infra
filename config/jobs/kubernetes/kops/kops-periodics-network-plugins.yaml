@@ -2,7 +2,7 @@
 # 8 jobs, total of 8 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "amazonvpc"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "amazonvpc"}
 - name: e2e-kops-aws-cni-amazon-vpc
   interval: '8h'
   labels:
@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=amazonvpc --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=amazonvpc --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -60,14 +60,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-cni-calico
   interval: '8h'
   labels:
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=calico --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -125,14 +125,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "canal"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "canal"}
 - name: e2e-kops-aws-cni-canal
   interval: '8h'
   labels:
@@ -161,7 +161,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=canal --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=canal --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -190,14 +190,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: canal
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-canal
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium
   interval: '8h'
   labels:
@@ -226,7 +226,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -255,14 +255,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "flannel"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "flannel"}
 - name: e2e-kops-aws-cni-flannel
   interval: '8h'
   labels:
@@ -291,7 +291,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -320,14 +320,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: flannel
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-flannel
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "kopeio"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kopeio"}
 - name: e2e-kops-aws-cni-kopeio
   interval: '8h'
   labels:
@@ -356,7 +356,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -385,14 +385,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kopeio
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-kopeio
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "kube-router"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kube-router"}
 - name: e2e-kops-aws-cni-kuberouter
   interval: '8h'
   labels:
@@ -421,7 +421,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=kube-router --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kube-router --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -450,14 +450,14 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kube-router
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-kuberouter
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "stable", "kops_version": null, "networking": "weave"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "weave"}
 - name: e2e-kops-aws-cni-weave
   interval: '8h'
   labels:
@@ -486,7 +486,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=stable --networking=weave --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=weave --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -515,7 +515,7 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: weave
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
