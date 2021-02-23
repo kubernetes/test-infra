@@ -155,8 +155,8 @@ periodics:
           memory: 6Gi
 - annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-    testgrid-dashboards: sig-release-releng-blocking, sig-release-1.19-informing, sig-testing-canaries
-    testgrid-tab-name: build-1.19-canary
+    testgrid-dashboards: sig-release-1.19-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-1.19
   cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
@@ -167,7 +167,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-1-19-canary
+  name: ci-kubernetes-build-1-19
   rerun_auth_config:
     github_team_ids:
     - 2241179
@@ -195,13 +195,13 @@ periodics:
         privileged: true
 - annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-    testgrid-dashboards: sig-release-1.19-blocking
-    testgrid-tab-name: build-1.19
+    testgrid-dashboards: sig-release-1.19-informing
+    testgrid-tab-name: build-1.19-deprecated
   interval: 1h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-1-19
+  name: ci-kubernetes-build-1-19-deprecated
   rerun_auth_config:
     github_team_ids:
     - 2241179
