@@ -90,6 +90,12 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
+# install kind if a version is provided
+ARG KIND_VERSION
+RUN [ -n "${KIND_VERSION:-}" ] && \
+    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+    chmod +x /usr/local/bin/kind
+
 # configure dockerd to use mirror.gcr.io
 # per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
 ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
