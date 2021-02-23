@@ -70,6 +70,30 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-sanity
       description: "Run sanity tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-sanity-v2
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test-v2
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azuredisk-csi-driver-sanity-v2
+      description: "Run sanity tests for Azure Disk CSI V2 driver."
+      testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
     decorate: true
     always_run: true
@@ -93,6 +117,30 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-integration
       description: "Run integration tests for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-integration-v2
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-test-v2
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
+      testgrid-tab-name: pr-azuredisk-csi-driver-integration-v2
+      description: "Run integration tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
     decorate: true
