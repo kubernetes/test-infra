@@ -29,6 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	prowGCS "k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -72,9 +73,13 @@ func (pac *prowAwareConfigurator) tabDescriptionForProwJob(j prowConfig.JobBase)
 	return strings.Join(fields, "\n")
 }
 
-func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string) error {
+func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, pj prowapi.ProwJob) error {
 	tabName := j.Name
 	testGroupName := j.Name
+	var repo string
+	if pj.Spec.Refs != nil {
+		repo = fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
+	}
 
 	pc := pac.prowConfig
 	dc := pac.defaultTestgridConfig
@@ -82,7 +87,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 	mustMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "true"
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
 	dashboards, addToDashboards := j.Annotations[testgridDashboardsAnnotation]
-	mightMakeGroup := (mustMakeGroup || addToDashboards || jobType != prowapi.PresubmitJob) && !mustNotMakeGroup
+	mightMakeGroup := (mustMakeGroup || addToDashboards || pj.Spec.Type != prowapi.PresubmitJob) && !mustNotMakeGroup
 	var testGroup *configpb.TestGroup
 
 	if mightMakeGroup {
@@ -102,7 +107,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 
 			testGroup = &configpb.TestGroup{
 				Name:      testGroupName,
-				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
+				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: pj.Spec.Type})),
 			}
 			if dc != nil {
 				yamlcfg.ReconcileTestGroup(testGroup, dc.DefaultTestGroup)
@@ -131,7 +136,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 			return fmt.Errorf("%s value %q is not a valid integer", testgridNumColumnsRecentAnnotation, ncr)
 		}
 		testGroup.NumColumnsRecent = int32(ncrInt)
-	} else if jobType == prowapi.PresubmitJob && testGroup.NumColumnsRecent < minPresubmitNumColumnsRecent {
+	} else if pj.Spec.Type == prowapi.PresubmitJob && testGroup.NumColumnsRecent < minPresubmitNumColumnsRecent {
 		testGroup.NumColumnsRecent = minPresubmitNumColumnsRecent
 	}
 
@@ -191,12 +196,22 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 					Url: fmt.Sprintf("https://github.com/%s/issues/", repo),
 				}
 			}
+
+			jobURLPrefix := pac.prowConfig.Plank.GetJobURLPrefix(&pj)
+			var openTestLinkTemplate *configpb.LinkTemplate
+			if jobURLPrefix != "" {
+				openTestLinkTemplate = &configpb.LinkTemplate{
+					Url: strings.TrimRight(jobURLPrefix, "/") + "/<gcs_prefix>/<changelist>",
+				}
+			}
+
 			dt := &configpb.DashboardTab{
 				Name:                  tabName,
 				TestGroupName:         testGroupName,
 				Description:           description,
 				CodeSearchUrlTemplate: codeSearchLinkTemplate,
 				OpenBugTemplate:       openBugLinkTemplate,
+				OpenTestTemplate:      openTestLinkTemplate,
 			}
 			if firstDashboard {
 				firstDashboard = false
@@ -268,7 +283,9 @@ func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *config
 	per := jobs.AllPeriodics()
 	sortPeriodics(per)
 	for _, j := range per {
-		if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PeriodicJob, ""); err != nil {
+		pjSpec := pjutil.PeriodicSpec(prowConfig.Periodic{JobBase: j.JobBase})
+		pj := pjutil.NewProwJob(pjSpec, nil, nil)
+		if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 			return err
 		}
 	}
@@ -276,8 +293,18 @@ func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *config
 	post := jobs.PostsubmitsStatic
 	postReposSorted := sortPostsubmits(post)
 	for _, orgrepo := range postReposSorted {
+		items := strings.Split(orgrepo, "/")
 		for _, j := range post[orgrepo] {
-			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PostsubmitJob, orgrepo); err != nil {
+			pjSpec := pjutil.PostsubmitSpec(
+				prowConfig.Postsubmit{JobBase: j.JobBase},
+				prowapi.Refs{
+					Org:  items[0],
+					Repo: items[1],
+				},
+			)
+			pj := pjutil.NewProwJob(pjSpec, nil, nil)
+
+			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 				return err
 			}
 		}
@@ -286,8 +313,17 @@ func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *config
 	pre := jobs.PresubmitsStatic
 	preReposSorted := sortPresubmits(pre)
 	for _, orgrepo := range preReposSorted {
+		items := strings.Split(orgrepo, "/")
 		for _, j := range pre[orgrepo] {
-			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, prowapi.PresubmitJob, orgrepo); err != nil {
+			pjSpec := pjutil.PresubmitSpec(
+				prowConfig.Presubmit{JobBase: j.JobBase},
+				prowapi.Refs{
+					Org:  items[0],
+					Repo: items[1],
+				},
+			)
+			pj := pjutil.NewProwJob(pjSpec, nil, nil)
+			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 				return err
 			}
 		}
