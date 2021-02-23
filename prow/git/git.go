@@ -429,7 +429,6 @@ func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 		return fmt.Errorf("pushing failed, output: %q, error: %v", string(out), err)
 	}
 	return nil
-
 }
 
 // CheckoutPullRequest does exactly that.

@@ -358,7 +358,9 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 			if targetBranch == baseBranch {
 				resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
 				l.Info(resp)
-				s.createComment(l, org, repo, num, ic, resp)
+				if err := s.createComment(l, org, repo, num, ic, resp); err != nil {
+					l.WithError(err).WithField("response", resp).Error("Failed to create comment.")
+				}
 				continue
 			}
 			handledBranches[targetBranch] = true
