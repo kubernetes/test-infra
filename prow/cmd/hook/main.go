@@ -18,9 +18,7 @@ package main
 
 import (
 	"flag"
-	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -63,6 +61,8 @@ type options struct {
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	jira                   prowflagutil.JiraOptions
 
+	githubEventServerOptions githubeventserver.Options
+
 	webhookSecretFile string
 	slackTokenFile    string
 }
@@ -79,8 +79,6 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
@@ -93,6 +91,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
+
+	o.githubEventServerOptions.Bind(fs)
+
 	fs.Parse(args)
 	return o
 }
@@ -223,42 +224,43 @@ func main() {
 	}
 
 	promMetrics := githubeventserver.NewMetrics()
-
-	defer interrupts.WaitForGracefulShutdown()
+	o.githubEventServerOptions.Metrics = promMetrics
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	server := &hook.Server{
-		ClientAgent:    clientAgent,
-		ConfigAgent:    configAgent,
-		Plugins:        pluginAgent,
-		Metrics:        promMetrics,
-		RepoEnabled:    o.githubEnablement.EnablementChecker(),
-		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		ClientAgent: clientAgent,
+		ConfigAgent: configAgent,
+		Plugins:     pluginAgent,
+		Metrics:     promMetrics,
+		RepoEnabled: o.githubEnablement.EnablementChecker(),
 	}
+
+	eventServer := githubeventserver.New(o.githubEventServerOptions, secretAgent.GetTokenGenerator(o.webhookSecretFile), logrus.NewEntry(logrus.New()))
+
+	eventServer.RegisterReviewEventHandler(server.HandleReviewEvent)
+	eventServer.RegisterReviewCommentEventHandler(server.HandleReviewCommentEvent)
+	eventServer.RegisterHandlePullRequestEvent(server.HandlePullRequestEvent)
+	eventServer.RegisterPushEventHandler(server.HandlePushEvent)
+	eventServer.RegisterIssueEventHandler(server.HandleIssueEvent)
+	eventServer.RegisterHandleIssueCommentEvent(server.HandleIssueCommentEvent)
+	eventServer.RegisterStatusEventHandler(server.HandleStatusEvent)
+
+	eventServer.RegisterPluginHelpAgentHandle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+	eventServer.RegisterExternalPlugins(pluginAgent.Config().ExternalPlugins)
+
 	interrupts.OnInterrupt(func() {
-		server.GracefulShutdown()
+		eventServer.GracefulShutdown()
 		if err := gitClient.Clean(); err != nil {
 			logrus.WithError(err).Error("Could not clean up git client cache.")
 		}
 	})
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
-
-	// TODO remove this health endpoint when the migration to health endpoint is done
-	// Return 200 on / for health checks.
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-
-	// For /hook, handle a webhook normally.
-	http.Handle("/hook", server)
-	// Serve plugin help information from /plugin-help.
-	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
-
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
-
 	health.ServeReady()
 
-	interrupts.ListenAndServe(httpServer, o.gracePeriod)
+	interrupts.ListenAndServe(eventServer, o.gracePeriod)
+	interrupts.WaitForGracefulShutdown()
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,25 +17,38 @@ limitations under the License.
 package hook
 
 import (
-	"net/http"
+	"encoding/json"
+	"flag"
 	"net/http/httptest"
-	"reflect"
-	"strings"
+	"os"
 	"testing"
+	"time"
 
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
+	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
-func TestServeHTTPErrors(t *testing.T) {
-	metrics := githubeventserver.NewMetrics()
-	pa := &plugins.ConfigAgent{}
-	pa.Set(&plugins.Configuration{})
+var ice = github.IssueCommentEvent{
+	Action: "reopened",
+	Repo: github.Repo{
+		Owner: github.User{
+			Login: "foo",
+		},
+		Name:     "bar",
+		FullName: "foo/bar",
+	},
+}
 
-	getSecret := func() []byte {
-		var repoLevelSecret = `
+var repoLevelSecret = `
 '*':
-  - value: abc
+  - value: key1
     created_at: 2019-10-02T15:00:00Z
   - value: key2
     created_at: 2020-10-02T15:00:00Z
@@ -45,292 +58,142 @@ foo/bar:
   - value: key6
     created_at: 2020-10-02T15:00:00Z
 `
-		return []byte(repoLevelSecret)
-	}
 
-	s := &Server{
-		Metrics:        metrics,
-		Plugins:        pa,
-		TokenGenerator: getSecret,
-		RepoEnabled:    func(org, repo string) bool { return true },
+var orgLevelSecret = `
+'*':
+  - value: key1
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+foo:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key4
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var globalSecret = `
+'*':
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var missingMatchingSecret = `
+somerandom:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+`
+
+var secretInOldFormat = `123abc`
+
+// TestHook sets up a hook.Server and then sends a fake webhook at it. It then
+// ensures that a fake plugin is called.
+func TestHook(t *testing.T) {
+	called := make(chan bool, 1)
+	payload, err := json.Marshal(&ice)
+	if err != nil {
+		t.Fatalf("Marshalling ICE: %v", err)
 	}
-	// This is the SHA1 signature for payload "{}" and signature "abc"
-	// echo -n '{}' | openssl dgst -sha1 -hmac abc
-	const hmac string = "sha1=db5c76f4264d0ad96cf21baec394964b4b8ce580"
-	const body string = "{}"
+	plugins.RegisterIssueHandler(
+		"baz",
+		func(pc plugins.Agent, ie github.IssueEvent) error {
+			called <- true
+			return nil
+		},
+		nil,
+	)
+	pa := &plugins.ConfigAgent{}
+	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
+	ca := &config.Agent{}
+	clientAgent := &plugins.ClientAgent{
+		GitHubClient:   github.NewFakeClient(),
+		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }, ownersconfig.FakeResolver),
+		BugzillaClient: &bugzilla.Fake{},
+	}
 	var testcases = []struct {
-		name string
-
-		Method string
-		Header map[string]string
-		Body   string
-		Code   int
+		name           string
+		secret         []byte
+		tokenGenerator func() []byte
+		shouldSucceed  bool
 	}{
 		{
-			name: "Delete",
-
-			Method: http.MethodDelete,
-			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   hmac,
-				"content-type":      "application/json",
+			name:   "Token present at repository level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(repoLevelSecret)
 			},
-			Body: body,
-			Code: http.StatusMethodNotAllowed,
+			shouldSucceed: true,
 		},
 		{
-			name: "No event",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   hmac,
-				"content-type":      "application/json",
+			name:   "Token present at org level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(orgLevelSecret)
 			},
-			Body: body,
-			Code: http.StatusBadRequest,
+			shouldSucceed: true,
 		},
 		{
-			name: "No content type",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   hmac,
+			name:   "Token present at global level.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(globalSecret)
 			},
-			Body: body,
-			Code: http.StatusBadRequest,
+			shouldSucceed: true,
 		},
 		{
-			name: "No event guid",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Event":  "ping",
-				"X-Hub-Signature": hmac,
-				"content-type":    "application/json",
+			name:   "Token not matching anywhere (wildcard token missing).",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(missingMatchingSecret)
 			},
-			Body: body,
-			Code: http.StatusBadRequest,
+			shouldSucceed: false,
 		},
 		{
-			name: "No signature",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"content-type":      "application/json",
+			name:   "Secret in old format.",
+			secret: []byte("123abc"),
+			tokenGenerator: func() []byte {
+				return []byte(secretInOldFormat)
 			},
-			Body: body,
-			Code: http.StatusForbidden,
-		},
-		{
-			name: "Bad signature",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   "this doesn't work",
-				"content-type":      "application/json",
-			},
-			Body: body,
-			Code: http.StatusForbidden,
-		},
-		{
-			name: "Good",
-
-			Method: http.MethodPost,
-			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   hmac,
-				"content-type":      "application/json",
-			},
-			Body: body,
-			Code: http.StatusOK,
-		},
-		{
-			name: "Good, again",
-
-			Method: http.MethodGet,
-			Header: map[string]string{
-				"content-type": "application/json",
-			},
-			Body: body,
-			Code: http.StatusMethodNotAllowed,
+			shouldSucceed: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Logf("Running scenario %q", tc.name)
 
-		w := httptest.NewRecorder()
-		r, err := http.NewRequest(tc.Method, "", strings.NewReader(tc.Body))
-		if err != nil {
-			t.Fatal(err)
+		metrics := githubeventserver.NewMetrics()
+		fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+		var geo githubeventserver.Options
+		geo.Bind(fs)
+		geo.Metrics = metrics
+
+		server := &Server{
+			ClientAgent: clientAgent,
+			Plugins:     pa,
+			ConfigAgent: ca,
+			RepoEnabled: func(org, repo string) bool { return true },
+			Metrics:     metrics,
 		}
-		for k, v := range tc.Header {
-			r.Header.Set(k, v)
-		}
-		s.ServeHTTP(w, r)
-		if w.Code != tc.Code {
-			t.Errorf("For test case: %+v\nExpected code %v, got code %v", tc, tc.Code, w.Code)
+
+		eventServer := githubeventserver.New(geo, tc.tokenGenerator, logrus.NewEntry(logrus.New()))
+		eventServer.RegisterExternalPlugins(pa.Config().ExternalPlugins)
+		eventServer.RegisterIssueEventHandler(server.HandleIssueEvent)
+
+		s := httptest.NewServer(eventServer.GetServeMuxHandler())
+		defer s.Close()
+
+		if err := phony.SendHook(s.URL, "issues", payload, tc.secret); (err != nil) == tc.shouldSucceed {
+			t.Fatalf("Error sending hook: %v", err)
 		}
 	}
-}
 
-func TestNeedDemux(t *testing.T) {
-	tests := []struct {
-		name string
-
-		eventType   string
-		srcRepo     string
-		repoEnabled func(org, repo string) bool
-		plugins     map[string][]plugins.ExternalPlugin
-
-		expected []plugins.ExternalPlugin
-	}{
-		{
-			name: "no external plugins",
-
-			eventType: "issue_comment",
-			srcRepo:   "kubernetes/test-infra",
-			plugins:   nil,
-
-			expected: nil,
-		},
-		{
-			name: "we have variety",
-
-			eventType: "issue_comment",
-			srcRepo:   "kubernetes/test-infra",
-			plugins: map[string][]plugins.ExternalPlugin{
-				"kubernetes/test-infra": {
-					{
-						Name:   "sandwich",
-						Events: []string{"pull_request"},
-					},
-					{
-						Name: "coffee",
-					},
-				},
-				"kubernetes/kubernetes": {
-					{
-						Name:   "gumbo",
-						Events: []string{"issue_comment"},
-					},
-				},
-				"kubernetes": {
-					{
-						Name:   "chicken",
-						Events: []string{"push"},
-					},
-					{
-						Name: "water",
-					},
-					{
-						Name:   "chocolate",
-						Events: []string{"pull_request", "issue_comment", "issues"},
-					},
-				},
-			},
-
-			expected: []plugins.ExternalPlugin{
-				{
-					Name: "coffee",
-				},
-				{
-					Name: "water",
-				},
-				{
-					Name:   "chocolate",
-					Events: []string{"pull_request", "issue_comment", "issues"},
-				},
-			},
-		},
-		{
-			name: "we have variety but disabled that repo",
-
-			eventType: "issue_comment",
-			srcRepo:   "kubernetes/test-infra",
-			repoEnabled: func(org, repo string) bool {
-				if org == "kubernetes" && repo == "test-infra" {
-					return false
-				}
-				return true
-			},
-			plugins: map[string][]plugins.ExternalPlugin{
-				"kubernetes/test-infra": {
-					{
-						Name:   "sandwich",
-						Events: []string{"pull_request"},
-					},
-					{
-						Name: "coffee",
-					},
-				},
-				"kubernetes/kubernetes": {
-					{
-						Name:   "gumbo",
-						Events: []string{"issue_comment"},
-					},
-				},
-				"kubernetes": {
-					{
-						Name:   "chicken",
-						Events: []string{"push"},
-					},
-					{
-						Name: "water",
-					},
-					{
-						Name:   "chocolate",
-						Events: []string{"pull_request", "issue_comment", "issues"},
-					},
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-
-			t.Logf("Running scenario %q", test.name)
-
-			pa := &plugins.ConfigAgent{}
-			pa.Set(&plugins.Configuration{
-				ExternalPlugins: test.plugins,
-			})
-
-			if test.repoEnabled == nil {
-				test.repoEnabled = func(_, _ string) bool { return true }
-			}
-			s := &Server{Plugins: pa, RepoEnabled: test.repoEnabled}
-
-			gotPlugins := s.needDemux(test.eventType, test.srcRepo)
-			if len(gotPlugins) != len(test.expected) {
-				t.Fatalf("expected plugins: %+v, got: %+v", test.expected, gotPlugins)
-			}
-			for _, expected := range test.expected {
-				var found bool
-				for _, got := range gotPlugins {
-					if got.Name != expected.Name {
-						continue
-					}
-					if !reflect.DeepEqual(expected, got) {
-						t.Errorf("expected plugin: %+v, got: %+v", expected, got)
-					}
-					found = true
-				}
-				if !found {
-					t.Errorf("expected plugins: %+v, got: %+v", test.expected, gotPlugins)
-					break
-				}
-			}
-		})
+	select {
+	case <-called: // All good.
+	case <-time.After(time.Second):
+		t.Error("Plugin not called after one second.")
 	}
 }

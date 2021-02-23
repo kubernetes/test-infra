@@ -86,7 +86,6 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port:              8888,
 				configPath:        "yo",
 				pluginConfig:      "/etc/plugins/plugins.yaml",
 				dryRun:            true,
@@ -105,6 +104,7 @@ func Test_gatherOptions(t *testing.T) {
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
+			expected.githubEventServerOptions.Bind(expectedfs)
 
 			argMap := map[string]string{
 				"--config-path": "yo",
