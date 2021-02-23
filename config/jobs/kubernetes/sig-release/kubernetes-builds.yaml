@@ -30,7 +30,7 @@ presubmits:
 
 periodics:
 - interval: 1h
-  name: ci-kubernetes-build
+  name: ci-kubernetes-build-deprecated
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -63,11 +63,11 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "k8s-master -> k8s-beta"
-    testgrid-dashboards: sig-release-master-blocking
-    testgrid-tab-name: build-master
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: build-master-deprecated
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
-- name: ci-kubernetes-build-canary
+- name: ci-kubernetes-build
   interval: 1h
   cluster: k8s-infra-prow-build
   decorate: true
@@ -106,8 +106,8 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "k8s-master -> k8s-beta"
-    testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-testing-canaries
-    testgrid-tab-name: build-master-canary
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-master
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 - interval: 5m
