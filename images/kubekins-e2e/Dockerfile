@@ -92,9 +92,10 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
 
 # install kind if a version is provided
 ARG KIND_VERSION
-RUN [ -n "${KIND_VERSION:-}" ] && \
+RUN if [ -n "${KIND_VERSION}" ]; then \
     wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
-    chmod +x /usr/local/bin/kind
+    chmod +x /usr/local/bin/kind; \
+    fi
 
 # configure dockerd to use mirror.gcr.io
 # per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
