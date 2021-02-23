@@ -1,3 +1,39 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-make-test
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: true
+    always_run: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+          command:
+            - runner.sh
+            - bash
+          args:
+            - -c
+            - |
+              # Restore the cache
+              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
+              mkdir -p _output/local/go/
+              time tar -xzf cache.tar.gz -C _output/local/go
+              # Run tests as usual
+              time make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
 periodics:
   - interval: 1h
     name: ci-kubernetes-generate-make-test-cache
@@ -23,7 +59,7 @@ periodics:
               result=0
               # Run the tests as usual
               ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
+              time make test KUBE_TIMEOUT=--timeout=600s KUBE_RACE=-race || result=$?
               # Send the cache off to gcs
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
               time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
@@ -54,5 +90,5 @@ periodics:
               # Run tests as usual
               result=0
               ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
+              time make test KUBE_TIMEOUT=--timeout=600s KUBE_RACE=-race || result=$?
               exit $result
