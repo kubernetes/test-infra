@@ -360,7 +360,7 @@ func TestHandleAll(t *testing.T) {
 	}
 	fake := newFakeClient(prs, nil, false, nil)
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{"/": {labels.LGTM, PluginName}},
+		Plugins: plugins.Plugins{"/": {Plugins: []string{labels.LGTM, PluginName}}},
 
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}

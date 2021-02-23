@@ -150,7 +150,7 @@ func main() {
 	}
 
 	var bugzillaClient bugzilla.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
 		client, err := o.bugzilla.BugzillaClient(secretAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
@@ -163,7 +163,7 @@ func main() {
 	}
 
 	var jiraClient jiraclient.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
 		client, err := o.jira.Client(secretAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to construct Jira Client")
