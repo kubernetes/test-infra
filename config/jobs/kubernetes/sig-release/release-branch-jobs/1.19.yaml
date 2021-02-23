@@ -361,7 +361,7 @@ periodics:
   - 'perfDashBuildsCount: 500'
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-1.19-blocking, google-unit
+    testgrid-dashboards: sig-release-1.19-informing, google-unit
     testgrid-tab-name: bazel-build-1.19
   decorate: true
   extra_refs:
