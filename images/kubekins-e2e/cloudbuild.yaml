@@ -23,6 +23,7 @@ steps:
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+    - --build-arg=KIND_VERSION=$_KIND_VERSION
     - -f
     - images/kubekins-e2e/Dockerfile
     - .
@@ -42,6 +43,7 @@ substitutions:
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
   _UPGRADE_DOCKER: 'false'
+  _KIND_VERSION: ''
 options:
   substitution_option: ALLOW_LOOSE
 images:
