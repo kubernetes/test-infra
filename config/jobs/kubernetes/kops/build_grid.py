@@ -43,7 +43,7 @@ template = """
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract={{extract}}
       - --ginkgo-parallel={{test_parallelism}}
-      - --kops-args={{kops_args}}
+      - --kops-args={{create_args}}
       - --kops-feature-flags={{kops_feature_flags}}
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -92,7 +92,7 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
-          --create-args="--image='{{kops_image}}' --networking={{networking}} --container-runtime={{container_runtime}}" \\
+          --create-args="--image='{{kops_image}}' {{create_args}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
@@ -293,21 +293,16 @@ def build_test(cloud='aws',
     else:
         raise Exception('missing required k8s_version')
 
-    kops_args = ""
-    if kops_channel:
-        kops_args = kops_args + " --channel=" + kops_channel
-
-    if networking:
-        kops_args = kops_args + " --networking=" + networking
+    create_args = "--channel=" + kops_channel + " --networking=" + (networking or "kubenet")
 
     if container_runtime:
-        kops_args = kops_args + " --container-runtime=" + container_runtime
+        create_args = create_args + " --container-runtime=" + container_runtime
 
     if extra_flags:
         for arg in extra_flags:
-            kops_args = kops_args + " " + arg
+            create_args = create_args + " " + arg
 
-    kops_args = kops_args.strip()
+    create_args = create_args.strip()
 
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
     if networking == "cilium":
@@ -372,7 +367,7 @@ def build_test(cloud='aws',
     y = y.replace('{{suffix}}', suffix)
     y = y.replace('{{job_name}}', job_name)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
-    y = y.replace('{{kops_args}}', kops_args)
+    y = y.replace('{{create_args}}', create_args)
     y = y.replace('{{test_args}}', test_args)
     if interval:
         y = y.replace('{{interval}}', interval)
@@ -393,10 +388,8 @@ def build_test(cloud='aws',
 
     # specific to kubetest2
     if use_kubetest2:
-        y = y.replace('{{networking}}', networking or 'kubenet')
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
-        y = y.replace('{{container_runtime}}', container_runtime)
         y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
         if terraform_version:
             y = y.replace('{{terraform_version}}', terraform_version)
@@ -607,7 +600,7 @@ def generate_distros():
                        networking='calico',
                        container_runtime='containerd',
                        k8s_version='stable',
-                       kops_channel='stable',
+                       kops_channel='alpha',
                        name_override='kops-aws-distro-image' + distro,
                        extra_dashboards=['kops-distros'],
                        interval='8h',
@@ -642,7 +635,7 @@ def generate_network_plugins():
             build_test(
                 container_runtime='containerd',
                 k8s_version='stable',
-                kops_channel='stable',
+                kops_channel='alpha',
                 name_override='kops-aws-cni-' + plugin,
                 networking=networking_arg,
                 extra_dashboards=['kops-network-plugins'],
