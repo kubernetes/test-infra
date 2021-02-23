@@ -699,6 +699,8 @@ presets:
     value: "0"
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
+  - name: KUBE_BUILD_CONFORMANCE
+    value: "n"
   volumes:
   - name: azure-cred
     secret:
