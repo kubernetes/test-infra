@@ -47,6 +47,7 @@ periodics:
     description: Runs conformance tests using kubetest2 against kubernetes master on GCE
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 220m
@@ -58,6 +59,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
+      securityContext:
+        privileged: true
       resources:
         limits:
           cpu: 4
