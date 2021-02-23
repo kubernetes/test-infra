@@ -12,37 +12,49 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-grid-scenario-arm64.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/latest
-      - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=us-east-2b
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106" \
+          --env=KOPS_FEATURE_FLAGS= \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=latest.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
@@ -53,7 +65,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/kops_zones: us-east-2b
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
@@ -67,37 +79,49 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-grid-scenario-public-jwks.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/latest
-      - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public
-      - --kops-feature-flags=UseServiceAccountIAM,PublicJWKS
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
+          --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM,PublicJWKS \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=latest.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
@@ -108,7 +132,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-public-jwks
 
@@ -122,37 +146,49 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=kops-grid-scenario-a--d92091ede0.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --kops-ssh-user=ubuntu
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable-1.19
-      - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
-      - --kops-feature-flags=EnableExternalCloudController,SpecOverrideFlag
-      - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds
-      - --timeout=60m
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
+          --env=KOPS_FEATURE_FLAGS=EnableExternalCloudController,SpecOverrideFlag \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=stable-1.19.txt \
+          --parallel 25 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-1.19
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 2Gi
+          memory: 3Gi
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
@@ -163,7 +199,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.19, kops-latest, kops-misc, provider-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.19, kops-kubetest2, kops-latest, kops-misc, provider-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
