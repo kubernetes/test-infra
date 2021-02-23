@@ -43,7 +43,7 @@ template = """
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract={{extract}}
       - --ginkgo-parallel={{test_parallelism}}
-      - --kops-args={{kops_args}}
+      - --kops-args={{create_args}}
       - --kops-feature-flags={{kops_feature_flags}}
       - --kops-image={{kops_image}}
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -293,21 +293,21 @@ def build_test(cloud='aws',
     else:
         raise Exception('missing required k8s_version')
 
-    kops_args = ""
+    create_args = ""
     if kops_channel:
-        kops_args = kops_args + " --channel=" + kops_channel
+        create_args = create_args + " --channel=" + kops_channel
 
     if networking:
-        kops_args = kops_args + " --networking=" + networking
+        create_args = create_args + " --networking=" + networking
 
     if container_runtime:
-        kops_args = kops_args + " --container-runtime=" + container_runtime
+        create_args = create_args + " --container-runtime=" + container_runtime
 
     if extra_flags:
         for arg in extra_flags:
-            kops_args = kops_args + " " + arg
+            create_args = create_args + " " + arg
 
-    kops_args = kops_args.strip()
+    create_args = create_args.strip()
 
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
     if networking == "cilium":
@@ -372,7 +372,7 @@ def build_test(cloud='aws',
     y = y.replace('{{suffix}}', suffix)
     y = y.replace('{{job_name}}', job_name)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
-    y = y.replace('{{kops_args}}', kops_args)
+    y = y.replace('{{create_args}}', create_args)
     y = y.replace('{{test_args}}', test_args)
     if interval:
         y = y.replace('{{interval}}', interval)
