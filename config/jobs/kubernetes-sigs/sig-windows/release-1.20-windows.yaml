@@ -218,7 +218,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
