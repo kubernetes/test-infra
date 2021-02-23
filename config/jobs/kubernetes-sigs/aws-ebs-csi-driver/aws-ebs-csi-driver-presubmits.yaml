@@ -89,7 +89,7 @@ presubmits:
       description: aws ebs csi driver e2e test on mutiple AZs
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-migration-test-latest
-    always_run: false
+    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
