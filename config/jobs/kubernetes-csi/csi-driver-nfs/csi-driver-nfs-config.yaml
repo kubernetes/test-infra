@@ -18,7 +18,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         command:
         - runner.sh
         args:

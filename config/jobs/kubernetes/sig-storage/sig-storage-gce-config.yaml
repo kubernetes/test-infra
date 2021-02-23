@@ -44,7 +44,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -93,7 +93,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -134,7 +134,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
@@ -191,7 +191,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -232,7 +232,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -272,7 +272,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -309,7 +309,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=240m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
         resources:
           requests:
             memory: "6Gi"
@@ -339,7 +339,7 @@ periodics:
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -364,7 +364,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -386,7 +386,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210217-8c72491-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
   annotations:
     testgrid-num-columns-recent: '20'
     testgrid-num-failures-to-alert: '6'
