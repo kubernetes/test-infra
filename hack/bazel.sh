@@ -19,9 +19,30 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-code=0
-(set -o xtrace && bazel "$@") || code=$?
-coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
-(set -o xtrace && "$coalesce") || true
-set -o xtrace
-exit "$code"
+# NEVER MERGE THIS, MOCKING FOR INVESTIGATING SPYGLASS PERFORMANCE ON LARGE NUBMER OF FILES
+for i in $(seq 1 1000); do
+    cat > "${ARTIFACTS}/junit_${i}.xml" << EOL
+<testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.539" timestamp="2021-02-22T20:04:01.889404">
+    <testcase classname="some_class" name="some_test_${i}" time="0.003"/>
+</testsuite>
+EOL
+done
+
+tmp_dir="$(mktemp -d)"
+combined_result=${tmp_dir}/junit_combined_000.xml
+i=1
+echo "<testsuites>">${combined_result}
+find ${ARTIFACTS} -name 'junit*.xml' -print0 | while IFS= read -r -d '' junit_xml; do
+  if [[ $(( $i % 30 )) == 0 ]]; then
+    echo "</testsuites>">>${combined_result}
+    combined_result=${tmp_dir}/junit_combined_${i}.xml
+    echo "<testsuites>" > ${combined_result}
+  fi
+  cat "$junit_xml">>${combined_result}
+  rm "$junit_xml"
+  let i++
+done
+
+mv "${tmp_dir}"/* "${ARTIFACTS}"/
+
+exit 1
