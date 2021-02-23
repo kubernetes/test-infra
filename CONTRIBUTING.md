@@ -116,7 +116,7 @@ has test coverage in a variety of environments. For more info please see
 [contrib-cheatsheet]: https://git.k8s.io/community/contributors/guide/contributor-cheatsheet
 [cla]: https://github.com/kubernetes/community/blob/master/CLA.md
 [owners]: https://go.k8s.io/owners
-[KEP]: https://github.com/kubernetes/enhancements/blob/master/keps/YYYYMMDD-kep-template.md
+[KEP]: https://github.com/kubernetes/enhancements/blob/master/keps/NNNN-kep-template
 
 [sig-testing]: https://github.com/kubernetes/community/tree/master/sig-testing
 [#sig-testing]: https://kubernetes.slack.com/messages/sig-testing
