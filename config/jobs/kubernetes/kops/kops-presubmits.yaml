@@ -173,7 +173,7 @@ presubmits:
             memory: "3Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
-      testgrid-tab-name: e2e-kubetest2
+      testgrid-tab-name: e2e-do-kubetest2
   - name: pull-kops-e2e-k8s-containerd
     branches:
     - master
