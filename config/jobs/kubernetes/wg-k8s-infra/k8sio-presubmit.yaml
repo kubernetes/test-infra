@@ -21,3 +21,16 @@ presubmits:
         env:
         - name: GO111MODULE
           value: "on"
+  - name: pull-k8sio-yamllint
+    annotations:
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-tab-name: pull-k8sio-yamllint
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: quay.io/kubermatic/yamllint:0.1
+        command:
+        - yamllint
+        - -c
+        - hack/.yamllint.conf
