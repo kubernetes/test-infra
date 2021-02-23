@@ -92,7 +92,7 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
-          --create-args="--image='{{kops_image}}' --networking={{networking}} --container-runtime={{container_runtime}}" \\
+          --create-args="--image='{{kops_image}}' {{create_args}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
@@ -293,12 +293,7 @@ def build_test(cloud='aws',
     else:
         raise Exception('missing required k8s_version')
 
-    create_args = ""
-    if kops_channel:
-        create_args = create_args + " --channel=" + kops_channel
-
-    if networking:
-        create_args = create_args + " --networking=" + networking
+    create_args = "--channel=" + kops_channel + " --networking=" + (networking or "kubenet")
 
     if container_runtime:
         create_args = create_args + " --container-runtime=" + container_runtime
@@ -393,10 +388,8 @@ def build_test(cloud='aws',
 
     # specific to kubetest2
     if use_kubetest2:
-        y = y.replace('{{networking}}', networking or 'kubenet')
         y = y.replace('{{marker}}', marker)
         y = y.replace('{{skip_regex}}', skip_regex)
-        y = y.replace('{{container_runtime}}', container_runtime)
         y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
         if terraform_version:
             y = y.replace('{{terraform_version}}', terraform_version)

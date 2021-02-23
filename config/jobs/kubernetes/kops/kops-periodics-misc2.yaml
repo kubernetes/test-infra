@@ -27,7 +27,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
+      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -82,7 +82,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/latest
       - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --container-runtime=docker --api-loadbalancer-type=public
+      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public
       - --kops-feature-flags=UseServiceAccountIAM,PublicJWKS
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -137,7 +137,7 @@ periodics:
       - --env=KOPS_RUN_TOO_NEW_VERSION=1
       - --extract=release/stable-1.19
       - --ginkgo-parallel=25
-      - --kops-args=--channel=alpha --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
+      - --kops-args=--channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
       - --kops-feature-flags=EnableExternalCloudController,SpecOverrideFlag
       - --kops-image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
@@ -248,7 +248,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
