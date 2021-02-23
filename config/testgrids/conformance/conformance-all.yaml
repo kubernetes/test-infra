@@ -5,7 +5,6 @@ dashboard_groups:
     - conformance-apisnoop
     - conformance-gce
     - conformance-kind
-    - conformance-cloud-provider-openstack
     - conformance-cloud-provider-huaweicloud
     - conformance-cloud-provider-vsphere
     - conformance-vsphere
@@ -19,13 +18,6 @@ dashboards:
 - name: conformance-all
   # entries are named $PROVIDER, $KUBERNETES_RELEASE
   dashboard_tab:
-    - name: OpenStack, master (dev)
-      description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    - name: OpenStack, v1.16 (dev)
-      description: Runs conformance tests using kubetest against kubernetes from the release-1.16 branch with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-
     - name: Gardener, v1.20 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.20
@@ -104,28 +96,6 @@ dashboards:
 
 - name: conformance-apisnoop
 - name: conformance-gce
-- name: conformance-cloud-provider-openstack
-  dashboard_tab:
-    - name: presubmit-master
-      description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
-      test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
-    - name: presubmit-v1.16
-      description: Runs conformance tests using kubetest against kubernetes v1.16 with cloud-provider-openstack
-      test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
-    - name: periodic-master
-      description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
-    - name: periodic-v1.16
-      description: Runs conformance tests using kubetest against kubernetes v1.16 with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
 
 - name: conformance-cloud-provider-huaweicloud
   dashboard_tab:
@@ -323,26 +293,6 @@ dashboards:
       url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 test_groups:
-# cloud-provider-openstack e2e conformance tests
-# name format: PR trigger ci-presubmit-${zuul-job-name}
-#              periodic strigger ci-periodic-${zuul-job-name}
-- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
-  gcs_prefix: k8s-conformance-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-  gcs_prefix: k8s-conformance-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-  gcs_prefix: k8s-conformance-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-  gcs_prefix: k8s-conformance-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-
 # cloud-provider-huaweicloud e2e conformance Test Groups
 - name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
   gcs_prefix: k8s-conform-huaweicloud/cloud-provider-huaweicloud/e2e-conformance-release-v1.17
