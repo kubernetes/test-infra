@@ -19,7 +19,6 @@ import yaml
 kubetest2_template = """
 - name: {{job_name}}
   cron: '{{cron}}'
-  interval: '{{interval}}'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -95,11 +94,15 @@ def simple_hash(s):
     # & 0xffffffff avoids python2/python3 compatibility
     return zlib.crc32(s.encode()) & 0xffffffff
 
-def build_cron(key):
+def build_cron(key, runs_per_day):
     runs_per_week = 0
     minute = simple_hash("minutes:" + key) % 60
     hour = simple_hash("hours:" + key) % 24
     day_of_week = simple_hash("day_of_week:" + key) % 7
+
+    if runs_per_day and runs_per_day > 0:
+        hour_denominator = 24 / runs_per_day
+        return "%d */%d * * *" % (minute, hour_denominator), (runs_per_day * 7)
 
     # run Ubuntu 20.04 (Focal) jobs more frequently
     if "u2004" in key:
@@ -190,11 +193,11 @@ def build_test(cloud='aws',
                feature_flags=(),
                extra_flags=None,
                extra_dashboards=None,
-               interval=None,
                terraform_version=None,
                test_parallelism=25,
                test_timeout_minutes=60,
-               skip_override=None):
+               skip_override=None,
+               runs_per_day=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if container_runtime == "containerd" and kops_version == "1.18":
@@ -281,10 +284,11 @@ def build_test(cloud='aws',
         return None
     job_name = f"e2e-{tab}"
 
-    cron, runs_per_week = build_cron(tab)
+    cron, runs_per_week = build_cron(tab, runs_per_day)
 
     y = kubetest2_template
     y = y.replace('{{job_name}}', job_name)
+    y = y.replace('{{cron}}', cron)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{create_args}}', create_args)
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
@@ -300,12 +304,6 @@ def build_test(cloud='aws',
         y = y.replace('{{terraform_version}}', terraform_version)
     else:
         y = remove_line_with_prefix(y, '--terraform-version=')
-    if interval:
-        y = y.replace('{{interval}}', interval)
-        y = remove_line_with_prefix(y, 'cron: ')
-    else:
-        y = y.replace('{{cron}}', cron)
-        y = remove_line_with_prefix(y, 'interval: ')
 
     spec = {
         'cloud': cloud,
@@ -495,7 +493,7 @@ def generate_distros():
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
-                       interval='8h',
+                       runs_per_day=3,
                        skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
                        )
         )
@@ -531,7 +529,7 @@ def generate_network_plugins():
                 name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
                 extra_dashboards=['kops-network-plugins'],
-                interval='8h',
+                runs_per_day=3,
                 skip_override=skip_regex
             )
         )
