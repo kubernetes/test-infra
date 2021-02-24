@@ -73,6 +73,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-proxy
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -127,6 +154,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ocp-4.6-e2e-azure-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.6-e2e-azure-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -135,6 +189,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -910,33 +991,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-aws-fips-4.6
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-fips-4.6
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-aws-fips-serial-4.6
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1072,33 +1126,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-azure-fips-4.6
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-azure-fips-4.6
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.6
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1161,33 +1188,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-serial-4.6
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-gcp-fips-4.6
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-gcp-fips-4.6
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1844,13 +1844,20 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-console-aws
   name: periodic-ci-openshift-release-master-ocp-4.6-console-aws
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-fips
+  name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-proxy
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-workers-rhel7
   name: periodic-ci-openshift-release-master-ocp-4.6-e2e-aws-workers-rhel7
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-azure-fips
+  name: periodic-ci-openshift-release-master-ocp-4.6-e2e-azure-fips
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp
   name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp-fips
+  name: periodic-ci-openshift-release-master-ocp-4.6-e2e-gcp-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-metal-assisted
   name: periodic-ci-openshift-release-master-ocp-4.6-e2e-metal-assisted
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-e2e-metal-assisted-ipv6
@@ -1915,9 +1922,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-csi-4.6
   name: release-openshift-ocp-installer-e2e-aws-csi-4.6
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-fips-4.6
-  name: release-openshift-ocp-installer-e2e-aws-fips-4.6
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-fips-serial-4.6
   name: release-openshift-ocp-installer-e2e-aws-fips-serial-4.6
 - days_of_results: 60
@@ -1932,8 +1936,6 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-4.6
   name: release-openshift-ocp-installer-e2e-azure-4.6
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-fips-4.6
-  name: release-openshift-ocp-installer-e2e-azure-fips-4.6
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-fips-serial-4.6
   name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.6
 - days_of_results: 60
@@ -1942,8 +1944,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-serial-4.6
   name: release-openshift-ocp-installer-e2e-azure-serial-4.6
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-fips-4.6
-  name: release-openshift-ocp-installer-e2e-gcp-fips-4.6
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-fips-serial-4.6
   name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.6
 - days_of_results: 60

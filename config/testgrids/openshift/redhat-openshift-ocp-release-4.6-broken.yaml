@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.6
+    name: periodic-ci-openshift-release-master-ocp-4.6-cluster-logging-operator-e2e
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.6
+    test_group_name: periodic-ci-openshift-release-master-ocp-4.6-cluster-logging-operator-e2e
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -57,8 +57,8 @@ dashboards:
   name: redhat-openshift-ocp-release-4.6-broken
 test_groups:
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-cluster-logging-operator-e2e-4.6
-  name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.6
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ocp-4.6-cluster-logging-operator-e2e
+  name: periodic-ci-openshift-release-master-ocp-4.6-cluster-logging-operator-e2e
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-elasticsearch-operator-e2e-4.6
   name: release-openshift-ocp-installer-elasticsearch-operator-e2e-4.6
