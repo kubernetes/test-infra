@@ -24,7 +24,62 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
+
+func TestPathAlias(t *testing.T) {
+	cases := []struct {
+		name string
+		pa   string
+		org  string
+		repo string
+		want string
+	}{
+		{
+			name: "with path alias",
+			pa:   "pa",
+			org:  "org1",
+			repo: "repo1",
+			want: "pa",
+		},
+		{
+			name: "without path alias",
+			pa:   "",
+			org:  "org1",
+			repo: "repo1",
+			want: "github.com/org1/repo1",
+		},
+		{
+			name: "org name starts with http://",
+			pa:   "",
+			org:  "http://org1",
+			repo: "repo1",
+			want: "http://org1/repo1",
+		},
+		{
+			name: "org name starts with https://",
+			pa:   "",
+			org:  "https://org1",
+			repo: "repo1",
+			want: "https://org1/repo1",
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			r := prowapi.Refs{
+				PathAlias: tc.pa,
+				Org:       tc.org,
+				Repo:      tc.repo,
+			}
+			if got := pathAlias(r); got != tc.want {
+				t.Fatalf("Failed getting path alias. Want: %s, got: %s", tc.want, got)
+			}
+		})
+	}
+}
 
 func TestReadRepo(t *testing.T) {
 	dir, err := ioutil.TempDir("", "read-repo")
@@ -34,14 +89,15 @@ func TestReadRepo(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	cases := []struct {
-		name      string
-		goal      string
-		wd        string
-		gopath    string
-		dirs      []string
-		userInput string
-		expected  string
-		err       bool
+		name        string
+		goal        string
+		wd          string
+		gopath      string
+		dirs        []string
+		userInput   string
+		repoPathMap map[string]string
+		expected    string
+		err         bool
 	}{
 		{
 			name:     "find from local",
@@ -76,6 +132,18 @@ func TestReadRepo(t *testing.T) {
 				path.Join(dir, "prefer_gopath", "src", "test-infra2"),
 			},
 			expected: path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
+		},
+		{
+			name:   "user provided path from command argument",
+			goal:   "k8s.io/test-infra2",
+			gopath: path.Join(dir, "prefer_gopath"),
+			wd:     path.Join(dir, "prefer_gopath_random", "random"),
+			dirs: []string{
+				path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
+				path.Join(dir, "prefer_gopath", "src", "test-infra2"),
+			},
+			repoPathMap: map[string]string{"k8s.io/test-infra2": "some/random/path"},
+			expected:    "some/random/path",
 		},
 		{
 			name:   "not exist",
@@ -114,7 +182,7 @@ func TestReadRepo(t *testing.T) {
 			defer os.Setenv("BUILD_WORKING_DIRECTORY", oldPwd)
 			os.Setenv("BUILD_WORKING_DIRECTORY", tc.wd)
 
-			actual, err := readRepo(context.Background(), tc.goal, func(path, def string) (string, error) {
+			actual, err := readRepo(context.Background(), tc.goal, tc.repoPathMap, func(path, def string) (string, error) {
 				return tc.userInput, nil
 			})
 			switch {

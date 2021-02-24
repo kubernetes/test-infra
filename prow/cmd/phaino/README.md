@@ -29,10 +29,11 @@ volumes that the Prow Job may require.
 
 ### Common options
 
-* `--grace=5m` controls how long to wait for interrupted jobs before terminating.
+* `--grace=5m` controls how long to wait for interrupted jobs before terminating
 * `--print` the command that runs each job without running it
 * `--privileged` jobs are allowed to run instead of rejected
 * `--timeout=10m` controls how long to allow jobs to run before interrupting them
+* `--repo=k8s/test-infra=/go/src/k8s-test-infra` local path where prow job required repos are cloned at, can be passed in repeatedly
 
 See `bazel run //prow/cmd/phaino -- --help` for full option list.
 

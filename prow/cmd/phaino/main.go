@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,6 +26,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
@@ -42,6 +43,7 @@ type options struct {
 	timeout      time.Duration
 	totalTimeout time.Duration
 	grace        time.Duration
+	repoPath     map[string]string
 
 	jobs []string
 }
@@ -55,6 +57,7 @@ func gatherOptions() options {
 	fs.DurationVar(&o.timeout, "timeout", time.Hour, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
 	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
+	fs.StringToStringVar(&o.repoPath, "repo", map[string]string{}, "Local path of repos, can be passed in repeatedly")
 	fs.Parse(os.Args[1:])
 	o.jobs = fs.Args()
 	return o
@@ -159,7 +162,10 @@ func main() {
 
 	pjs, errs := readPJs(opt.jobs)
 
-	defer interrupts.WaitForGracefulShutdown()
+	defer func() {
+		logrus.Info("Press Ctrl + c to exit.")
+		interrupts.WaitForGracefulShutdown()
+	}()
 
 	if err := processJobs(interrupts.Context(), opt, pjs, errs); err != nil {
 		logrus.WithError(err).Fatal("FAILED")
@@ -181,7 +187,8 @@ func processJobs(ctx context.Context, opt options, pjs <-chan prowapi.ProwJob, e
 		case pj := <-pjs:
 			start := time.Now()
 			log := logrus.WithField("job", jobName(pj))
-			err := convertJob(ctx, log, pj, opt.priv, opt.printCmd, opt.timeout, opt.grace)
+			// Start job execution.
+			err := convertJob(ctx, log, pj, opt.repoPath, opt.priv, opt.printCmd, opt.timeout, opt.grace)
 			log = log.WithField("duration", time.Since(start))
 			if err != nil {
 				log.WithError(err).Error("FAIL")
@@ -191,7 +198,7 @@ func processJobs(ctx context.Context, opt options, pjs <-chan prowapi.ProwJob, e
 				}
 				continue
 			}
-			log.Info("PASS")
+			log.Infof("PASS: %s", pj.Name)
 		case err := <-errs:
 			return err
 		case <-ctx.Done():

@@ -77,13 +77,20 @@ func volume(pod coreapi.PodSpec, name string) *coreapi.Volume {
 }
 
 func pathAlias(r prowapi.Refs) string {
-	if r.PathAlias == "" {
-		return fmt.Sprintf("github.com/%s/%s", r.Org, r.Repo)
+	if r.PathAlias != "" {
+		return r.PathAlias
 	}
-	return r.PathAlias
+	path := fmt.Sprintf("%s/%s", r.Org, r.Repo)
+	if !strings.HasPrefix(r.Org, "http://") && !strings.HasPrefix(r.Org, "https://") {
+		path = fmt.Sprintf("github.com/%s", path)
+	}
+	return path
 }
 
-func readRepo(ctx context.Context, path string, readUserInput func(string, string) (string, error)) (string, error) {
+func readRepo(ctx context.Context, path string, repoPathMap map[string]string, readUserInput func(string, string) (string, error)) (string, error) {
+	if repo, ok := repoPathMap[path]; ok {
+		return repo, nil
+	}
 	wd, err := workingDir()
 	if err != nil {
 		return "", fmt.Errorf("workingDir: %v", err)
@@ -200,7 +207,7 @@ func checkPrivilege(ctx context.Context, cont coreapi.Container, allow bool) (bo
 	return false, nil
 }
 
-func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, name string, allowPrivilege bool) ([]string, error) {
+func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, repoPathMap map[string]string, name string, allowPrivilege bool) ([]string, error) {
 	log.Info("Converting job into docker run command...")
 	var localArgs []string
 	localArgs = append(localArgs, baseArgs...)
@@ -279,7 +286,7 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		refs = append(refs, pj.Spec.ExtraRefs...)
 		for _, ref := range refs {
 			path := pathAlias(ref)
-			repo, err := readRepo(ctx, path, readUserInput)
+			repo, err := readRepo(ctx, path, repoPathMap, readUserInput)
 			if err != nil {
 				return nil, fmt.Errorf("bad repo(%s): %v", path, err)
 			}
@@ -348,9 +355,9 @@ func containerID() string {
 	return fmt.Sprintf("phaino-%d-%d", os.Getpid(), nameId)
 }
 
-func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, priv, onlyPrint bool, timeout, grace time.Duration) error {
+func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, repoPathMap map[string]string, priv, onlyPrint bool, timeout, grace time.Duration) error {
 	cid := containerID()
-	args, err := convertToLocal(ctx, log, pj, cid, priv)
+	args, err := convertToLocal(ctx, log, pj, repoPathMap, cid, priv)
 	if err != nil {
 		return fmt.Errorf("convert: %v", err)
 	}
