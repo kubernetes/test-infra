@@ -300,8 +300,7 @@ def build_test(cloud='aws',
 
     # As kubetest2 adds support for additional configurations we can reduce this conditional
     # and migrate more of the grid jobs to kubetest2
-    use_kubetest2 = container_runtime == 'containerd' or \
-        len(feature_flags) != 0 or extra_flags is not None or kops_zones is not None
+    use_kubetest2 = True
 
     image_overridden = False
     if extra_flags:
