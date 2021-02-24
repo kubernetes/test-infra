@@ -25,7 +25,7 @@ presubmits:
               mkdir -p _output/local/go/
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
-              time make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s
+              time make test KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -59,7 +59,7 @@ periodics:
               result=0
               # Run the tests as usual
               ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT=--timeout=600s KUBE_RACE=-race || result=$?
+              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
               # Send the cache off to gcs
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
               time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
@@ -90,5 +90,5 @@ periodics:
               # Run tests as usual
               result=0
               ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT=--timeout=600s KUBE_RACE=-race || result=$?
+              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
               exit $result
