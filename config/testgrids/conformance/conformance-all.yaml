@@ -6,6 +6,7 @@ dashboard_groups:
     - conformance-gce
     - conformance-kind
     - conformance-cloud-provider-huaweicloud
+    - conformance-cloud-provider-inspur
     - conformance-cloud-provider-vsphere
     - conformance-vsphere
     - conformance-hack-local-up-cluster
@@ -102,6 +103,12 @@ dashboards:
     - name: Huawei Cloud Provider, v1.17
       description: Runs conformance tests using kubetest against kubernetes v1.17 with cloud-provider-huaweicloud
       test_group_name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
+
+- name: conformance-cloud-provider-inspur
+  dashboard_tab:
+    - name: Inspur Cloud Provider, v1.18
+      description: Runs conformance tests using kubetest against kubernetes v1.18 with cloud-provider-inspur
+      test_group_name: cloud-provider-inspur-e2e-conformance-release-v1.18
 
 - name: conformance-cloud-provider-vsphere
 - name: conformance-vsphere
@@ -297,6 +304,9 @@ test_groups:
 - name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
   gcs_prefix: k8s-conform-huaweicloud/cloud-provider-huaweicloud/e2e-conformance-release-v1.17
 
+# cloud-provider-inspur e2e conformance Test Groups
+- name: cloud-provider-inspur-e2e-conformance-release-v1.18
+  gcs_prefix: k8s-conform-inspur/cloud-provider-inspur/e2e-conformance-release-v1.18
 
 # CEL Conformance Tests
 - name: cel-go-conformance-tests
