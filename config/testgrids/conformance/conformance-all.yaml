@@ -7,6 +7,7 @@ dashboard_groups:
     - conformance-kind
     - conformance-cloud-provider-huaweicloud
     - conformance-cloud-provider-inspur
+    - conformance-cloud-provider-openstack
     - conformance-cloud-provider-vsphere
     - conformance-vsphere
     - conformance-hack-local-up-cluster
@@ -97,6 +98,20 @@ dashboards:
 
 - name: conformance-apisnoop
 - name: conformance-gce
+- name: conformance-cloud-provider-openstack
+  dashboard_tab:
+    - name: periodic-master
+      description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+    - name: periodic-v1.18
+      description: Runs conformance tests using kubetest against kubernetes v1.18 with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
+    - name: periodic-v1.19
+      description: Runs conformance tests using kubetest against kubernetes v1.19 with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
+    - name: periodic-v1.20
+      description: Runs conformance tests using kubetest against kubernetes v1.20 with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
 
 - name: conformance-cloud-provider-huaweicloud
   dashboard_tab:
