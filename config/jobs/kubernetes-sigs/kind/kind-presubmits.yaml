@@ -320,7 +320,7 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        image: gcr.io/k8s-testimages/krte:v20210204-3eaec9a-1.19
+        image: gcr.io/k8s-testimages/krte:v20210223-8544557-1.19
         name: ""
         resources:
           limits:

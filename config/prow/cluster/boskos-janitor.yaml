@@ -19,7 +19,7 @@ spec:
       serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-staging-boskos/janitor:v20210210-9ac98d8
+        image: gcr.io/k8s-staging-boskos/janitor:v20210224-2728a7d
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
@@ -48,7 +48,7 @@ spec:
       serviceAccountName: boskos-janitor
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-staging-boskos/janitor:v20210210-9ac98d8
+        image: gcr.io/k8s-staging-boskos/janitor:v20210224-2728a7d
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-presubmit-project,scalability-project,node-e2e-project
@@ -76,7 +76,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-aws
-        image: gcr.io/k8s-staging-boskos/aws-janitor-boskos:v20210210-9ac98d8
+        image: gcr.io/k8s-staging-boskos/aws-janitor-boskos:v20210224-2728a7d
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
 ---
