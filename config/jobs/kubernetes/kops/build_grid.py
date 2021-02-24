@@ -92,7 +92,7 @@ kubetest2_template = """
           -v 2 \\
           --up --down \\
           --cloud-provider=aws \\
-          --create-args="--image='{{kops_image}}' {{create_args}}" \\
+          --create-args="{{create_args}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
@@ -298,9 +298,19 @@ def build_test(cloud='aws',
     if container_runtime:
         create_args = create_args + " --container-runtime=" + container_runtime
 
+    # As kubetest2 adds support for additional configurations we can reduce this conditional
+    # and migrate more of the grid jobs to kubetest2
+    use_kubetest2 = container_runtime == 'containerd' or \
+        len(feature_flags) != 0 or extra_flags is not None or kops_zones is not None
+
+    image_overridden = False
     if extra_flags:
         for arg in extra_flags:
+            if "--image=" in arg:
+                image_overridden = True
             create_args = create_args + " " + arg
+    if not image_overridden and use_kubetest2:
+        create_args = "--image='" + kops_image + "' " + create_args
 
     create_args = create_args.strip()
 
@@ -354,11 +364,6 @@ def build_test(cloud='aws',
     job_name = 'e2e-' + tab
 
     cron, runs_per_week = build_cron(tab)
-
-    # As kubetest2 adds support for additional configurations we can reduce this conditional
-    # and migrate more of the grid jobs to kubetest2
-    use_kubetest2 = container_runtime == 'containerd' and \
-        len(feature_flags) == 0 and extra_flags is None and kops_zones is None
 
     y = template
     if use_kubetest2:
