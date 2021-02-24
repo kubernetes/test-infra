@@ -86,22 +86,22 @@ periodics:
         git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
 
         echo "Creating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into master..." >&2
-        curl -L \
-          https://github.com/cli/cli/releases/download/v1.5.0/gh_1.5.0_linux_amd64.tar.gz \
-          | tar xzvC /usr/local --strip-components=1
+        # curl -L \
+        #  https://github.com/cli/cli/releases/download/v1.5.0/gh_1.5.0_linux_amd64.tar.gz \
+        #  | tar xzvC /usr/local --strip-components=1
         title="audit: update as of $(date +%Y-%m-%d)"
         body="Audit Updates\n/wg k8s-infra"
         # /workspace/pr-creator --help || true
         # Using the sleep to debug / kuebctl exec into the pod
-        sleep 9999999
-        # /workspace/pr-creator \
-        #   --github-token-path=/etc/github-token/token \
-        #   --org=kubernetes --repo=k8s.io --branch=main \
-        #   --source="${GH_USER}:${FORK_GH_BRANCH}" \
-        #   --head-branch="${FORK_GH_BRANCH}" \
-        #   --title="${title}" \
-        #   --body="${body}" \
-        #   --confirm
+        # `sleep 9999999
+        /workspace/pr-creator \
+          --github-token-path=/etc/github-token/token \
+          --org=kubernetes --repo=k8s.io --branch=main \
+          --source="${GH_USER}:${FORK_GH_BRANCH}" \
+          --head-branch="${FORK_GH_BRANCH}" \
+          --title="${title}" \
+          --body="${body}" \
+          --confirm
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
