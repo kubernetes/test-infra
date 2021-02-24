@@ -943,7 +943,11 @@ func allStaticJobs() []cfg.JobBase {
 	return jobs
 }
 
-func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
+func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error) {
+	should := "should"
+	if required {
+		should = "must"
+	}
 	resourceNames := []coreapi.ResourceName{
 		coreapi.ResourceCPU,
 		coreapi.ResourceMemory,
@@ -953,16 +957,16 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec) (errs []error) {
 		for _, r := range resourceNames {
 			limit, ok := c.Resources.Limits[r]
 			if !ok {
-				errs = append(errs, fmt.Errorf("container '%v' should have resources.limits[%v] specified", c.Name, r))
+				errs = append(errs, fmt.Errorf("container '%v' %v have resources.limits[%v] specified", c.Name, should, r))
 			}
 			request, ok := c.Resources.Requests[r]
 			if !ok {
-				errs = append(errs, fmt.Errorf("container '%v' should have resources.requests[%v] specified", c.Name, r))
+				errs = append(errs, fmt.Errorf("container '%v' %v have resources.requests[%v] specified", c.Name, should, r))
 			}
 			if limit.Cmp(zero) == 0 {
-				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] should be non-zero", c.Name, r))
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] %v be non-zero", c.Name, r, should))
 			} else if limit.Cmp(request) != 0 {
-				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) should match request (%v)", c.Name, r, limit.String(), request.String()))
+				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v match request (%v)", c.Name, r, limit.String(), should, request.String()))
 			}
 		}
 	}
@@ -986,7 +990,7 @@ func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
 	return re.MatchString(dashboards)
 }
 
-func TestKubernetesMergeBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
+func TestKubernetesMergeBlockingJobsCIPolicy(t *testing.T) {
 	repo := "kubernetes/kubernetes"
 	jobs := c.AllStaticPresubmits([]string{repo})
 	sort.Slice(jobs, func(i, j int) bool {
@@ -997,65 +1001,46 @@ func TestKubernetesMergeBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
 		if job.Spec == nil || !isMergeBlocking(job) {
 			continue
 		}
+		// job Pod must qualify for Guaranteed QoS
+		errs := verifyPodQOSGuaranteed(job.Spec, true)
+		// jobs must run on k8s-infra-prow-build cluster
+		if job.Cluster != "k8s-infra-prow-build" {
+			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
+		}
 		branches := job.Branches
-		errs := verifyPodQOSGuaranteed(job.Spec)
 		for _, err := range errs {
 			t.Errorf("%v (%v): %v", job.Name, branches, err)
 		}
 	}
 }
 
-func TestKubernetesReleaseBlockingJobsMustHavePodQOSGuaranteed(t *testing.T) {
+func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 	for _, job := range allStaticJobs() {
 		// Only consider Pods that are release-blocking
 		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
 			continue
 		}
-		errs := verifyPodQOSGuaranteed(job.Spec)
+		// job Pod must qualify for Guaranteed QoS
+		errs := verifyPodQOSGuaranteed(job.Spec, true)
+		// jobs must run on k8s-infra-prow-build cluster
+		if job.Cluster != "k8s-infra-prow-build" {
+			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
+		}
 		for _, err := range errs {
 			t.Errorf("%v: %v", job.Name, err)
 		}
 	}
 }
 
-func TestKubernetesMergeBlockingJobMustRunOnK8sInfraProwBuild(t *testing.T) {
-	repo := "kubernetes/kubernetes"
-	jobs := c.AllStaticPresubmits([]string{repo})
-	sort.Slice(jobs, func(i, j int) bool {
-		return jobs[i].Name < jobs[j].Name
-	})
-	for _, job := range jobs {
-		// Only consider Pods that are merge-blocking
-		if job.Spec == nil || !isMergeBlocking(job) {
-			continue
-		}
-		branches := job.Branches
-		if job.Cluster != "k8s-infra-prow-build" {
-			t.Errorf("%v (%v): should run on cluster: k8s-infra-prow-build, found: %v", job.Name, branches, job.Cluster)
-		}
-	}
-}
-
-func TestKubernetesReleaseBlockingJobsMustRunOnK8sInfraProwBuild(t *testing.T) {
-	for _, job := range allStaticJobs() {
-		// Only consider Pods that are release-blocking
-		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
-			continue
-		}
-		if job.Cluster != "k8s-infra-prow-build" {
-			t.Errorf("%v: must run on cluster: k8s-infra-prow-build, found: %v", job.Name, job.Cluster)
-		}
-	}
-}
-
-func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
+func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Only consider Pods destined for the k8s-infra-prow-builds cluster
 		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
 			continue
 		}
-		errs := verifyPodQOSGuaranteed(job.Spec)
+		// job Pod must qualify for Guaranteed QoS
+		errs := verifyPodQOSGuaranteed(job.Spec, true)
 		for _, err := range errs {
 			t.Errorf("%v: %v", job.Name, err)
 		}
@@ -1064,7 +1049,7 @@ func TestK8sInfraProwBuildJobsMustHavePodQOSGuaranteed(t *testing.T) {
 
 // Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
 // containing the latest merged PRs as soon as possible for the in-development release
-func TestSigReleaseMasterBlockingOrInformingJobsShouldUseFastBuilds(t *testing.T) {
+func TestSigReleaseMasterBlockingOrInformingJobsMustUseFastBuilds(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		dashboards, ok := job.Annotations["testgrid-dashboards"]
