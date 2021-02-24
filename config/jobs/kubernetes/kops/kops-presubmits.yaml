@@ -89,7 +89,7 @@ presubmits:
         - --kops-args=--container-runtime=docker
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
