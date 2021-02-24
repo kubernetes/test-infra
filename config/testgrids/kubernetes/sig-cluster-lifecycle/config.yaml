@@ -5,6 +5,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-kubeadm
     - sig-cluster-lifecycle-cluster-addons
     - sig-cluster-lifecycle-cluster-api
+    - sig-cluster-lifecycle-cluster-api-0.3
     - sig-cluster-lifecycle-cluster-api-provider-aws
     - sig-cluster-lifecycle-cluster-api-provider-azure
     - sig-cluster-lifecycle-cluster-api-provider-digitalocean
@@ -26,6 +27,7 @@ dashboards:
 - name: sig-cluster-lifecycle-kubeadm
 - name: sig-cluster-lifecycle-cluster-addons
 - name: sig-cluster-lifecycle-cluster-api
+- name: sig-cluster-lifecycle-cluster-api-0.3
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
   dashboard_tab:
