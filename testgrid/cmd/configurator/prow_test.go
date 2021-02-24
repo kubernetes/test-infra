@@ -651,7 +651,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"*": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -660,7 +660,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"*": "https://config.go.k8s.io/view",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/view/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/view/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -669,7 +669,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"*": "https://config.go.k8s.io/gcs",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -679,7 +679,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"test": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -690,7 +690,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				"test/repo": "https://config.go.k8s.io/",
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 		{
@@ -707,7 +707,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 				},
 			},
 			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/<gcs_prefix>/<changelist>",
+				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
 			},
 		},
 	}
