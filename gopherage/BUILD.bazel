@@ -12,6 +12,7 @@ go_library(
         "//gopherage/cmd/html:go_default_library",
         "//gopherage/cmd/junit:go_default_library",
         "//gopherage/cmd/merge:go_default_library",
+        "//gopherage/cmd/metadata:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
     ],
 )
@@ -39,6 +40,7 @@ filegroup(
         "//gopherage/cmd/html:all-srcs",
         "//gopherage/cmd/junit:all-srcs",
         "//gopherage/cmd/merge:all-srcs",
+        "//gopherage/cmd/metadata:all-srcs",
         "//gopherage/pkg/cov:all-srcs",
         "//gopherage/pkg/util:all-srcs",
     ],
