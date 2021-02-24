@@ -200,13 +200,11 @@ def build_test(cloud='aws',
                runs_per_day=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
-    if container_runtime == "containerd" and kops_version == "1.18":
-        return None
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
     if networking == "cilium":
         if distro in ["amzn2", "rhel7", "centos7"]:
             return None
-        if distro == "deb9" and (k8s_version != "1.17" or kops_version != "1.18"):
+        if distro == "deb9" and k8s_version != "1.17":
             return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -390,8 +388,8 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.18",
     "1.19",
+    "1.20",
 ]
 
 container_runtimes = [
