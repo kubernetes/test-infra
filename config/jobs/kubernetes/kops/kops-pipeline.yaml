@@ -16,7 +16,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       env:
       - name: KOPS_RUN_TOO_NEW_VERSION
         value: "1"
@@ -70,7 +70,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-1.20
       env:
       - name: KOPS_RUN_TOO_NEW_VERSION
         value: "1"
@@ -124,7 +124,7 @@ periodics:
     preset-aws-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-1.19
       env:
       - name: KOPS_RUN_TOO_NEW_VERSION
         value: "1"

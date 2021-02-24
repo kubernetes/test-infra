@@ -44,7 +44,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -98,7 +98,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -158,7 +158,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -221,7 +221,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -278,7 +278,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -338,7 +338,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -401,7 +401,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         command:
         - runner.sh
         - kubetest
@@ -460,7 +460,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -514,7 +514,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -568,7 +568,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -623,7 +623,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -677,7 +677,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -731,7 +731,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -789,7 +789,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -852,7 +852,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -913,7 +913,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest
@@ -976,7 +976,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
       command:
       - runner.sh
       - kubetest

@@ -13,7 +13,7 @@ presubmits:
     always_run: false
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
           command:
             - runner.sh
             - bash
@@ -49,7 +49,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
           command:
             - runner.sh
             - bash
@@ -75,7 +75,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
           command:
             - runner.sh
             - bash
