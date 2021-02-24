@@ -373,6 +373,18 @@ func (f *FakeClient) CreateIssue(org, repo, title, body string, milestone int, l
 	return new.ID, nil
 }
 
+func (f *FakeClient) CloseIssue(org, repo string, number int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	if _, ok := f.Issues[number]; !ok {
+		return fmt.Errorf("issue number %d does not exist", number)
+	}
+
+	f.Issues[number].State = "closed"
+	return nil
+}
+
 // GetPullRequestChanges returns the file modifications in a PR.
 func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
 	f.lock.RLock()
