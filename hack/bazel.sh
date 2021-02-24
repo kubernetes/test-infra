@@ -21,7 +21,6 @@ set -o pipefail
 
 code=0
 (set -o xtrace && bazel "$@") || code=$?
-# Cleanup happens any way and shouldn't fail.
 coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
 (set -o xtrace && "$coalesce") || true
 set -o xtrace

@@ -14,7 +14,10 @@
 # limitations under the License.
 
 set -o errexit
+set -o nounset
+set -o pipefail
 
+readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
 readonly DEFAULT_REGISTRY_PORT="5000"

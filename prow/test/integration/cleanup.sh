@@ -37,7 +37,7 @@ fi
 kind delete cluster --name "${DEFAULT_CLUSTER_NAME}"
 container_hash="$(docker ps -q -f name="${DEFAULT_REGISTRY_NAME}" 2>/dev/null || true)"
 if [ -z "${container_hash}" ]; then
-  echo "Container ${DEFAULT_REGISTRY_NAME} not exist, skip cleaning up."
+  echo "Container ${DEFAULT_REGISTRY_NAME} does not exist, skipping cleaning up."
   exit 0
 fi
 echo "Deleting container ${DEFAULT_REGISTRY_NAME}"

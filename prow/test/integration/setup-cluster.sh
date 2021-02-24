@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2021 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
 # limitations under the License.
 
 set -o errexit
+set -o nounset
+set -o pipefail
 
 CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_ROOT_DIR="${CURRENT_DIR}"
-if [[ -n "${1:-}" && "${1}" == "--config-path" ]]; then
+if [[ -n "${1:-}" && "$1" == "--config-path" ]]; then
   echo "Override CONFIG_ROOT_DIR"
   CONFIG_ROOT_DIR="${2:-}"
   echo "CONFIG_ROOT_DIR: ${CONFIG_ROOT_DIR}"
@@ -34,7 +36,7 @@ if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
 fi
 
-function do_kubectl() {
+function do-kubectl() {
   kubectl --context=${DEFAULT_CONTEXT} $@
 }
 
@@ -82,7 +84,7 @@ function setup_cluster() {
 
   echo "Document the local registry"
   # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
-  cat <<EOF | do_kubectl apply -f -
+  cat <<EOF | do-kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -96,25 +98,25 @@ EOF
 
   echo "Install nginx on kind cluster"
   # Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020.
-  do_kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
+  do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
 }
 
 function deploy_prow() {
   echo "Remove previous installaion"
   for app in ${PROW_COMPONENTS}; do
-    do_kubectl delete deployment -l app=${app}
-    do_kubectl delete pods -l app=${app}
+    do-kubectl delete deployment -l app=${app}
+    do-kubectl delete pods -l app=${app}
   done
 
   echo "Deploy prow components"
   # An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
-  do_kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
-  do_kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run -oyaml | kubectl apply -f -
-  do_kubectl apply -f ${CONFIG_ROOT_DIR}/cluster
+  do-kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+  do-kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run -oyaml | kubectl apply -f -
+  do-kubectl apply -f ${CONFIG_ROOT_DIR}/cluster
 
   echo "Wait until nginx is ready"
   for _ in $(seq 1 5); do
-    if do_kubectl wait --namespace ingress-nginx \
+    if do-kubectl wait --namespace ingress-nginx \
       --for=condition=ready pod \
       --selector=app.kubernetes.io/component=controller \
       --timeout=180s; then
@@ -127,7 +129,7 @@ function deploy_prow() {
 
   echo "Waiting for prow components"
   for app in ${PROW_COMPONENTS}; do
-    do_kubectl wait pod \
+    do-kubectl wait pod \
       --for=condition=ready \
       --selector=app=${app} \
       --timeout=180s
