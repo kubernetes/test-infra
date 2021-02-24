@@ -12,55 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import json
 import zlib
 import yaml
-
-template = """
-- name: {{job_name}}
-  interval: '{{interval}}'
-  cron: '{{cron}}'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: {{job_timeout}}
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster={{cluster_name}}
-      - --deployment=kops
-      - --kops-ssh-user={{kops_ssh_user}}
-      - --env=KUBE_SSH_USER={{kops_ssh_user}}
-      - --env=KOPS_DEPLOY_LATEST_URL={{k8s_deploy_url}}
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract={{extract}}
-      - --ginkgo-parallel={{test_parallelism}}
-      - --kops-args={{create_args}}
-      - --kops-feature-flags={{kops_feature_flags}}
-      - --kops-image={{kops_image}}
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version={{kops_deploy_url}}
-      - --kops-zones={{kops_zones}}
-      - --provider=aws
-      - --test_args={{test_args}}
-      - --timeout={{test_timeout}}
-      image: {{e2e_image}}
-      imagePullPolicy: Always
-      resources:
-        limits:
-          memory: 2Gi
-        requests:
-          cpu: "2"
-          memory: 2Gi
-"""
 
 kubetest2_template = """
 - name: {{job_name}}
@@ -174,7 +128,7 @@ def remove_line_with_prefix(s, prefix):
         else:
             keep.append(line)
     if not found:
-        raise Exception("line not found with prefix: " + prefix)
+        raise Exception(f"line not found with prefix: {prefix}")
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
@@ -216,7 +170,7 @@ def distro_info(distro):
         kops_ssh_user = 'ec2-user'
         kops_image = '309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2'
     else:
-        raise Exception('unknown distro ' + distro)
+        raise Exception(f"unknown distro {distro}")
     return kops_image, kops_ssh_user
 
 ##############
@@ -227,7 +181,7 @@ def distro_info(distro):
 def build_test(cloud='aws',
                distro='u2004',
                networking=None,
-               container_runtime=None,
+               container_runtime='docker',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
@@ -256,52 +210,33 @@ def build_test(cloud='aws',
 
     kops_image, kops_ssh_user = distro_info(distro)
 
-    if container_runtime is None:
-        container_runtime = 'docker'
-
-    def expand(s):
-        subs = {}
-        if k8s_version:
-            subs['k8s_version'] = k8s_version
-        if kops_version:
-            subs['kops_version'] = kops_version
-        return s.format(**subs)
-
     if kops_version is None:
         # TODO: Move to kops-ci/markers/master/ once validated
         kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else:
-        kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
+        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     if k8s_version == 'latest':
-        extract = "release/latest"
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master"
     elif k8s_version == 'stable':
-        extract = "release/stable"
         marker = 'stable.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master"
     elif k8s_version:
-        extract = expand("release/stable-{k8s_version}")
-        marker = expand("stable-{k8s_version}.txt")
-        k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
+        marker = f"stable-{k8s_version}.txt"
+        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
     else:
         raise Exception('missing required k8s_version')
 
-    create_args = "--channel=" + kops_channel + " --networking=" + (networking or "kubenet")
+    create_args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
 
     if container_runtime:
-        create_args = create_args + " --container-runtime=" + container_runtime
-
-    # As kubetest2 adds support for additional configurations we can reduce this conditional
-    # and migrate more of the grid jobs to kubetest2
-    use_kubetest2 = container_runtime == 'containerd' or \
-        len(feature_flags) != 0 or extra_flags is not None or kops_zones is not None
+        create_args += f" --container-runtime={container_runtime}"
 
     image_overridden = False
     if extra_flags:
@@ -309,8 +244,8 @@ def build_test(cloud='aws',
             if "--image=" in arg:
                 image_overridden = True
             create_args = create_args + " " + arg
-    if not image_overridden and use_kubetest2:
-        create_args = "--image='" + kops_image + "' " + create_args
+    if not image_overridden:
+        create_args = f"--image='{kops_image}' {create_args}"
 
     create_args = create_args.strip()
 
@@ -323,10 +258,8 @@ def build_test(cloud='aws',
     #  Kubectl cluster-info dump should check if cluster-info dump succeeds
     # First step: skip; verify that it eliminates/reduces our timeouts
     skip_regex += r'|check.if.cluster.info.dump.succeeds'
-
     if skip_override:
         skip_regex = skip_override
-    test_args = r'--ginkgo.skip=' + skip_regex
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -342,81 +275,37 @@ def build_test(cloud='aws',
     if container_runtime:
         suffix += "-" + container_runtime
 
-    # We current have an issue with long cluster names; let's hash and warn if we encounter them
-    cluster_name = "e2e-kops" + suffix
-    if name_override:
-        cluster_name = name_override
-    if len(cluster_name) > 32:
-        md5 = hashlib.md5(cluster_name.encode('utf-8'))
-        cluster_name = cluster_name[0:20] + "--" + md5.hexdigest()[0:10]
-    cluster_name += ".test-cncf-aws.k8s.io"
-
-    if len(cluster_name) > 53:
-        raise Exception("cluster name %s is probably too long" % (cluster_name))
-
-    tab = 'kops-grid' + suffix
-
-    if name_override:
-        tab = name_override
+    tab = name_override or (f"kops-grid{suffix}")
 
     if tab in skip_jobs:
         return None
-    job_name = 'e2e-' + tab
+    job_name = f"e2e-{tab}"
 
     cron, runs_per_week = build_cron(tab)
 
-    y = template
-    if use_kubetest2:
-        y = kubetest2_template
-    y = y.replace('{{cluster_name}}', cluster_name)
-    y = y.replace('{{suffix}}', suffix)
+    y = kubetest2_template
     y = y.replace('{{job_name}}', job_name)
     y = y.replace('{{kops_ssh_user}}', kops_ssh_user)
     y = y.replace('{{create_args}}', create_args)
-    y = y.replace('{{test_args}}', test_args)
+    y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
+    y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
+    y = y.replace('{{e2e_image}}', e2e_image)
+    y = y.replace('{{test_parallelism}}', str(test_parallelism))
+    y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
+    y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
+    y = y.replace('{{marker}}', marker)
+    y = y.replace('{{skip_regex}}', skip_regex)
+    y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
+    if terraform_version:
+        y = y.replace('{{terraform_version}}', terraform_version)
+    else:
+        y = remove_line_with_prefix(y, '--terraform-version=')
     if interval:
         y = y.replace('{{interval}}', interval)
         y = remove_line_with_prefix(y, 'cron: ')
     else:
         y = y.replace('{{cron}}', cron)
         y = remove_line_with_prefix(y, 'interval: ')
-    y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
-    y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
-    y = y.replace('{{extract}}', extract)
-    y = y.replace('{{e2e_image}}', e2e_image)
-    y = y.replace('{{kops_image}}', kops_image)
-
-    y = y.replace('{{test_parallelism}}', str(test_parallelism))
-    y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
-    y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
-
-
-    # specific to kubetest2
-    if use_kubetest2:
-        y = y.replace('{{marker}}', marker)
-        y = y.replace('{{skip_regex}}', skip_regex)
-        y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
-        if terraform_version:
-            y = y.replace('{{terraform_version}}', terraform_version)
-        else:
-            y = remove_line_with_prefix(y, '--terraform-version=')
-
-    else:
-        if kops_zones:
-            y = y.replace('{{kops_zones}}', ','.join(kops_zones))
-        else:
-            y = remove_line_with_prefix(y, "- --kops-zones=")
-
-        if feature_flags:
-            y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
-        else:
-            y = remove_line_with_prefix(y, "- --kops-feature-flags=")
-
-
-    if kops_version:
-        y = y.replace('{{kops_version}}', kops_version)
-    else:
-        y = y.replace('{{kops_version}}', "latest")
 
     spec = {
         'cloud': cloud,
@@ -438,24 +327,22 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        'kops-distro-' + distro,
+        f"kops-distro-{distro}",
+        'kops-kubetest2',
     ]
 
     if k8s_version:
-        dashboards.append('kops-k8s-' + k8s_version)
+        dashboards.append(f"kops-k8s-{k8s_version}")
     else:
         dashboards.append('kops-k8s-latest')
 
     if kops_version:
-        dashboards.append('kops-' + kops_version)
+        dashboards.append(f"kops-{kops_version}")
     else:
         dashboards.append('kops-latest')
 
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
-
-    if use_kubetest2:
-        dashboards.append('kops-kubetest2')
 
     annotations = {
         'testgrid-dashboards': ', '.join(sorted(dashboards)),
@@ -463,7 +350,7 @@ def build_test(cloud='aws',
         'testgrid-tab-name': tab,
     }
     for (k, v) in spec.items():
-        annotations['test.kops.k8s.io/' + k] = v if v else ""
+        annotations[f"test.kops.k8s.io/{k}"] = v or ""
 
     extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
@@ -606,7 +493,7 @@ def generate_distros():
                        container_runtime='containerd',
                        k8s_version='stable',
                        kops_channel='alpha',
-                       name_override='kops-aws-distro-image' + distro,
+                       name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
                        interval='8h',
                        skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
@@ -641,7 +528,7 @@ def generate_network_plugins():
                 container_runtime='containerd',
                 k8s_version='stable',
                 kops_channel='alpha',
-                name_override='kops-aws-cni-' + plugin,
+                name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
                 extra_dashboards=['kops-network-plugins'],
                 interval='8h',
