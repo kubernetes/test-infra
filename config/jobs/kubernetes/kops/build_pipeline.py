@@ -16,8 +16,8 @@ import json
 
 branches = [
     "master",
+    "1.20",
     "1.19",
-    "1.18",
 ]
 master_k8s_version = "1.20"
 
