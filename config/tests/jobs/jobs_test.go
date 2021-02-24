@@ -1036,17 +1036,14 @@ func TestKubernetesMergeBlockingJobMustRunOnK8sInfraProwBuild(t *testing.T) {
 	}
 }
 
-// TODO: may need to rewrite to handle nodepools or handle jobs that can't be
-// migrated over for a while
-// TODO: s/Should/Must and s/Logf/Errorf when all jobs pass
-func TestKubernetesReleaseBlockingJobsShouldRunOnK8sInfraProwBuild(t *testing.T) {
+func TestKubernetesReleaseBlockingJobsMustRunOnK8sInfraProwBuild(t *testing.T) {
 	for _, job := range allStaticJobs() {
 		// Only consider Pods that are release-blocking
 		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
 			continue
 		}
 		if job.Cluster != "k8s-infra-prow-build" {
-			t.Logf("%v: should run on cluster: k8s-infra-prow-build, found: %v", job.Name, job.Cluster)
+			t.Errorf("%v: must run on cluster: k8s-infra-prow-build, found: %v", job.Name, job.Cluster)
 		}
 	}
 }
