@@ -58,7 +58,6 @@ periodics:
             - |
               result=0
               # Run the tests as usual
-              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
               time make test KUBE_TIMEOUT=--timeout=600s || result=$?
               # Send the cache off to gcs
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
@@ -88,7 +87,4 @@ periodics:
               mkdir -p _output/local/go/
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
-              result=0
-              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
-              exit $result
+              time make test KUBE_TIMEOUT=--timeout=600s
