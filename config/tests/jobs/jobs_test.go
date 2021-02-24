@@ -388,15 +388,59 @@ func validateImagePushingImage(spec *coreapi.PodSpec) error {
 	return nil
 }
 
-// Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
-// secrets for <org>/<project> in default public cluster.
+// Restrict the use of specific secrets to certain jobs in config/jobs/<org>/<project>/<basename>.yaml
 func TestTrustedJobSecretsRestricted(t *testing.T) {
-	secretsRestricted := map[string]sets.String{
-		"kubernetes-sigs/sig-storage-local-static-provisioner": sets.NewString("sig-storage-local-static-provisioner-pusher"),
+	type labels map[string]string
+
+	getSecretsFromPreset := func(labels labels) sets.String {
+		secrets := sets.NewString()
+		for _, preset := range c.Presets {
+			match := true
+			for k, v1 := range preset.Labels {
+				// check if a given list of labels matches all labels from this preset
+				if v2, ok := labels[k]; !ok || v1 != v2 {
+					match = false
+					break
+				}
+			}
+			if match {
+				for _, v := range preset.Volumes {
+					if v.VolumeSource.Secret != nil {
+						secrets.Insert(v.VolumeSource.Secret.SecretName)
+					}
+				}
+				for _, e := range preset.Env {
+					if e.ValueFrom != nil && e.ValueFrom.SecretKeyRef != nil {
+						secrets.Insert(e.ValueFrom.SecretKeyRef.Name)
+					}
+				}
+			}
+		}
+		return secrets
+	}
+
+	secretsRestricted := map[string]struct {
+		secrets            sets.String
+		isTrusted          bool
+		allowedInPresubmit bool
+	}{
+		"kubernetes-sigs/sig-storage-local-static-provisioner": {secrets: sets.NewString("sig-storage-local-static-provisioner-pusher"), isTrusted: true},
+		"kubernetes-csi/csi-driver-nfs":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-csi/csi-driver-smb":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/azuredisk-csi-driver":                 {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/azurefile-csi-driver":                 {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/blob-csi-driver":                      {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/cloud-provider-azure":                 {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/image-builder":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/secrets-store-csi-driver":             {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/sig-windows":                          {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes/sig-cloud-provider":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes/sig-network":                               {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes-sigs/cluster-api-provider-azure":           {secrets: getSecretsFromPreset(labels{"preset-azure-cred-only": "true"}), allowedInPresubmit: true},
 	}
 	allSecrets := sets.String{}
-	for _, secrets := range secretsRestricted {
-		allSecrets.Insert(secrets.List()...)
+	for _, s := range secretsRestricted {
+		allSecrets.Insert(s.secrets.List()...)
 	}
 
 	isSecretUsedByContainer := func(secret string, container coreapi.Container) bool {
@@ -417,10 +461,8 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		}
 		if job.Spec.Volumes != nil {
 			for _, v := range job.Spec.Volumes {
-				if v.VolumeSource.Secret != nil {
-					if v.VolumeSource.Secret.SecretName == secret {
-						return true
-					}
+				if v.VolumeSource.Secret != nil && v.VolumeSource.Secret.SecretName == secret {
+					return true
 				}
 			}
 		}
@@ -438,35 +480,44 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 				}
 			}
 		}
-		return false
+		// iterate all presets because they can also reference secrets
+		secretsFromPreset := getSecretsFromPreset(labels(job.Labels))
+		return secretsFromPreset.Has(secret)
 	}
 
-	// All presubmit jobs should not use any restricted secrets.
+	getJobOrgProjectBasename := func(path string) (string, string, string) {
+		cleanPath := strings.Trim(strings.TrimPrefix(path, *jobConfigPath), string(filepath.Separator))
+		seps := strings.Split(cleanPath, string(filepath.Separator))
+		if len(seps) <= 2 {
+			return "", "", ""
+		}
+		return seps[0], seps[1], seps[2]
+	}
+
+	// Most presubmit jobs should not use any restricted secrets.
 	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
 		}
+		// check if this presubmit job is allowed to use the secret
+		org, project, _ := getJobOrgProjectBasename(job.SourcePath)
+		s, ok := secretsRestricted[filepath.Join(org, project)]
+		allowedInPresubmit := ok && s.allowedInPresubmit
 		for _, secret := range allSecrets.List() {
-			if isSecretUsed(secret, job.JobBase) {
+			if isSecretUsed(secret, job.JobBase) && !allowedInPresubmit {
 				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
 			}
 		}
 	}
 
 	secretsCanUseByPath := func(path string) sets.String {
-		cleanPath := strings.Trim(strings.TrimPrefix(path, *jobConfigPath), string(filepath.Separator))
-		seps := strings.Split(cleanPath, string(filepath.Separator))
-		if len(seps) <= 2 {
+		org, project, basename := getJobOrgProjectBasename(path)
+		s, ok := secretsRestricted[filepath.Join(org, project)]
+		if !ok || (s.isTrusted && basename != fmt.Sprintf("%s-trusted.yaml", project)) {
 			return nil
 		}
-		org := seps[0]
-		project := seps[1]
-		basename := seps[2]
-		if basename != fmt.Sprintf("%s-trusted.yaml", project) {
-			return nil
-		}
-		return secretsRestricted[fmt.Sprintf("%s/%s", org, project)]
+		return s.secrets
 	}
 
 	// Postsubmit/periodic jobs defined in
