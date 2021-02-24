@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import json
 import zlib
 import yaml
@@ -129,7 +128,7 @@ def remove_line_with_prefix(s, prefix):
         else:
             keep.append(line)
     if not found:
-        raise Exception("line not found with prefix: " + prefix)
+        raise Exception(f"line not found with prefix: {prefix}")
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
@@ -171,7 +170,7 @@ def distro_info(distro):
         kops_ssh_user = 'ec2-user'
         kops_image = '309956199498/RHEL-8.3.0_HVM-20201031-x86_64-0-Hourly2-GP2'
     else:
-        raise Exception('unknown distro ' + distro)
+        raise Exception(f"unknown distro {distro}")
     return kops_image, kops_ssh_user
 
 ##############
@@ -182,7 +181,7 @@ def distro_info(distro):
 def build_test(cloud='aws',
                distro='u2004',
                networking=None,
-               container_runtime=None,
+               container_runtime='docker',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
@@ -211,22 +210,11 @@ def build_test(cloud='aws',
 
     kops_image, kops_ssh_user = distro_info(distro)
 
-    if container_runtime is None:
-        container_runtime = 'docker'
-
-    def expand(s):
-        subs = {}
-        if k8s_version:
-            subs['k8s_version'] = k8s_version
-        if kops_version:
-            subs['kops_version'] = kops_version
-        return s.format(**subs)
-
     if kops_version is None:
         # TODO: Move to kops-ci/markers/master/ once validated
         kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else:
-        kops_deploy_url = expand("https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt") # pylint: disable=line-too-long
+        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     if k8s_version == 'latest':
         marker = 'latest.txt'
@@ -237,18 +225,18 @@ def build_test(cloud='aws',
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-master"
     elif k8s_version:
-        marker = expand("stable-{k8s_version}.txt")
-        k8s_deploy_url = expand("https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt") # pylint: disable=line-too-long
+        marker = f"stable-{k8s_version}.txt"
+        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
         # Hack to stop the autobumper getting confused
         e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210223-952586a143-1.18"
         e2e_image = e2e_image[:-4] + k8s_version
     else:
         raise Exception('missing required k8s_version')
 
-    create_args = "--channel=" + kops_channel + " --networking=" + (networking or "kubenet")
+    create_args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
 
     if container_runtime:
-        create_args = create_args + " --container-runtime=" + container_runtime
+        create_args += f" --container-runtime={container_runtime}"
 
     image_overridden = False
     if extra_flags:
@@ -257,7 +245,7 @@ def build_test(cloud='aws',
                 image_overridden = True
             create_args = create_args + " " + arg
     if not image_overridden:
-        create_args = "--image='" + kops_image + "' " + create_args
+        create_args = f"--image='{kops_image}' {create_args}"
 
     create_args = create_args.strip()
 
@@ -287,26 +275,11 @@ def build_test(cloud='aws',
     if container_runtime:
         suffix += "-" + container_runtime
 
-    # We current have an issue with long cluster names; let's hash and warn if we encounter them
-    cluster_name = "e2e-kops" + suffix
-    if name_override:
-        cluster_name = name_override
-    if len(cluster_name) > 32:
-        md5 = hashlib.md5(cluster_name.encode('utf-8'))
-        cluster_name = cluster_name[0:20] + "--" + md5.hexdigest()[0:10]
-    cluster_name += ".test-cncf-aws.k8s.io"
-
-    if len(cluster_name) > 53:
-        raise Exception("cluster name %s is probably too long" % (cluster_name))
-
-    tab = 'kops-grid' + suffix
-
-    if name_override:
-        tab = name_override
+    tab = name_override or (f"kops-grid{suffix}")
 
     if tab in skip_jobs:
         return None
-    job_name = 'e2e-' + tab
+    job_name = f"e2e-{tab}"
 
     cron, runs_per_week = build_cron(tab)
 
@@ -354,17 +327,17 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        'kops-distro-' + distro,
+        f"kops-distro-{distro}",
         'kops-kubetest2',
     ]
 
     if k8s_version:
-        dashboards.append('kops-k8s-' + k8s_version)
+        dashboards.append(f"kops-k8s-{k8s_version}")
     else:
         dashboards.append('kops-k8s-latest')
 
     if kops_version:
-        dashboards.append('kops-' + kops_version)
+        dashboards.append(f"kops-{kops_version}")
     else:
         dashboards.append('kops-latest')
 
@@ -377,7 +350,7 @@ def build_test(cloud='aws',
         'testgrid-tab-name': tab,
     }
     for (k, v) in spec.items():
-        annotations['test.kops.k8s.io/' + k] = v if v else ""
+        annotations[f"test.kops.k8s.io/{k}"] = v or ""
 
     extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
@@ -520,7 +493,7 @@ def generate_distros():
                        container_runtime='containerd',
                        k8s_version='stable',
                        kops_channel='alpha',
-                       name_override='kops-aws-distro-image' + distro,
+                       name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
                        interval='8h',
                        skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
@@ -555,7 +528,7 @@ def generate_network_plugins():
                 container_runtime='containerd',
                 k8s_version='stable',
                 kops_channel='alpha',
-                name_override='kops-aws-cni-' + plugin,
+                name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
                 extra_dashboards=['kops-network-plugins'],
                 interval='8h',
