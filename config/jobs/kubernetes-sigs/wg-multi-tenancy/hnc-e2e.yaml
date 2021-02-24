@@ -22,8 +22,9 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
-        command: ["wrapper.sh", "/start/run-e2e-tests.sh"]
+      - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
+        # workdir appears to be the base of the cloned repo
+        command: ["wrapper.sh", "incubator/hnc/hack/prow-run-e2e.sh"]
         securityContext:
           privileged: true # Required for docker-in-docker
         resources:
@@ -41,19 +42,25 @@ periodics:
     testgrid-tab-name: periodic-e2e-tests
     testgrid-alert-email: aludwin@google.com # will change to a group when it's stable
     testgrid-num-failures-to-alert: "1"
-  interval: 48h
+  interval: 1h # will reduce once working; tests should take <45min
   always_run: true # Different from the postsubmit; copied from kind periodics
   decorate: true
   decoration_config:
     timeout: 1h
-  path_alias: sigs.k8s.io/multi-tenancy
   labels:
     preset-kind-volume-mounts: "true"
     preset-dind-enabled: "true"
+  extra_refs:
+    # For periodics, the first repo is the workdir:
+    # https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md#writing-a-prowjob-that-uses-pod-utilities
+  - org: kubernetes-sigs
+    repo: multi-tenancy
+    base_ref: master
+    path_alias: sigs.k8s.io/multi-tenancy
   spec:
     containers:
-    - image: gcr.io/k8s-staging-multitenancy/hnc-postsubmit-tests:latest
-      command: ["wrapper.sh", "/start/run-e2e-tests.sh"]
+    - image: gcr.io/k8s-testimages/krte:v20210129-3799a64-master
+      command: ["wrapper.sh", "incubator/hnc/hack/prow-run-e2e.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker
       resources:
