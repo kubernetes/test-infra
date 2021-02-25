@@ -1,0 +1,50 @@
+package(default_visibility = ["//visibility:public"])
+
+sh_binary(
+    name = "setup-local-registry",
+    srcs = ["setup-local-registry.sh"],
+    tags = [
+        "no-remote-exec",
+    ],
+)
+
+sh_binary(
+    name = "setup-cluster",
+    srcs = ["setup-cluster.sh"],
+    args = [
+        "--config-path",
+        "$(location prow)",
+    ],
+    data = [
+        "prow",
+    ],
+    tags = [
+        "no-remote-exec",
+    ],
+)
+
+sh_binary(
+    name = "cleanup",
+    srcs = ["cleanup.sh"],
+    tags = [
+        "no-remote-exec",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/test/integration/fakeghserver:all-srcs",
+        "//prow/test/integration/test:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
