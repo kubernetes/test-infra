@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-make-test
+  - name: pull-kubernetes-unit
     annotations:
       testgrid-dashboards: sig-testing-misc
     decorate: true
@@ -10,22 +10,15 @@ presubmits:
     labels:
       preset-service-account: "true"
     optional: true
-    always_run: false
+    always_run: true
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
           command:
             - runner.sh
-            - bash
           args:
-            - -c
-            - |
-              # Restore the cache
-              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
-              mkdir -p _output/local/go/
-              time tar -xzf cache.tar.gz -C _output/local/go
-              # Run tests as usual
-              time make test KUBE_TIMEOUT=--timeout=240s
+            # TODO: stop depending on custom timeout
+            - make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
