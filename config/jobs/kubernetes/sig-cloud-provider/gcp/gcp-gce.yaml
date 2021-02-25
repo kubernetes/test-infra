@@ -157,6 +157,7 @@ presubmits:
           --parallel=30
 
   - name: pull-kubernetes-e2e-gce-canary
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: true
     skip_branches:
@@ -194,7 +195,10 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
+        env:
+        - name: BOOTSTRAP_FETCH_TEST_INFRA
+          value: "true"
+        image: gcr.io/spiffxp-gke-dev/kubekins-e2e:v20210225-dfefb2ade0-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
