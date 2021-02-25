@@ -145,7 +145,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 	if err != nil {
 		return err
 	}
-	log.Infof("Considering %d PRs.", len(prs))
+	log.WithField("prs_found_count", len(prs)).Debug("Processing all found PRs")
 
 	for _, pr := range prs {
 		// Skip PRs that are calculating mergeability. They will be updated by event or next loop.
@@ -155,18 +155,21 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		org := string(pr.Repository.Owner.Login)
 		repo := string(pr.Repository.Name)
 		num := int(pr.Number)
-		l := log.WithFields(logrus.Fields{
-			"org":  org,
-			"repo": repo,
-			"pr":   num,
-		})
-		hasLabel := false
+		var hasLabel bool
 		for _, label := range pr.Labels.Nodes {
 			if label.Name == labels.NeedsRebase {
 				hasLabel = true
 				break
 			}
 		}
+		l := log.WithFields(logrus.Fields{
+			"org":       org,
+			"repo":      repo,
+			"pr":        num,
+			"mergeable": pr.Mergeable,
+			"has_label": hasLabel,
+		})
+		l.Debug("Processing PR")
 		err := takeAction(
 			l,
 			ghc,
