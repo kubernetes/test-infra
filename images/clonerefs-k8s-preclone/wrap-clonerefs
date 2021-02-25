@@ -1,0 +1,8 @@
+#!/bin/sh
+# TODO: ideally clonerefs would instead lookup `/precloned/$gopath_noalias` for a repo
+# and then copy it to the desired dest only for the repos we need for the PR
+# we can teach the real clonerefs to do this once this proof of concept proves
+# it's worth
+# for now we instead copy over specific ones
+cp -r /precloned/ /home/prow/go/src/
+/clonerefs-real $@
