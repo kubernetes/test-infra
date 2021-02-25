@@ -14,6 +14,20 @@ presubmits:
       - image: golang:1.14
         command:
         - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-verify-docs
+    always_run: true
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-docs
+      description: "Verify documentation sources"
+    spec:
+      containers:
+      - image: ruby:2.7
+        command:
+        - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-build
     always_run: true
     skip_branches:
