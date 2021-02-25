@@ -23,6 +23,7 @@ import (
 	"go/build"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -30,14 +31,34 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
+
+const (
+	// The well-known env name for gcloud credentials.
+	gcloudCredEnvName = "GOOGLE_APPLICATION_CREDENTIALS"
+	// The path to mount the gcloud default config files to the container.
+	gcloudDefaultConfigMountPath = "/root/.config/gcloud"
+	// The well-known env name for kubeconfig.
+	kubeconfigEnvKey = "KUBECONFIG"
+	// The path to mount the kubectl default config files to the container.
+	kubectlDefaultConfigMountPath = "/root/.kube"
+	// The default GOPATH in the container.
+	defaultGOPATH = "/go"
+)
+
+var baseArgs = []string{"docker", "run", "--rm=true"}
 
 func realPath(p string) (string, error) {
 	if p == "" {
 		return "", errors.New("cannot find repo")
 	}
+	if _, err := os.Stat(p); os.IsNotExist(err) {
+		return "", fmt.Errorf("%q does not exist on local", p)
+	}
+
 	return filepath.Abs(os.ExpandEnv(p))
 }
 
@@ -80,17 +101,14 @@ func pathAlias(r prowapi.Refs) string {
 	if r.PathAlias != "" {
 		return r.PathAlias
 	}
-	path := fmt.Sprintf("%s/%s", r.Org, r.Repo)
+	repoPath := fmt.Sprintf("%s/%s", r.Org, r.Repo)
 	if !strings.HasPrefix(r.Org, "http://") && !strings.HasPrefix(r.Org, "https://") {
-		path = fmt.Sprintf("github.com/%s", path)
+		repoPath = fmt.Sprintf("github.com/%s", repoPath)
 	}
-	return path
+	return repoPath
 }
 
-func readRepo(ctx context.Context, path string, repoPathMap map[string]string, readUserInput func(string, string) (string, error)) (string, error) {
-	if repo, ok := repoPathMap[path]; ok {
-		return repo, nil
-	}
+func readRepo(path string, readUserInput func(string, string) (string, error)) (string, error) {
 	wd, err := workingDir()
 	if err != nil {
 		return "", fmt.Errorf("workingDir: %v", err)
@@ -103,15 +121,16 @@ func readRepo(ctx context.Context, path string, repoPathMap map[string]string, r
 	if err != nil { // Fall back to find repo from local
 		def, err = findRepoFromLocal(wd, path)
 	}
+	if err == nil && def != "" {
+		return realPath(def)
+	}
 	if err != nil {
 		logrus.WithError(err).WithField("repo", path).Warn("could not find repo")
 	}
+
 	out, err := readUserInput(path, def)
 	if err != nil {
 		return "", fmt.Errorf("scan: %v", err)
-	}
-	if out == "" {
-		out = def
 	}
 	return realPath(out)
 }
@@ -143,9 +162,6 @@ func findRepoFromLocal(wd, path string) (string, error) {
 	opwd, err := realPath(wd)
 	if err != nil {
 		return "", fmt.Errorf("wd not found: %v", err)
-	}
-	if strings.HasPrefix(path, "github.com/kubernetes/") {
-		path = strings.Replace(path, "github.com/kubernetes/", "k8s.io/", 1)
 	}
 
 	var old string
@@ -180,9 +196,7 @@ func findRepoFromLocal(wd, path string) (string, error) {
 	return "", errors.New("cannot find repo")
 }
 
-var baseArgs = []string{"docker", "run", "--rm=true"}
-
-func checkPrivilege(ctx context.Context, cont coreapi.Container, allow bool) (bool, error) {
+func checkPrivilege(cont coreapi.Container, pjName string, allow bool) (bool, error) {
 	if cont.SecurityContext == nil {
 		return false, nil
 	}
@@ -192,22 +206,15 @@ func checkPrivilege(ctx context.Context, cont coreapi.Container, allow bool) (bo
 	if !*cont.SecurityContext.Privileged {
 		return false, nil
 	}
-	fmt.Fprint(os.Stderr, "Privileged jobs are unsafe. Remove from local run? [yes]: ")
-	out, err := scanln(ctx)
-	if err != nil {
-		return false, fmt.Errorf("scan: %v", err)
+	if !allow {
+		return false, errors.New("privileged jobs are disallowed")
 	}
-	if out == "no" || out == "n" {
-		if !allow {
-			return false, errors.New("privileged jobs are disallowed")
-		}
-		logrus.Warn("DANGER: privileged containers are unsafe security risks. Please refactor")
-		return true, nil
-	}
-	return false, nil
+
+	logrus.Warningf("WARNING: running privileged job %q can allow nearly all access to the host, please be careful with it", pjName)
+	return true, nil
 }
 
-func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, repoPathMap map[string]string, name string, allowPrivilege bool) ([]string, error) {
+func (opts *options) convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, name string) ([]string, error) {
 	log.Info("Converting job into docker run command...")
 	var localArgs []string
 	localArgs = append(localArgs, baseArgs...)
@@ -228,12 +235,8 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		localArgs = append(localArgs, "--entrypoint="+entrypoint)
 	}
 
-	for _, env := range container.Env {
-		localArgs = append(localArgs, "-e", env.Name+"="+env.Value)
-	}
-
 	// TODO(fejta): capabilities
-	priv, err := checkPrivilege(ctx, container, allowPrivilege)
+	priv, err := checkPrivilege(container, pj.Spec.Job, opts.priv)
 	if err != nil {
 		return nil, err
 	}
@@ -246,26 +249,163 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		log.Warn("Ignoring resource requirements")
 	}
 
+	volumeMounts, err := opts.resolveVolumeMounts(ctx, pj, container, readMount)
+	if err != nil {
+		return nil, errors.New("error resolving the volume mounts")
+	}
+
+	envs := opts.resolveEnvVars(container)
+
+	// Setup gcloud credentials
+	if opts.useLocalGcloudCredentials {
+		setupGcloudCredentials(volumeMounts, envs)
+	}
+
+	// Setup kubeconfig
+	if opts.useLocalKubeconfig {
+		setupKubeconfig(volumeMounts, envs)
+	}
+
+	workingDir, err := opts.resolveRefs(ctx, volumeMounts, pj, container)
+	if err != nil {
+		return nil, errors.New("error resolving the refs")
+	}
+
+	if workingDir != "" {
+		localArgs = append(localArgs, "-w", workingDir)
+	}
+	// Add args for volume mounts.
+	for target, src := range volumeMounts {
+		localArgs = append(localArgs, "-v", src+":"+target)
+	}
+	// Add args for env vars.
+	for envKey, envVal := range envs {
+		localArgs = append(localArgs, "-e", envKey+":"+envVal)
+	}
+	// Add args for labels.
+	for k, v := range pj.Labels {
+		localArgs = append(localArgs, "--label="+k+"="+v)
+	}
+	localArgs = append(localArgs, "--label=phaino=true")
+
+	image := pj.Spec.PodSpec.Containers[0].Image
+	localArgs = append(localArgs, image)
+	localArgs = append(localArgs, args...)
+	return localArgs, nil
+}
+
+func (opts *options) resolveVolumeMounts(ctx context.Context, pj prowapi.ProwJob, container coreapi.Container,
+	getMount func(ctx context.Context, mount coreapi.VolumeMount) (string, error)) (map[string]string, error) {
+	skippedVolumesMounts := sets.NewString(opts.skippedVolumesMounts...)
+	// A map of volume mounts for the run.
+	// Key is the mount path and value is the local path.
+	volumeMounts := make(map[string]string)
 	for _, mount := range container.VolumeMounts {
+		if skippedVolumesMounts.Has(mount.Name) {
+			logrus.Infof("Volume mount %q skipped", mount.Name)
+			continue
+		}
 		vol := volume(*pj.Spec.PodSpec, mount.Name)
 		if vol == nil {
 			return nil, fmt.Errorf("mount %q missing associated volume", mount.Name)
 		}
 		if vol.EmptyDir != nil {
-			localArgs = append(localArgs, "-v", mount.MountPath)
+			volumeMounts[mount.MountPath] = ""
 		} else {
-			local, err := readMount(ctx, mount)
+			local, err := getMount(ctx, mount)
 			if err != nil {
 				return nil, fmt.Errorf("bad mount %q: %v", mount.Name, err)
 			}
-			arg := local + ":" + mount.MountPath
+			mountPath := mount.MountPath
 			if mount.ReadOnly {
-				arg += ":ro"
+				mountPath += ":ro"
 			}
-			localArgs = append(localArgs, "-v", arg)
+			volumeMounts[mountPath] = local
 		}
 	}
+	for pathInContainer, localPath := range opts.extraVolumesMounts {
+		volumeMounts[pathInContainer] = localPath
+	}
+	return volumeMounts, nil
+}
 
+func (opts *options) resolveEnvVars(container coreapi.Container) map[string]string {
+	skippedEnvVars := sets.NewString(opts.skippedEnvVars...)
+	// A map of env vars for the run.
+	// Key is the env name and value is the env value.
+	envs := make(map[string]string)
+	for _, env := range container.Env {
+		if skippedEnvVars.Has(env.Name) {
+			continue
+		}
+		envs[env.Name] = env.Value
+	}
+	for name, value := range opts.extraEnvVars {
+		envs[name] = value
+	}
+	return envs
+}
+
+func setupGcloudCredentials(volumeMounts, envs map[string]string) {
+	gcloudKey := os.Getenv(gcloudCredEnvName)
+	// If GOOGLE_APPLICATION_CREDENTIALS is not empty, also mount the key file
+	// to the container
+	if gcloudKey != "" {
+		if _, err := os.Stat(gcloudKey); !os.IsNotExist(err) {
+			volumeMounts[gcloudKey+":ro"] = gcloudKey
+			envs[gcloudCredEnvName] = gcloudKey
+		} else {
+			logrus.Warningf("The GOOGLE_APPLICATION_CREDENTIALS file does not exist on your local machine, thus gcloud authentication won't work in the container")
+		}
+	} else {
+		// We only want to use the default gcloud credentials if GOOGLE_APPLICATION_CREDENTIALS env var is not explicitly set.
+		// Its default location is `~/.config/gcloud` on MacOS and Linux, see https://cloud.google.com/sdk/docs/configurations#what_is_a_configuration
+		defaultGcloudConfigPath := path.Join(os.Getenv("HOME"), ".config/gcloud")
+		if _, err := os.Stat(defaultGcloudConfigPath); !os.IsNotExist(err) {
+			volumeMounts[gcloudDefaultConfigMountPath] = defaultGcloudConfigPath
+			// Overwrite the gcloud config path, as per https://stackoverflow.com/a/48343135
+			envs["CLOUDSDK_CONFIG"] = gcloudDefaultConfigMountPath
+		} else {
+			logrus.Warningf("The default gcloud credentials does not exist on your local machine, thus gcloud authentication won't work in the container")
+		}
+	}
+}
+
+func setupKubeconfig(volumeMounts, envs map[string]string) {
+	kubeconfigEnvVarVal := os.Getenv(kubeconfigEnvKey)
+	// If KUBECONFIG is not empty, also mount the kubeconfig files to the
+	// container
+	if kubeconfigEnvVarVal != "" {
+		envs[kubeconfigEnvKey] = kubeconfigEnvVarVal
+		var inexistentKubeconfigFiles []string
+		for _, f := range strings.Split(kubeconfigEnvVarVal, string(os.PathListSeparator)) {
+			if _, err := os.Stat(f); !os.IsNotExist(err) {
+				inexistentKubeconfigFiles = append(inexistentKubeconfigFiles, f)
+			}
+		}
+		if len(inexistentKubeconfigFiles) == 0 {
+			for _, f := range strings.Split(kubeconfigEnvVarVal, string(os.PathListSeparator)) {
+				volumeMounts[f+":ro"] = f
+			}
+			envs[kubeconfigEnvKey] = kubeconfigEnvVarVal
+		} else {
+			logrus.Warningf("kubeconfig files %v do not exist on your local machine, thus kubectl authentication won't work in the container", inexistentKubeconfigFiles)
+		}
+	} else {
+		// We only want to use the default kube context if KUBECONFIG env var is not explicitly set.
+		// Its default location is `~/.kube`, see https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+		defaultKubeconfigPath := path.Join(os.Getenv("HOME"), ".kube")
+		if _, err := os.Stat(defaultKubeconfigPath); !os.IsNotExist(err) {
+			volumeMounts[kubectlDefaultConfigMountPath] = defaultKubeconfigPath
+			envs[kubeconfigEnvKey] = path.Join(kubectlDefaultConfigMountPath, "config")
+		} else {
+			logrus.Warning("The default kube context does not exist on your local machine, thus kubectl authentication won't work in the container")
+		}
+	}
+}
+
+func (opts *options) resolveRefs(ctx context.Context, volumeMounts map[string]string,
+	pj prowapi.ProwJob, container coreapi.Container) (string, error) {
 	var workingDir string
 
 	var readUserInput func(string, string) (string, error)
@@ -278,42 +418,31 @@ func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, 
 		return scanln(ctx)
 	}
 
-	if decoration != nil {
-		var refs []prowapi.Refs
-		if pj.Spec.Refs != nil {
-			refs = append(refs, *pj.Spec.Refs)
-		}
-		refs = append(refs, pj.Spec.ExtraRefs...)
-		for _, ref := range refs {
-			path := pathAlias(ref)
-			repo, err := readRepo(ctx, path, repoPathMap, readUserInput)
+	goSrcPath := filepath.Join(opts.gopath, "src")
+	var refs []prowapi.Refs
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
+	for _, ref := range refs {
+		repoPath := pathAlias(ref)
+		dest := filepath.Join(goSrcPath, repoPath)
+		// The repo hasn't been mounted.
+		if _, ok := opts.extraVolumesMounts[dest]; !ok {
+			repo, err := readRepo(repoPath, readUserInput)
 			if err != nil {
-				return nil, fmt.Errorf("bad repo(%s): %v", path, err)
+				return "", fmt.Errorf("bad repo(%s) when resolving the refs: %v", repoPath, err)
 			}
-			dest := filepath.Join("/go/src", path)
-			if workingDir == "" {
-				workingDir = dest
-			}
-			localArgs = append(localArgs, "-v", repo+":"+dest)
-
+			volumeMounts[dest] = repo
+		}
+		if workingDir == "" {
+			workingDir = dest
 		}
 	}
 	if workingDir == "" {
 		workingDir = container.WorkingDir
 	}
-	if workingDir != "" {
-		localArgs = append(localArgs, "-v", workingDir, "-w", workingDir)
-	}
-
-	for k, v := range pj.Labels {
-		localArgs = append(localArgs, "--label="+k+"="+v)
-	}
-	localArgs = append(localArgs, "--label=phaino=true")
-
-	image := pj.Spec.PodSpec.Containers[0].Image
-	localArgs = append(localArgs, image)
-	localArgs = append(localArgs, args...)
-	return localArgs, nil
+	return workingDir, nil
 }
 
 func printArgs(localArgs []string) {
@@ -355,21 +484,21 @@ func containerID() string {
 	return fmt.Sprintf("phaino-%d-%d", os.Getpid(), nameId)
 }
 
-func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, repoPathMap map[string]string, priv, onlyPrint bool, timeout, grace time.Duration) error {
+func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob) error {
 	cid := containerID()
-	args, err := convertToLocal(ctx, log, pj, repoPathMap, cid, priv)
+	args, err := opts.convertToLocal(ctx, log, pj, cid)
 	if err != nil {
 		return fmt.Errorf("convert: %v", err)
 	}
 	printArgs(args)
-	if onlyPrint {
+	if opts.printCmd {
 		return nil
 	}
 	log.Info("Starting job...")
 	// TODO(fejta): default grace and timeout to the job's decoration_config
-	if timeout > 0 {
+	if opts.timeout > 0 {
 		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, timeout)
+		ctx, cancel = context.WithTimeout(ctx, opts.timeout)
 		defer cancel()
 	}
 	cmd, err := start(args)
@@ -390,6 +519,7 @@ func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, repo
 		// cancelled
 	}
 
+	grace := opts.grace
 	if grace < time.Second {
 		log.WithField("grace", grace).Info("Increasing grace period to the 1s minimum")
 		grace = time.Second
