@@ -4,6 +4,6 @@ images:
     project: ubuntu-os-gke-cloud
     metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
   cos-stable:
-    image_family: cos-85-lts
+    image_family: cos-89-lts
     project: cos-cloud
     metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env,gci-update-strategy=update_disabled"

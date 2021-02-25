@@ -876,7 +876,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=cos-85-lts
+      - --image-family=cos-89-lts
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
