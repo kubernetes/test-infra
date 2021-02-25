@@ -16,9 +16,11 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
           command:
             - runner.sh
+            - bash
+            - -c
           args:
             # TODO: stop depending on custom timeout
-            - make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
