@@ -70,10 +70,16 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			if !stringInSlice(repo.Org, blockade.Repos) && !stringInSlice(repo.String(), blockade.Repos) {
 				continue
 			}
-			fmt.Fprintf(&buf, "<br>Block reason: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock regexps: %q<br>&nbsp&nbsp&nbsp&nbspException regexps: %q<br>", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
+			if blockade.BranchRegexp != nil {
+				fmt.Fprintf(&buf, "<br>BranchRegexp: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock reason: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock regexps: %q<br>&nbsp&nbsp&nbsp&nbspException regexps: %q<br>", *blockade.BranchRegexp, blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
+			} else {
+				fmt.Fprintf(&buf, "<br>Block reason: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock regexps: %q<br>&nbsp&nbsp&nbsp&nbspException regexps: %q<br>", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
+			}
+
 		}
 		blockConfig[repo.String()] = buf.String()
 	}
+	exampleBranchRegexp := "^release-*"
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
 		Blockades: []plugins.Blockade{
 			{
@@ -81,6 +87,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 					"ORGANIZATION",
 					"ORGANIZATION/REPOSITORY",
 				},
+				BranchRegexp: &exampleBranchRegexp,
 				BlockRegexps: []string{
 					"^examples*",
 				},
@@ -155,13 +162,14 @@ func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp p
 
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
+	branch := pre.PullRequest.Base.Ref
 	issueLabels, err := ghc.GetIssueLabels(org, repo, pre.Number)
 	if err != nil {
 		return err
 	}
 
 	labelPresent := hasBlockedLabel(issueLabels)
-	blockades := compileApplicableBlockades(org, repo, log, config)
+	blockades := compileApplicableBlockades(org, repo, branch, log, config)
 	if len(blockades) == 0 && !labelPresent {
 		// Since the label is missing, we assume that we removed any associated comments.
 		return nil
@@ -197,7 +205,7 @@ func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp p
 }
 
 // compileApplicableBlockades filters the specified blockades and compiles those that apply to the repo.
-func compileApplicableBlockades(org, repo string, log *logrus.Entry, blockades []plugins.Blockade) []blockade {
+func compileApplicableBlockades(org, repo, branch string, log *logrus.Entry, blockades []plugins.Blockade) []blockade {
 	if len(blockades) == 0 {
 		return nil
 	}
@@ -209,6 +217,11 @@ func compileApplicableBlockades(org, repo string, log *logrus.Entry, blockades [
 		if !stringInSlice(org, raw.Repos) && !stringInSlice(orgRepo, raw.Repos) {
 			continue
 		}
+		// if branchregexp is specified, only consider blockades that apply to this branch
+		if raw.BranchRegexp != nil && !raw.BranchRe.MatchString(branch) {
+			continue
+		}
+
 		b := blockade{}
 		for _, str := range raw.BlockRegexps {
 			if reg, err := regexp.Compile(str); err != nil {

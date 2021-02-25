@@ -264,6 +264,11 @@ type Size struct {
 type Blockade struct {
 	// Repos are either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
+	// BranchRegexp is the regular expression for branches that the the blockade applies to.
+	// If BranchRegexp is not specified, the blockade applies to all branches by default.
+	// Compiles into BranchRe during config load.
+	BranchRegexp *string        `json:"branchregexp,omitempty"`
+	BranchRe     *regexp.Regexp `json:"-"`
 	// BlockRegexps are regular expressions matching the file paths to block.
 	BlockRegexps []string `json:"blockregexps,omitempty"`
 	// ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
@@ -1160,6 +1165,17 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		return err
 	}
 	pc.CherryPickUnapproved.BranchRe = branchRe
+
+	for _, blockade := range pc.Blockades {
+		if blockade.BranchRegexp == nil {
+			continue
+		}
+		branchRe, err := regexp.Compile(*blockade.BranchRegexp)
+		if err != nil {
+			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %v", *blockade.BranchRegexp, err)
+		}
+		blockade.BranchRe = branchRe
+	}
 
 	commentRe, err := regexp.Compile(pc.Heart.CommentRegexp)
 	if err != nil {
