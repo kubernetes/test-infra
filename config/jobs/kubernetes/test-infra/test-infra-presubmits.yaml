@@ -109,7 +109,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210223-a27864c-test-infra
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-test-infra
         command:
         - runner.sh
         args:
