@@ -6,7 +6,7 @@ images:
     image: ubuntu-gke-1804-1-16-v20200330
     project: ubuntu-os-gke-cloud
   cos-stable1:
-    image_family: cos-89-lts
+    image_family: cos-85-lts
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
   cos-stable2:
