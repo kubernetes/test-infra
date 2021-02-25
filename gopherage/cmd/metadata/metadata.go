@@ -30,7 +30,6 @@ import (
 
 const (
 	// From https://github.com/kubernetes/test-infra/blob/master/prow/jobs.md#job-environment-variables
-	base_ref   = "PULL_BASE_REF"
 	repo_owner = "REPO_OWNER"
 )
 
@@ -107,8 +106,8 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		ref, err := gitCommand("branch", "--show-current")
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to fetch ref from within covered repo: %v.", err)
-			os.Exit(1)
+			fmt.Fprintf(os.Stderr, "Failed to fetch ref from within covered repo: %v. Defaulting to HEAD", err)
+			ref = "HEAD"
 		}
 		flags.ref = ref
 	}

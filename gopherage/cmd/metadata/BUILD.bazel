@@ -5,11 +5,7 @@ go_library(
     srcs = ["metadata.go"],
     importpath = "k8s.io/test-infra/gopherage/cmd/metadata",
     visibility = ["//visibility:public"],
-    deps = [
-        "//gopherage/pkg/cov/junit:go_default_library",
-        "//gopherage/pkg/util:go_default_library",
-        "@com_github_spf13_cobra//:go_default_library",
-    ],
+    deps = ["@com_github_spf13_cobra//:go_default_library"],
 )
 
 filegroup(
