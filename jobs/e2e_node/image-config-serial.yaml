@@ -14,6 +14,6 @@ images:
         - type: nvidia-tesla-k80
           count: 2
   cos-stable1:
-    image_family: cos-89-lts # deprecated after 2021-12-17
+    image_family: cos-85-lts # deprecated after 2021-12-17
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"

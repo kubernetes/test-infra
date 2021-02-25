@@ -257,7 +257,7 @@ presubmits:
         - name: ZONE
           value: us-central1-a
         - name: IMAGE_FAMILY
-          value: cos-89-lts
+          value: cos-85-lts
         - name: IMAGE_PROJECT
           value: cos-cloud
         - name: BOSKOS_PROJECT_TYPE
