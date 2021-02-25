@@ -11,6 +11,41 @@ presubmits:
       preset-service-account: "true"
     optional: true
     always_run: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
+          command:
+            - runner.sh
+            - bash
+            - -c
+          args:
+            # TODO: stop depending on custom timeout
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - name: pull-kubernetes-unit-experimental
+    # try clonerefs with preclone
+    decoration_config:
+      utility_images:
+        clonerefs: "gcr.io/spiffxp-gke-dev/clonerefs-k8s-preclone:v20210225-6252cf69ff"
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: true
+    always_run: false
+    path_alias: k8s.io/kubernetes
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
