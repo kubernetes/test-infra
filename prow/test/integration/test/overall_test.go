@@ -26,7 +26,7 @@ var runIntegrationTest = flag.Bool("run-integration-test", false, "The switch fo
 
 func TestMain(m *testing.M) {
 	flag.Parse()
-	if *runIntegrationTest {
+	if e := os.Getenv("RUN-PROW-INTEGRATION-TEST"); e == "true" || *runIntegrationTest {
 		os.Exit(m.Run())
 	}
 }
