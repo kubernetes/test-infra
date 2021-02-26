@@ -6,7 +6,6 @@ dashboard_groups:
     - provider-aws-cloud-provider-aws
     - provider-aws-ebs-csi-driver
     - provider-aws-efs-csi-driver
-    - provider-aws-eks-presubmits
     - provider-aws-fsx-csi-driver
 
 dashboards:
@@ -15,5 +14,4 @@ dashboards:
 - name: provider-aws-cloud-provider-aws
 - name: provider-aws-ebs-csi-driver
 - name: provider-aws-efs-csi-driver
-- name: provider-aws-eks-presubmits
 - name: provider-aws-fsx-csi-driver
