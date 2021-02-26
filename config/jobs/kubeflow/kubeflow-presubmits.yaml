@@ -13,20 +13,6 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for Kubeflow GCP gcp-blueprints.
       testgrid-num-columns-recent: '30'
-  kubeflow/kubeflow:
-  - name: kubeflow-presubmit
-    cluster: kubeflow
-    always_run: true         # Run for every PR, or only when requested.
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Presubmit tests for Kubeflow.
-      testgrid-num-columns-recent: '30'
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
     cluster: kubeflow

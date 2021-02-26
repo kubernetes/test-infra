@@ -1,31 +1,5 @@
 periodics:
 #******************************************************************************
-# kubeflow/kubeflow
-#******************************************************************************
-- name: kubeflow-periodic-master
-  cluster: kubeflow
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/kubeflow-ci/test-worker:latest
-      imagePullPolicy: Always
-      env:
-      - name: REPO_OWNER
-        value: kubeflow
-      - name: REPO_NAME
-        value: kubeflow
-      - name: BRANCH_NAME
-        value: master
-  annotations:
-    testgrid-dashboards: sig-big-data
-    description: Periodic testing of Kubeflow on the latest master branch.
-    # TODO: use a public email group
-    testgrid-alert-email: kubeflow-engineering@google.com
-    testgrid-num-failures-to-alert: "3"
-
-#******************************************************************************
 # kubeflow/gcp-blueprints
 #******************************************************************************
 # Periodic tests currently aren't deploying infrastructure; they are
