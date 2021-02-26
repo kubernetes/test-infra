@@ -39,10 +39,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 4
+            cpu: 7
             memory: 9000Mi
           requests:
-            cpu: 4
+            cpu: 7
             memory: 9000Mi
     annotations:
       testgrid-num-failures-to-alert: '10'
