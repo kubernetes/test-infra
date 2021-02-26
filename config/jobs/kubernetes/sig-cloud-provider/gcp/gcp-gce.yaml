@@ -198,7 +198,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/spiffxp-gke-dev/kubekins-e2e:v20210225-dfefb2ade0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
