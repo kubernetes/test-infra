@@ -26,6 +26,11 @@ blockades:
     blockregexps:
       - ""
 
+    # BranchRegexp is the regular expression for branches that the the blockade applies to.
+    # If BranchRegexp is not specified, the blockade applies to all branches by default.
+    # Compiles into BranchRe during config load.
+    branchregexp: ""
+
     # ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
     exceptionregexps:
       - ""
