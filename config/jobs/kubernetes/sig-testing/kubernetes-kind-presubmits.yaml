@@ -8,8 +8,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -32,8 +30,6 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -59,8 +55,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -84,8 +78,6 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -161,8 +153,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -186,8 +176,6 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -216,8 +204,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -233,8 +219,6 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: BUILD_TYPE
-          value: bazel
         - name: GA_ONLY
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -259,8 +243,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -276,8 +258,6 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: BUILD_TYPE
-          value: bazel
         - name: GA_ONLY
           value: "true"
         - name: PARALLEL
