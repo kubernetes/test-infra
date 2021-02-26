@@ -62,8 +62,6 @@ presubmits:
     max_concurrency: 12
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-k8s-ssh: "true"
@@ -100,8 +98,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -114,7 +111,7 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --env=KUBE_CONTAINER_RUNTIME=containerd
@@ -130,6 +127,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-node-e2e-containerd
     branches:
     - master
