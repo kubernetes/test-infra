@@ -30,6 +30,7 @@ readonly REPOS=(
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
+    kubernetes-csi/csi-driver-iscsi
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
@@ -38,7 +39,6 @@ readonly REPOS=(
 # Repos which should eventually enable cloud image builds but currently
 # don't.
 readonly BROKEN_REPOS=(
-    kubernetes-csi/csi-driver-iscsi
     kubernetes-csi/csi-proxy
     kubernetes-sigs/container-object-storage-interface-controller
     kubernetes-sigs/container-object-storage-interface-provisioner-sidecar
