@@ -34,7 +34,7 @@ presubmits:
     # try clonerefs with preclone
     decoration_config:
       utility_images:
-        clonerefs: "gcr.io/spiffxp-gke-dev/clonerefs-k8s-preclone:v20210225-6252cf69ff"
+        clonerefs: "gcr.io/spiffxp-gke-dev/clonerefs-k8s-preclone:latest"
     annotations:
       testgrid-dashboards: sig-testing-misc
     decorate: true
