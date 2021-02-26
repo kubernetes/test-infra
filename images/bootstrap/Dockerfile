@@ -138,4 +138,6 @@ COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
 RUN mkdir /workspace/scenarios
 COPY ["./scenarios", "/workspace/scenarios"]
 
+RUN git clone https://github.com/kubernetes/test-infra /workspace/test-infra
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
