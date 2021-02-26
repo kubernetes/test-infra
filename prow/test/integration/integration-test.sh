@@ -39,4 +39,6 @@ main() {
   "${bazel}" test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_arg=--run-integration-test "$@" || ( echo "FAILED: running tests">&2; return 1 )
 }
 
-main "$@"
+time bazel test --config=ci --nobuild_tests_only //...
+
+time main "$@"
