@@ -147,16 +147,6 @@ func TestURLTemplate(t *testing.T) {
 			k8sOnly: true,
 		},
 		{
-			name:    "k8s-security presubmit",
-			jobType: prowapi.PresubmitJob,
-			org:     "kubernetes-security",
-			repo:    "kubernetes",
-			job:     "k8s-pre-1",
-			build:   "1",
-			expect:  "https://console.cloud.google.com/storage/browser/kubernetes-security-prow/pr-logs/pull/kubernetes-security_kubernetes/0/k8s-pre-1/1/",
-			k8sOnly: true,
-		},
-		{
 			name:    "k8s/test-infra presubmit",
 			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes",
