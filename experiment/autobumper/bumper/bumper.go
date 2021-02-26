@@ -116,6 +116,8 @@ type Options struct {
 	RemoteName string `yaml:"remoteName"`
 	// The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
 	HeadBranchName string `yaml:"headBranchName"`
+	// Optional list of labels to add to the bump PR
+	Labels []string `yaml:"labels"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
 }
@@ -313,7 +315,7 @@ func Run(o *Options) error {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}
@@ -376,8 +378,11 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
 func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
+	return updatePRWithLabels(gc, org, repo, images, extraLineInPRBody, login, baseBranch, headBranch, allowMods, prefixes, versions, nil)
+}
+func updatePRWithLabels(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string, labels []string) error {
 	summary := makeCommitSummary(prefixes, versions)
-	return UpdatePullRequest(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), login+":"+headBranch, baseBranch, headBranch, allowMods)
+	return UpdatePullRequestWithLabels(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), login+":"+headBranch, baseBranch, headBranch, allowMods, labels)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
