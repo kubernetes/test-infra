@@ -47,21 +47,12 @@ install_kind() {
 
 # build kubernetes / node image, e2e binaries
 build() {
-    # possibly enable bazel build caching before building kubernetes
-    BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-    if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-        # run the script in the kubekins image, do not fail if it fails
-        /usr/local/bin/create_bazel_cache_rcs.sh || true
-    fi
-
     # build the node image w/ kubernetes
-    kind build node-image --type=bazel --kube-root="${PWD}"
+    kind build node-image --kube-root="${PWD}"
 
-    # try to make sure the kubectl we built is in PATH
+    # ensure kubectl is in path
     local maybe_kubectl
-    maybe_kubectl="$(bazel aquery 'mnemonic("GoLink", //cmd/kubectl)' \
-      | grep '^  Outputs: \[.*\]$' \
-      | sed 's/^  Outputs: \[\(.*\)\]$/\1/')"
+    maybe_kubectl="$(find "${PWD}/_output" -name "kubectl" -type f)"
     if [[ -n "${maybe_kubectl}" ]]; then
         PATH="$(dirname "${maybe_kubectl}"):${PATH}"
         export PATH
