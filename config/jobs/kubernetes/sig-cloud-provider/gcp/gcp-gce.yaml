@@ -29,8 +29,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -43,7 +42,7 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
@@ -63,6 +62,8 @@ presubmits:
           limits:
             cpu: 4
             memory: 14Gi
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-e2e-gce-no-stage
     always_run: false
     annotations:
@@ -71,8 +72,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -85,9 +85,9 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
-        - --extract=bazel
+        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -223,8 +223,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -237,7 +236,7 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
@@ -258,6 +257,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd
     cluster: k8s-infra-prow-build
@@ -273,8 +274,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -287,7 +287,7 @@ presubmits:
             - --timeout=105
             - --scenario=kubernetes_e2e
             - --
-            - --build=bazel
+            - --build=quick
             - --cluster=
             - --env=KUBE_CONTAINER_RUNTIME=containerd
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.3
@@ -318,6 +318,8 @@ presubmits:
             requests:
               cpu: 4
               memory: "14Gi"
+          securityContext:
+            privileged: true
 
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
     cluster: k8s-infra-prow-build
@@ -334,8 +336,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -348,7 +348,7 @@ presubmits:
             - --timeout=105
             - --scenario=kubernetes_e2e
             - --
-            - --build=bazel
+            - --build=quick
             - --cluster=
             - --env=KUBE_CONTAINER_RUNTIME=containerd
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.3
@@ -379,6 +379,8 @@ presubmits:
             requests:
               cpu: 4
               memory: "14Gi"
+          securityContext:
+            privileged: true
 
   - name: pull-kubernetes-e2e-gce-alpha-features
     optional: true
@@ -388,7 +390,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -401,7 +403,7 @@ presubmits:
         - --timeout=200
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
         - --env=KUBE_PROXY_DAEMONSET=true
@@ -419,6 +421,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-create-test-group: 'true'
 
