@@ -24,7 +24,7 @@ presubmits:
         - "--timeout=140"
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
