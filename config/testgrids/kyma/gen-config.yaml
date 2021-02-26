@@ -2,6 +2,7 @@ dashboard_groups:
 - dashboard_names:
   - kyma_integration
   - kyma_control-plane
+  - kyma_experimental
   - kyma_release-1.21
   - kyma_release-1.20
   - kyma_release-1.19
@@ -157,6 +158,17 @@ dashboards:
       url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-master-control-plane-integration
   name: kyma_control-plane
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: post-master-test-infra-image-syncer-run'
+    name: post-master-test-infra-image-syncer-run
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    open_test_template:
+      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: post-master-test-infra-image-syncer-run
+  name: kyma_experimental
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
@@ -472,3 +484,5 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel121-kyma-release-candidate
   name: post-rel121-kyma-release-candidate
+- gcs_prefix: kyma-prow-logs/logs/post-master-test-infra-image-syncer-run
+  name: post-master-test-infra-image-syncer-run
