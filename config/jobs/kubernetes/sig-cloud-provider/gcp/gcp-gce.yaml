@@ -380,49 +380,6 @@ presubmits:
               cpu: 4
               memory: "14Gi"
 
-  - name: pull-kubernetes-e2e-gce-rbe
-    always_run: false
-    skip_report: true
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release image
-    annotations:
-      fork-per-release: "true"
-      testgrid-create-test-group: "true"
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: release
-      path_alias: k8s.io/release
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
-        command:
-        - ../test-infra/scenarios/kubernetes_e2e.py
-        args:
-        - --inject-bazelrc=build --config=ci
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-
   - name: pull-kubernetes-e2e-gce-alpha-features
     optional: true
     run_if_changed: '^.*feature.*\.go'

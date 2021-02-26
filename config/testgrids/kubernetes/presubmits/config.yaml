@@ -85,9 +85,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-rbe
-    test_group_name: pull-kubernetes-e2e-gce-rbe
-    base_options: width=10
   - name: pull-kubernetes-e2e-gce-canary
     test_group_name: pull-kubernetes-e2e-gce-canary
     base_options: width=10
@@ -117,9 +114,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-snapshot
     test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-slow-rbe
-    test_group_name: pull-kubernetes-e2e-gce-storage-slow-rbe
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-csi-serial
     test_group_name: pull-kubernetes-e2e-gce-csi-serial
