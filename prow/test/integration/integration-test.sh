@@ -36,9 +36,7 @@ main() {
   # testimage-push builds images, could fail due to network flakiness
   (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
   "${bazel}" run //prow/test/integration:setup-cluster "$@" || ( echo "FAILED: setup cluster">&2; return 1 )
-  "${bazel}" test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_arg=--run-integration-test "$@" || ( echo "FAILED: running tests">&2; return 1 )
+  "${bazel}" test //... --nobuild_tests_only --action_env=KUBECONFIG=${HOME}/.kube/config --test_arg=--run-integration-test "$@" || ( echo "FAILED: running tests">&2; return 1 )
 }
 
-time bazel test --config=ci --nobuild_tests_only //...
-
-time main "$@"
+main "$@"
