@@ -99,58 +99,6 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
-  - name: pull-kubernetes-e2e-gce-storage-slow-rbe
-    always_run: false
-    optional: true
-    # All the files owned by sig-storage. Keep in sync across
-    # all sig-storage-jobs
-    #
-    # pkg/controller/volume
-    # pkg/kubelet/volumemanager
-    # pkg/volume
-    # pkg/util/mount
-    # test/e2e/storage
-    # test/e2e/testing-manifests/storage-csi
-    run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
-    skip_report: true
-    decorate: true
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: release
-      path_alias: k8s.io/release
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
-        command:
-        - ../test-infra/scenarios/kubernetes_e2e.py
-        args:
-        - --inject-bazelrc=build --config=ci
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
-        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]| --minStartupPods=8
-        - --timeout=80m
-    annotations:
-      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-csi-serial
     always_run: false
     optional: true
