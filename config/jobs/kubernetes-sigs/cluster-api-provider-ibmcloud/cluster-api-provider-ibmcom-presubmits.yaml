@@ -15,7 +15,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
         imagePullPolicy: Always
         resources:
           requests:
@@ -31,7 +31,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
         imagePullPolicy: Always
         command:
         - "./scripts/ci-test.sh"
@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210224-a27864c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
         command:
         - "./scripts/ci-build.sh"
         resources:
