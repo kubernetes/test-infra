@@ -11,8 +11,6 @@ periodics:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
   labels:
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -39,8 +37,6 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      - name: BUILD_TYPE
-        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

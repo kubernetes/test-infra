@@ -30,8 +30,6 @@ periodics:
   name: ci-kubernetes-kind-conformance
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -54,8 +52,6 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -77,8 +73,6 @@ periodics:
   name: ci-kubernetes-kind-conformance-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -107,8 +101,6 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -131,8 +123,6 @@ periodics:
   name: ci-kubernetes-kind-conformance-parallel
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -151,8 +141,6 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       command:
         - wrapper.sh
         - bash
@@ -179,8 +167,6 @@ periodics:
   name: ci-kubernetes-kind-conformance-parallel-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -205,8 +191,6 @@ periodics:
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       command:
         - wrapper.sh
         - bash

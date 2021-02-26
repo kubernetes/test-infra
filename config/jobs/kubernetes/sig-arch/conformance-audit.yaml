@@ -6,8 +6,6 @@ periodics:
   name: ci-audit-kind-conformance
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -34,7 +32,7 @@ periodics:
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
       - name: BUILD_TYPE
-        value: bazel
+        value: docker
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

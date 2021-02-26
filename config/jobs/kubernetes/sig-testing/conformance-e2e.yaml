@@ -11,8 +11,6 @@ presubmits:
     run_if_changed: 'conformance'
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
@@ -57,8 +55,6 @@ presubmits:
     run_if_changed: '^test/'
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
@@ -106,8 +102,6 @@ periodics:
   name: ci-kubernetes-conformance-image-test
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   spec:
@@ -152,8 +146,6 @@ periodics:
   skip_branches:
   - release-\d+\.\d+ # per-release settings
   labels:
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
@@ -172,8 +164,6 @@ periodics:
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      - name: BUILD_TYPE
-        value: bazel
       - name: GA_ONLY
         value: "true"
       # we need privileged mode in order to do docker in docker
