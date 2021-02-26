@@ -259,8 +259,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100-scheduler-highqps
-      - --build=bazel
-      - --extract=bazel
+      - --build=quick
+      - --extract=local
       - --gcp-master-size=e2-standard-2
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-4
