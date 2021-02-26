@@ -6,8 +6,6 @@ presubmits:
     skip_report: false
     decorate: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -27,8 +25,6 @@ presubmits:
           value: \[Conformance\]|DualStack
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -57,8 +53,6 @@ presubmits:
     skip_report: false
     decorate: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -78,8 +72,6 @@ presubmits:
           value: \[Conformance\]|DualStack
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -111,8 +103,6 @@ periodics:
   name: ci-kubernetes-kind-network
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -135,8 +125,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -162,8 +150,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -192,8 +178,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -219,8 +203,6 @@ periodics:
   name: ci-kubernetes-kind-network-dual
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -249,8 +231,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -276,8 +256,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -300,8 +278,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: KUBE_PROXY_MODE
         value: "ipvs"
       - name: FOCUS
@@ -329,8 +305,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -361,8 +335,6 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -388,8 +360,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs-dual
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -420,8 +390,6 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -448,8 +416,6 @@ periodics:
   name: ci-kubernetes-kind-network-parallel
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -468,8 +434,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -500,8 +464,6 @@ periodics:
   name: ci-kubernetes-kind-network-parallel-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -526,8 +488,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
