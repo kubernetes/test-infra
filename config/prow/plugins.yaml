@@ -690,9 +690,6 @@ plugins:
   kubeflow/gcp-blueprints:
   - trigger
 
-  kubeflow/kubeflow:
-  - trigger
-
   kubeflow/testing:
   - trigger
 

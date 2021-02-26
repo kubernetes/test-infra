@@ -1,7 +1,5 @@
 # Temporary kubeflow overrides until we fix prow to calculate correct paths.
 test_groups:
-- name: kubeflow-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-postsubmit
 - name: kubeflow-gcp-blueprints-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_gcp-blueprints/kubeflow-gcp-blueprints-postsubmit
 - name: kubeflow-testing-postsubmit

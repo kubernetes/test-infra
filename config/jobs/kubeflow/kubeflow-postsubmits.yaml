@@ -12,22 +12,6 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/gcp-blueprints.
-  kubeflow/kubeflow:
-  - name: kubeflow-postsubmit
-    cluster: kubeflow
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
-        imagePullPolicy: Always
-
-    annotations:
-      testgrid-dashboards: sig-big-data
-      description: Postsubmit tests for Kubeflow.
-      # TODO: use a public email group
-      testgrid-alert-email: kubeflow-engineering@google.com
-      testgrid-num-failures-to-alert: "3"
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
     cluster: kubeflow
