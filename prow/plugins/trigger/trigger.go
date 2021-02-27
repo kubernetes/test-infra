@@ -156,6 +156,7 @@ type githubClient interface {
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	ListCommitPullRequests(org, repo, SHA string) ([]github.PullRequest, error)
 }
 
 type trustedPullRequestClient interface {

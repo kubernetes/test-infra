@@ -88,6 +88,10 @@ type FakeClient struct {
 	// org/repo#number:[]commit
 	CommitMap map[string][]github.RepositoryCommit
 
+	// PullRequests associated with a commit
+	// org/repo/SHA:[]PullRequest
+	CommitPullRequests map[string][]github.PullRequest
+
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
@@ -979,4 +983,9 @@ func (f *FakeClient) CreatePullRequestReviewComment(owner, repo string, number i
 	f.PullRequestReviewCommentsAdded = append(f.PullRequestReviewCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, rc.Body))
 	f.PullRequestReviewComments[number] = append(f.PullRequestReviewComments[number], rc)
 	return nil
+}
+
+// ListCommitPullRequesrs returns the list of PRs associated with a commit.
+func (f *FakeClient) ListCommitPullRequests(org, repo, SHA string) ([]github.PullRequest, error) {
+	return f.CommitPullRequests[fmt.Sprintf("%s/%s/%s", org, repo, SHA)], nil
 }

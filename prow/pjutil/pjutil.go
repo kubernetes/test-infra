@@ -100,6 +100,23 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
+// NewPostsubmit converts a config.Postsubmit into a prowapi.ProwJob.
+// The prowapi.Refs are configured correctly per the pr, baseSHA.
+// The eventGUID becomes a github.EventGUID label.
+func NewPostsubmit(pr github.PullRequest, baseSHA string, job config.Postsubmit, eventGUID string) prowapi.ProwJob {
+	refs := createRefs(pr, baseSHA)
+	labels := make(map[string]string)
+	for k, v := range job.Labels {
+		labels[k] = v
+	}
+	annotations := make(map[string]string)
+	for k, v := range job.Annotations {
+		annotations[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	return NewProwJob(PostsubmitSpec(job, refs), labels, annotations)
+}
+
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)

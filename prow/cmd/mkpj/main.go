@@ -65,17 +65,7 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				return p.JobBase, pjutil.PresubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-					Pulls: []prowapi.Pull{{
-						Author: o.pullAuthor,
-						Number: o.pullNumber,
-						SHA:    o.pullSha,
-					}},
-				})
+				return p.JobBase, pjutil.PresubmitSpec(p, o.createRefs(org, repo))
 			}
 		}
 	}
@@ -87,12 +77,7 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				return p.JobBase, pjutil.PostsubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-				})
+				return p.JobBase, pjutil.PostsubmitSpec(p, o.createRefs(org, repo))
 			}
 		}
 	}
@@ -171,6 +156,23 @@ func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
 		}
 	}
 	return nil
+}
+
+func (o *options) createRefs(org, repo string) prowapi.Refs {
+	refs := prowapi.Refs{
+		Org:     org,
+		Repo:    repo,
+		BaseRef: o.baseRef,
+		BaseSHA: o.baseSha,
+	}
+	if o.pullNumber != 0 {
+		refs.Pulls = []prowapi.Pull{{
+			Author: o.pullAuthor,
+			Number: o.pullNumber,
+			SHA:    o.pullSha,
+		}}
+	}
+	return refs
 }
 
 type githubClient interface {
