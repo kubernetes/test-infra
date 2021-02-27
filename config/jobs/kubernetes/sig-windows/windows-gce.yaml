@@ -548,8 +548,6 @@ presubmits:
       preset-service-account: "true"
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     always_run: false
     optional: true
@@ -561,7 +559,7 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=release
+        - --build=quick
         - --check-leaked-resources
         - --cluster=
         - --extract=local
@@ -577,6 +575,8 @@ presubmits:
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=200m
         env:
+        - name: KUBE_BUILD_PLATFORMS
+          value: "linux/amd64 windows/amd64"
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
         - name: PREPULL_YAML
