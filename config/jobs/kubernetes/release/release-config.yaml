@@ -5,8 +5,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
     spec:
       containers:
@@ -18,7 +17,7 @@ presubmits:
         - --timeout=90
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --down=false
         - --extract=local
@@ -33,6 +32,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-cluster-up
