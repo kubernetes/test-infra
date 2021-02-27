@@ -273,8 +273,9 @@ type PullRequest struct {
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
-	Milestone *Milestone `json:"milestone,omitempty"`
-	Commits   int        `json:"commits"`
+	Milestone         *Milestone `json:"milestone,omitempty"`
+	Commits           int        `json:"commits"`
+	AuthorAssociation string     `json:"author_association,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
