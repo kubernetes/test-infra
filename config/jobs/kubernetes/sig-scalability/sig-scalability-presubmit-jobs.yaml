@@ -12,7 +12,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     annotations:
@@ -28,7 +28,7 @@ presubmits:
         - --timeout=120
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -61,6 +61,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "14Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-big-performance
     always_run: false
@@ -70,7 +72,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
@@ -84,7 +86,7 @@ presubmits:
         - --timeout=270
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
         - --extract=local
@@ -115,6 +117,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
@@ -126,6 +130,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -140,7 +145,7 @@ presubmits:
         - --timeout=270
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
@@ -166,6 +171,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-large-performance
     always_run: false
@@ -175,7 +182,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
@@ -189,7 +196,7 @@ presubmits:
         - --timeout=570
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=local
@@ -221,6 +228,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     cluster: k8s-infra-prow-build
@@ -233,7 +242,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
@@ -254,7 +262,7 @@ presubmits:
         - "--timeout=120"
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -297,7 +305,7 @@ presubmits:
             cpu: 6
             memory: 16Gi
         securityContext:
-          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
+          privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     always_run: false
@@ -307,7 +315,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-scale: "true"
@@ -326,7 +333,7 @@ presubmits:
         - "--timeout=1220"
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -363,7 +370,7 @@ presubmits:
             cpu: 6
             memory: "16Gi"
         securityContext:
-          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
+          privileged: true
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
@@ -413,7 +420,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
@@ -470,7 +476,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
