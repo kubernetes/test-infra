@@ -840,7 +840,7 @@ type pluginsWithoutUnmarshaler Plugins
 func (p *Plugins) UnmarshalJSON(d []byte) error {
 	var oldPlugins map[string][]string
 	if err := yaml.Unmarshal(d, &oldPlugins); err == nil {
-		logrus.Warn("plugins declaration uses a deprecated config style, please migrate it")
+		//logrus.Warn("plugins declaration uses a deprecated config style, please migrate it")
 		*p = OldToNewPlugins(oldPlugins)
 		return nil
 	}
