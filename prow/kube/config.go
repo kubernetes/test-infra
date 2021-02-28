@@ -23,6 +23,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
@@ -48,6 +50,7 @@ func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 		if err != nil {
 			return nil, "", fmt.Errorf("create %s client: %v", context, err)
 		}
+		contextCfg.UserAgent = version.UserAgent()
 		configs[context] = *contextCfg
 		logrus.Infof("Parsed kubeconfig context: %s", context)
 	}
@@ -86,6 +89,8 @@ func LoadClusterConfigs(kubeconfig, projectedTokenFile string) (map[string]rest.
 	localCfg, err := rest.InClusterConfig()
 	if err != nil {
 		logrus.WithError(err).Warn("Could not create in-cluster config (expected when running outside the cluster).")
+	} else {
+		localCfg.UserAgent = version.UserAgent()
 	}
 	if localCfg != nil && projectedTokenFile != "" {
 		localCfg.BearerToken = ""
