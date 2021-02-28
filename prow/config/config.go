@@ -1296,13 +1296,23 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
+	return loadWithYamlOpts(nil, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
+}
+
+// LoadStrict loads and parses the config at path.
+// Unlike Load it unmarshalls yaml with strict parsing.
+func LoadStrict(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
+	return loadWithYamlOpts([]yaml.JSONOpt{yaml.DisallowUnknownFields}, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
+}
+
+func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
 			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
-	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix)
+	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, yamlOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1325,7 +1335,7 @@ func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, sup
 }
 
 // ReadJobConfig reads the JobConfig yaml, but does not expand or validate it.
-func ReadJobConfig(jobConfig string) (JobConfig, error) {
+func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error) {
 	stat, err := os.Stat(jobConfig)
 	if err != nil {
 		return JobConfig{}, err
@@ -1334,7 +1344,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 	if !stat.IsDir() {
 		// still support a single file
 		var jc JobConfig
-		if err := yamlToConfig(jobConfig, &jc); err != nil {
+		if err := yamlToConfig(jobConfig, &jc, yamlOpts...); err != nil {
 			return JobConfig{}, err
 		}
 		return jc, nil
@@ -1379,7 +1389,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 
 		fileStart := time.Now()
 		var subConfig JobConfig
-		if err := yamlToConfig(path, &subConfig); err != nil {
+		if err := yamlToConfig(path, &subConfig, yamlOpts...); err != nil {
 			return err
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
@@ -1399,7 +1409,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 }
 
 // loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string) (*Config, error) {
+func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, yamlOpts ...yaml.JSONOpt) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -1410,7 +1420,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	}
 
 	var nc Config
-	if err := yamlToConfig(prowConfig, &nc); err != nil {
+	if err := yamlToConfig(prowConfig, &nc, yamlOpts...); err != nil {
 		return nil, err
 	}
 
@@ -1527,7 +1537,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		return &nc, nil
 	}
 
-	jc, err := ReadJobConfig(jobConfig)
+	jc, err := ReadJobConfig(jobConfig, yamlOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1539,12 +1549,12 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 }
 
 // yamlToConfig converts a yaml file into a Config object.
-func yamlToConfig(path string, nc interface{}) error {
+func yamlToConfig(path string, nc interface{}, opts ...yaml.JSONOpt) error {
 	b, err := ReadFileMaybeGZIP(path)
 	if err != nil {
 		return fmt.Errorf("error reading %s: %w", path, err)
 	}
-	if err := yaml.Unmarshal(b, nc); err != nil {
+	if err := yaml.Unmarshal(b, nc, opts...); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %w", path, err)
 	}
 	var jc *JobConfig
