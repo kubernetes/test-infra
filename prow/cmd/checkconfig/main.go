@@ -330,20 +330,7 @@ func validate(o options) error {
 		}
 	}
 	if o.warningEnabled(unknownFieldsWarning) {
-		cfgBytes, err := ioutil.ReadFile(o.configPath)
-		if err != nil {
-			return fmt.Errorf("error reading Prow config for validation: %w", err)
-		}
-		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
-		if err != nil {
-			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
-		}
-		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
+		if _, err := config.LoadStrict(o.configPath, o.jobConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -461,14 +448,6 @@ func validateURLs(c config.ProwConfig) error {
 	}
 
 	return utilerrors.NewAggregate(validationErrs)
-}
-
-func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
-	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
-	if err != nil {
-		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
-	}
-	return nil
 }
 
 func validateJobRequirements(c config.JobConfig) error {

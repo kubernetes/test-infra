@@ -23,7 +23,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 	"time"
 
@@ -32,7 +31,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
-	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -370,192 +368,6 @@ func TestOrgRepoUnion(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
 				t.Errorf("%s: did not get expected config:\n%v", tc.name, cmp.Diff(tc.expected, got))
-			}
-		})
-	}
-}
-
-func TestValidateUnknownFields(t *testing.T) {
-	testCases := []struct {
-		name, filename string
-		cfg            interface{}
-		configBytes    []byte
-		config         interface{}
-		expectedErr    string
-	}{
-		{
-			name:     "valid config",
-			filename: "valid-conf.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - config-updater
-config_updater:
-  maps:
-    # Update the plugins configmap whenever plugins.yaml changes
-    kube/plugins.yaml:
-      name: plugins
-size:
-  s: 1`),
-			expectedErr: "",
-		},
-		{
-			name:     "invalid top-level property",
-			filename: "toplvl.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - config-updater
-notconfig_updater:
-  maps:
-    # Update the plugins configmap whenever plugins.yaml changes
-    kube/plugins.yaml:
-      name: plugins
-size:
-  s: 1`),
-			expectedErr: "notconfig_updater",
-		},
-		{
-			name:     "invalid second-level property",
-			filename: "seclvl.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - config-updater
-size:
-  xs: 1
-  s: 5`),
-			expectedErr: "xs",
-		},
-		{
-			name:     "invalid array element",
-			filename: "home/array.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - trigger
-triggers:
-- repos:
-  - kube/kube
-- repoz:
-  - kube/kubez`),
-			expectedErr: "repoz",
-		},
-		// Options like DisallowUnknownFields can not be passed when using
-		// a custon json.Unmarshaler like we do here for defaulting:
-		// https://github.com/golang/go/issues/41144
-		//		{
-		//			name:     "invalid map entry",
-		//			filename: "map.yaml",
-		//			cfg:      &plugins.Configuration{},
-		//			configBytes: []byte(`plugins:
-		//  kube/kube:
-		//  - size
-		//  - config-updater
-		//config_updater:
-		//  maps:
-		//    # Update the plugins configmap whenever plugins.yaml changes
-		//    kube/plugins.yaml:
-		//      name: plugins
-		//    kube/config.yaml:
-		//      validation: config
-		//size:
-		//  s: 1`),
-		//			expectedErr: "validation",
-		//		},
-		{
-			//only one invalid element is printed in the error
-			name:     "multiple invalid elements",
-			filename: "multiple.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`plugins:
-  kube/kube:
-  - size
-  - trigger
-triggers:
-- repoz:
-  - kube/kubez
-- repos:
-  - kube/kube
-size:
-  s: 1
-  xs: 1`),
-			expectedErr: "xs",
-		},
-		{
-			name:     "embedded structs - kube",
-			filename: "embedded.yaml",
-			cfg:      &config.Config{},
-			configBytes: []byte(`presubmits:
-  kube/kube:
-  - name: test-presubmit
-    decorate: true
-    always_run: true
-    never_run: false
-    skip_report: true
-    spec:
-      containers:
-      - image: alpine
-        command: ["/bin/printenv"]`),
-			expectedErr: "never_run",
-		},
-		{
-			name:     "embedded structs - tide",
-			filename: "embedded.yaml",
-			cfg:      &config.Config{},
-			configBytes: []byte(`tide:
-  squash_label: sq
-  not-a-property: true`),
-			expectedErr: "not-a-property",
-		},
-		{
-			name:     "embedded structs - size",
-			filename: "embedded.yaml",
-			cfg:      &config.Config{},
-			configBytes: []byte(`size:
-  s: 1
-  xs: 1`),
-			expectedErr: "size",
-		},
-		{
-			name:     "pointer to a slice",
-			filename: "pointer.yaml",
-			cfg:      &plugins.Configuration{},
-			configBytes: []byte(`bugzilla:
-  default:
-    '*':
-      statuses:
-      - foobar
-      extra: oops`),
-			expectedErr: "extra",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			if err := yaml.Unmarshal(tc.configBytes, tc.cfg); err != nil {
-				t.Fatalf("Unable to unmarhsal yaml: %v", err)
-			}
-			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
-
-			if tc.expectedErr == "" {
-				if got != nil {
-					t.Errorf("%s: expected nil error but got:\n%v", tc.name, got)
-				}
-			} else { // check substrings in case yaml lib changes err fmt
-				var errMsg string
-				if got != nil {
-					errMsg = got.Error()
-				}
-				for _, s := range []string{"unknown field", tc.filename, tc.expectedErr} {
-					if !strings.Contains(errMsg, s) {
-						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%v", tc.name, s, got)
-					}
-				}
 			}
 		})
 	}

@@ -86,7 +86,6 @@ go_test(
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
         "@io_k8s_apimachinery//pkg/util/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
         "@io_k8s_utils//pointer:go_default_library",
     ],
 )
