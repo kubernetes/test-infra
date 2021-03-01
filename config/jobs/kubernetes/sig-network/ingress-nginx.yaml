@@ -152,13 +152,13 @@ presubmits:
             secretKeyRef:
               name: ingress-nginx-codecov-token
               key: ingress-nginx-codecov-token
-    volumes:
-    - name: ingress-nginx-codecov-token
-      secret:
-        secretName: ingress-nginx-codecov-token
-        items:
-        - key: ingress-nginx-codecov-token
-          path: ingress-nginx-codecov-token
+      volumes:
+      - name: ingress-nginx-codecov-token
+        secret:
+          secretName: ingress-nginx-codecov-token
+          items:
+          - key: ingress-nginx-codecov-token
+            path: ingress-nginx-codecov-token
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test
