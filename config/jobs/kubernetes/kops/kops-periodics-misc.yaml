@@ -63,7 +63,6 @@ periodics:
     testgrid-alert-email: release-team@kubernetes.io
 - interval: 4h
   name: e2e-kops-aws-misc-upgrade
-  always_run: false
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

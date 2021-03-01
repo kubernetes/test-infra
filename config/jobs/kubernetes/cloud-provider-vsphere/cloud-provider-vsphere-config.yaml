@@ -218,8 +218,6 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^master$
-    # Temporarily always pushing until workflow is worked out.
-    always_run: true
     # Only build a new a image if something that could change binary changes
     #run_if_changed: '^(cmd|pkg)\/|cluster\/images\/controller-manager\/Dockerfile|Makefile'
     path_alias: k8s.io/cloud-provider-vsphere
@@ -252,7 +250,6 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
-    always_run: false
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     spec:
