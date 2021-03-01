@@ -1,9 +1,10 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-files-remake
+    cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
-    optional: true
+    optional: false
     run_if_changed: 'Makefile.generated_files|make-rules'
     always_run: false
     skip_report: false

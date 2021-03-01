@@ -1339,11 +1339,12 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
+    cluster: k8s-infra-prow-build
     branches:
     - release-1.19
     decorate: true
     name: pull-kubernetes-files-remake
-    optional: true
+    optional: false
     path_alias: k8s.io/kubernetes
     run_if_changed: Makefile.generated_files|make-rules
     spec:
