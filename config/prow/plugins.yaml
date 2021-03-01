@@ -161,6 +161,12 @@ blockades:
   - ^pkg/util/[^/]+\.go$
   explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
 - repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^test/conformance/testdata/conformance.yaml$
+  branchregexp: "^release-*"
+  explanation: "`test/conformance/testdata/conformance.yaml` cannot be updated on release branches."
+- repos:
   - kubernetes/community
   blockregexps:
   - ^events/2016
