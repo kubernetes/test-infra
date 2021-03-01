@@ -5028,8 +5028,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-runtime",
-        sum = "h1:o98Jsn2DtE1Prg8mmW9AfGGXSgpG/GhmqcbcVYp03X8=",
-        version = "v0.8.1-0.20210115141952-3c5b3583fd30",
+        sum = "h1:q61//AaEaMx8jPgEM4TE3s2X34RMatAqLklIf/WeJ1g=",
+        version = "v0.8.3-0.20210301154926-12660d4f2255",
     )
 
     go_repository(
