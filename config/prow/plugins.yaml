@@ -53,9 +53,6 @@ approve:
   - kubernetes/minikube
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
-  - kubernetes/publishing-bot
-  - kubernetes/release
-  - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/system-validators
   - kubernetes/utils
@@ -85,15 +82,23 @@ approve:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-container-image-promoter
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
+  - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/release-notes
   - kubernetes-sigs/slack-infra
+  - kubernetes-sigs/zeitgeist
   - kubernetes/community
   - kubernetes/k8s.io
   - kubernetes/org
+  - kubernetes/publishing-bot
+  - kubernetes/release
   - kubernetes/repo-infra
+  - kubernetes/sig-release
   - kubernetes/test-infra
   - kubernetes/cloud-provider-gcp
   require_self_approval: false
@@ -136,13 +141,21 @@ lgtm:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-container-image-promoter
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
+  - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/release-notes
+  - kubernetes-sigs/zeitgeist
   - kubernetes/k8s.io
   - kubernetes/kops
+  - kubernetes/publishing-bot
+  - kubernetes/release
   - kubernetes/repo-infra
+  - kubernetes/sig-release
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
