@@ -86,7 +86,7 @@ data:
     plank:
       job_url_prefix_config:
         # TODO: Remove the gcs suffix once https://github.com/kubernetes/test-infra/pull/17779 is in
-        "*": https://prow.<< your-domain.com >>/view/gcs
+        "*": https://prow.<< your-domain.com >>/view/gs
       report_templates:
         '*': >-
             [Full PR test history](https://prow.<< your-domain.com >>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).

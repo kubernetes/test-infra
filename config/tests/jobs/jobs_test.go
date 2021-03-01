@@ -143,7 +143,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -153,7 +153,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "test-infra",
 			job:     "ti-pre-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -163,7 +163,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "foo-bar presubmit",
@@ -172,7 +172,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "foo-pre-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
@@ -181,21 +181,21 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/k8s-post-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/logs/k8s-post-1/1/",
 		},
 		{
 			name:    "k8s periodic",
 			jobType: prowapi.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/k8s-peri-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
 			jobType: prowapi.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/nan-peri-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
@@ -204,7 +204,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -214,7 +214,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/gs/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
 		},
 	}
 
