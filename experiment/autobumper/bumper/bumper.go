@@ -49,6 +49,7 @@ const (
 	tagVersion             = "vYYYYMMDD-deadbeef"
 	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 	defaultHeadBranchName  = "autobump"
+	defaultBaseBranchName  = "main"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -116,6 +117,8 @@ type Options struct {
 	RemoteName string `yaml:"remoteName"`
 	// The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
 	HeadBranchName string `yaml:"headBranchName"`
+	// The name of the base branch that will be used when creating the pull request. If unset, defaults to "master".
+	BaseBranchName string `yaml:"baseBranchName"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
 }
@@ -228,6 +231,10 @@ func validateOptions(o *Options) error {
 	if !o.SkipPullRequest && o.HeadBranchName == "" {
 		o.HeadBranchName = defaultHeadBranchName
 	}
+	// TODO: could auto-detect the target repo's default base branch
+	if !o.SkipPullRequest && o.BaseBranchName == "" {
+		o.BaseBranchName = defaultBaseBranchName
+	}
 
 	return nil
 }
@@ -313,7 +320,7 @@ func Run(o *Options) error {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions); err != nil {
+		if err := UpdatePR(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, o.BaseBranchName, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}

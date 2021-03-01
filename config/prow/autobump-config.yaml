@@ -7,6 +7,7 @@ onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
 skipPullRequest: false
 gitHubOrg: "kubernetes"
 gitHubRepo: "test-infra"
+baseBranchName: "master"
 remoteName: "test-infra"
 upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 includedConfigPaths:
