@@ -4,7 +4,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     optional: true
-    always_run: true
+    always_run: false
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
@@ -42,7 +42,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     optional: true
-    always_run: true
+    always_run: false
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
