@@ -2,7 +2,6 @@ postsubmits:
   kubernetes-sigs/boskos:
     - name: ci-boskos-build-test-verify
       decorate: true
-      always_run: true
       path_alias: sigs.k8s.io/boskos
       spec:
         containers:
