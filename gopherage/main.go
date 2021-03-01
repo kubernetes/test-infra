@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/gopherage/cmd/html"
 	"k8s.io/test-infra/gopherage/cmd/junit"
 	"k8s.io/test-infra/gopherage/cmd/merge"
+	"k8s.io/test-infra/gopherage/cmd/metadata"
 )
 
 var rootCommand = &cobra.Command{
@@ -40,6 +41,7 @@ func run() error {
 	rootCommand.AddCommand(html.MakeCommand())
 	rootCommand.AddCommand(junit.MakeCommand())
 	rootCommand.AddCommand(merge.MakeCommand())
+	rootCommand.AddCommand(metadata.MakeCommand())
 	return rootCommand.Execute()
 }
 
