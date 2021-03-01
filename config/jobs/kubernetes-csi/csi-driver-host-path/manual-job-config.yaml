@@ -45,13 +45,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-distributed-on-kubernetes-1-19
     # Explicitly needs to be started with /test.
     # Will only work on branches with https://github.com/kubernetes-csi/csi-driver-host-path/pull/248 merged.
