@@ -605,7 +605,7 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	}
 	pod.Namespace = r.config().PodNamespace
 	// Add prow version as a label for better debugging prowjobs.
-	pod.ObjectMeta.Labels[kube.ProwVersionLabel] = version.Version
+	pod.ObjectMeta.Labels[kube.PlankVersionLabel] = version.Version
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
