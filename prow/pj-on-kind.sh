@@ -26,9 +26,11 @@ function main() {
   ensureInstall
 
   # Generate PJ and Pod.
-  docker run -i --rm -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj "--config-path=${config}" "--job=${job}" ${job_config_flag} > "${PWD}/pj.yaml"
-  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}/${job}" > "${PWD}/pod.yaml"
- 
+  docker pull gcr.io/k8s-prow/mkpj:latest
+  docker run -i --rm -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj:latest "--config-path=${config}" "--job=${job}" ${job_config_flag} > "${PWD}/pj.yaml"
+  docker pull gcr.io/k8s-prow/mkpod:latest
+  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod:latest --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}/${job}" > "${PWD}/pod.yaml"
+
   # Add any k8s resources that the pod depends on to the kind cluster here. (secrets, configmaps, etc.)
 
   # Deploy pod and watch.
@@ -95,7 +97,7 @@ function ensureInstall() {
       local temp_config="${PWD}/temp-mkpod-kind-config.yaml"
       cat <<EOF > "${temp_config}"
 kind: Cluster
-apiVersion: kind.sigs.k8s.io/v1alpha3
+apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   - extraMounts:
       - containerPath: ${out_dir}
