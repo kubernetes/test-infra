@@ -38,6 +38,7 @@ spec:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/oauth
         ports:
           - name: http
             containerPort: 8888
