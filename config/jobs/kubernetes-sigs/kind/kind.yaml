@@ -7,7 +7,6 @@ periodics:
     repo: kind
     base_ref: master
     path_alias: sigs.k8s.io/kind
-  always_run: true
   labels:
     preset-dind-enabled: "true"
   spec:
