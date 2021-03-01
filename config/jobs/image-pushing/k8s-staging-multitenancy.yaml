@@ -5,7 +5,6 @@ postsubmits:
       annotations:
         testgrid-dashboards: wg-multi-tenancy-externalip
       decorate: true
-      always_run: true
       branches:
         - ^master$
       spec:
