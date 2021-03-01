@@ -3,8 +3,9 @@
 ## New features
 
 New features added to each component:
-  - *February 4, 2021* New format introduced in `plugins.yaml`. Repos can be excluded from plugin definition
-    at org level using `excluded_repos` notation. The previous format will be deprecated in *July 2021*.
+  - *February 23, 2021* New format introduced in `plugins.yaml`. Repos can be excluded from plugin definition
+    at org level using `excluded_repos` notation. The previous format will be deprecated in *July 2021*, see
+    https://github.com/kubernetes/test-infra/issues/20631.
   - *November 2, 2020* Tide is now able to respect checkruns.
   - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
     Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
