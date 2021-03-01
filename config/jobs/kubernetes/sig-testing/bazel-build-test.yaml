@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     cluster: k8s-infra-prow-build
     decorate: true
+    optional: true
     always_run: true
     skip_branches:
     - release-\d+.\d+ # per-release job
@@ -40,6 +41,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     cluster: k8s-infra-prow-build
     decorate: true
+    optional: true
     always_run: true
     skip_branches:
     - release-\d+.\d+ # per-release job
