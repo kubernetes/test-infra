@@ -193,7 +193,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `priority/critical` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `priority/critical` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -225,7 +225,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -277,7 +277,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `area/urgent` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `area/urgent` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -289,7 +289,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `priority/infra` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `priority/infra` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -301,7 +301,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
@@ -313,7 +313,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them",
+			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them.",
 			action:                github.GenericCommentActionCreated,
 		},
 		{
