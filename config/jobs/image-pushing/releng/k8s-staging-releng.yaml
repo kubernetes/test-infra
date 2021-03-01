@@ -172,6 +172,6 @@ postsubmits:
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
-        rerun_auth_config:
-          github_team_ids:
-            - 2241179 # release-managers
+      rerun_auth_config:
+        github_team_ids:
+          - 2241179 # release-managers
