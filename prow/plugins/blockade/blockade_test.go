@@ -81,6 +81,12 @@ var (
 		BlockRegexps: []string{`test/conformance/testdata/.*`},
 		Explanation:  "6",
 	}
+	blockBadBranchRe = plugins.Blockade{
+		Repos:        []string{"org/repo"},
+		BranchRegexp: &releaseBranchRegexp,
+		BlockRegexps: []string{`test/conformance/testdata/.*`},
+		Explanation:  "6",
+	}
 )
 
 // TestCalculateBlocks validates that changes are blocked or allowed correctly.
@@ -92,6 +98,12 @@ func TestCalculateBlocks(t *testing.T) {
 		config          []plugins.Blockade
 		expectedSummary summary
 	}{
+		{
+			name:            "nil BranchRe",
+			config:          []plugins.Blockade{blockBadBranchRe},
+			changes:         []github.PullRequestChange{},
+			expectedSummary: summary{},
+		},
 		{
 			name:    "blocked by 1/1 blockade (no exceptions), extra file",
 			config:  []plugins.Blockade{blockDocs},
