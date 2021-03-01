@@ -19,9 +19,6 @@ triggers:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
-  - kubeflow
-  join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
-- repos:
   - tensorflow/minigo
   join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
 - repos:
@@ -115,22 +112,6 @@ label:
     # This label is used by the API review process
     # https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics
     - api-review
-    # These labels are used by Kubeflow
-    # TODO(https://github.com/kubernetes/test-infra/issues/8648): Switch
-    # to configuring prefixes and not individual labels once  that's supported.
-    - community/discussion
-    - community/maintenance
-    - community/question
-    - cuj/build-train-deploy
-    - cuj/multi-user
-    - platform/aws
-    - platform/azure
-    - platform/gcp
-    - platform/minikube
-    - platform/other
-    - tide/merge-method-merge
-    - tide/merge-method-rebase
-    - tide/merge-method-squash
 
 lgtm:
 - repos:
@@ -459,8 +440,6 @@ project_config:
               To do
             Doc Writing and Editing:
               To do
-    kubeflow:
-      org_maintainers_team_id: 3198542 # kubeflow-project-maintainers
 
 config_updater:
   maps:
@@ -668,29 +647,6 @@ plugins:
   - yuks # Let prow tell a /joke
 
   google/cadvisor:
-  - trigger
-
-  kubeflow:
-  - approve   # Enable /approve and /assign commands.
-  - assign
-  - blunderbuss
-  - golint
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle   # Lets PRs & issues be flagged as stale
-  - override
-  - project # Lets issues be tagged into projects
-  - size
-  - skip  # Allows cleaning up stale commit statuses
-  - verify-owners   # Validates OWNERS file changes in PRs.
-  - wip   # Applies a label to PRs with wip in the title to block merge
-
-  kubeflow/gcp-blueprints:
-  - trigger
-
-  kubeflow/testing:
   - trigger
 
   kubernetes:

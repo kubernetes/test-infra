@@ -454,32 +454,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
-    kubeflow:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/google
-      exclude:
-      - "^revert-" # don't protect revert branches
-      - "^dependabot/" # don't protect branches created by dependabot
-      - "-patch-" # don't protect branches created by editing on GitHub UI
 
 tide:
   sync_period: 2m
   queries:
-  - orgs:
-    - kubeflow
-    excludedRepos: # TODO(Bobgy): move entire Kubeflow org to oss prow.
-    - kubeflow/pipelines
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-rebase
   - orgs:
     - kubernetes
     - kubernetes-client
@@ -564,7 +542,6 @@ tide:
     - do-not-merge/work-in-progress
 
   merge_method:
-    kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
@@ -578,9 +555,6 @@ tide:
     kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
-  merge_commit_template:
-    kubeflow:
-      title: "{{ .Title }} (#{{ .Number }})"
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
