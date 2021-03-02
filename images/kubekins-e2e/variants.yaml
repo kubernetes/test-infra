@@ -8,7 +8,7 @@ variants:
     UPGRADE_DOCKER: 'true'
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.15.8
+    GO_VERSION: 1.16
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0

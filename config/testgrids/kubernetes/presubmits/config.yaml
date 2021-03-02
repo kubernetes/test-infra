@@ -127,9 +127,6 @@ dashboards:
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: width=10
-  - name: pull-canaries
-    test_group_name: pull-kubernetes-dependencies-canary
-    base_options: width=10
   - name: pull-kubernetes-e2e-gce-iscsi
     test_group_name: pull-kubernetes-e2e-gce-iscsi
     base_options: width=10

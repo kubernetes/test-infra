@@ -39,12 +39,20 @@ presubmits:
           requests:
             cpu: 2
             memory: 1.2Gi
-  - name: pull-kubernetes-dependencies-canary
+  - name: pull-kubernetes-dependencies-go-canary
+    cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     always_run: false
+    skip_report: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -53,7 +61,9 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+        # TODO(releng): Remove if we are able to support verify tests using the releng-ci image
+        #image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-go-canary
+        image: k8s.gcr.io/releng/releng-ci:v0.4.0
         args:
         - make
         - verify
@@ -71,5 +81,3 @@ presubmits:
           requests:
             cpu: 2
             memory: 1.2Gi
-    annotations:
-      testgrid-create-test-group: 'true'
