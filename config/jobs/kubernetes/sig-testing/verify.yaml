@@ -47,6 +47,54 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
+  - name: pull-kubernetes-verify-go-canary
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_report: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-go-canary
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/verify-dockerized.sh
+        env:
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
+        - name: EXCLUDE_FILES_REMAKE
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi
 periodics:
 - interval: 1h
   cluster: k8s-infra-prow-build
