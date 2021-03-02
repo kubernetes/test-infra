@@ -1314,6 +1314,10 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.20
     cluster: k8s-infra-prow-build
@@ -1347,6 +1351,11 @@ presubmits:
             cpu: "4"
             memory: 36Gi
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      description: runs bazel test //... -//build/... -//vendor/...
     branches:
     - release-1.20
     cluster: k8s-infra-prow-build

@@ -65,7 +65,7 @@ function addElement(parent, type, opts, children) {
 
 function spyglassURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
-  var spyglassURL = 'https://prow.k8s.io/view/gcs/' + buildPath.slice(5);
+  var spyglassURL = 'https://prow.k8s.io/view/gs/' + buildPath.slice(5);
   if (build.pr) {
     spyglassURL = spyglassURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }

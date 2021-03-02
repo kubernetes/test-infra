@@ -218,7 +218,7 @@ func compileApplicableBlockades(org, repo, branch string, log *logrus.Entry, blo
 			continue
 		}
 		// if branchregexp is specified, only consider blockades that apply to this branch
-		if raw.BranchRegexp != nil && !raw.BranchRe.MatchString(branch) {
+		if raw.BranchRe != nil && !raw.BranchRe.MatchString(branch) {
 			continue
 		}
 

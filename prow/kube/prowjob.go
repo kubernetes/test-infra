@@ -41,6 +41,9 @@ const (
 	// job names can be arbitrarily long, this is added as
 	// an annotation instead of a label.
 	ProwJobAnnotation = "prow.k8s.io/job"
+	// PlankVersionLabel is added in resources created by prow and
+	// carries the version of prow that decorated this job.
+	PlankVersionLabel = "prow.k8s.io/plank-version"
 	// OrgLabel is added in resources created by prow and
 	// carries the org associated with the job, eg kubernetes-sigs.
 	OrgLabel = "prow.k8s.io/refs.org"

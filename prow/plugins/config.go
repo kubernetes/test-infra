@@ -837,10 +837,12 @@ func OldToNewPlugins(oldPlugins map[string][]string) Plugins {
 
 type pluginsWithoutUnmarshaler Plugins
 
+var warnTriggerDeprecatedConfig time.Time
+
 func (p *Plugins) UnmarshalJSON(d []byte) error {
 	var oldPlugins map[string][]string
 	if err := yaml.Unmarshal(d, &oldPlugins); err == nil {
-		//logrus.Warn("plugins declaration uses a deprecated config style, please migrate it")
+		logrusutil.ThrottledWarnf(&warnTriggerDeprecatedConfig, time.Hour, "plugins declaration uses a deprecated config style, see https://github.com/kubernetes/test-infra/issues/20631#issuecomment-787693609 for a migration guide")
 		*p = OldToNewPlugins(oldPlugins)
 		return nil
 	}
@@ -1166,15 +1168,15 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 	}
 	pc.CherryPickUnapproved.BranchRe = branchRe
 
-	for _, blockade := range pc.Blockades {
-		if blockade.BranchRegexp == nil {
+	for i := range pc.Blockades {
+		if pc.Blockades[i].BranchRegexp == nil {
 			continue
 		}
-		branchRe, err := regexp.Compile(*blockade.BranchRegexp)
+		branchRe, err := regexp.Compile(*pc.Blockades[i].BranchRegexp)
 		if err != nil {
-			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %v", *blockade.BranchRegexp, err)
+			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %v", *pc.Blockades[i].BranchRegexp, err)
 		}
-		blockade.BranchRe = branchRe
+		pc.Blockades[i].BranchRe = branchRe
 	}
 
 	commentRe, err := regexp.Compile(pc.Heart.CommentRegexp)
