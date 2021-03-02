@@ -45,7 +45,6 @@ spec:
         - --github-endpoint=https://api.github.com
         - --job-config-path=/etc/job-config
         - --denylist=kubernetes/kubernetes
-        - --denylist=kubeflow/pipelines
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
