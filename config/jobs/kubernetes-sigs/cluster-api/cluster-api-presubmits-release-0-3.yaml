@@ -18,7 +18,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-build-release-0-3
-  - name: pull-cluster-api-make
+  - name: pull-cluster-api-make-release-0-3
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
