@@ -65,7 +65,9 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-go-canary
+      # TODO(releng): Remove if we are able to support verify tests using the releng-ci image
+      #- image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-go-canary
+      - image: k8s.gcr.io/releng/releng-ci:v0.4.0
         imagePullPolicy: Always
         command:
         - runner.sh
