@@ -50,6 +50,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     always_run: false
     skip_report: true
     labels:

@@ -59,6 +59,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
