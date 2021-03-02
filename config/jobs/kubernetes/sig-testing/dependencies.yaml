@@ -21,7 +21,10 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+        # TODO(releng): Use the 'master' variant once kubernetes/kubernetes has
+        #               been updated to go1.16
+        #               ref: https://github.com/kubernetes/kubernetes/pull/98572
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-c18942a-go-canary
         args:
         - make
         - verify
