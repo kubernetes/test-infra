@@ -1,21 +1,14 @@
-package(default_visibility = ["//visibility:public"])
-
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
     srcs = [
-        "agent.go",
-        "secret.go",
+        "censor.go",
+        "doc.go",
     ],
-    importpath = "k8s.io/test-infra/prow/config/secret",
+    importpath = "k8s.io/test-infra/prow/secretutil",
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/logrusutil:go_default_library",
-        "//prow/secretutil:go_default_library",
-        "@com_github_sirupsen_logrus//:go_default_library",
-        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
-    ],
+    deps = ["@org_go4//bytereplacer:go_default_library"],
 )
 
 filegroup(
@@ -34,10 +27,9 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["agent_test.go"],
+    srcs = ["censor_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/logrusutil:go_default_library",
-        "@com_github_sirupsen_logrus//:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )
