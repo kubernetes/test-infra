@@ -47,7 +47,7 @@ latest_stable_k8s_version="1.20"
 hostpath_driver_version="v1.5.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -316,6 +316,16 @@ snapshotter_version() {
     fi
 }
 
+use_bazel() {
+    local kubernetes="$1"
+
+    # Kubernetes 1.21 removed support for building with Bazel.
+    if version_gt "$kubernetes" "1.21"; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
 
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
@@ -368,6 +378,8 @@ EOF
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$kubernetes.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "$(use_bazel "$kubernetes")"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DRIVER_VERSION
@@ -415,6 +427,8 @@ EOF
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "$(use_bazel "latest")"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -608,6 +622,8 @@ for tests in non-alpha alpha; do
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
+      - name: CSI_PROW_USE_BAZEL
+        value: "$(use_bazel "$actual")"
       - name: CSI_SNAPSHOTTER_VERSION
         value: $(snapshotter_version "$actual" "")
       - name: CSI_PROW_BUILD_JOB
@@ -665,6 +681,8 @@ for kubernetes in $k8s_versions master; do
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
+      - name: CSI_PROW_USE_BAZEL
+        value: "$(use_bazel "$actual")"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....

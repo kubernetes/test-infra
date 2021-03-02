@@ -32,6 +32,8 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.18.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.18"
         - name: CSI_PROW_DRIVER_VERSION
@@ -74,6 +76,8 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.5.0"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -120,6 +124,8 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.19.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
@@ -162,6 +168,8 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.5.0"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -208,6 +216,8 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
@@ -254,6 +264,8 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.5.0"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -300,6 +312,8 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
@@ -383,6 +397,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.18"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v3.0.3"
       - name: CSI_PROW_BUILD_JOB
@@ -429,6 +445,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v3.0.3"
       - name: CSI_PROW_BUILD_JOB
@@ -475,6 +493,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -521,6 +541,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -563,6 +585,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.19"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v3.0.3"
       - name: CSI_PROW_BUILD_JOB
@@ -609,6 +633,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -655,6 +681,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -697,6 +725,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.20"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -743,6 +773,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -785,6 +817,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.18.0"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -833,6 +867,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.19.0"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -881,6 +917,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.20.0"
+      - name: CSI_PROW_USE_BAZEL
+        value: "true"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -929,6 +967,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -977,6 +1017,8 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
