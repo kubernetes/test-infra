@@ -68,8 +68,9 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
-    skip_branches:
-    - gh-pages
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-go-canary
