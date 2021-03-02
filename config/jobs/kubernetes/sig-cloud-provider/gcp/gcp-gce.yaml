@@ -415,7 +415,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(APIServerTracing|SServiceAccountIssuerDiscovery|StorageVersionAPI|Audit|PodPreset|RunAsGroup|TTLAfterFinished|NodeLease|CSIServiceAccountToken|CSIStorageCapacity|GenericEphemeralVolume|DaemonSetUpdateSurge|CrossNamespacePodAffinity|SuspendJob)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(APIServerTracing|ServiceAccountIssuerDiscovery|StorageVersionAPI|Audit|PodPreset|RunAsGroup|TTLAfterFinished|NodeLease|CSIServiceAccountToken|CSIStorageCapacity|GenericEphemeralVolume|DaemonSetUpdateSurge|CrossNamespacePodAffinity|SuspendJob)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
         resources:
