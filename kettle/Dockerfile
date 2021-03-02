@@ -35,7 +35,7 @@ RUN pip3 install requests google-cloud-pubsub==2.1.0 google-cloud-bigquery==2.2.
 RUN curl -fsSL https://downloads.python.org/pypy/pypy3.6-v7.3.1-linux64.tar.bz2 | tar xj -C opt  && \
     ln -s /opt/pypy*/bin/pypy3 /usr/bin
 
-RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-294.0.0-linux-x86_64.tar.gz | tar xfz - -C . && \
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-320.0.0-linux-x86_64.tar.gz | tar xfz - -C . && \
     ./google-cloud-sdk/install.sh -q && \
     ln -s /google-cloud-sdk/bin/* /bin/
 
