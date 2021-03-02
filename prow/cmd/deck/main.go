@@ -1388,6 +1388,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 			}
 			return
 		}
+		pj.ManagedFields = nil
 		handleSerialize(w, "prowjob", pj, l)
 	}
 }
