@@ -906,7 +906,7 @@ periodics:
       command:
       - /generic_autobump
       args:
-      - --config=config/prow/autobump-config.yaml
+      - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
@@ -924,7 +924,40 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow
-    description: runs prow/autobump.sh to create/update a PR that bumps prow to the latest RC
+    description: runs experiment/autobumper to create/update a PR that bumps prow to the latest RC
+- cron: "06 15-23 * * 1-5"  # Run at 7:06-15:06 PST (15:05 UTC) Mon-Fri
+  name: ci-test-infra-autobump-prowjobs
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/generic_autobump:v20210303-204466f
+      command:
+      - /generic_autobump
+      args:
+      - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prowjobs
+    description: runs experiment/autobumper to create/update a PR that bumps prowjobs to the latest RC
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
