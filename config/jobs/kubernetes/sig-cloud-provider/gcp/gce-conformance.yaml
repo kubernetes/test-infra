@@ -92,5 +92,5 @@ periodics:
           --down \;
           --test=ginkgo \;
           -- \;
-          --focus-regex='\[Conformance\]';
+          --focus-regex='\[Conformance\]' \;
           --use-built-binaries
