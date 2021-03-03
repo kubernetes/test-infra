@@ -85,7 +85,7 @@ presubmits:
       testgrid-tab-name: pr-aks-engine-azure-windows
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-aks-engine-windows-contianerd
+  - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
     decorate: true
@@ -139,7 +139,7 @@ presubmits:
       testgrid-tab-name: pr-aks-engine-azure-windows-containerd
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) using containerd
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-aks-engine-windows-contianerd-test-images
+  - name: pull-kubernetes-e2e-aks-engine-windows-containerd-test-images
     always_run: false
     optional: true
     decorate: true
