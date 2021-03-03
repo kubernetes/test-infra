@@ -59,6 +59,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.7-e2e-aws
   name: periodic-ci-openshift-release-master-okd-4.7-e2e-aws
-- days_of_results: 8
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-okd-machine-os-content-e2e-aws-4.7
   name: promote-release-openshift-okd-machine-os-content-e2e-aws-4.7
