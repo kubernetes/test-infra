@@ -1731,6 +1731,8 @@ type Commit struct {
 		Contexts []Context
 	}
 	OID               githubql.String `graphql:"oid"`
+	Message           githubql.String
+	MessageBody       githubql.String
 	StatusCheckRollup StatusCheckRollup
 }
 
