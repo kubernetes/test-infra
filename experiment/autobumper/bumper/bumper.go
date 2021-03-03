@@ -49,6 +49,7 @@ const (
 	tagVersion             = "vYYYYMMDD-deadbeef"
 	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 	defaultHeadBranchName  = "autobump"
+	defaultOncallGroup     = "testinfra"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -98,6 +99,8 @@ type Options struct {
 	GitEmail string `yaml:"gitEmail"`
 	// The oncall address where we can get the JSON file that stores the current oncall information.
 	OncallAddress string `yaml:"onCallAddress"`
+	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
+	OncallGroup string `yaml:"onCallGroup"`
 	// Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `yaml:"skipPullRequest"`
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
@@ -230,6 +233,9 @@ func validateOptions(o *Options) error {
 	if !o.SkipPullRequest && o.HeadBranchName == "" {
 		o.HeadBranchName = defaultHeadBranchName
 	}
+	if o.OncallGroup == "" {
+		o.OncallGroup = defaultOncallGroup
+	}
 
 	return nil
 }
@@ -315,7 +321,7 @@ func Run(o *Options) error {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}
@@ -840,7 +846,7 @@ func generatePRBody(images map[string]string, assignment string, prefixes []Pref
 	return body + assignment + "\n"
 }
 
-func getAssignment(oncallAddress string) string {
+func getAssignment(oncallAddress, oncallGroup string) string {
 	if oncallAddress == "" {
 		return ""
 	}
@@ -855,14 +861,15 @@ func getAssignment(oncallAddress string) string {
 			fmt.Sprintf("Error requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status))
 	}
 	oncall := struct {
-		Oncall struct {
-			TestInfra string `json:"testinfra"`
-		} `json:"Oncall"`
+		Oncall map[string]string `json:"Oncall"`
 	}{}
 	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
 		return fmt.Sprintf(errOncallMsgTempl, err)
 	}
-	curtOncall := oncall.Oncall.TestInfra
+	curtOncall, ok := oncall.Oncall[oncallGroup]
+	if !ok {
+		return fmt.Sprintf(errOncallMsgTempl, fmt.Sprintf("Oncall map doesn't contain group '%s'", oncallGroup))
+	}
 	if curtOncall != "" {
 		return "/cc @" + curtOncall
 	}
