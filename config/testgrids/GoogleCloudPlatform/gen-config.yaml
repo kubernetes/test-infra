@@ -6,6 +6,10 @@ dashboard_groups:
   - googleoss-esp-v2-periodic
   - googleoss-en-server
   name: googleoss
+- dashboard_names:
+  - googleoss-kubeflow-pipelines
+  - googleoss-kubeflow-gcp-blueprints
+  name: googleoss-kubeflow
 dashboards:
 - dashboard_tab:
   - code_search_url_template:
@@ -14,6 +18,8 @@ dashboards:
     name: guest-agent-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: guest-agent-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/compare/<start-custom-0>...<end-custom-0>
@@ -21,6 +27,8 @@ dashboards:
     name: gce-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-configs/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: gce-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-diskexpand/compare/<start-custom-0>...<end-custom-0>
@@ -28,6 +36,8 @@ dashboards:
     name: disk-expand-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-diskexpand/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: disk-expand-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/compare/<start-custom-0>...<end-custom-0>
@@ -35,6 +45,8 @@ dashboards:
     name: oslogin-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/guest-oslogin/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: oslogin-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
@@ -42,6 +54,8 @@ dashboards:
     name: osconfig-build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: osconfig-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
@@ -49,6 +63,8 @@ dashboards:
     name: OSConfig presubmits - gobuild
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: osconfig-presubmit-gobuild
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
@@ -56,6 +72,8 @@ dashboards:
     name: OSConfig presubmits - gocheck
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: osconfig-presubmit-gocheck
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
@@ -63,6 +81,8 @@ dashboards:
     name: OSConfig presubmits - gotest
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: osconfig-presubmit-gotest
   name: googleoss-gcp-guest
 - dashboard_tab:
@@ -74,6 +94,8 @@ dashboards:
     name: autobump-knative-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-oss-test-infra-autobump-knative-prow
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -83,6 +105,8 @@ dashboards:
     name: autobump-prow
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-oss-test-infra-autobump-prow
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -90,6 +114,8 @@ dashboards:
     name: oss-prow-heartbeat
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-oss-test-infra-heartbeat
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -99,6 +125,8 @@ dashboards:
     name: autobump-testgrid-canary
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: testgrid-canary-autobump
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -108,6 +136,8 @@ dashboards:
     name: knative-prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-oss-test-infra-deploy-knative-prow
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -117,6 +147,8 @@ dashboards:
     name: prow-deploy
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-oss-test-infra-deploy-prow
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -126,6 +158,8 @@ dashboards:
     name: hmacs-reconciliation
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-oss-test-infra-reconcile-hmacs
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -135,6 +169,8 @@ dashboards:
     name: testgrid-upload
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-oss-test-infra-upload-testgrid-config
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
@@ -142,6 +178,8 @@ dashboards:
     name: testgrid-deploy-canary
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-testgrid-deploy-canary
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
@@ -149,6 +187,8 @@ dashboards:
     name: testgrid-deploy-prod
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-testgrid-deploy-prod
   - alert_options:
       alert_mail_to_addresses: slchase@google.com
@@ -158,6 +198,8 @@ dashboards:
     name: testgrid-push
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: push-testgrid-images
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
@@ -167,6 +209,8 @@ dashboards:
     name: autobump-testgrid-prod
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: testgrid-prod-autobump
   name: googleoss-test-infra
 - dashboard_tab:
@@ -176,6 +220,8 @@ dashboards:
     name: api-regression
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-API-regression-test
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -183,6 +229,8 @@ dashboards:
     name: e2e-cloud-run-anthos-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-anthos-cloud-run-e2e-anthos-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -190,6 +238,8 @@ dashboards:
     name: build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -197,6 +247,8 @@ dashboards:
     name: e2e-app-engine-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-cloud-run-e2e-app-engine-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -204,6 +256,8 @@ dashboards:
     name: e2e-cloud-function-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-cloud-run-e2e-cloud-function-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -211,6 +265,8 @@ dashboards:
     name: e2e-cloud-run-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-cloud-run-e2e-cloud-run-grpc-echo
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -218,6 +274,8 @@ dashboards:
     name: e2e-cloud-run-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-cloud-run-e2e-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -225,6 +283,8 @@ dashboards:
     name: e2e-gcloud-build-image
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-e2e-gcloud-build-image
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -232,6 +292,8 @@ dashboards:
     name: e2e-gke-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-gke-e2e-grpc-echo-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -239,6 +301,8 @@ dashboards:
     name: e2e-gke-grpc-interop
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-gke-e2e-grpc-interop-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -246,6 +310,8 @@ dashboards:
     name: e2e-gke-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-gke-e2e-http-bookstore-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -253,6 +319,8 @@ dashboards:
     name: e2e-gke-using-sa-cred
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-gke-e2e-http-bookstore-managed-using-sa-cred
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -260,6 +328,8 @@ dashboards:
     name: presubmit
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-presubmit
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -267,6 +337,8 @@ dashboards:
     name: presubmit-asan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-presubmit-asan
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -274,6 +346,8 @@ dashboards:
     name: coverage
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-presubmit-coverage
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -281,6 +355,8 @@ dashboards:
     name: presubmit-tsan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-presubmit-tsan
   name: googleoss-esp-v2-presubmit
 - dashboard_tab:
@@ -290,6 +366,8 @@ dashboards:
     name: e2e-cloud-run-anthos-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -297,6 +375,8 @@ dashboards:
     name: build
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -304,6 +384,8 @@ dashboards:
     name: e2e-app-engine-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-cloud-run-e2e-app-engine-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -311,6 +393,8 @@ dashboards:
     name: e2e-cloud-function-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-function-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -318,6 +402,8 @@ dashboards:
     name: e2e-cloud-run-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-grpc-echo
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -325,6 +411,8 @@ dashboards:
     name: e2e-cloud-run-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-cloud-run-e2e-cloud-run-http-bookstore
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -332,6 +420,8 @@ dashboards:
     name: coverage
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-coverage
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -339,6 +429,8 @@ dashboards:
     name: e2e-gcloud-build-image
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-e2e-gcloud-build-image
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -346,6 +438,8 @@ dashboards:
     name: e2e-gke-grpc-echo
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-gke-e2e-grpc-echo-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -353,6 +447,8 @@ dashboards:
     name: e2e-gke-grpc-interop
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-gke-e2e-grpc-interop-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -360,6 +456,8 @@ dashboards:
     name: e2e-gke-http-bookstore
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-gke-e2e-http-bookstore-managed
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -367,6 +465,8 @@ dashboards:
     name: e2e-gke-using-sa-cred
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-gke-e2e-http-bookstore-managed-using-sa-cred
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -374,6 +474,8 @@ dashboards:
     name: presubmit
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-presubmit
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -381,6 +483,8 @@ dashboards:
     name: presubmit-asan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-presubmit-asan
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -388,6 +492,8 @@ dashboards:
     name: presubmit-tsan
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-continuous-presubmit-tsan
   - code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -395,6 +501,8 @@ dashboards:
     name: janitor-gke
     open_bug_template:
       url: https://github.com/kubernetes/test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-gke-janitor
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/compare/<start-custom-0>...<end-custom-0>
@@ -402,6 +510,8 @@ dashboards:
     name: janitor-serverless
     open_bug_template:
       url: https://github.com/GoogleCloudPlatform/esp-v2/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ESPv2-serverless-janitor
   name: googleoss-esp-v2-periodic
 - dashboard_tab:
@@ -413,6 +523,8 @@ dashboards:
     name: performance
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-en-server-performance
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
@@ -422,6 +534,8 @@ dashboards:
     name: e2e
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-en-server-terraform-e2e
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
@@ -431,6 +545,8 @@ dashboards:
     name: terraform-smoke
     open_bug_template:
       url: https://github.com/google/exposure-notifications-server/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-en-server-terraform-smoke
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
@@ -440,6 +556,8 @@ dashboards:
     name: verification-e2e
     open_bug_template:
       url: https://github.com/google/exposure-notifications-verification-server/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-en-verification-server-e2e
   - alert_options:
       alert_mail_to_addresses: en-server-prow-test-alert@google.com
@@ -449,8 +567,78 @@ dashboards:
     name: verification-terraform-smoke
     open_bug_template:
       url: https://github.com/google/exposure-notifications-verification-server/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-en-verification-server-terraform-smoke
   name: googleoss-en-server
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-pipelines+test@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Periodic job to run kfp functional test
+    name: kubeflow-pipelines-periodic-functional-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-pipelines-periodic-functional-test
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-pipelines+test@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Periodic job to cleanup ml-pipeline-test GCP project
+    name: kubeflow-pipelines-periodic-project-cleanup
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-pipelines-periodic-project-cleanup
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-pipelines+test@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit integration tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-integration-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-pipeline-postsubmit-integration-test
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-pipelines+test@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+  - alert_options:
+      alert_mail_to_addresses: kubeflow-pipelines+test@google.com
+    code_search_url_template:
+      url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit component tests for kubeflow/pipeline.
+    name: kubeflow-pipeline-postsubmit-standalone-component-test
+    open_bug_template:
+      url: https://github.com/kubeflow/pipelines/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-pipeline-postsubmit-standalone-component-test
+  name: googleoss-kubeflow-pipelines
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/kubeflow/gcp-blueprints/compare/<start-custom-0>...<end-custom-0>
+    description: Postsubmit tests for kubeflow/gcp-blueprints.
+    name: kubeflow-gcp-blueprints-postsubmit
+    open_bug_template:
+      url: https://github.com/kubeflow/gcp-blueprints/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kubeflow-gcp-blueprints-postsubmit
+  name: googleoss-kubeflow-gcp-blueprints
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -509,6 +697,12 @@ test_groups:
   num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-heartbeat
   name: ci-oss-test-infra-heartbeat
+- gcs_prefix: oss-prow/logs/kubeflow-pipelines-periodic-functional-test
+  name: kubeflow-pipelines-periodic-functional-test
+  num_failures_to_alert: 5
+- gcs_prefix: oss-prow/logs/kubeflow-pipelines-periodic-project-cleanup
+  name: kubeflow-pipelines-periodic-project-cleanup
+  num_failures_to_alert: 5
 - gcs_prefix: oss-prow/logs/testgrid-canary-autobump
   name: testgrid-canary-autobump
   num_failures_to_alert: 3
@@ -543,6 +737,17 @@ test_groups:
 - gcs_prefix: oss-prow/logs/testgrid-prod-autobump
   name: testgrid-prod-autobump
   num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/kubeflow-gcp-blueprints-postsubmit
+  name: kubeflow-gcp-blueprints-postsubmit
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-integration-test
+  name: kubeflow-pipeline-postsubmit-integration-test
+  num_failures_to_alert: 5
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-mkp-e2e-test
+  name: kubeflow-pipeline-postsubmit-mkp-e2e-test
+  num_failures_to_alert: 5
+- gcs_prefix: oss-prow/logs/kubeflow-pipeline-postsubmit-standalone-component-test
+  name: kubeflow-pipeline-postsubmit-standalone-component-test
+  num_failures_to_alert: 5
 - gcs_prefix: oss-prow/pr-logs/directory/ESPv2-API-regression-test
   name: ESPv2-API-regression-test
   num_columns_recent: 20
