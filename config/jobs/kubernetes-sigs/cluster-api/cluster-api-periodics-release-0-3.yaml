@@ -18,7 +18,7 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-test-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
@@ -46,7 +46,7 @@ periodics:
           requests:
             cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-e2e-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
@@ -79,5 +79,5 @@ periodics:
       - key: cluster-lifecycle-github-token
         path: cluster-lifecycle-github-token
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-verify-book-links-release-0-3

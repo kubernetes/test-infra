@@ -16,7 +16,7 @@ presubmits:
         - runner.sh
         - ./scripts/ci-build.sh
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-build-release-0-3
   - name: pull-cluster-api-make-release-0-3
     decorate: true
@@ -41,7 +41,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-make-release-0-3
   - name: pull-cluster-api-apidiff-release-0-3
     decorate: true
@@ -60,7 +60,7 @@ presubmits:
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-1.18
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-apidiff-release-0-3
   - name: pull-cluster-api-verify-release-0-3
     decorate: true
@@ -82,7 +82,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-verify-release-0-3
   - name: pull-cluster-api-test-release-0-3
     decorate: true
@@ -103,7 +103,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-test-release-0-3
   - name: pull-cluster-api-e2e-release-0-3
     labels:
@@ -131,7 +131,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-e2e-release-0-3
   - name: pull-cluster-api-e2e-full-release-0-3
     labels:
@@ -157,5 +157,5 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-e2e-full-release-0-3
