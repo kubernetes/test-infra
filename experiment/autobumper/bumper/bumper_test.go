@@ -383,36 +383,56 @@ func TestGetAssignment(t *testing.T) {
 	cases := []struct {
 		description          string
 		oncallURL            string
+		oncallGroup          string
 		oncallServerResponse string
 		expectResKeyword     string
 	}{
 		{
 			description:          "empty oncall URL will return an empty string",
 			oncallURL:            "",
+			oncallGroup:          defaultOncallGroup,
 			oncallServerResponse: "",
 			expectResKeyword:     "",
 		},
 		{
 			description:          "an invalid oncall URL will return an error message",
 			oncallURL:            "whatever-url",
+			oncallGroup:          defaultOncallGroup,
 			oncallServerResponse: "",
 			expectResKeyword:     "error",
 		},
 		{
 			description:          "an invalid response will return an error message",
 			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
 			oncallServerResponse: "whatever-malformed-response",
 			expectResKeyword:     "error",
 		},
 		{
-			description:          "a valid response will return the oncaller",
+			description:          "a valid response will return the oncaller from default group",
 			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
 			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"}}`,
 			expectResKeyword:     "fake-oncall-name",
 		},
 		{
+			description:          "a valid response will return the oncaller from non-default group",
+			oncallURL:            "auto",
+			oncallGroup:          "another-group",
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
+			expectResKeyword:     "fake-oncall-name2",
+		},
+		{
+			description:          "a valid response without expected oncall group",
+			oncallURL:            "auto",
+			oncallGroup:          "group-not-exist",
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
+			expectResKeyword:     "error",
+		},
+		{
 			description:          "a valid response with empty oncall will return on oncall message",
 			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
 			oncallServerResponse: `{"Oncall":{"testinfra":""}}`,
 			expectResKeyword:     "Nobody",
 		},
@@ -429,7 +449,7 @@ func TestGetAssignment(t *testing.T) {
 				tc.oncallURL = testServer.URL
 			}
 
-			res := getAssignment(tc.oncallURL)
+			res := getAssignment(tc.oncallURL, tc.oncallGroup)
 			if !strings.Contains(res, tc.expectResKeyword) {
 				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
 			}
