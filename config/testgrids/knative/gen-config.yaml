@@ -172,24 +172,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-client-0.17-continuous'
-    name: knative-client-0.17-continuous
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-client-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-client-0.17-dot-release'
-    name: knative-client-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-client-0.17-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-client-0.18-continuous'
     name: knative-client-0.18-continuous
     open_bug_template:
@@ -242,6 +224,24 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-client-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-client-0.21-continuous'
+    name: knative-client-0.21-continuous
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-client-0.21-continuous
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-client-0.21-dot-release'
+    name: knative-client-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-client-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -315,24 +315,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-eventing-0.17-continuous'
-    name: knative-eventing-0.17-continuous
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-eventing-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-eventing-0.17-dot-release'
-    name: knative-eventing-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-eventing-0.17-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-eventing-0.18-continuous'
     name: knative-eventing-0.18-continuous
     open_bug_template:
@@ -385,6 +367,24 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-eventing-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-eventing-0.21-continuous'
+    name: knative-eventing-0.21-continuous
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-eventing-0.21-continuous
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-eventing-0.21-dot-release'
+    name: knative-eventing-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-eventing-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -543,24 +543,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-operator-0.17-continuous'
-    name: knative-operator-0.17-continuous
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-operator-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-operator-0.17-dot-release'
-    name: knative-operator-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-operator-0.17-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-operator-0.18-continuous'
     name: knative-operator-0.18-continuous
     open_bug_template:
@@ -613,6 +595,24 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-operator-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-operator-0.21-continuous'
+    name: knative-operator-0.21-continuous
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-operator-0.21-continuous
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-operator-0.21-dot-release'
+    name: knative-operator-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-operator-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -731,15 +731,6 @@ dashboards:
     test_group_name: ci-knative-caching-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-client-0.17-continuous-beta-prow-tests'
-    name: knative-client-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/client/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-client-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-client-0.18-continuous-beta-prow-tests'
     name: knative-client-0.18-continuous-beta-prow-tests
     open_bug_template:
@@ -765,6 +756,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-client-0.20-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-client-0.21-continuous-beta-prow-tests'
+    name: knative-client-0.21-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/client/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-client-0.21-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/client/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-client-continuous-beta-prow-tests'
@@ -803,15 +803,6 @@ dashboards:
     test_group_name: ci-knative-docs-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-eventing-0.17-continuous-beta-prow-tests'
-    name: knative-eventing-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/eventing/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-eventing-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-eventing-0.18-continuous-beta-prow-tests'
     name: knative-eventing-0.18-continuous-beta-prow-tests
     open_bug_template:
@@ -837,6 +828,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-eventing-0.20-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-eventing-0.21-continuous-beta-prow-tests'
+    name: knative-eventing-0.21-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/eventing/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-eventing-0.21-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/eventing/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-eventing-continuous-beta-prow-tests'
@@ -911,15 +911,6 @@ dashboards:
     test_group_name: ci-knative-eventing-go-coverage-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-operator-0.17-continuous-beta-prow-tests'
-    name: knative-operator-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/operator/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-operator-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-operator-0.18-continuous-beta-prow-tests'
     name: knative-operator-0.18-continuous-beta-prow-tests
     open_bug_template:
@@ -945,6 +936,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-operator-0.20-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-operator-0.21-continuous-beta-prow-tests'
+    name: knative-operator-0.21-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/operator/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-operator-0.21-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/operator/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-operator-continuous-beta-prow-tests'
@@ -1262,15 +1262,6 @@ dashboards:
     test_group_name: ci-knative-sandbox-sample-source-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-serving-0.17-continuous-beta-prow-tests'
-    name: knative-serving-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-serving-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-serving-0.18-continuous-beta-prow-tests'
     name: knative-serving-0.18-continuous-beta-prow-tests
     open_bug_template:
@@ -1296,6 +1287,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-serving-0.20-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-serving-0.21-continuous-beta-prow-tests'
+    name: knative-serving-0.21-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-serving-0.21-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-serving-continuous-beta-prow-tests'
@@ -1669,6 +1669,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-eventing-gitlab-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-gitlab/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-eventing-gitlab-0.21-dot-release'
+    name: knative-sandbox-eventing-gitlab-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-gitlab/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-eventing-gitlab-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1826,6 +1835,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-eventing-natss-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-natss/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-eventing-natss-0.21-dot-release'
+    name: knative-sandbox-eventing-natss-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-natss/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-eventing-natss-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -1901,6 +1919,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-eventing-rabbitmq-0.21-dot-release'
+    name: knative-sandbox-eventing-rabbitmq-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/eventing-rabbitmq/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-eventing-rabbitmq-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -2031,6 +2058,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kafka-0.21-dot-release'
+    name: knative-sandbox-kn-plugin-source-kafka-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kafka/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -2271,15 +2307,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-sandbox-net-istio-0.17-dot-release'
-    name: knative-sandbox-net-istio-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/knative-sandbox/net-istio/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-sandbox-net-istio-0.17-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-net-istio-0.18-dot-release'
     name: knative-sandbox-net-istio-0.18-dot-release
     open_bug_template:
@@ -2305,6 +2332,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-net-istio-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/net-istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-net-istio-0.21-dot-release'
+    name: knative-sandbox-net-istio-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative-sandbox/net-istio/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-net-istio-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -2455,24 +2491,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-serving-0.17-continuous'
-    name: knative-serving-0.17-continuous
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-serving-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-knative-serving-0.17-dot-release'
-    name: knative-serving-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/knative/serving/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-knative-serving-0.17-dot-release
-  - code_search_url_template:
-      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-serving-0.18-continuous'
     name: knative-serving-0.18-continuous
     open_bug_template:
@@ -2525,6 +2543,24 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-serving-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-serving-0.21-continuous'
+    name: knative-serving-0.21-continuous
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-serving-0.21-continuous
+  - code_search_url_template:
+      url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-serving-0.21-dot-release'
+    name: knative-serving-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/knative/serving/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-serving-0.21-dot-release
   - code_search_url_template:
       url: https://github.com/knative/serving/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-serving-ambassador-latest'
@@ -2745,15 +2781,6 @@ test_groups:
   gcs_prefix: knative-prow/logs/ci-knative-caching-continuous-beta-prow-tests
   name: ci-knative-caching-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-client-0.17-continuous
-  name: ci-knative-client-0.17-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-client-0.17-continuous-beta-prow-tests
-  name: ci-knative-client-0.17-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-client-0.17-dot-release
-  name: ci-knative-client-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-client-0.18-continuous
   name: ci-knative-client-0.18-continuous
 - alert_stale_results_hours: 3
@@ -2780,6 +2807,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-client-0.20-dot-release
   name: ci-knative-client-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-client-0.21-continuous
+  name: ci-knative-client-0.21-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-client-0.21-continuous-beta-prow-tests
+  name: ci-knative-client-0.21-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-client-0.21-dot-release
+  name: ci-knative-client-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-client-auto-release
   name: ci-knative-client-auto-release
   num_failures_to_alert: 1
@@ -2810,15 +2846,6 @@ test_groups:
 - gcs_prefix: knative-prow/logs/ci-knative-docs-go-coverage-beta-prow-tests
   name: ci-knative-docs-go-coverage-beta-prow-tests
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.17-continuous
-  name: ci-knative-eventing-0.17-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.17-continuous-beta-prow-tests
-  name: ci-knative-eventing-0.17-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.17-dot-release
-  name: ci-knative-eventing-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-eventing-0.18-continuous
   name: ci-knative-eventing-0.18-continuous
 - alert_stale_results_hours: 3
@@ -2845,6 +2872,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-eventing-0.20-dot-release
   name: ci-knative-eventing-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.21-continuous
+  name: ci-knative-eventing-0.21-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.21-continuous-beta-prow-tests
+  name: ci-knative-eventing-0.21-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-eventing-0.21-dot-release
+  name: ci-knative-eventing-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-eventing-auto-release
   name: ci-knative-eventing-auto-release
   num_failures_to_alert: 1
@@ -2914,15 +2950,6 @@ test_groups:
   name: ci-knative-eventing-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.17-continuous
-  name: ci-knative-operator-0.17-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.17-continuous-beta-prow-tests
-  name: ci-knative-operator-0.17-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-operator-0.17-dot-release
-  name: ci-knative-operator-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-operator-0.18-continuous
   name: ci-knative-operator-0.18-continuous
 - alert_stale_results_hours: 3
@@ -2949,6 +2976,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-operator-0.20-dot-release
   name: ci-knative-operator-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.21-continuous
+  name: ci-knative-operator-0.21-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.21-continuous-beta-prow-tests
+  name: ci-knative-operator-0.21-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-operator-0.21-dot-release
+  name: ci-knative-operator-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-operator-auto-release
   name: ci-knative-operator-auto-release
   num_failures_to_alert: 1
@@ -3096,6 +3132,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-gitlab-0.20-dot-release
   name: ci-knative-sandbox-eventing-gitlab-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-gitlab-0.21-dot-release
+  name: ci-knative-sandbox-eventing-gitlab-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-gitlab-auto-release
   name: ci-knative-sandbox-eventing-gitlab-auto-release
   num_failures_to_alert: 1
@@ -3154,6 +3193,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-0.20-dot-release
   name: ci-knative-sandbox-eventing-natss-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-0.21-dot-release
+  name: ci-knative-sandbox-eventing-natss-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-natss-auto-release
   name: ci-knative-sandbox-eventing-natss-auto-release
   num_failures_to_alert: 1
@@ -3178,6 +3220,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
   name: ci-knative-sandbox-eventing-rabbitmq-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-0.21-dot-release
+  name: ci-knative-sandbox-eventing-rabbitmq-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-eventing-rabbitmq-auto-release
   name: ci-knative-sandbox-eventing-rabbitmq-auto-release
   num_failures_to_alert: 1
@@ -3224,6 +3269,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.19-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.21-dot-release
+  name: ci-knative-sandbox-kn-plugin-source-kafka-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-auto-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-auto-release
   num_failures_to_alert: 1
@@ -3315,9 +3363,6 @@ test_groups:
   name: ci-knative-sandbox-net-ingressv2-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.17-dot-release
-  name: ci-knative-sandbox-net-istio-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.18-dot-release
   name: ci-knative-sandbox-net-istio-0.18-dot-release
 - alert_stale_results_hours: 3
@@ -3326,6 +3371,9 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.20-dot-release
   name: ci-knative-sandbox-net-istio-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-0.21-dot-release
+  name: ci-knative-sandbox-net-istio-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-net-istio-auto-release
   name: ci-knative-sandbox-net-istio-auto-release
   num_failures_to_alert: 1
@@ -3384,15 +3432,6 @@ test_groups:
   name: ci-knative-sandbox-sample-source-nightly-release
   num_failures_to_alert: 1
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-serving-0.17-continuous
-  name: ci-knative-serving-0.17-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-serving-0.17-continuous-beta-prow-tests
-  name: ci-knative-serving-0.17-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-knative-serving-0.17-dot-release
-  name: ci-knative-serving-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-serving-0.18-continuous
   name: ci-knative-serving-0.18-continuous
 - alert_stale_results_hours: 3
@@ -3419,6 +3458,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-serving-0.20-dot-release
   name: ci-knative-serving-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-serving-0.21-continuous
+  name: ci-knative-serving-0.21-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-serving-0.21-continuous-beta-prow-tests
+  name: ci-knative-serving-0.21-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-serving-0.21-dot-release
+  name: ci-knative-serving-0.21-dot-release
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-serving-ambassador-latest
   name: ci-knative-serving-ambassador-latest
