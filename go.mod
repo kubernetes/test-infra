@@ -74,6 +74,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/tektoncd/pipeline v0.13.1-0.20200625065359-44f22a067b75
 	go.uber.org/zap v1.15.0
+	go4.org v0.0.0-20201209231011-d4a079459e60
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b

@@ -3782,6 +3782,14 @@ def go_repositories():
         sum = "h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0RK8m9o+Q=",
         version = "v2.0.1",
     )
+    go_repository(
+        name = "com_github_rwcarlsen_goexif",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/rwcarlsen/goexif",
+        sum = "h1:CmH9+J6ZSsIjUK3dcGsnCnO41eRBOnY12zwkn5qVwgc=",
+        version = "v0.0.0-20190401172101-9e8deecbddbd",
+    )
 
     go_repository(
         name = "com_github_ryancurrah_gomodguard",
@@ -5224,6 +5232,15 @@ def go_repositories():
         sum = "h1:FNCRpXiquG1aoyqcIWVFmpTSKVcx2bQD38uZZeGtdlw=",
         version = "v0.0.0-20180421153158-65cc252bf669",
     )
+    go_repository(
+        name = "org_go4",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "go4.org",
+        sum = "h1:iqAGo78tVOJXELHQFRjR6TMwItrvXH4hrGJ32I/NFF8=",
+        version = "v0.0.0-20201209231011-d4a079459e60",
+    )
+
     go_repository(
         name = "org_golang_google_api",
         build_file_generation = "on",

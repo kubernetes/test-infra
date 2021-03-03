@@ -169,6 +169,7 @@ filegroup(
         "//prow/prstatus:all-srcs",
         "//prow/pubsub/subscriber:all-srcs",
         "//prow/repoowners:all-srcs",
+        "//prow/secretutil:all-srcs",
         "//prow/sidecar:all-srcs",
         "//prow/simplifypath:all-srcs",
         "//prow/slack:all-srcs",
