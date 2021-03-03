@@ -2,11 +2,6 @@ presets:
 - labels:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
-  - name: JUMPHOST
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: jumphost
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -22,28 +17,14 @@ presets:
       secretKeyRef:
         name: clusterapi-provider-vsphere-ci-prow
         key: vsphere-password
-  - name: TARGET_VM_SSH
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: target-vm-ssh
-  - name: TARGET_VM_SSH_PUB
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: target-vm-ssh-pub
   - name: VM_SSH_PUB_KEY
     valueFrom:
       secretKeyRef:
         name: clusterapi-provider-vsphere-ci-prow
         key: vm-ssh-pub-key
   volumeMounts:
-  - name: jumphost-key
-    mountPath: /root/ssh/.jumphost
   - name: private-key
     mountPath: /root/ssh/.private-key
-  - name: bootstrapper-key
-    mountPath: /root/ssh/.bootstrapper
   - name: vpn-conf
     mountPath: /root/.openvpn
   volumes:
@@ -54,20 +35,6 @@ presets:
       items:
       - key: vm-ssh-key
         path: private-key
-  - name: jumphost-key
-    secret:
-      secretName: clusterapi-provider-vsphere-ci-prow
-      defaultMode: 256
-      items:
-      - key: jumphost-key
-        path: jumphost-key
-  - name: bootstrapper-key
-    secret:
-      secretName: clusterapi-provider-vsphere-ci-prow
-      defaultMode: 256
-      items:
-      - key: bootstrapper-key
-        path: bootstrapper-key
   - name: vpn-conf
     secret:
       secretName: cluster-api-provider-vsphere-vpn-config
