@@ -117,19 +117,7 @@ label:
     # This label is used by the API review process
     # https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics
     - api-review
-    # These labels are used by Kubeflow
-    # TODO(https://github.com/kubernetes/test-infra/issues/8648): Switch
-    # to configuring prefixes and not individual labels once  that's supported.
-    - community/discussion
-    - community/maintenance
-    - community/question
-    - cuj/build-train-deploy
-    - cuj/multi-user
-    - platform/aws
-    - platform/azure
-    - platform/gcp
-    - platform/minikube
-    - platform/other
+    # These labels are used to make Tide merge with a non-default merge method
     - tide/merge-method-merge
     - tide/merge-method-rebase
     - tide/merge-method-squash
