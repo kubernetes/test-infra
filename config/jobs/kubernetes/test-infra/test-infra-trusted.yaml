@@ -99,6 +99,15 @@ postsubmits:
     branches:
     - ^master$
     max_concurrency: 1
+    reporter_config:
+      slack:
+        channel: "prow-alerts"
+        job_states_to_report:
+        - success
+        - failure
+        - aborted
+        - error
+        report_template: 'Deploying prow: {{.Status.State}}. <{{.Spec.Refs.BaseLink}}|Commit {{.Spec.Refs.BaseSHA}}> <{{.Status.URL}}|View logs> <https://testgrid.k8s.io/sig-testing-prow#deploy-prow|Job history on Testgrid>'
     spec:
       serviceAccountName: deployer
       containers:
