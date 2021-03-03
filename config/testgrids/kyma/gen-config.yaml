@@ -49,6 +49,15 @@ dashboards:
     test_group_name: kyma-integration-evaluation-gardener-azure
   - code_search_url_template:
       url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Evaluation profile Kyma Azure Gardener integration job.
+    name: kyma-integration-evaluation-gardener-azure-big
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    open_test_template:
+      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: kyma-integration-evaluation-gardener-azure-big
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: Kyma AWS Gardener integration job.
     name: kyma-integration-gardener-aws
     open_bug_template:
@@ -386,6 +395,8 @@ test_groups:
   name: kyma-gke-weekly
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-evaluation-gardener-azure
   name: kyma-integration-evaluation-gardener-azure
+- gcs_prefix: kyma-prow-logs/logs/kyma-integration-evaluation-gardener-azure-big
+  name: kyma-integration-evaluation-gardener-azure-big
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-aws
   name: kyma-integration-gardener-aws
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-azure
