@@ -45,7 +45,7 @@ periodics:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
     - name: groups
-      image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20201130-750d12f
+      image: gcr.io/k8s-staging-releng/releng-ci:latest
       command:
       - bash
       args:
@@ -55,38 +55,36 @@ periodics:
         gcloud config list
         echo "Running Audit Script to dump GCP configuration to yaml" >&2
         pushd ./audit
-        ./audit-gcp.sh
+        bash ./audit-gcp.sh
         popd
 
         echo "Generate pr-creator binary from k/test-infra/robots" >&2
-        pushd ../test-infra
-        go build -o ../k8s.io/pr-creator robots/pr-creator/main.go
+        pushd ../../kubernetes/test-infra
+        go build -o /workspace/pr-creator robots/pr-creator/main.go
         popd
 
-        echo -n "Calculate github user, name, and email from token: " >&2
+        echo "Prepare commit for possible PR" >&2
         GH_TOKEN=$(cat /etc/github-token/token)
-        GH_USER=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .login)
-        GH_NAME=$(curl -H "Authorization: token $GH_TOKEN" "https://api.github.com/user" 2>/dev/null | jq -r .name)
-        GH_EMAIL=$(curl -H "Authorization: token $GH_TOKEN" -H "X-Oauth-Scope: user:email" "https://api.github.com/user/emails" 2>/dev/null | jq -r '.[] | select( .primary == true ) | .email')
+        GH_USER=cncf-ci
+        GH_NAME="CNCF CI Bot"
+        GH_EMAIL="cncf-ci@ii.coop"
+        FORK_GH_REPO=k8s.io
         FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
-        echo "Prepare commit for possible PR via $GH_USER" >&2
-        git config user.name ${GH_NAME}
-        git config user.email ${GH_EMAIL}
-        git add --all -u
+        git config user.name "${GH_NAME}"
+        git config user.email "${GH_EMAIL}"
+        git add --all audit
         git commit -m "audit: update as of $(date +%Y-%m-%d)"
         echo -e "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}:..." >&2
-        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}}" 2>/dev/null
+        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
 
-        echo "Creating PR to merge ${GITHUB_USER}:${FORK_GH_BRANCH} into master..." >&2
-        title="audit: update as of $(date +%Y-%m-%d)"
-        body="Audit Updates\n/wg k8s-infra"
-        /pr-creator \
+        echo "Creating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into k8s.io:main..." >&2
+        /workspace/pr-creator \
           --github-token-path=/etc/github-token/token \
           --org=kubernetes --repo=k8s.io --branch=main \
           --source="${GH_USER}:${FORK_GH_BRANCH}" \
           --head-branch="${FORK_GH_BRANCH}" \
-          --title="${title}" \
-          --body="${body}" \
+          --title="audit: update as of $(date +%Y-%m-%d)" \
+          --body="Audit Updates wg-k8s-infra" \
           --confirm
       volumeMounts:
       - name: github
