@@ -14,7 +14,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
         command:
         - runner.sh
         args:
@@ -48,7 +48,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
         command:
         - sh
         - -c
