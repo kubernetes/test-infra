@@ -1543,6 +1543,12 @@ repos:
         name: area/provider/docker
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to operator
+        name: area/operator
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
