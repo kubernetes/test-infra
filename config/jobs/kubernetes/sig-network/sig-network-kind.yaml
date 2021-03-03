@@ -14,7 +14,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
         command:
         - wrapper.sh
         - bash
@@ -61,7 +61,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+      - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
         command:
         - wrapper.sh
         - bash
@@ -115,7 +115,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -162,7 +162,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -215,7 +215,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -268,7 +268,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -317,7 +317,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -372,7 +372,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       command:
         - wrapper.sh
         - bash
@@ -426,7 +426,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -474,7 +474,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210207-08ffabe-master
+    - image: gcr.io/k8s-testimages/krte:v20210302-c18942a-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

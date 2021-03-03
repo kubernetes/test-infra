@@ -123,7 +123,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20210301-5e63448d42
+      - image: gcr.io/k8s-prow/hmac:v20210303-204466f47d
         command:
         - /hmac
         args:
@@ -653,7 +653,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
         command:
         - make
         args:
@@ -893,7 +893,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/generic_autobump:v20210227-adfdf65
+    - image: gcr.io/k8s-testimages/generic_autobump:v20210303-204466f
       command:
       - /generic_autobump
       args:
@@ -962,7 +962,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20210301-5e63448d42
+      image: gcr.io/k8s-prow/branchprotector:v20210303-204466f47d
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -996,7 +996,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20210301-5e63448d42
+      image: gcr.io/k8s-prow/label_sync:v20210303-204466f47d
       command:
       - /app/label_sync/app.binary
       args:
@@ -1042,7 +1042,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20210301-5e63448d42
+    - image: gcr.io/k8s-prow/checkconfig:v20210303-204466f47d
       command:
       - /checkconfig
       args:
