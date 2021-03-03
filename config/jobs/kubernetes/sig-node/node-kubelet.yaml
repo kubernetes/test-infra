@@ -377,7 +377,7 @@ periodics:
           - --node-test-args=--feature-gates=GracefulNodeShutdown=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --focus="\[[NodeAlphaFeature:GracefulNodeShutdown\]"
+          - --test_args=--nodes=1 --focus="\[NodeAlphaFeature:GracefulNodeShutdown\]"
           - --timeout=60m
         env:
           - name: GOPATH
