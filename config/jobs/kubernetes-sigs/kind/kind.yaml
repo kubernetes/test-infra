@@ -1,29 +1,4 @@
 periodics:
-- name: ci-kind-test
-  interval: 6h
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: kind
-    base_ref: master
-    path_alias: sigs.k8s.io/kind
-  labels:
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/krte:v20210303-1d72032-master
-      command:
-      - wrapper.sh
-      - make
-      - test
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-testing-kind
-    testgrid-tab-name: ci unit test
-    testgrid-alert-email: bentheelder@google.com
-    description: kind CI unit test
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
