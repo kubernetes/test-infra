@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -38,6 +37,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -723,7 +723,7 @@ periodics:
 			name: "new format; global, org, repo, cluster, org+cluster",
 			rawConfig: `
 plank:
-  default_decoration_configs:
+  default_decoration_config_entries:
   - config:
       timeout: 2h
       grace_period: 15s
@@ -3708,33 +3708,35 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 
 func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
 	tcs := []struct {
-		name     string
-		raw      []byte
-		expected []*DefaultDecorationConfigEntry
+		name      string
+		raw       string
+		expected  []*DefaultDecorationConfigEntry
+		expectErr bool
 	}{
 		{
 			name:     "omitted config",
-			raw:      nil,
+			raw:      "deck:",
 			expected: nil,
 		},
 		{
 			name: "old format; global only",
-			raw: []byte(`
-'*':
-  timeout: 2h
-  grace_period: 15s
-  utility_images:
-    clonerefs: "clonerefs:default"
-    initupload: "initupload:default"
-    entrypoint: "entrypoint:default"
-    sidecar: "sidecar:default"
-  gcs_configuration:
-    bucket: "default-bucket"
-    path_strategy: "legacy"
-    default_org: "kubernetes"
-    default_repo: "kubernetes"
-  gcs_credentials_secret: "default-service-account"
-`),
+			raw: `
+default_decoration_configs:
+  '*':
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+`,
 			expected: []*DefaultDecorationConfigEntry{
 				{
 					Repo:       regexp.MustCompile(".*"),
@@ -3763,26 +3765,27 @@ func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
 		},
 		{
 			name: "old format; org repo ordered",
-			raw: []byte(`
-'*':
-  timeout: 2h
-  grace_period: 15s
-  utility_images:
-    clonerefs: "clonerefs:default"
-    initupload: "initupload:default"
-    entrypoint: "entrypoint:default"
-    sidecar: "sidecar:default"
-  gcs_configuration:
-    bucket: "default-bucket"
-    path_strategy: "legacy"
-    default_org: "kubernetes"
-    default_repo: "kubernetes"
-  gcs_credentials_secret: "default-service-account"
-'org/repo':
-  timeout: 1h
-'org':
-  timeout: 3h
-`),
+			raw: `
+default_decoration_configs:
+  '*':
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+  'org/repo':
+    timeout: 1h
+  'org':
+    timeout: 3h
+`,
 			expected: []*DefaultDecorationConfigEntry{
 				{
 					Repo:       regexp.MustCompile(".*"),
@@ -3829,22 +3832,23 @@ func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
 		},
 		{
 			name: "new format; global only",
-			raw: []byte(`
-- config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
-`),
+			raw: `
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+`,
 			expected: []*DefaultDecorationConfigEntry{
 				{
 					Repo:       regexp.MustCompile(""),
@@ -3873,35 +3877,36 @@ func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
 		},
 		{
 			name: "new format; global, org, repo, cluster, org+cluster",
-			raw: []byte(`
-- config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "clonerefs:default"
-      initupload: "initupload:default"
-      entrypoint: "entrypoint:default"
-      sidecar: "sidecar:default"
-    gcs_configuration:
-      bucket: "default-bucket"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "default-service-account"
-- repo: "^org/"
-  config:
-    timeout: 1h
-- repo: "^org/repo$"
-  config:
-    timeout: 3h
-- cluster: "^trusted$"
-  config:
-    grace_period: 30s
-- repo: "^org/foo$"
-  cluster: "^trusted$"
-  config:
-    grace_period: 1m
-`),
+			raw: `
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+  - repo: "^org/"
+    config:
+      timeout: 1h
+  - repo: "^org/repo$"
+    config:
+      timeout: 3h
+  - cluster: "^trusted$"
+    config:
+      grace_period: 30s
+  - repo: "^org/foo$"
+    cluster: "^trusted$"
+    config:
+      grace_period: 1m
+`,
 			expected: []*DefaultDecorationConfigEntry{
 				{
 					Repo:       regexp.MustCompile(""),
@@ -3964,18 +3969,57 @@ func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "both formats, expect error",
+			raw: `
+default_decoration_configs:
+  "*":
+    timeout: 1h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+        
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+`,
+			expectErr: true,
+		},
 	}
 
 	for i := range tcs {
 		tc := tcs[i]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			raw := json.RawMessage(tc.raw)
-			p := Plank{
-				DefaultDecorationConfigsRaw: &raw,
+			p := Plank{}
+			if err := yaml.Unmarshal([]byte(tc.raw), &p); err != nil {
+				t.Errorf("error unmarshaling: %w", err)
 			}
-			if err := p.FinalizeDefaultDecorationConfigs(); err != nil {
-				t.Errorf("error finalizing DefaultDecorationConfigs: %w", err)
+			if err := p.FinalizeDefaultDecorationConfigs(); err != nil && !tc.expectErr {
+				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %w", err)
+			} else if err == nil && tc.expectErr {
+				t.Error("expected error, but did not receive one")
 			}
 			if diff := cmp.Diff(tc.expected, p.DefaultDecorationConfigs, cmpopts.IgnoreUnexported(regexp.Regexp{})); diff != "" {
 				t.Errorf("expected result diff: %s", diff)

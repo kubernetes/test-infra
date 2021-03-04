@@ -472,10 +472,285 @@ owners_dir_blacklist:
     repos:
         "": null
 plank:
-    # DefaultDecorationConfigsRaw compiles into DefaultDecorationConfigs.
-    # It may represent either `[]*DefaultDecorationConfigEntry` or
-    # `map[string]*prowapi.DecorationConfig`.
-    default_decoration_configs: null
+    # DefaultDecorationConfigEntries holds the default decoration config for specific values.
+    # Each entry in the slice specifies Repo and Cluster regexp filter fields to
+    # match against jobs and a corresponding DecorationConfig. All entries that
+    # match a job are used. Later matching entries override the fields of earlier
+    # matching entries.
+    # This field is mutually exclusive with the DefaultDecorationConfigsMap field.
+    default_decoration_config_entries:
+      - # ClusterRaw is the string field that compiles into the Cluster regexp field.
+        cluster: ' '
+
+        # Config is the DecorationConfig to apply if the filter fields all match the
+        # ProwJob. Note that when multiple entries match a ProwJob they are all used
+        # by sequentially merging with later entries overriding fields from earlier
+        # entries.
+        config:
+            # CookieFileSecret is the name of a kubernetes secret that contains
+            # a git http.cookiefile, which should be used during the cloning process.
+            cookiefile_secret: ' '
+
+            # DefaultServiceAccountName is the name of the Kubernetes service account
+            # that should be used by the pod if one is not specified in the podspec.
+            default_service_account_name: ""
+
+            # GCSConfiguration holds options for pushing logs and
+            # artifacts to GCS from a job.
+            gcs_configuration:
+                # Bucket is the bucket to upload to, it can be:
+                # * a GCS bucket: with gs:// prefix
+                # * a S3 bucket: with s3:// prefix
+                # * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
+                bucket: ' '
+
+                # DefaultOrg is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_org: ' '
+
+                # DefaultRepo is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_repo: ' '
+
+                # JobURLPrefix holds the baseURL under which the jobs output can be viewed.
+                # If unset, this will be derived based on org/repo from the job_url_prefix_config.
+                job_url_prefix: ' '
+
+                # LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to blob storage.
+                # This option is useful for testing jobs that use the pod-utilities without actually uploading.
+                local_output_dir: ' '
+
+                # MediaTypes holds additional extension media types to add to Go's
+                # builtin's and the local system's defaults. This maps extensions
+                # to media types, for example: MediaTypes["log"] = "text/plain"
+                mediaTypes:
+                    "": ""
+
+                # PathPrefix is an optional path that follows the
+                # bucket name and comes before any structure
+                path_prefix: ' '
+
+                # PathStrategy dictates how the org and repo are used
+                # when calculating the full path to an artifact in GCS
+                path_strategy: ' '
+
+            # GCSCredentialsSecret is the name of the Kubernetes secret
+            # that holds GCS push credentials.
+            gcs_credentials_secret: ""
+
+            # GracePeriod is how long the pod utilities will wait
+            # after sending SIGINT to send SIGKILL when aborting
+            # a job. Only applicable if decorating the PodSpec.
+            grace_period: 0s
+
+            # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+            # which is going to be used for fetching a private repository.
+            oauth_token_secret:
+                # Key is the a key of the corresponding kubernetes secret that
+                # holds the value of the OAuth token.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
+            # Resources holds resource requests and limits for utility
+            # containers used to decorate a PodSpec.
+            resources:
+                clonerefs:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                initupload:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                place_entrypoint:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                sidecar:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+
+            # S3CredentialsSecret is the name of the Kubernetes secret
+            # that holds blob storage push credentials.
+            s3_credentials_secret: ""
+
+            # SkipCloning determines if we should clone source code in the
+            # initcontainers for jobs that specify refs
+            skip_cloning: false
+
+            # SSHHostFingerprints are the fingerprints of known SSH hosts
+            # that the cloning process can trust.
+            # Create with ssh-keyscan [-t rsa] host
+            ssh_host_fingerprints:
+              - ""
+
+            # SSHKeySecrets are the names of Kubernetes secrets that contain
+            # SSK keys which should be used during the cloning process.
+            ssh_key_secrets:
+              - ""
+
+            # Timeout is how long the pod utilities will wait
+            # before aborting a job with SIGINT.
+            timeout: 0s
+
+            # UtilityImages holds pull specs for utility container
+            # images used to decorate a PodSpec.
+            utility_images:
+                # CloneRefs is the pull spec used for the clonerefs utility
+                clonerefs: ' '
+
+                # Entrypoint is the pull spec used for the entrypoint utility
+                entrypoint: ' '
+
+                # InitUpload is the pull spec used for the initupload utility
+                initupload: ' '
+
+                # sidecar is the pull spec used for the sidecar utility
+                sidecar: ' '
+
+        # OrgRepoRaw is the string field that compiles into the Repo regexp field.
+        repo: ' '
+
+    # DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
+    # to the default decoration config to use for that key. The '*' key matches all jobs.
+    # (Periodics use extra_refs[0] for matching if present.)
+    # This field is mutually exclusive with the DefaultDecorationConfigEntries field.
+    default_decoration_configs:
+        "":
+            # CookieFileSecret is the name of a kubernetes secret that contains
+            # a git http.cookiefile, which should be used during the cloning process.
+            cookiefile_secret: ' '
+
+            # DefaultServiceAccountName is the name of the Kubernetes service account
+            # that should be used by the pod if one is not specified in the podspec.
+            default_service_account_name: ""
+
+            # GCSConfiguration holds options for pushing logs and
+            # artifacts to GCS from a job.
+            gcs_configuration:
+                # Bucket is the bucket to upload to, it can be:
+                # * a GCS bucket: with gs:// prefix
+                # * a S3 bucket: with s3:// prefix
+                # * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
+                bucket: ' '
+
+                # DefaultOrg is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_org: ' '
+
+                # DefaultRepo is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_repo: ' '
+
+                # JobURLPrefix holds the baseURL under which the jobs output can be viewed.
+                # If unset, this will be derived based on org/repo from the job_url_prefix_config.
+                job_url_prefix: ' '
+
+                # LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to blob storage.
+                # This option is useful for testing jobs that use the pod-utilities without actually uploading.
+                local_output_dir: ' '
+
+                # MediaTypes holds additional extension media types to add to Go's
+                # builtin's and the local system's defaults. This maps extensions
+                # to media types, for example: MediaTypes["log"] = "text/plain"
+                mediaTypes:
+                    "": ""
+
+                # PathPrefix is an optional path that follows the
+                # bucket name and comes before any structure
+                path_prefix: ' '
+
+                # PathStrategy dictates how the org and repo are used
+                # when calculating the full path to an artifact in GCS
+                path_strategy: ' '
+
+            # GCSCredentialsSecret is the name of the Kubernetes secret
+            # that holds GCS push credentials.
+            gcs_credentials_secret: ""
+
+            # GracePeriod is how long the pod utilities will wait
+            # after sending SIGINT to send SIGKILL when aborting
+            # a job. Only applicable if decorating the PodSpec.
+            grace_period: 0s
+
+            # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+            # which is going to be used for fetching a private repository.
+            oauth_token_secret:
+                # Key is the a key of the corresponding kubernetes secret that
+                # holds the value of the OAuth token.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
+            # Resources holds resource requests and limits for utility
+            # containers used to decorate a PodSpec.
+            resources:
+                clonerefs:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                initupload:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                place_entrypoint:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                sidecar:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+
+            # S3CredentialsSecret is the name of the Kubernetes secret
+            # that holds blob storage push credentials.
+            s3_credentials_secret: ""
+
+            # SkipCloning determines if we should clone source code in the
+            # initcontainers for jobs that specify refs
+            skip_cloning: false
+
+            # SSHHostFingerprints are the fingerprints of known SSH hosts
+            # that the cloning process can trust.
+            # Create with ssh-keyscan [-t rsa] host
+            ssh_host_fingerprints:
+              - ""
+
+            # SSHKeySecrets are the names of Kubernetes secrets that contain
+            # SSK keys which should be used during the cloning process.
+            ssh_key_secrets:
+              - ""
+
+            # Timeout is how long the pod utilities will wait
+            # before aborting a job with SIGINT.
+            timeout: 0s
+
+            # UtilityImages holds pull specs for utility container
+            # images used to decorate a PodSpec.
+            utility_images:
+                # CloneRefs is the pull spec used for the clonerefs utility
+                clonerefs: ' '
+
+                # Entrypoint is the pull spec used for the entrypoint utility
+                entrypoint: ' '
+
+                # InitUpload is the pull spec used for the initupload utility
+                initupload: ' '
+
+                # sidecar is the pull spec used for the sidecar utility
+                sidecar: ' '
 
     # JobURLPrefixConfig is the host and path prefix under which job details
     # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value

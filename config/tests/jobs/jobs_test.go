@@ -1232,8 +1232,7 @@ func TestKubernetesProwJobsShouldUsePodUtils(t *testing.T) {
 		if job.Spec == nil || strings.HasPrefix("kubeflow", job.Name) {
 			continue
 		}
-		usesPodUtils := cfg.ShouldDecorate(&c.JobConfig, job.UtilityConfig)
-		if !usesPodUtils {
+		if !*job.Decorate {
 			// bootstrap jobs don't use multiple containers
 			container := job.Spec.Containers[0]
 			repos := []string{}
