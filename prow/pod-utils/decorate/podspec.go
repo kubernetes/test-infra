@@ -92,11 +92,14 @@ func PodUtilsContainerNames() sets.String {
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
 func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
 	jobNameForLabel := spec.Job
+	log := logrus.WithFields(logrus.Fields{
+		"job": spec.Job,
+		"id":  extraLabels[kube.ProwBuildIDLabel],
+	})
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
 		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], ".-")
-		logrus.WithFields(logrus.Fields{
-			"job":       spec.Job,
+		log.WithFields(logrus.Fields{
 			"key":       kube.ProwJobAnnotation,
 			"value":     spec.Job,
 			"truncated": jobNameForLabel,
@@ -128,7 +131,7 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 				labels[key] = base
 				continue
 			}
-			logrus.WithFields(logrus.Fields{
+			log.WithFields(logrus.Fields{
 				"key":    key,
 				"value":  value,
 				"errors": errs,
