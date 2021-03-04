@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210204-b06ec78-experimental
+      - image: gcr.io/k8s-testimages/krte:v20210303-1d72032-experimental
         command:
         - wrapper.sh
         - make
@@ -255,7 +255,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210204-b06ec78-1.20
+        image: gcr.io/k8s-testimages/krte:v20210303-1d72032-1.20
         name: ""
         resources:
           limits:
@@ -296,7 +296,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|Conntrack|udp|UDP|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210302-a6bf478-1.19
+        image: gcr.io/k8s-testimages/krte:v20210303-1d72032-1.19
         name: ""
         resources:
           limits:
@@ -325,7 +325,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210302-aa40187-1.18
+      - image: gcr.io/k8s-testimages/krte:v20210303-1d72032-1.18
         command:
         - wrapper.sh
         - bash
