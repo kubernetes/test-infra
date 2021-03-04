@@ -192,7 +192,7 @@ periodics:
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]|\[Legacy:.+\]|\[Benchmark\]"
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
       env:
       - name: GOPATH
