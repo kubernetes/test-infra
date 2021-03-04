@@ -49,6 +49,9 @@ presubmits:
       containers:
       - name: pull-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
         command:
         - sh
         - -c
@@ -66,5 +69,5 @@ presubmits:
           --node-tests=true
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
-          --timeout=65m
+          --timeout=90m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
