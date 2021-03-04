@@ -21,6 +21,8 @@ presubmits:
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        - name: BUILD_TYPE
+          value: docker
         - name: FOCUS
           value: \[Conformance\]|DualStack
         - name: PARALLEL
@@ -68,6 +70,8 @@ presubmits:
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        - name: BUILD_TYPE
+          value: docker
         - name: FOCUS
           value: \[Conformance\]|DualStack
         - name: PARALLEL
@@ -222,6 +226,8 @@ periodics:
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
+      - name: BUILD_TYPE
+        value: docker
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
@@ -379,6 +385,8 @@ periodics:
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
+      - name: BUILD_TYPE
+        value: docker
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
