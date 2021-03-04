@@ -5,7 +5,9 @@ periodics:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
+    testgrid-num-failures-to-alert: "3"
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
@@ -50,7 +52,7 @@ periodics:
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "3"
     testgrid-tab-name: golang-tip-k8s-1-18
   spec:
     containers:
