@@ -46,3 +46,31 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-sigs
+  - name: pull-aws-all
+    path_alias: sigs.k8s.io/image-builder
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    labels:
+      preset-aws-ssh: "true"
+    run_if_changed: 'images/capi/.*'
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+          args:
+            - runner.sh
+            - "./images/capi/packer/aws/scripts/ci-aws.sh"
+          env:
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: AWS_REGION
+              value: "us-west-2"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 1000m
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-image-builder
+        testgrid-tab-name: pr-aws-all
