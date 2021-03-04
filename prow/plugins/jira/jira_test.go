@@ -443,6 +443,19 @@ because of [ABC-123](https://my-jira.com/browse/ABC-123)`,
 			body:     "https://my-jira.com/browse/ABC-123",
 			expected: "https://my-jira.com/browse/ABC-123",
 		},
+		{
+			name: "code section is not replaced",
+			body: `This change:
+is very important` + "\n```bash\n" +
+				`ABC-123` +
+				"\n```\n" + `ABC-123
+`,
+			expected: `This change:
+is very important` + "\n```bash\n" +
+				`ABC-123` +
+				"\n```\n" + `[ABC-123](https://my-jira.com/browse/ABC-123)
+`,
+		},
 	}
 
 	for _, tc := range testCases {

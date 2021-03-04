@@ -172,12 +172,47 @@ func updateComment(e *github.GenericCommentEvent, validIssues []string, jiraBase
 	return nil
 }
 
+type line struct {
+	content   string
+	replacing bool
+}
+
+func getLines(text string) []line {
+	var lines []line
+	rawLines := strings.Split(text, "\n")
+	var prefixCount int
+	for _, rawLine := range rawLines {
+		if strings.HasPrefix(rawLine, "```") {
+			prefixCount++
+		}
+		l := line{content: rawLine, replacing: true}
+		if prefixCount%2 == 1 {
+			l.replacing = false
+		}
+		lines = append(lines, l)
+	}
+	return lines
+}
+
 func insertLinksIntoComment(body string, issueNames []string, jiraBaseURL string) string {
+	var linesWithLinks []string
+	lines := getLines(body)
+	for _, line := range lines {
+		if line.replacing {
+			linesWithLinks = append(linesWithLinks, insertLinksIntoLine(line.content, issueNames, jiraBaseURL))
+			continue
+		}
+		linesWithLinks = append(linesWithLinks, line.content)
+	}
+	return strings.Join(linesWithLinks, "\n")
+}
+
+func insertLinksIntoLine(line string, issueNames []string, jiraBaseURL string) string {
 	for _, issue := range issueNames {
 		replacement := fmt.Sprintf("[%s](%s/browse/%s)", issue, jiraBaseURL, issue)
-		body = replaceStringIfHasntSquareBracketOrSlashPrefix(body, issue, replacement)
+		line = replaceStringIfHasntSquareBracketOrSlashPrefix(line, issue, replacement)
 	}
-	return body
+	return line
 }
 
 // replaceStringIfHasntSquareBracketOrSlashPrefix replaces a string if it is not prefixed by
