@@ -115,6 +115,11 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
+	if len(o.SecretDirectories) > 0 {
+		if err := o.censor(); err != nil {
+			logrus.Warnf("Failed to censor data: %v", err)
+		}
+	}
 	buildLogs := logReaders(entries)
 	metadata := combineMetadata(entries)
 	return failures, o.doUpload(spec, passed, aborted, metadata, buildLogs)
