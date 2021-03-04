@@ -13,7 +13,6 @@ includedConfigPaths:
   - "."
 excludedConfigPaths:
   - "config/prow-staging"
-  - "config/jobs"
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
