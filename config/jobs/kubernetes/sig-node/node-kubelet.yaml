@@ -373,7 +373,7 @@ periodics:
           - --deployment=node
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-graceful-node-shutdown.yaml
           - --node-test-args=--feature-gates=GracefulNodeShutdown=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
           - --node-tests=true
           - --provider=gce
