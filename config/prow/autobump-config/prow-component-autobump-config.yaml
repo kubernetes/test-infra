@@ -13,13 +13,7 @@ includedConfigPaths:
   - "."
 excludedConfigPaths:
   - "config/prow-staging"
-extraFiles:
-  - "config/jobs/image-pushing/k8s-staging-e2e-test-images.sh"
-  - "config/jobs/image-pushing/k8s-staging-sig-storage.sh"
-  - "config/jobs/kubernetes/kops/build_grid.py"
-  - "config/jobs/kubernetes/kops/build_pipeline.py"
-  - "releng/generate_tests.py"
-  - "images/kubekins-e2e/Dockerfile"
+  - "config/jobs"
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
@@ -36,8 +30,3 @@ prefixes:
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false
     consistentImages: true
-  - name: "K8s-Test-Images"
-    prefix: "gcr.io/k8s-testimages/"
-    repo: "https://github.com/kubernetes/test-infra"
-    summarise: false
-    consistentImages: false
