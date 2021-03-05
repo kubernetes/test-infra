@@ -46,3 +46,23 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-sigs
+  - name: json-sort-check
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+          args:
+            - runner.sh
+            - "./images/capi/hack/ci-json-sort.sh"
+          resources:
+            requests:
+              cpu: 1000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-json-sort-check
