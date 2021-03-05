@@ -449,7 +449,7 @@ periodics:
       - name: CL2_CONTAINER_IMAGE
         value: "k8s.gcr.io/pause:3.4.1"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+        value: "https://github.com/prometheus-community/windows_exporter/releases/download/v0.16.0/windows_exporter-0.16.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       args:
@@ -503,7 +503,7 @@ periodics:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+        value: "https://github.com/prometheus-community/windows_exporter/releases/download/v0.16.0/windows_exporter-0.16.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       - name: CL2_POD_COUNT
