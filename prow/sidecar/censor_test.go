@@ -21,6 +21,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -88,8 +89,7 @@ func (nopCloser) Close() error { return nil }
 
 const inputDir = "testdata/input"
 
-func TestCensorIntegration(t *testing.T) {
-	// copy input to a temp dir so we don't touch the golden input files
+func copyTestData(t *testing.T) string {
 	tempDir := t.TempDir()
 	if err := filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
 		relpath, _ := filepath.Rel(inputDir, path) // this errors when it's not relative, but that's known here
@@ -122,6 +122,20 @@ func TestCensorIntegration(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("failed to copy input to temp dir: %v", err)
 	}
+	return tempDir
+}
+
+func TestCensorIntegration(t *testing.T) {
+	// copy input to a temp dir so we don't touch the golden input files
+	tempDir := copyTestData(t)
+	// also, tar the input - it's not trivial to diff two tarballs while only caring about
+	// file content, not metadata, so this test will tar up the archive from the input and
+	// untar it after the fact for simple diffs and updates
+	archiveDir := filepath.Join(tempDir, "artifacts/archive")
+	archiveFile := filepath.Join(tempDir, "artifacts/archive.tar.gz")
+	if err := archive(archiveDir, archiveFile); err != nil {
+		t.Fatalf("failed to archive input: %v", err)
+	}
 
 	bufferSize := 1
 	options := Options{
@@ -140,5 +154,66 @@ func TestCensorIntegration(t *testing.T) {
 		t.Fatalf("got an error from censoring: %v", err)
 	}
 
+	if err := unarchive(archiveFile, archiveDir); err != nil {
+		t.Fatalf("failed to unarchive input: %v", err)
+	}
+
 	testutil.CompareWithFixtureDir(t, "testdata/output", tempDir)
+}
+
+func TestArchiveMatchesTar(t *testing.T) {
+	tempDir := t.TempDir()
+	archiveOutput := filepath.Join(tempDir, "archive.tar.gz")
+	archiveDir := "testdata/archives"
+	archiveInputs := filepath.Join(archiveDir, "archive/")
+	if err := archive(archiveInputs, archiveOutput); err != nil {
+		t.Fatalf("failed to archive input: %v", err)
+	}
+	tarOutput := t.TempDir()
+	cmd := exec.Command("tar", "-C", tarOutput, "-xzvf", archiveOutput)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("could not run tar: %v:\n %s", err, string(out))
+	}
+	testutil.CompareWithFixtureDir(t, tarOutput, archiveInputs)
+}
+
+func TestUnarchive(t *testing.T) {
+	unarchiveOutput := t.TempDir()
+	archiveDir := "testdata/archives"
+	archiveInputs := filepath.Join(archiveDir, "archive/")
+	archiveFile := filepath.Join(archiveDir, "archive.tar.gz")
+	if err := unarchive(archiveFile, unarchiveOutput); err != nil {
+		t.Fatalf("failed to unarchive input: %v", err)
+	}
+	testutil.CompareWithFixtureDir(t, archiveInputs, unarchiveOutput)
+}
+
+func TestUnarchiveMatchesTar(t *testing.T) {
+	unarchiveOutput := t.TempDir()
+	archiveDir := "testdata/archives"
+	archiveFile := filepath.Join(archiveDir, "archive.tar.gz")
+	if err := unarchive(archiveFile, unarchiveOutput); err != nil {
+		t.Fatalf("failed to unarchive input: %v", err)
+	}
+	tarOutput := t.TempDir()
+	cmd := exec.Command("tar", "-C", tarOutput, "-xzvf", archiveFile)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("could not run tar: %v:\n %s", err, string(out))
+	}
+	testutil.CompareWithFixtureDir(t, tarOutput, unarchiveOutput)
+}
+
+func TestRoundTrip(t *testing.T) {
+	tempDir := t.TempDir()
+	archiveOutput := filepath.Join(tempDir, "archive.tar.gz")
+	unarchiveOutput := filepath.Join(tempDir, "archive/")
+	archiveDir := "testdata/archives"
+	archiveInputs := filepath.Join(archiveDir, "archive/")
+	if err := archive(archiveInputs, archiveOutput); err != nil {
+		t.Fatalf("failed to archive input: %v", err)
+	}
+	if err := unarchive(archiveOutput, unarchiveOutput); err != nil {
+		t.Fatalf("failed to unarchive input: %v", err)
+	}
+	testutil.CompareWithFixtureDir(t, archiveInputs, unarchiveOutput)
 }

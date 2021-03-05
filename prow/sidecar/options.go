@@ -81,8 +81,7 @@ type Options struct {
 	// to the cloud.
 	SecretDirectories []string `json:"secret_directories,omitempty"`
 	// CensoringConcurrency is the maximum number of goroutines that should be censoring
-	// artifacts and logs at any time. If unset, defaults to the number of available
-	// processors to the sidecar.
+	// artifacts and logs at any time. If unset, defaults to 10.
 	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
 	// CensoringBufferSize is the size in bytes of the buffer allocated for every file
 	// being censored. We want to keep as little of the file in memory as possible in
