@@ -338,7 +338,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.19
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -386,7 +386,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -481,6 +481,48 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gomod
+  - name: pull-kops-verify-gomod-1-20
+    branches:
+    - release-1.20
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gomod"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gomod-1.20
+  - name: pull-kops-verify-gomod-1-19
+    branches:
+    - release-1.19
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.19
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gomod"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gomod-1.19
   - name: pull-kops-verify-boilerplate
     always_run: true
     labels:
