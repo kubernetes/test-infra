@@ -312,7 +312,7 @@ periodics:
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
-          - --node-test-args=--feature-gates=HugePageStorageMediumSize=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
