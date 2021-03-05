@@ -43,6 +43,7 @@ func NewCensorer() *ReloadingCensorer {
 type ReloadingCensorer struct {
 	*sync.RWMutex
 	*bytereplacer.Replacer
+	largestSecret int
 }
 
 var _ Censorer = &ReloadingCensorer{}
@@ -65,6 +66,13 @@ func (c *ReloadingCensorer) Censor(input *[]byte) {
 	c.RUnlock()
 }
 
+// LargestSecret returns the size of the largest secret we will censor.
+func (c *ReloadingCensorer) LargestSecret() int {
+	c.RLock()
+	defer c.RUnlock()
+	return c.largestSecret
+}
+
 // RefreshBytes refreshes the set of secrets that we censor.
 func (c *ReloadingCensorer) RefreshBytes(secrets ...[]byte) {
 	var asStrings []string
@@ -76,9 +84,13 @@ func (c *ReloadingCensorer) RefreshBytes(secrets ...[]byte) {
 
 // Refresh refreshes the set of secrets that we censor.
 func (c *ReloadingCensorer) Refresh(secrets ...string) {
+	var largestSecret int
 	var replacements []string
 	addReplacement := func(s string) {
 		replacements = append(replacements, s, strings.Repeat(`*`, len(s)))
+		if len(s) > largestSecret {
+			largestSecret = len(s)
+		}
 	}
 	for _, secret := range secrets {
 		if trimmed := strings.TrimSpace(secret); trimmed != secret {
@@ -93,6 +105,7 @@ func (c *ReloadingCensorer) Refresh(secrets ...string) {
 	}
 	c.Lock()
 	c.Replacer = bytereplacer.New(replacements...)
+	c.largestSecret = largestSecret
 	c.Unlock()
 }
 

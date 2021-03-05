@@ -176,6 +176,7 @@ filegroup(
         "//prow/spyglass:all-srcs",
         "//prow/statusreconciler:all-srcs",
         "//prow/test:all-srcs",
+        "//prow/testutil:all-srcs",
         "//prow/tide:all-srcs",
         "//prow/version:all-srcs",
     ],
