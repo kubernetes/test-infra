@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - andrewsykim
+  - alejandrox1
+  - BenTheElder
+  - spiffxp
+reviewers:
+  - andrewsykim
+  - alejandrox1
+  - BenTheElder
+  - spiffxp
+
+labels:
+- sig/testing
