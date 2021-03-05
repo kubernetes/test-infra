@@ -9,7 +9,7 @@
           {
             alert: 'ghproxy-specific-status-code-abnormal',
             expr: |||
-              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[5m])) by (status,path) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) by (path) * 100 > 10
+              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[30m])) by (status,path) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) by (path) * 100 > 10
             |||,
             labels: {
               severity: 'warning',
@@ -21,7 +21,7 @@
           {
             alert: 'ghproxy-global-status-code-abnormal',
             expr: |||
-              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[5m])) by (status) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) * 100 > 3
+              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[30m])) by (status) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) * 100 > 3
             |||,
             labels: {
               severity: 'warning',
