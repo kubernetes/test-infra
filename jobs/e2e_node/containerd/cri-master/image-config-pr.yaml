@@ -1,4 +1,8 @@
 images:
+  ubuntu:
+    image: ubuntu-gke-1804-1-16-v20200330
+    project: ubuntu-os-gke-cloud
+    metadata: "user-data</home/prow/go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/env"
   cos-stable:
     image_family: cos-81-lts
     project: cos-cloud
