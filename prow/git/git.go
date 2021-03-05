@@ -384,7 +384,7 @@ func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullReq
 // an error if the patch cannot be applied.
 func (r *Repo) Am(path string) error {
 	r.logger.Infof("Applying %s.", path)
-	co := r.gitCommand("am", "--3way", path)
+	co := r.gitCommand("am", "--3way", "--ignore-space-change", path)
 	b, err := co.CombinedOutput()
 	if err == nil {
 		return nil
