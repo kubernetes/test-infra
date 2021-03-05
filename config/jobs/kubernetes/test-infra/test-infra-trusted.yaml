@@ -935,7 +935,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/generic_autobump:v20210303-204466f
+    - image: gcr.io/k8s-testimages/generic_autobump:v20210303-eead844
       command:
       - /generic_autobump
       args:
