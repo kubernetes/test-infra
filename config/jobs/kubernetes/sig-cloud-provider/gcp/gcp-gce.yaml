@@ -129,8 +129,6 @@ presubmits:
         args:
         - "/bin/bash"
         - "-c"
-        # TODO: Use the e2e.test package built during the "build" step instead of downloading
-        # TODO: Investigate the need of --create-custom-network and debug issues
         # Please note that the semicolon after the \ is necessary due to how
         # parsing works out when embedding a bash script in a string like this
         - set -o errexit;
@@ -150,11 +148,12 @@ presubmits:
           --up \;
           --down \;
           --enable-cache-mutation-detector \;
-          --enable-pod-security-policy \;
           --test=ginkgo \;
           -- \;
           --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]' \;
-          --parallel=30
+          --parallel=30 \;
+          --use-built-binaries
+
 
   - name: pull-kubernetes-e2e-gce-canary
     cluster: k8s-infra-prow-build
