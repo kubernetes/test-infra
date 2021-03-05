@@ -1081,3 +1081,21 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/cluster-api:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/controller-tools:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/controller-runtime:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
