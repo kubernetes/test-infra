@@ -9,6 +9,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-go-canary
@@ -28,6 +29,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
@@ -53,6 +55,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
@@ -71,6 +74,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-go-canary
@@ -93,6 +97,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-go-canary
