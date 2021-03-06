@@ -18,6 +18,9 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: //...
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: bazel

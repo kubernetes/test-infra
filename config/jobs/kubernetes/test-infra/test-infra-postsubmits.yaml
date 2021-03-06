@@ -17,6 +17,9 @@ postsubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: //...
     annotations:
       testgrid-dashboards: sig-testing-misc
       testgrid-tab-name: post-bazel
