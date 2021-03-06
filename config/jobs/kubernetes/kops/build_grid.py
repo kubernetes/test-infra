@@ -471,6 +471,43 @@ def generate_misc():
                    k8s_version="1.20",
                    terraform_version="0.14.6",
                    extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-misc-channelalpha",
+                   k8s_version="stable",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=24,
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-ha-euwest1",
+                   k8s_version="stable",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=24,
+                   extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-arm64-release",
+                   k8s_version="latest",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-west-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210129"], # pylint: disable=line-too-long
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-legacy-etcd",
+                   k8s_version="1.17",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=6,
+                   extra_flags=["--override=cluster.spec.etcdClusters[*].provider=Legacy"],
+                   extra_dashboards=["kops-misc"]),
+
     ]
     return results
 
