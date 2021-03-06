@@ -19,6 +19,26 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-test
       testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-quick-bench
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        command:
+        - go
+        args:
+        - test
+        - -bench=.
+        - -benchtime=1x
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-quickbench
+      testgrid-num-columns-recent: '30'      
   - name: pull-structured-merge-diff-gofmt
     labels:
       preset-service-account: "true"
