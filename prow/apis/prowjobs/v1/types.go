@@ -367,6 +367,10 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+
+	// CensorSecrets determines if the sidecar should be instructed to censor
+	// secret data that is otherwise mounted to the ProwJob Pod
+	CensorSecrets *bool `json:"censor_secrets,omitempty"`
 }
 
 // Resources holds resource requests and limits for
@@ -460,6 +464,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.OauthTokenSecret == nil {
 		merged.OauthTokenSecret = def.OauthTokenSecret
+	}
+	if merged.CensorSecrets == nil {
+		merged.CensorSecrets = def.CensorSecrets
 	}
 
 	return &merged

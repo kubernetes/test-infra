@@ -5,7 +5,10 @@ go_library(
     srcs = ["fixtures.go"],
     importpath = "k8s.io/test-infra/prow/testutil",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_google_go_cmp//cmp:go_default_library"],
+    deps = [
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
+    ],
 )
 
 filegroup(

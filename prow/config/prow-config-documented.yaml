@@ -478,6 +478,10 @@ plank:
     # Use `org/repo`, `org` or `*` as a key.
     default_decoration_configs:
         "":
+            # CensorSecrets determines if the sidecar should be instructed to censor
+            # secret data that is otherwise mounted to the ProwJob Pod
+            censor_secrets: false
+
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ' '
