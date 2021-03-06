@@ -100,7 +100,7 @@ def build_cron(key, runs_per_day):
     hour = simple_hash("hours:" + key) % 24
     day_of_week = simple_hash("day_of_week:" + key) % 7
 
-    if runs_per_day and runs_per_day > 0:
+    if runs_per_day > 0:
         hour_denominator = 24 / runs_per_day
         return "%d */%d * * *" % (minute, hour_denominator), (runs_per_day * 7)
 
@@ -197,7 +197,7 @@ def build_test(cloud='aws',
                test_parallelism=25,
                test_timeout_minutes=60,
                skip_override=None,
-               runs_per_day=None):
+               runs_per_day=0):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
