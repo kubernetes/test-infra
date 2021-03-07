@@ -201,7 +201,7 @@ def build_test(cloud='aws',
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
-    if networking == "cilium" and distro in ["amzn2", "rhel7", "centos7", "deb9"]:
+    if networking == "cilium" and distro not in ["u2004", "deb10", "rhel8"]:
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
