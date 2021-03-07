@@ -10,7 +10,6 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^main$
-    - ^master$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:

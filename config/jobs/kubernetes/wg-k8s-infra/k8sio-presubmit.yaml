@@ -9,7 +9,6 @@ presubmits:
     run_if_changed: "^groups/"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: golang:1.13

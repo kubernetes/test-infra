@@ -11,7 +11,6 @@ presubmits:
     max_concurrency: 10
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
@@ -53,7 +52,6 @@ presubmits:
     max_concurrency: 1
     branches:
     - ^main$
-    - ^master$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
