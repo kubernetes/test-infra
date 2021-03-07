@@ -17,6 +17,7 @@ limitations under the License.
 package lifecycle
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -69,6 +70,7 @@ type lifecycleClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	CreateComment(owner, repo string, number int, comment string) error
 }
 
 func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -101,10 +103,16 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
+	user := e.User.Login
 
 	remove := mat[1] != ""
 	cmd := mat[2]
 	lbl := "lifecycle/" + cmd
+
+	// Don't allow adding lifecycle/frozen label to PRs
+	if e.IsPR && lbl == labels.LifecycleFrozen && !remove {
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, fmt.Sprintf("The `%s` label cannot be applied to Pull Requests.", labels.LifecycleFrozen)))
+	}
 
 	// Let's start simple and allow anyone to add/remove frozen, stale, rotten labels.
 	// Adjust if we find evidence of the community abusing these labels.
