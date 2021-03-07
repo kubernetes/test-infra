@@ -1010,6 +1010,12 @@ func TestMakeCommitSummary(t *testing.T) {
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/inconsistent/test:tag3"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
 		},
+		{
+			name:           "only bump inconsistent",
+			prefixes:       []Prefix{inconsistentPrefix},
+			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/inconsistent/test:tag3"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
+			expectedResult: "Update Inconsistent as needed",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

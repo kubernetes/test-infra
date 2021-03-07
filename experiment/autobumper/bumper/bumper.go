@@ -645,10 +645,14 @@ func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 			consistentBumps = append(consistentBumps, fmt.Sprintf("%s to %s", prefix.Name, tag))
 		}
 	}
-	if len(inconsistentBumps) != 0 {
-		return fmt.Sprintf("Update %s and %s as needed", strings.Join(consistentBumps, ", "), strings.Join(inconsistentBumps, ", "))
+	var msgs []string
+	if len(consistentBumps) != 0 {
+		msgs = append(msgs, strings.Join(consistentBumps, ", "))
 	}
-	return "Update " + strings.Join(consistentBumps, ", ")
+	if len(inconsistentBumps) != 0 {
+		msgs = append(msgs, fmt.Sprintf("%s as needed", strings.Join(inconsistentBumps, ", ")))
+	}
+	return fmt.Sprintf("Update %s", strings.Join(msgs, " and "))
 
 }
 
