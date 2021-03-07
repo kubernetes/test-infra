@@ -8,7 +8,6 @@ postsubmits:
       run_if_changed: "^dns/octodns-docker/"
       branches:
         - ^main$
-        - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:

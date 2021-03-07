@@ -104,7 +104,6 @@ postsubmits:
     run_if_changed: '^groups/groups.yaml'
     branches:
     - ^main$
-    - ^master$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -127,7 +126,6 @@ postsubmits:
     run_if_changed: "^dns/zone-configs/"
     branches:
     - ^main$
-    - ^master$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -149,7 +147,6 @@ postsubmits:
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
     branches:
     - ^main$
-    - ^master$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -174,7 +171,6 @@ postsubmits:
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
     branches:
     - ^main$
-    - ^master$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
