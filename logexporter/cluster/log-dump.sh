@@ -179,10 +179,6 @@ function detect-node-names() {
         "${group}" --zone "${ZONE}" --project "${PROJECT}" \
         --format='value(instance)'))
     done
-  else
-      NODE_NAMES+=($(gcloud compute instances list \
-        --project "${PROJECT}" \
-        --format='get(name)'))
   fi
   # Add heapster node name to the list too (if it exists).
   if [[ -n "${HEAPSTER_MACHINE_TYPE:-}" ]]; then
