@@ -228,8 +228,8 @@ def build_test(cloud='aws',
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
         k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
-        # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.18"
+        # Hack to stop the autobumper from getting confused
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20"
         e2e_image = e2e_image[:-4] + k8s_version
     else:
         raise Exception('missing required k8s_version')
