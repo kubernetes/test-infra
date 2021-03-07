@@ -226,20 +226,17 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
+    e2e_image = 'gcr.io/k8s-testimages/kubekins-e2e:latest-master'
     if k8s_version == 'latest':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master"
     elif k8s_version == 'stable':
         marker = 'stable.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master"
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
         k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
-        # Hack to stop the autobumper from getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20"
-        e2e_image = e2e_image[:-4] + k8s_version
+        e2e_image = f"gcr.io/k8s-testimages/kubekins-e2e:latest-{k8s_version}"
     else:
         raise Exception('missing required k8s_version')
 
@@ -507,14 +504,6 @@ def generate_misc():
                                 "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210129"], # pylint: disable=line-too-long
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-legacy-etcd",
-                   k8s_version="1.17",
-                   container_runtime="containerd",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=6,
-                   extra_flags=["--override=cluster.spec.etcdClusters[*].provider=Legacy"],
-                   extra_dashboards=["kops-misc"]),
 
     ]
     return results
