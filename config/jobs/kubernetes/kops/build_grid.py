@@ -100,7 +100,7 @@ def build_cron(key, runs_per_day):
     hour = simple_hash("hours:" + key) % 24
     day_of_week = simple_hash("day_of_week:" + key) % 7
 
-    if runs_per_day and runs_per_day > 0:
+    if runs_per_day > 0:
         hour_denominator = 24 / runs_per_day
         return "%d */%d * * *" % (minute, hour_denominator), (runs_per_day * 7)
 
@@ -197,7 +197,7 @@ def build_test(cloud='aws',
                test_parallelism=25,
                test_timeout_minutes=60,
                skip_override=None,
-               runs_per_day=None):
+               runs_per_day=0):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
@@ -228,8 +228,8 @@ def build_test(cloud='aws',
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
         k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
-        # Hack to stop the autobumper getting confused
-        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.18"
+        # Hack to stop the autobumper from getting confused
+        e2e_image = "gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20"
         e2e_image = e2e_image[:-4] + k8s_version
     else:
         raise Exception('missing required k8s_version')
@@ -471,6 +471,43 @@ def generate_misc():
                    k8s_version="1.20",
                    terraform_version="0.14.6",
                    extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-misc-channelalpha",
+                   k8s_version="stable",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=24,
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-ha-euwest1",
+                   k8s_version="stable",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=24,
+                   extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-arm64-release",
+                   k8s_version="latest",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-west-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210129"], # pylint: disable=line-too-long
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-legacy-etcd",
+                   k8s_version="1.17",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=6,
+                   extra_flags=["--override=cluster.spec.etcdClusters[*].provider=Legacy"],
+                   extra_dashboards=["kops-misc"]),
+
     ]
     return results
 
