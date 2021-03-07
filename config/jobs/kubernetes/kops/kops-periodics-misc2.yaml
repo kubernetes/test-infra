@@ -98,7 +98,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
           --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM,PublicJWKS \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
@@ -165,7 +165,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
           --env=KOPS_FEATURE_FLAGS=EnableExternalCloudController,SpecOverrideFlag \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -232,7 +232,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-hvm-2.0.20201126.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210219.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
@@ -297,7 +297,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
@@ -363,7 +363,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=calico --container-runtime=docker" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -428,7 +428,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=calico --container-runtime=docker --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=calico --container-runtime=docker --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -560,7 +560,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.etcdClusters[*].provider=Legacy" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.etcdClusters[*].provider=Legacy" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt \
