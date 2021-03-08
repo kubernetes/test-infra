@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes-sigs/release-utils:
+  - name: pull-release-utils-test
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/release-utils"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - go
+        args:
+        - run
+        - mage.go
+        - Test
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-utils-test
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-utils-verify
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/release-utils"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - go
+        args:
+        - run
+        - mage.go
+        - Verify
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-utils-verify
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
