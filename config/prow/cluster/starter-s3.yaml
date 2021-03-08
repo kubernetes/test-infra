@@ -634,7 +634,7 @@ metadata:
   name: "deck"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "deck"
@@ -647,7 +647,7 @@ subjects:
   name: "deck"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "deck"
@@ -661,7 +661,7 @@ subjects:
   namespace: prow
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "deck"
@@ -680,7 +680,7 @@ rules:
       # - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "deck"
@@ -699,7 +699,7 @@ metadata:
   name: "horologium"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "horologium"
@@ -713,7 +713,7 @@ rules:
       - list
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "horologium"
@@ -732,7 +732,7 @@ metadata:
   name: "sinker"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "sinker"
@@ -779,7 +779,7 @@ rules:
     - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "sinker"
@@ -796,7 +796,7 @@ rules:
       - patch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "sinker"
@@ -809,7 +809,7 @@ subjects:
   name: "sinker"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "sinker"
@@ -829,7 +829,7 @@ metadata:
   name: "hook"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "hook"
@@ -853,7 +853,7 @@ rules:
       - update
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "hook"
@@ -872,7 +872,7 @@ metadata:
   name: "tide"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "tide"
@@ -888,7 +888,7 @@ rules:
       - watch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "tide"
@@ -907,7 +907,7 @@ metadata:
   name: "statusreconciler"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "statusreconciler"
@@ -920,7 +920,7 @@ rules:
       - create
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "statusreconciler"
@@ -1053,7 +1053,7 @@ metadata:
   name: prow-controller-manager
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: prow-controller-manager
@@ -1101,7 +1101,7 @@ rules:
     - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager
@@ -1118,7 +1118,7 @@ rules:
       - patch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: prow-controller-manager
@@ -1131,7 +1131,7 @@ subjects:
   name: prow-controller-manager
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager
@@ -1240,7 +1240,7 @@ rules:
     - "patch"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: crier
   namespace: prow
@@ -1254,7 +1254,7 @@ subjects:
   namespace: prow
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: crier
   namespace: test-pods
