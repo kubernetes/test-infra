@@ -91,6 +91,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(OauthTokenSecret)
 		**out = **in
 	}
+	if in.CensorSecrets != nil {
+		in, out := &in.CensorSecrets, &out.CensorSecrets
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

@@ -705,10 +705,24 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
 	}
 
+	secretVolumes := sets.NewString()
+	for _, volume := range spec.Volumes {
+		if volume.VolumeSource.Secret != nil {
+			secretVolumes.Insert(volume.Name)
+		}
+	}
+	containsSecretData := func(volumeName string) bool {
+		if censor := pj.Spec.DecorationConfig.CensorSecrets; censor == nil || !*censor {
+			return false
+		}
+		return secretVolumes.Has(volumeName)
+	}
+
 	const (
 		previous = ""
 		exitZero = false
 	)
+	var secretVolumeMounts []coreapi.VolumeMount
 	var wrappers []wrapper.Options
 
 	for i, container := range spec.Containers {
@@ -720,10 +734,15 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		if err != nil {
 			return fmt.Errorf("wrap container: %v", err)
 		}
+		for _, volumeMount := range spec.Containers[i].VolumeMounts {
+			if containsSecretData(volumeMount.Name) {
+				secretVolumeMounts = append(secretVolumeMounts, volumeMount)
+			}
+		}
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, secretVolumeMounts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -778,19 +797,25 @@ const (
 	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, secretVolumeMounts []coreapi.VolumeMount, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+	var secretVolumePaths []string
+	for _, volumeMount := range secretVolumeMounts {
+		secretVolumePaths = append(secretVolumePaths, volumeMount.MountPath)
+	}
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions:       &gcsOptions,
-		Entries:          wrappers,
-		EntryError:       requirePassingEntries,
-		IgnoreInterrupts: ignoreInterrupts,
+		GcsOptions:        &gcsOptions,
+		Entries:           wrappers,
+		EntryError:        requirePassingEntries,
+		IgnoreInterrupts:  ignoreInterrupts,
+		SecretDirectories: secretVolumePaths,
 	})
 	if err != nil {
 		return nil, err
 	}
 	mounts := []coreapi.VolumeMount{logMount}
 	mounts = append(mounts, blobStorageMounts...)
+	mounts = append(mounts, secretVolumeMounts...)
 	if outputMount != nil {
 		mounts = append(mounts, *outputMount)
 	}

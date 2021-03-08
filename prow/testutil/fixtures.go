@@ -20,9 +20,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"sigs.k8s.io/yaml"
 )
 
 // CompareWithFixtureDir will compare all files in a directory with a corresponding test fixture directory.
@@ -69,4 +71,51 @@ func CompareWithFixture(t *testing.T, golden, output string) {
 	if diff := cmp.Diff(string(expected), string(actual)); diff != "" {
 		t.Errorf("got diff between expected and actual result: \n%s\n\nIf this is expected, re-run the test with `UPDATE=true go test ./...` to update the fixtures.", diff)
 	}
+}
+
+func sanitizeFilename(s string) string {
+	result := strings.Builder{}
+	for _, r := range s {
+		if (r >= 'a' && r < 'z') || (r >= 'A' && r < 'Z') || r == '_' || r == '.' || (r >= '0' && r <= '9') {
+			// The thing is documented as returning a nil error so lets just drop it
+			_, _ = result.WriteRune(r)
+			continue
+		}
+		if !strings.HasSuffix(result.String(), "_") {
+			result.WriteRune('_')
+		}
+	}
+	return "zz_fixture_" + result.String()
+}
+
+// CompareWithSerializedFixture compares an object that can be marshalled with a golden file containing the
+// serialized version of the data.
+func CompareWithSerializedFixture(t *testing.T, data interface{}) {
+	t.Helper()
+	tempFile, err := ioutil.TempFile("", "tmp-serialized")
+	if err != nil {
+		t.Fatalf("could not create temporary file to hold serialized data: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tempFile.Name()); err != nil {
+			t.Errorf("could not remove temporary file: %v", err)
+		}
+	}()
+
+	serialized, err := yaml.Marshal(data)
+	if err != nil {
+		t.Fatalf("failed to yaml marshal data of type %T: %v", data, err)
+	}
+	if _, err := tempFile.Write(serialized); err != nil {
+		t.Fatalf("could not write serialized data: %v", err)
+	}
+	if err := tempFile.Close(); err != nil {
+		t.Errorf("could not close temporary file: %v", err)
+	}
+
+	goldenFile, err := filepath.Abs(filepath.Join("testdata", sanitizeFilename(t.Name())+".yaml"))
+	if err != nil {
+		t.Fatalf("could not determine path to golden file: %v", err)
+	}
+	CompareWithFixture(t, goldenFile, tempFile.Name())
 }

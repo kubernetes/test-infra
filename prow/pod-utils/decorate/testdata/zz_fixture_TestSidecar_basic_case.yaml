@@ -1,0 +1,17 @@
+command:
+- /sidecar
+env:
+- name: JOB_SPEC
+  value: spec
+- name: SIDECAR_OPTIONS
+  value: '{"gcs_options":{"items":["first","second","/logs/artifacts"],"bucket":"bucket","dry_run":false},"entries":[{"args":["yes"],"process_log":"","marker_file":"","metadata_file":""}],"entry_error":true,"ignore_interrupts":true}'
+image: sidecar-image
+name: sidecar
+resources: {}
+volumeMounts:
+- mountPath: /logs
+  name: logs
+- mountPath: /blob
+  name: blob
+- mountPath: /outputs
+  name: outputs
