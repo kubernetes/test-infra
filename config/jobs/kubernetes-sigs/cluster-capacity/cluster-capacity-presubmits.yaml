@@ -34,6 +34,68 @@ presubmits:
         - make
         args:
         - test-unit
+  - name: pull-cluster-capacity-test-e2e-k8s-master-1-20
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.20
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.20.0"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-cluster-capacity-test-e2e-k8s-master-1-19
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.19
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210207-08ffabe-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.19.7"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
   - name: pull-cluster-capacity-test-e2e-k8s-master-1-18
     annotations:
       testgrid-dashboards: sig-scheduling
