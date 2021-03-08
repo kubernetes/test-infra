@@ -199,7 +199,6 @@ def build_test(cloud='aws',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
-               kops_zones=None,
                name_override=None,
                feature_flags=(),
                extra_flags=None,
@@ -322,8 +321,6 @@ def build_test(cloud='aws',
         spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
         spec['extra_flags'] = ' '.join(extra_flags)
-    if kops_zones:
-        spec['kops_zones'] = ','.join(kops_zones)
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -429,18 +426,16 @@ def generate_grid():
 #############################
 def generate_misc():
     u2004_arm = distro_images['u2004'].replace('amd64', 'arm64')
-    # A one-off scenario testing arm64
-    # TODO: Would be nice to default the arm image, perhaps based on the instance type
     results = [
+        # A one-off scenario testing arm64
         build_test(name_override="kops-grid-scenario-arm64",
                    cloud="aws",
                    distro="u2004",
-                   kops_zones=['us-east-2b'],
-                   extra_flags=['--node-size=m6g.large',
-                                '--master-size=m6g.large',
+                   extra_flags=["--zones=us-east-2b",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
                    extra_dashboards=['kops-misc']),
-
 
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-public-jwks",
