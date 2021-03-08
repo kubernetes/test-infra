@@ -32,6 +32,7 @@ dashboard_groups:
   - knative-sandbox-eventing-redis
   - knative-sandbox-kn-plugin-admin
   - knative-sandbox-kn-plugin-diag
+  - knative-sandbox-kn-plugin-sample
   - knative-sandbox-kn-plugin-source-kafka
   - knative-sandbox-kperf
   - knative-sandbox-net-certmanager
@@ -45,24 +46,6 @@ dashboard_groups:
   name: knative-sandbox
 dashboards:
 - dashboard_tab:
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-google-knative-gcp-0.17-continuous'
-    name: google-knative-gcp-0.17-continuous
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-google-knative-gcp-0.17-continuous
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-google-knative-gcp-0.17-dot-release'
-    name: google-knative-gcp-0.17-dot-release
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-google-knative-gcp-0.17-dot-release
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-google-knative-gcp-0.18-continuous'
@@ -117,6 +100,24 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-google-knative-gcp-0.20-dot-release
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-google-knative-gcp-0.21-continuous'
+    name: google-knative-gcp-0.21-continuous
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-google-knative-gcp-0.21-continuous
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-google-knative-gcp-0.21-dot-release'
+    name: google-knative-gcp-0.21-dot-release
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-google-knative-gcp-0.21-dot-release
   - alert_options:
       alert_mail_to_addresses: serverless-engprod-sea@google.com
     code_search_url_template:
@@ -668,15 +669,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-google-knative-gcp-0.17-continuous-beta-prow-tests'
-    name: google-knative-gcp-0.17-continuous-beta-prow-tests
-    open_bug_template:
-      url: https://github.com/google/knative-gcp/issues/
-    open_test_template:
-      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
-  - code_search_url_template:
-      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-google-knative-gcp-0.18-continuous-beta-prow-tests'
     name: google-knative-gcp-0.18-continuous-beta-prow-tests
     open_bug_template:
@@ -702,6 +694,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-google-knative-gcp-0.20-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-google-knative-gcp-0.21-continuous-beta-prow-tests'
+    name: google-knative-gcp-0.21-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/google/knative-gcp/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-google-knative-gcp-0.21-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/google/knative-gcp/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-google-knative-gcp-continuous-beta-prow-tests'
@@ -1134,6 +1135,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-sample/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests'
+    name: knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-sample/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests'
@@ -2041,6 +2051,17 @@ dashboards:
   name: knative-sandbox-kn-plugin-diag
 - dashboard_tab:
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-sample/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-sample-continuous'
+    name: knative-sandbox-kn-plugin-sample-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-sample/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-sample-continuous
+  name: knative-sandbox-kn-plugin-sample
+- dashboard_tab:
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release'
     name: knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
@@ -2723,15 +2744,6 @@ dashboards:
   name: knative-test-infra
 test_groups:
 - alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.17-continuous
-  name: ci-google-knative-gcp-0.17-continuous
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.17-continuous-beta-prow-tests
-  name: ci-google-knative-gcp-0.17-continuous-beta-prow-tests
-- alert_stale_results_hours: 3
-  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.17-dot-release
-  name: ci-google-knative-gcp-0.17-dot-release
-- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.18-continuous
   name: ci-google-knative-gcp-0.18-continuous
 - alert_stale_results_hours: 3
@@ -2758,6 +2770,15 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.20-dot-release
   name: ci-google-knative-gcp-0.20-dot-release
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.21-continuous
+  name: ci-google-knative-gcp-0.21-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.21-continuous-beta-prow-tests
+  name: ci-google-knative-gcp-0.21-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-google-knative-gcp-0.21-dot-release
+  name: ci-google-knative-gcp-0.21-dot-release
 - gcs_prefix: knative-prow/logs/ci-google-knative-gcp-auto-release
   name: ci-google-knative-gcp-auto-release
   num_failures_to_alert: 1
@@ -3263,6 +3284,12 @@ test_groups:
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-sample-continuous
+  name: ci-knative-sandbox-kn-plugin-sample-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
