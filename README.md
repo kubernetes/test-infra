@@ -7,7 +7,7 @@
 This repository contains tools and configuration files for the testing and
 automation needs of the Kubernetes project.
 
-Our [architecture diagram](docs/architecture.svg) provides a (wildly out of date [#13063])
+Our [architecture diagram](docs/architecture.svg) provides an (updated [#13063])
 overview of how the different tools and services interact.
 
 ## CI Job Management
