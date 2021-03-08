@@ -460,18 +460,6 @@ def generate_misc():
                                 '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
-        # A special test to diagnose test timeouts
-        # cf https://github.com/kubernetes/test-infra/issues/20738
-        build_test(name_override="kops-grid-scenario-serial-test-for-timeout",
-                   cloud="aws",
-                   networking="calico",
-                   distro="amzn2",
-                   k8s_version="1.20",
-                   test_parallelism=1,
-                   test_timeout_minutes=300,
-                   extra_dashboards=['kops-misc']),
-
-
         build_test(name_override="kops-grid-scenario-terraform",
                    container_runtime='containerd',
                    k8s_version="1.20",
