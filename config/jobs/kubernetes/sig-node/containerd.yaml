@@ -58,27 +58,6 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build
     description: "builds development in progress branch of upstream containerd"
-- name: ci-containerd-build-1-2
-  interval: 30m
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
-      args:
-      - --repo=github.com/containerd/containerd=release/1.2
-      - --repo=github.com/containerd/cri=release/1.2
-      - --root=/go/src
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - --env=GO111MODULE=off
-      - --env=DEPLOY_DIR=containerd/release-1.2
-      - /go/src/github.com/containerd/cri/test/containerd/build.sh
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-build-1.2
-    description: "builds release/1.2 branch of upstream containerd as it is distributed with docker"
 - name: ci-containerd-build-1-3
   interval: 30m
   labels:
@@ -130,36 +109,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cos
     testgrid-tab-name: containerd-e2e-cos
-- interval: 1h
-  name: ci-containerd-e2e-cos-gce-1-2
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/cri=release/1.2
-      - --timeout=70
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
-      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
-      - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --extract=ci/latest-1.15
-      - --gcp-node-image=gci
-      - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
-  annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: containerd-e2e-cos-1.2
 - interval: 1h
   name: ci-containerd-e2e-cos-gce-1-3
   labels:
@@ -312,36 +261,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cri
     testgrid-tab-name: containerd-node-features
-- name: ci-containerd-node-e2e-features-1-2
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200623-2424179-1.15
-      args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.15
-      - --repo=github.com/containerd/cri=release/1.2
-      - --timeout=90
-      - --scenario=kubernetes_e2e
-      - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/image-config.yaml
-      - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
-      - --gcp-zone=us-central1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.2
 - name: ci-containerd-node-e2e-features-1-3
   interval: 1h
   labels:
