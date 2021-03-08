@@ -56,7 +56,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
           args:
             - runner.sh
             - "./images/capi/hack/ci-json-sort.sh"
