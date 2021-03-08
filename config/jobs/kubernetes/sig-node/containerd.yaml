@@ -79,6 +79,27 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build-1.3
     description: "builds release/1.3 branch of upstream containerd"
+- name: ci-containerd-build-1-4
+  interval: 30m
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        args:
+          - --repo=github.com/containerd/containerd=release/1.4
+          - --repo=github.com/containerd/cri=release/1.4
+          - --root=/go/src
+          - --upload=gs://kubernetes-jenkins/logs
+          - --scenario=execute
+          - --
+          - --env=GO111MODULE=off
+          - --env=DEPLOY_DIR=containerd/release-1.4
+          - /go/src/github.com/containerd/cri/test/containerd/build.sh
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-build-1.4
+    description: "builds release/1.4 branch of upstream containerd"
 - interval: 1h
   name: ci-containerd-e2e-cos-gce
   labels:
