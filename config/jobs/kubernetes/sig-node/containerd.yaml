@@ -52,7 +52,7 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=execute
       - --
-      - --env=DEPLOY_DIR=containerd/master
+      - --env=DEPLOY_DIR=master
       - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
     testgrid-dashboards: sig-node-containerd
