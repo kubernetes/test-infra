@@ -428,6 +428,7 @@ def generate_grid():
 # kops-periodics-misc2.yaml #
 #############################
 def generate_misc():
+    u2004_arm = distro_images['u2004'].replace('amd64', 'arm64')
     # A one-off scenario testing arm64
     # TODO: Would be nice to default the arm image, perhaps based on the instance type
     results = [
@@ -437,7 +438,7 @@ def generate_misc():
                    kops_zones=['us-east-2b'],
                    extra_flags=['--node-size=m6g.large',
                                 '--master-size=m6g.large',
-                                '--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210106'], # pylint: disable=line-too-long
+                                f"--image={u2004_arm}"],
                    extra_dashboards=['kops-misc']),
 
 
@@ -458,18 +459,6 @@ def generate_misc():
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
-
-        # A special test to diagnose test timeouts
-        # cf https://github.com/kubernetes/test-infra/issues/20738
-        build_test(name_override="kops-grid-scenario-serial-test-for-timeout",
-                   cloud="aws",
-                   networking="calico",
-                   distro="amzn2",
-                   k8s_version="1.20",
-                   test_parallelism=1,
-                   test_timeout_minutes=300,
-                   extra_dashboards=['kops-misc']),
-
 
         build_test(name_override="kops-grid-scenario-terraform",
                    container_runtime='containerd',
@@ -501,7 +490,7 @@ def generate_misc():
                    extra_flags=["--zones=eu-west-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
-                                "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210129"], # pylint: disable=line-too-long
+                                f"--image={u2004_arm}"],
                    extra_dashboards=["kops-misc"]),
 
 
