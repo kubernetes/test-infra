@@ -161,21 +161,21 @@ images:
 
 # ubuntu gke image pre-configured to run kubernetes
   ubuntu-gke-1804-resource1:
-    Image: ubuntu-gke-1804-1-17-v20200729
+    image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   ubuntu-gke-1804-resource2:
-    image: ubuntu-gke-1804-1-17-v20200729
+    image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   ubuntu-gke-1804-resource3:
-    image: ubuntu-gke-1804-1-17-v20200729
+    image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
