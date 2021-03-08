@@ -42,7 +42,6 @@ import (
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/azure"
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -319,7 +318,7 @@ func checkParams() error {
 		return fmt.Errorf("no credentials file path specified")
 	}
 	if *aksResourceName == "" {
-		*aksResourceName = "kubetest-" + uuid.NewV1().String()
+		*aksResourceName = "kubetest-" + randString(8)
 	}
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
