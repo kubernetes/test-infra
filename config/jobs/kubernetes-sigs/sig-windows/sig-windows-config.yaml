@@ -443,7 +443,6 @@ presubmits:
       timeout: 2h
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
     path_alias: k8s.io/kubernetes
     branches:
     - master
