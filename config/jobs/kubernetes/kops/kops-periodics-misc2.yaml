@@ -40,7 +40,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -106,7 +106,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -173,7 +173,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.19.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -241,7 +241,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.20.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -306,7 +306,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -371,7 +371,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -437,7 +437,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel 25 \
+          --parallel=25 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|check.if.cluster.info.dump.succeeds"
       env:
       - name: KUBE_SSH_KEY_PATH

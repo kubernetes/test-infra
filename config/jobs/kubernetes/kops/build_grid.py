@@ -57,7 +57,7 @@ kubetest2_template = """
           --ginkgo-args="--debug" \\
           --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \\
           --test-package-marker={{marker}} \\
-          --parallel {{test_parallelism}} \\
+          --parallel={{test_parallelism}} \\
           --skip-regex="{{skip_regex}}"
       env:
       - name: KUBE_SSH_KEY_PATH
