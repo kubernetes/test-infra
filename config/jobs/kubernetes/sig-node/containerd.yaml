@@ -368,23 +368,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cos
     testgrid-tab-name: soak-cos-gce
-- name: ci-cri-containerd-windows-build
-  interval: 30m
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
-      args:
-      - --repo=github.com/containerd/cri=master
-      - --root=/go/src
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - ./test/windows/build.sh
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: windows-build
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   cron: "30 1-23/3 * * *"
   labels:
@@ -919,26 +902,3 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-node-features
-- name: ci-cri-containerd-cri-validation-windows
-  interval: 1h
-  decorate: true
-  decoration_config:
-    timeout: 100m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: containerd
-    repo: cri
-    base_ref: master
-  spec:
-    containers:
-    - name: ci-cri-containerd-cri-validation-windows
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
-      command:
-      - runner.sh
-      args:
-      - ./test/windows/runner.sh
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cri-validation-windows
