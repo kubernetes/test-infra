@@ -511,7 +511,45 @@ def generate_misc():
                                 f"--image={u2004_arm}"],
                    extra_dashboards=["kops-misc"]),
 
+        build_test(name_override="kops-aws-misc-arm64-ci",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-west-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler', # pylint: disable=line-too-long
+                   extra_dashboards=["kops-misc"]),
 
+        build_test(name_override="kops-aws-misc-arm64-conformance",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-central-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
+                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+                   extra_dashboards=["kops-misc"]),
+
+
+        build_test(name_override="kops-aws-misc-amd64-conformance",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   distro='u2004',
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--node-size=c5.large",
+                                "--master-size=c5.large"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
+                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+                   extra_dashboards=["kops-misc"]),
     ]
     return results
 

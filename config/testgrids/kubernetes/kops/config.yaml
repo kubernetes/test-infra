@@ -22,6 +22,7 @@ dashboard_groups:
   - kops-k8s-1.18
   - kops-k8s-1.19
   - kops-k8s-1.20
+  - kops-k8s-ci
   - kops-k8s-latest
   - kops-k8s-stable
   - kops-1.19
@@ -50,6 +51,7 @@ dashboards:
 - name: kops-k8s-1.18
 - name: kops-k8s-1.19
 - name: kops-k8s-1.20
+- name: kops-k8s-ci
 - name: kops-k8s-latest
 - name: kops-k8s-stable
 - name: kops-1.19
