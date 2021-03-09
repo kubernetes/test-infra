@@ -52,31 +52,39 @@ test_groups:
   gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
   gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
   gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
   gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
   gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+  disable_prowjob_analysis: false
