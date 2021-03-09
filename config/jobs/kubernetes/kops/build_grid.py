@@ -56,8 +56,11 @@ kubetest2_template = """
           -- \\
           --ginkgo-args="--debug" \\
           --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \\
+          --test-package-bucket={{test_package_bucket}} \\
+          --test-package-dir={{test_package_dir}} \\
           --test-package-marker={{marker}} \\
-          --parallel {{test_parallelism}} \\
+          --parallel={{test_parallelism}} \\
+          --focus-regex="{{focus_regex}}" \\
           --skip-regex="{{skip_regex}}"
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -207,6 +210,7 @@ def build_test(cloud='aws',
                test_parallelism=25,
                test_timeout_minutes=60,
                skip_override=None,
+               focus_regex=None,
                runs_per_day=0):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
@@ -225,10 +229,17 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
+    test_package_bucket = ''
+    test_package_dir = ''
     e2e_image = 'gcr.io/k8s-testimages/kubekins-e2e:latest-master'
     if k8s_version == 'latest':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
+    elif k8s_version == 'ci':
+        marker = 'latest.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt"
+        test_package_bucket = 'kubernetes-release-dev'
+        test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
@@ -307,6 +318,18 @@ def build_test(cloud='aws',
         y = y.replace('{{terraform_version}}', terraform_version)
     else:
         y = remove_line_with_prefix(y, '--terraform-version=')
+    if test_package_bucket:
+        y = y.replace('{{test_package_bucket}}', test_package_bucket)
+    else:
+        y = remove_line_with_prefix(y, '--test-package-bucket')
+    if test_package_dir:
+        y = y.replace('{{test_package_dir}}', test_package_dir)
+    else:
+        y = remove_line_with_prefix(y, '--test-package-dir')
+    if focus_regex:
+        y = y.replace('{{focus_regex}}', focus_regex)
+    else:
+        y = remove_line_with_prefix(y, '--focus-regex')
 
     spec = {
         'cloud': cloud,
@@ -488,7 +511,45 @@ def generate_misc():
                                 f"--image={u2004_arm}"],
                    extra_dashboards=["kops-misc"]),
 
+        build_test(name_override="kops-aws-misc-arm64-ci",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-west-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler', # pylint: disable=line-too-long
+                   extra_dashboards=["kops-misc"]),
 
+        build_test(name_override="kops-aws-misc-arm64-conformance",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   networking="calico",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--zones=eu-central-1a",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
+                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+                   extra_dashboards=["kops-misc"]),
+
+
+        build_test(name_override="kops-aws-misc-amd64-conformance",
+                   k8s_version="ci",
+                   container_runtime="containerd",
+                   distro='u2004',
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=["--node-size=c5.large",
+                                "--master-size=c5.large"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
+                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+                   extra_dashboards=["kops-misc"]),
     ]
     return results
 
