@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
       - args:
+        - --log-level=all
         - --kubelet-service=kube-system/kubelet
-        - --logtostderr=true
         - --prometheus-config-reloader=quay.io/prometheus-operator/prometheus-config-reloader:v0.45.0
         - --namespaces=prow-monitoring
         image: quay.io/prometheus-operator/prometheus-operator:v0.45.0
