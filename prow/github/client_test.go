@@ -149,6 +149,56 @@ func TestRetry404(t *testing.T) {
 	}
 }
 
+func TestIncorrectOAuthScopes(t *testing.T) {
+	testCases := []struct {
+		name                string
+		acceptedOAuthScopes string
+		oauthScopes         string
+	}{
+		{
+			name:                "no overlapping OAuth scopes",
+			acceptedOAuthScopes: "admin:org,repo",
+			oauthScopes:         "admin:repo_hook,workflow",
+		},
+		{
+			name:                "empty OAuth scopes",
+			acceptedOAuthScopes: "admin:org,repo",
+			oauthScopes:         "",
+		},
+	}
+	for _, tc := range testCases {
+		tt := &testTime{now: time.Now()}
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("X-Accepted-OAuth-Scopes", tc.acceptedOAuthScopes)
+			w.Header().Set("X-OAuth-Scopes", tc.oauthScopes)
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		}))
+		defer ts.Close()
+		c := getClient(ts.URL)
+		c.time = tt
+		_, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
+		if err == nil {
+			t.Error("Expected an error from a request with incorrect OAuth scopes, but succeeded!?")
+		}
+	}
+}
+
+func TestUnparsable403Error(t *testing.T) {
+	tt := &testTime{now: time.Now()}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Accepted-OAuth-Scopes", "admin:org,repo")
+		w.Header().Set("X-OAuth-Scopes", "repo")
+		http.Error(w, "403 Forbidden", http.StatusForbidden)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.time = tt
+	_, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
+	if err == nil {
+		t.Error("Expected an error from a request that can cause a 403 error, but succeeded!?")
+	}
+}
+
 func TestRetryBase(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer ts.Close()
