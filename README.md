@@ -1,6 +1,6 @@
 # test-infra 
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra) 
 [![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
 [![Build status](https://prow.k8s.io/badge.svg?jobs=post-test-infra-bazel)](https://testgrid.k8s.io/sig-testing-misc#post-bazel)
 
