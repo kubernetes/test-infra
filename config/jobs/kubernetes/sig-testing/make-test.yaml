@@ -48,7 +48,12 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+          imagePullPolicy: Always
+          # let's see if we can run unit tests as a non-root user
+          securityContext:
+            runAsUser: 2000
+            allowPrivilegeEscalation: false
           command:
             - runner.sh
             - bash
