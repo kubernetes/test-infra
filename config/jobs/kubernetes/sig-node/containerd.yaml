@@ -5,9 +5,9 @@ presets:
   - name: LOG_DUMP_SYSTEMD_SERVICES
     value: containerd containerd-installation
   - name: KUBE_MASTER_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
   - name: KUBE_NODE_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
   - name: KUBE_CONTAINER_RUNTIME
     value: remote
   - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
@@ -115,8 +115,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -201,13 +199,11 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
@@ -352,13 +348,11 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=1220
       - --scenario=kubernetes_e2e
       - --
       - --down=false
-      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -402,7 +396,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=300
       - --scenario=kubernetes_e2e
       - --
@@ -430,7 +424,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=170
       - --scenario=kubernetes_e2e
       - --
@@ -460,7 +454,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -488,7 +482,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -517,7 +511,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -542,7 +536,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=340
       - --scenario=kubernetes_e2e
       - --
@@ -571,7 +565,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -600,7 +594,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -627,7 +621,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -652,7 +646,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=520
       - --scenario=kubernetes_e2e
       - --
@@ -677,7 +671,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=170
       - --scenario=kubernetes_e2e
       - --
@@ -703,7 +697,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -732,11 +726,11 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
       - --deployment=node
       - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-central1-b
@@ -792,11 +786,11 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/cri=master
+      - --repo=github.com/containerd/containerd=master
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
       - --deployment=node
       - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
