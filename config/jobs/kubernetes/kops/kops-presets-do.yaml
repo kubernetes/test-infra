@@ -13,3 +13,17 @@ presets:
       secretKeyRef:
         name: spaces-digitalocean-s3
         key: secret-key
+- labels:
+    preset-do-ssh: "true"
+  env:
+  - name: DO_SSH_PUBLIC_KEY_FILE
+    value: /etc/do-ssh/public-ssh-key
+  volumes:
+  - name: do-ssh
+    secret:
+      defaultMode: 0400
+      secretName: kops-e2e-do-ssh-key
+  volumeMounts:
+  - name: do-ssh
+    mountPath: /etc/do-ssh
+    readOnly: true
