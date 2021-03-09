@@ -81,6 +81,10 @@ deck:
         name: podinfo
       required_files:
         - ^podinfo\.json$
+    - lens:
+        name: links
+      required_files:
+        - artifacts/.*\.link\.txt
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
