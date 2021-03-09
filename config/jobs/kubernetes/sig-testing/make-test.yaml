@@ -41,8 +41,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+.\d+ # per-release job
-    labels:
-      preset-service-account: "true"
     optional: true
     always_run: false
     path_alias: k8s.io/kubernetes
