@@ -172,7 +172,7 @@ func run(deploy deployer, o options) error {
 		} else if o.nodeTests {
 			nodeArgs := strings.Fields(o.nodeArgs)
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
-				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone, o.runtimeConfig)
 			}))
 		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 			errs = util.AppendError(errs, err)
@@ -553,7 +553,7 @@ func chartsTest() error {
 	return control.FinishRunning(exec.Command(cmdline))
 }
 
-func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) error {
+func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeConfig string) error {
 	// Run node e2e tests.
 	// TODO(krzyzacy): remove once nodeTest is stable
 	if wd, err := os.Getwd(); err == nil {
@@ -598,6 +598,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
+		fmt.Sprintf("--runtime-config=%s", runtimeConfig),
 		fmt.Sprintf("--test-timeout=%s", timeout.String()),
 	}
 
