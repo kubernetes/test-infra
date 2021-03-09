@@ -41,26 +41,23 @@ presubmits:
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+.\d+ # per-release job
-    labels:
-      preset-service-account: "true"
     optional: true
     always_run: false
     path_alias: k8s.io/kubernetes
     spec:
+      # let's see if we can run unit tests as a non-root user
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
           imagePullPolicy: Always
-          # let's see if we can run unit tests as a non-root user
-          securityContext:
-            runAsUser: 2000
-            allowPrivilegeEscalation: false
           command:
-            - runner.sh
-            - bash
-            - -c
-          args:
+            - make
+            - test
+            - KUBE_RACE=-race
             # TODO: stop depending on custom timeout
-            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
+            - KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
