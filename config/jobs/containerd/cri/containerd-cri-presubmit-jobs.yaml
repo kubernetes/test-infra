@@ -10,6 +10,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        env:
+        - name: GO111MODULE
+          value: "off"
         command:
         - runner.sh
         args:
@@ -78,6 +81,7 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --scenario=execute
         - --
+        - --env=GO111MODULE=off
         - ./test/verify.sh
 
   - name: pull-cri-containerd-windows-cri
