@@ -1,6 +1,6 @@
 images:
   ubuntu:
-    image: ubuntu-gke-1804-1-16-v20200330 # docker 17.03
+    image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.3/env"
   cos-stable:
