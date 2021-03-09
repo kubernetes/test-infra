@@ -53,12 +53,11 @@ presubmits:
             runAsUser: 2000
             allowPrivilegeEscalation: false
           command:
-            - runner.sh
-            - bash
-            - -c
-          args:
+            - make
+            - test
+            - KUBE_RACE=-race
             # TODO: stop depending on custom timeout
-            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
+            - KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
