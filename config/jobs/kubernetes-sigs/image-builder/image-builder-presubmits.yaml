@@ -48,8 +48,7 @@ presubmits:
       testgrid-tab-name: pr-azure-sigs
   - name: json-sort-check
     decorate: true
-    always_run: false
-    optional: true
+    run_if_changed: 'images/capi/.*\.json$'
     decoration_config:
       timeout: 1h
     max_concurrency: 5
