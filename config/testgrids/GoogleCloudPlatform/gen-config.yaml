@@ -4,7 +4,7 @@ dashboard_groups:
   - googleoss-test-infra
   - googleoss-esp-v2-presubmit
   - googleoss-esp-v2-periodic
-  - googleoss-en-server
+  - googleoss-grpc-transcoder
   name: googleoss
 - dashboard_names:
   - googleoss-kubeflow-pipelines
@@ -12,6 +12,24 @@ dashboard_groups:
   name: googleoss-kubeflow
 dashboards:
 - dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/artifact-registry-apt-transport/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: apt-transport-build'
+    name: apt-transport-build
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/artifact-registry-apt-transport/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: apt-transport-build
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/artifact-registry-yum-plugin/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: yum-plugin-build'
+    name: yum-plugin-build
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/artifact-registry-yum-plugin/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: yum-plugin-build
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: guest-agent-build'
@@ -516,63 +534,6 @@ dashboards:
   name: googleoss-esp-v2-periodic
 - dashboard_tab:
   - alert_options:
-      alert_mail_to_addresses: en-server-prow-test-alert@google.com
-    code_search_url_template:
-      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-en-server-performance'
-    name: performance
-    open_bug_template:
-      url: https://github.com/google/exposure-notifications-server/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-en-server-performance
-  - alert_options:
-      alert_mail_to_addresses: en-server-prow-test-alert@google.com
-    code_search_url_template:
-      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-en-server-terraform-e2e'
-    name: e2e
-    open_bug_template:
-      url: https://github.com/google/exposure-notifications-server/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-en-server-terraform-e2e
-  - alert_options:
-      alert_mail_to_addresses: en-server-prow-test-alert@google.com
-    code_search_url_template:
-      url: https://github.com/google/exposure-notifications-server/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-en-server-terraform-smoke'
-    name: terraform-smoke
-    open_bug_template:
-      url: https://github.com/google/exposure-notifications-server/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-en-server-terraform-smoke
-  - alert_options:
-      alert_mail_to_addresses: en-server-prow-test-alert@google.com
-    code_search_url_template:
-      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-en-verification-server-e2e'
-    name: verification-e2e
-    open_bug_template:
-      url: https://github.com/google/exposure-notifications-verification-server/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-en-verification-server-e2e
-  - alert_options:
-      alert_mail_to_addresses: en-server-prow-test-alert@google.com
-    code_search_url_template:
-      url: https://github.com/google/exposure-notifications-verification-server/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: ci-en-verification-server-terraform-smoke'
-    name: verification-terraform-smoke
-    open_bug_template:
-      url: https://github.com/google/exposure-notifications-verification-server/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-en-verification-server-terraform-smoke
-  name: googleoss-en-server
-- dashboard_tab:
-  - alert_options:
       alert_mail_to_addresses: kubeflow-pipelines+test@google.com
     code_search_url_template:
       url: https://github.com/kubeflow/pipelines/compare/<start-custom-0>...<end-custom-0>
@@ -639,6 +600,26 @@ dashboards:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: kubeflow-gcp-blueprints-postsubmit
   name: googleoss-kubeflow-gcp-blueprints
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit tests on the master branch continuously.
+    name: periodic
+    open_bug_template:
+      url: https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: grpc-transcoder-periodic
+  - code_search_url_template:
+      url: https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit tests per PR.
+    name: presubmit
+    open_bug_template:
+      url: https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: grpc-transcoder-presubmit
+  name: googleoss-grpc-transcoder
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -674,21 +655,6 @@ test_groups:
   name: ESPv2-gke-janitor
 - gcs_prefix: oss-prow/logs/ESPv2-serverless-janitor
   name: ESPv2-serverless-janitor
-- gcs_prefix: oss-prow/logs/ci-en-server-performance
-  name: ci-en-server-performance
-  num_failures_to_alert: 1
-- gcs_prefix: oss-prow/logs/ci-en-server-terraform-e2e
-  name: ci-en-server-terraform-e2e
-  num_failures_to_alert: 1
-- gcs_prefix: oss-prow/logs/ci-en-server-terraform-smoke
-  name: ci-en-server-terraform-smoke
-  num_failures_to_alert: 1
-- gcs_prefix: oss-prow/logs/ci-en-verification-server-e2e
-  name: ci-en-verification-server-e2e
-  num_failures_to_alert: 1
-- gcs_prefix: oss-prow/logs/ci-en-verification-server-terraform-smoke
-  name: ci-en-verification-server-terraform-smoke
-  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-knative-prow
   name: ci-oss-test-infra-autobump-knative-prow
   num_failures_to_alert: 3
@@ -697,6 +663,8 @@ test_groups:
   num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-heartbeat
   name: ci-oss-test-infra-heartbeat
+- gcs_prefix: oss-prow/logs/grpc-transcoder-periodic
+  name: grpc-transcoder-periodic
 - gcs_prefix: oss-prow/logs/kubeflow-pipelines-periodic-functional-test
   name: kubeflow-pipelines-periodic-functional-test
   num_failures_to_alert: 5
@@ -706,6 +674,10 @@ test_groups:
 - gcs_prefix: oss-prow/logs/testgrid-canary-autobump
   name: testgrid-canary-autobump
   num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/apt-transport-build
+  name: apt-transport-build
+- gcs_prefix: oss-prow/logs/yum-plugin-build
+  name: yum-plugin-build
 - gcs_prefix: oss-prow/logs/guest-agent-build
   name: guest-agent-build
 - gcs_prefix: oss-prow/logs/gce-build
@@ -804,4 +776,7 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
   name: osconfig-presubmit-gotest
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/grpc-transcoder-presubmit
+  name: grpc-transcoder-presubmit
   num_columns_recent: 20
