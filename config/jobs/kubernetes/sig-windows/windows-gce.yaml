@@ -157,6 +157,7 @@ periodics:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -175,6 +176,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
@@ -203,6 +205,7 @@ periodics:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-windows-repo-list-2004: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -221,6 +224,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
