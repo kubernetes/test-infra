@@ -339,7 +339,7 @@ test_groups:
   column_header:
   - configuration_value: k8s-build-version
 - name: ppc64le-unit
-  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-bazel-test-ppc64le
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-unit-test-ppc64le
 #Arm arm64 test results
 - name: arm64-conformance
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
