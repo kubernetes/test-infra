@@ -70,6 +70,9 @@ type OrganizationClient interface {
 	ListOrgInvitations(org string) ([]OrgInvitation, error)
 	ListOrgMembers(org, role string) ([]TeamMember, error)
 	HasPermission(org, repo, user string, roles ...string) (bool, error)
+	ListCurrentUserInvitations() ([]UserInvitation, error)
+	AcceptUserInvitation(invitationID int) error
+	DeclineUserInvitation(invitationID int) error
 	GetUserPermission(org, repo, user string) (string, error)
 	UpdateOrgMembership(org, user string, admin bool) (*OrgMembership, error)
 	RemoveOrgMembership(org, user string) error
@@ -1354,6 +1357,65 @@ func (c *client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+// ListCurrentUserInvitations lists pending invitations for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/repos#list-repository-invitations-for-the-authenticated-user
+func (c *client) ListCurrentUserInvitations() ([]UserInvitation, error) {
+	c.log("ListCurrentUserInvitations")
+	if c.fake {
+		return nil, nil
+	}
+	path := "/user/repository_invitations"
+	var ret []UserInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]UserInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]UserInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// AcceptUserInvitation accepts invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/repos#accept-a-repository-invitation
+func (c *client) AcceptUserInvitation(invitationID int) error {
+	c.log("AcceptUserInvitation", invitationID)
+
+	_, err := c.request(&request{
+		method:    http.MethodPatch,
+		path:      fmt.Sprintf("/user/repository_invitations/%d", invitationID),
+		org:       "",
+		exitCodes: []int{204},
+	}, nil)
+
+	return err
+}
+
+// DeclineUserInvitation rejects invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/repos#decline-a-repository-invitation
+func (c *client) DeclineUserInvitation(invitationID int) error {
+	c.log("DeclineUserInvitation", invitationID)
+
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/user/repository_invitations/%d", invitationID),
+		org:       "",
+		exitCodes: []int{204},
+	}, nil)
+
+	return err
 }
 
 // ListOrgMembers list all users who are members of an organization. If the authenticated

@@ -1063,6 +1063,12 @@ type OrgInvitation struct {
 	Inviter TeamMember `json:"inviter"`
 }
 
+type UserInvitation struct {
+	InvitationID int                 `json:"id`
+	Repository   *Repo               `json:"repository,omitempty"`
+	Permission   RepoPermissionLevel `json:"permissions"`
+}
+
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.
 type GenericCommentEventAction string
 

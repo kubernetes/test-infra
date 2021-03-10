@@ -12,6 +12,7 @@ prow_push(
         cmds = [
             "admission",
             "autobump",
+            "botinvitationapprove",
             "branchprotector",
             "checkconfig",
             "clonerefs",
