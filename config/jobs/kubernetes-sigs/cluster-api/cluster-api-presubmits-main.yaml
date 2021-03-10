@@ -80,8 +80,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-go-canary
         command:
         - "runner.sh"
-        - "make"
-        - "verify"
+        - ./scripts/ci-verify.sh
         resources:
           requests:
             cpu: 7300m
