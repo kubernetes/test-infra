@@ -27,6 +27,8 @@ import (
 	"k8s.io/test-infra/prow/labels"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 type strSet map[string]struct{}
 
 type fakeGHClient struct {
@@ -125,12 +127,12 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			}
 		}
 		mergeMaster = func() {
-			if _, err := lg.Merge("foo", "bar", "master"); err != nil {
+			if _, err := lg.Merge("foo", "bar", defaultBranch); err != nil {
 				t.Fatalf("Rebasing commit: %v", err)
 			}
 		}
 		rebaseMaster = func() {
-			if _, err := lg.Rebase("foo", "bar", "master"); err != nil {
+			if _, err := lg.Rebase("foo", "bar", defaultBranch); err != nil {
 				t.Fatalf("Rebasing commit: %v", err)
 			}
 		}
@@ -202,7 +204,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 		checkoutPR(tt.prNum)
 	}
 	// switch back to master and create a new commit 'ouch'
-	checkoutBranch("master")
+	checkoutBranch(defaultBranch)
 	addCommit("ouch")
 	masterSHA, err := lg.RevParse("foo", "bar", "HEAD")
 	if err != nil {

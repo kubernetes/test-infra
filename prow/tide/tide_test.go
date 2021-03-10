@@ -56,6 +56,8 @@ import (
 	"k8s.io/test-infra/prow/tide/history"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
 	if len(actual) != len(expected) {
 		t.Errorf("Wrong size for case %s. Got PRs %+v, wanted numbers %v.", test, actual, expected)
@@ -644,19 +646,19 @@ func TestDividePool(t *testing.T) {
 			org:    "k",
 			repo:   "t-i",
 			number: 5,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
 			repo:   "t-i",
 			number: 6,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
 			repo:   "k",
 			number: 123,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
@@ -676,14 +678,14 @@ func TestDividePool(t *testing.T) {
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
 			jobType: prowapi.BatchJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
@@ -700,21 +702,21 @@ func TestDividePool(t *testing.T) {
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "abc",
 		},
 		{
 			jobType: prowapi.PresubmitJob,
 			org:     "o",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "other",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 	}
@@ -896,8 +898,8 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		log:    logrus.WithField("component", "tide"),
 		org:    "o",
 		repo:   "r",
-		branch: "master",
-		sha:    "master",
+		branch: defaultBranch,
+		sha:    defaultBranch,
 	}
 	for _, testpr := range testprs {
 		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", testpr.number)); err != nil {
@@ -906,7 +908,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
 			t.Fatalf("Error adding commit: %v", err)
 		}
-		if err := lg.Checkout("o", "r", "master"); err != nil {
+		if err := lg.Checkout("o", "r", defaultBranch); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
 		oid := githubql.String(fmt.Sprintf("origin/pr-%d", testpr.number))
@@ -1397,8 +1399,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1434,8 +1436,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1475,8 +1477,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1631,8 +1633,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				},
 				org:    "o",
 				repo:   "r",
-				branch: "master",
-				sha:    "master",
+				branch: defaultBranch,
+				sha:    defaultBranch,
 			}
 			genPulls := func(nums []int) []PullRequest {
 				var prs []PullRequest
@@ -1643,7 +1645,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
 						t.Fatalf("Error adding commit: %v", err)
 					}
-					if err := lg.Checkout("o", "r", "master"); err != nil {
+					if err := lg.Checkout("o", "r", defaultBranch); err != nil {
 						t.Fatalf("Error checking out master: %v", err)
 					}
 					oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
@@ -2713,7 +2715,7 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter:  config.Reporter{Context: "presubmit"},
 					AlwaysRun: true,
 					Brancher: config.Brancher{
-						Branches: []string{"master", "dev"},
+						Branches: []string{defaultBranch, "dev"},
 					},
 				},
 				{
@@ -2724,7 +2726,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				Reporter:  config.Reporter{Context: "presubmit"},
 				AlwaysRun: true,
 				Brancher: config.Brancher{
-					Branches: []string{"master", "dev"},
+					Branches: []string{defaultBranch, "dev"},
 				},
 			}}},
 		},
@@ -2901,7 +2903,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
-			branch: "master",
+			branch: defaultBranch,
 			sha:    "master-sha",
 			prs:    append(tc.prs, samplePR),
 		}
@@ -3323,12 +3325,12 @@ func TestPresubmitsForBatch(t *testing.T) {
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
-				Brancher:  config.Brancher{Branches: []string{"master"}},
+				Brancher:  config.Brancher{Branches: []string{defaultBranch}},
 			}},
 			expected: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
-				Brancher:  config.Brancher{Branches: []string{"master"}},
+				Brancher:  config.Brancher{Branches: []string{defaultBranch}},
 			}},
 		},
 		{
@@ -3476,7 +3478,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 				logger: logrus.WithField("test", tc.name),
 			}
 
-			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", "master")
+			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", defaultBranch)
 			if err != nil {
 				t.Fatalf("failed to get presubmits for batch: %v", err)
 			}

@@ -37,6 +37,7 @@ import (
 
 var (
 	defaultNamespace = "default"
+	defaultBranch    = localgit.DefaultBranch("")
 )
 
 func TestRun(t *testing.T) {
@@ -62,7 +63,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("openshift", "release"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout("openshift", "release", "master"); err != nil {
+	if err := lg.Checkout("openshift", "release", defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 
@@ -77,7 +78,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("openshift", "other"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout("openshift", "other", "master"); err != nil {
+	if err := lg.Checkout("openshift", "other", defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 
