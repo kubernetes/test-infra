@@ -133,7 +133,7 @@ periodics:
           - --provider=gce
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
           - --timeout=50m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cos
     testgrid-tab-name: containerd-e2e-cos-1.4
@@ -204,7 +204,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.20
@@ -264,7 +264,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201031-122dc79-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.20
