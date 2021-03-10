@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='379101102735/debian-stretch-hvm-x86_64-gp2-2021-03-03-68238' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='379101102735/debian-stretch-hvm-x86_64-gp2-2021-03-09-67077' --channel=alpha --networking=calico --container-runtime=containerd" \
           --env=KOPS_FEATURE_FLAGS= \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
