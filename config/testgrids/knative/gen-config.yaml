@@ -32,8 +32,11 @@ dashboard_groups:
   - knative-sandbox-eventing-redis
   - knative-sandbox-kn-plugin-admin
   - knative-sandbox-kn-plugin-diag
+  - knative-sandbox-kn-plugin-migration
   - knative-sandbox-kn-plugin-sample
+  - knative-sandbox-kn-plugin-service-log
   - knative-sandbox-kn-plugin-source-kafka
+  - knative-sandbox-kn-plugin-source-kamelet
   - knative-sandbox-kperf
   - knative-sandbox-net-certmanager
   - knative-sandbox-net-contour
@@ -1136,6 +1139,15 @@ dashboards:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-migration/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-migration-continuous-beta-prow-tests'
+    name: knative-sandbox-kn-plugin-migration-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-migration/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-migration-continuous-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-sample/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests'
     name: knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
@@ -1145,6 +1157,15 @@ dashboards:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-service-log/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-service-log-continuous-beta-prow-tests'
+    name: knative-sandbox-kn-plugin-service-log-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-service-log/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-service-log-continuous-beta-prow-tests
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests'
     name: knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
@@ -1153,6 +1174,15 @@ dashboards:
     open_test_template:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-continuous-beta-prow-tests
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kamelet/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous-beta-prow-tests'
+    name: knative-sandbox-kn-plugin-source-kamelet-continuous-beta-prow-tests
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kamelet/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous-beta-prow-tests
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kperf/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kperf-continuous-beta-prow-tests'
@@ -2051,6 +2081,17 @@ dashboards:
   name: knative-sandbox-kn-plugin-diag
 - dashboard_tab:
   - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-migration/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-migration-continuous'
+    name: knative-sandbox-kn-plugin-migration-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-migration/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-migration-continuous
+  name: knative-sandbox-kn-plugin-migration
+- dashboard_tab:
+  - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-sample/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-knative-sandbox-kn-plugin-sample-continuous'
     name: knative-sandbox-kn-plugin-sample-continuous
@@ -2060,6 +2101,17 @@ dashboards:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-sample-continuous
   name: knative-sandbox-kn-plugin-sample
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-service-log/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-service-log-continuous'
+    name: knative-sandbox-kn-plugin-service-log-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-service-log/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-service-log-continuous
+  name: knative-sandbox-kn-plugin-service-log
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kn-plugin-source-kafka/compare/<start-custom-0>...<end-custom-0>
@@ -2120,6 +2172,17 @@ dashboards:
       url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
   name: knative-sandbox-kn-plugin-source-kafka
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kamelet/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous'
+    name: knative-sandbox-kn-plugin-source-kamelet-continuous
+    open_bug_template:
+      url: https://github.com/knative-sandbox/kn-plugin-source-kamelet/issues/
+    open_test_template:
+      url: https://prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous
+  name: knative-sandbox-kn-plugin-source-kamelet
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/knative-sandbox/kperf/compare/<start-custom-0>...<end-custom-0>
@@ -3285,11 +3348,23 @@ test_groups:
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-diag-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-migration-continuous
+  name: ci-knative-sandbox-kn-plugin-migration-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-migration-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-migration-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-sample-continuous
   name: ci-knative-sandbox-kn-plugin-sample-continuous
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
   name: ci-knative-sandbox-kn-plugin-sample-continuous-beta-prow-tests
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-service-log-continuous
+  name: ci-knative-sandbox-kn-plugin-service-log-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-service-log-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-service-log-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-0.18-dot-release
@@ -3311,6 +3386,12 @@ test_groups:
 - gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
   name: ci-knative-sandbox-kn-plugin-source-kafka-nightly-release
   num_failures_to_alert: 1
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kamelet-continuous
+  name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous
+- alert_stale_results_hours: 3
+  gcs_prefix: knative-prow/logs/ci-knative-sandbox-kn-plugin-source-kamelet-continuous-beta-prow-tests
+  name: ci-knative-sandbox-kn-plugin-source-kamelet-continuous-beta-prow-tests
 - alert_stale_results_hours: 3
   gcs_prefix: knative-prow/logs/ci-knative-sandbox-kperf-continuous
   name: ci-knative-sandbox-kperf-continuous
