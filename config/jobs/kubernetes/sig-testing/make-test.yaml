@@ -120,3 +120,24 @@ periodics:
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
               time make test KUBE_TIMEOUT=--timeout=600s
+  - interval: 6h
+    name: ci-kubernetes-generate-make-test-count10
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+          command:
+            - runner.sh
+            - bash
+            - -c
+          args:
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=300s GOFLAGS=-count=10'
