@@ -5,7 +5,7 @@ metadata:
   namespace: prow-monitoring
 spec:
   replicas: 3
-  image: docker.io/prom/alertmanager
+  baseImage: docker.io/prom/alertmanager
   listenLocal: false
   nodeSelector: {}
   securityContext:

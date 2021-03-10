@@ -28,15 +28,10 @@ rules:
   resources:
   - alertmanagers
   - alertmanagers/finalizers
-  - alertmanagerconfigs
   - prometheuses
   - prometheuses/finalizers
-  - thanosrulers
-  - thanosrulers/finalizers
-  - servicemonitors
-  - podmonitors
-  - probes
   - prometheusrules
+  - servicemonitors
   verbs:
   - '*'
 - apiGroups:
@@ -57,17 +52,18 @@ rules:
   resources:
   - pods
   verbs:
-  - list
   - delete
+  - list
 - apiGroups:
   - ""
+  attributeRestrictions: null
   resources:
+  - endpoints
   - services
   - services/finalizers
-  - endpoints
   verbs:
-  - get
   - create
+  - get
   - update
   - delete
 - apiGroups:
@@ -81,14 +77,6 @@ rules:
   - ""
   resources:
   - namespaces
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses
   verbs:
   - get
   - list

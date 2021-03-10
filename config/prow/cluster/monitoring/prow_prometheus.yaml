@@ -33,7 +33,7 @@ spec:
     - key: app
       operator: Exists
   version: v2.7.1
-  image: docker.io/prom/prometheus
+  baseImage: docker.io/prom/prometheus
   externalLabels: {}
   listenLocal: false
   nodeSelector: {}
