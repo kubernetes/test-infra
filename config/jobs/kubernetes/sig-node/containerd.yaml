@@ -208,7 +208,7 @@ periodics:
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=ubuntu-gke-1604-lts
+      - --image-family=ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -689,7 +689,7 @@ periodics:
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=ubuntu-gke-1604-lts
+      - --image-family=ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
