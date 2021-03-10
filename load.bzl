@@ -66,15 +66,18 @@ def repositories():
     )
 
     new_git_repository(
-        name = "com_github_prometheus_operator",
+        name = "com_github_operator_framework_community_operators",
         build_file_content = """
 exports_files([
-    "bundle.yaml",
+    "upstream-community-operators/prometheus/alertmanager.crd.yaml",
+    "upstream-community-operators/prometheus/prometheus.crd.yaml",
+    "upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+    "upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 ])
 """,
-        commit = "5555f492df250168657b72bb8cb60bec071de71f",  # Latest of release-0.45 branch
-        remote = "https://github.com/prometheus-operator/prometheus-operator.git",
-        shallow_since = "1610438400 +0200",
+        commit = "efda5dc98fd580ab5f1115a50a28825ae4fe6562",
+        remote = "https://github.com/operator-framework/community-operators.git",
+        shallow_since = "1568320223 +0200",
     )
 
     http_archive(

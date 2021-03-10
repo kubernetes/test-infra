@@ -27,10 +27,31 @@ release(
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 
 k8s_object(
-    name = "prometheus_crd_bundle",
+    name = "alertmanager_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@com_github_prometheus_operator//:bundle.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+)
+
+k8s_object(
+    name = "prometheusrule_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+)
+
+k8s_object(
+    name = "servicemonitor_crd",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 )
 
 k8s_object(
@@ -45,7 +66,10 @@ load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 k8s_objects(
     name = "prow_monitoring_objects",
     objects = [
-        ":prometheus_crd_bundle",
+        ":alertmanager_crd",
+        ":prometheus_crd",
+        ":prometheusrule_crd",
+        ":servicemonitor_crd",
         "//config/prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",
