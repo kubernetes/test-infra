@@ -59,7 +59,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
-            value: "Creating a GPU-enabled cluster|.*Windows.*"
+            value: "Creating a GPU-enabled cluster|.*Windows.*|Creating a cluster that uses the external cloud provider"
           - name: LOCAL_ONLY
             value: "false"
         # docker-in-docker needs privileged mode
