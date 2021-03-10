@@ -18,7 +18,6 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//experiment/autobumper:all-srcs",
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/cluster-upgrader:all-srcs",
