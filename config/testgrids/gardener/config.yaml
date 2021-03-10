@@ -298,201 +298,251 @@ test_groups:
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-gce-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-openstack-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-azure-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-aws-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-gce-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-openstack-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-azure-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-aws-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-gce-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-openstack-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-azure-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-aws-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-gce-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-openstack-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-azure-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-aws-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-gce-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-openstack-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-azure-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 
 # Gardener General Test Groups
 - name: ci-gardener-e2e-aws-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-gce-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-openstack-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-azure-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-alicloud-v1.20
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.20
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-aws-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-gce-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-openstack-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-azure-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-alicloud-v1.19
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.19
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-aws-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-gce-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-openstack-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-azure-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-alicloud-v1.18
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.18
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-aws-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-gce-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-openstack-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-azure-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-alicloud-v1.17
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.17
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-aws-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-aws-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-gce-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-gce-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-openstack-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-openstack-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-azure-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-azure-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-alicloud-v1.16
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-alicloud-v1.16
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+  disable_prowjob_analysis: true
