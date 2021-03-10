@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
@@ -49,7 +49,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 - interval: 2h
@@ -76,7 +76,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 
@@ -116,7 +116,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
         resources:
           requests:
             cpu: 2
@@ -163,7 +163,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
         resources:
           requests:
             cpu: 4

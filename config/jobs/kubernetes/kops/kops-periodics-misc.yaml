@@ -31,7 +31,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=45m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc
     testgrid-tab-name: kops-aws-updown
@@ -43,7 +43,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release

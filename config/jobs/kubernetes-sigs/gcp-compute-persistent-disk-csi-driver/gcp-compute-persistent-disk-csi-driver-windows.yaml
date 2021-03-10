@@ -36,7 +36,7 @@ periodics:
         value: "win2004"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -80,7 +80,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -124,7 +124,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -168,7 +168,7 @@ periodics:
         value: "win1909"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -214,7 +214,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -260,7 +260,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -306,7 +306,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -352,7 +352,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
       securityContext:
           privileged: true
   annotations:
@@ -400,7 +400,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
         securityContext:
           privileged: true
     annotations:
@@ -446,7 +446,7 @@ presubmits:
           value: "win1909"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
         securityContext:
           privileged: true
     annotations:
@@ -493,7 +493,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
         securityContext:
           privileged: true
     annotations:
