@@ -144,7 +144,7 @@ periodics:
   - org: kubernetes
     repo: perf-tests
     base_ref: master
-    path_alias: k8s.io/perf-test
+    path_alias: k8s.io/perf-tests
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
