@@ -156,8 +156,10 @@ func main() {
 			logrus.WithError(err).Infof("Ignoring cluster context %s: tekton pipeline CRD not deployed", context)
 			continue
 		}
+		// Don't panic when a build cluster cannot be reached
 		if err != nil {
-			logrus.WithError(err).Fatalf("Failed to create %s pipeline client", context)
+			logrus.WithError(err).Warningf("Failed to create %s pipeline client", context)
+			continue
 		}
 		pipelineConfigs[context] = *bc
 	}
