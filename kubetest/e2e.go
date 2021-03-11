@@ -598,8 +598,11 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
-		fmt.Sprintf("--runtime-config=%s", runtimeConfig),
 		fmt.Sprintf("--test-timeout=%s", timeout.String()),
+	}
+
+	if runtimeConfig != "" {
+		runner = append(runner, fmt.Sprintf("--runtime-config=%s", runtimeConfig))
 	}
 
 	runner = append(runner, nodeArgs...)
