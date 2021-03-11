@@ -173,4 +173,4 @@ periodics:
             - bash
             - -c
           args:
-            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=300s GOFLAGS=-count=10'
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'
