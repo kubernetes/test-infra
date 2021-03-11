@@ -68,6 +68,39 @@ presubmits:
               memory: "36Gi"
 periodics:
   - interval: 1h
+    name: ci-kubernetes-unit
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '3'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-master-informing
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    decorate: true
+    cluster: k8s-infra-prow-build
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+          command:
+            - make
+            - test
+            - KUBE_RACE=-race
+            # TODO: stop depending on custom timeout
+            - KUBE_TIMEOUT=--timeout=240s
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - interval: 1h
     name: ci-kubernetes-generate-make-test-cache
     annotations:
       testgrid-dashboards: sig-testing-canaries
