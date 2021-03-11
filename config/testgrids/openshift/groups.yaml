@@ -37,4 +37,5 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.9-informing
   - redhat-openshift-presubmit-master-gcp
   - redhat-osd
+  - redhat-assisted-installer
   name: redhat
