@@ -2,20 +2,26 @@ periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-scalability-cleanup
   labels:
-     preset-service-account: "true"
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/execute.py
       args:
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=60
-      - --scenario=execute
-      - --
-      - $GOPATH/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
+      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
       # Command (list|delete)
       - delete
       # Comma-separated list of projects to process
