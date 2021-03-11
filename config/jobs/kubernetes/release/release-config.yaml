@@ -108,6 +108,8 @@ presubmits:
           env:
             - name: LOG_TO_STDOUT
               value: "y"
+            - name: REGISTRY
+              value: gcr.io/k8s-staging-releng-test
           resources:
             requests:
               cpu: 1000m
