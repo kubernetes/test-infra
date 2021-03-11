@@ -867,7 +867,7 @@ periodics:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: autoupdate-patch
     description: Weekly module update to latest patched versions
-- cron: "05 15-23 * * 1-5"  # Run at 7:05-15:05 PST (15:05 UTC) Mon-Fri
+- cron: "05 17-23/6 * * 1-5"  # Run at 9:05 and 15:05 PST (17:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
@@ -900,7 +900,7 @@ periodics:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow
     description: runs experiment/autobumper to create/update a PR that bumps prow to the latest RC
-- cron: "06 15-23 * * 1-5"  # Run at 7:06-15:06 PST (15:05 UTC) Mon-Fri
+- cron: "06 15-23 * * 1-5"  # Run every hour at 7:06-15:06 PST (15:06 UTC) Mon-Fri
   name: ci-test-infra-autobump-prowjobs
   cluster: test-infra-trusted
   decorate: true
