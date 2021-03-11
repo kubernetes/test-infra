@@ -44,7 +44,6 @@ postsubmits:
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
     branches:
     - ^master$
-    always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test|examples)/|Dockerfile|Makefile)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere

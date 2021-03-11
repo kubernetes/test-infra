@@ -143,8 +143,6 @@ periodics:
   cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
-  skip_branches:
-  - release-\d+\.\d+ # per-release settings
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"

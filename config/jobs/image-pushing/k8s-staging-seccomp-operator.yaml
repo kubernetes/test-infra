@@ -3,7 +3,6 @@ postsubmits:
     - name: post-security-profiles-operator-push-image
       cluster: k8s-infra-prow-build-trusted
       decorate: true
-      always_run: true
       branches:
         - ^master$
       spec:
