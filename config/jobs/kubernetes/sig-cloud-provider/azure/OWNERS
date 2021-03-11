@@ -3,19 +3,19 @@
 reviewers:
 - andyzhangx
 - brendandburns
+- chewong
 - feiskyer
 - justaugustus
 - karataliu
 - khenidak
-- chewong
 approvers:
 - andyzhangx
 - brendandburns
+- chewong
 - feiskyer
 - justaugustus
 - karataliu
 - khenidak
-- chewong
 
 labels:
 - area/provider/azure

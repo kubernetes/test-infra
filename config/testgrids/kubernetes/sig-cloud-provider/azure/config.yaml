@@ -1,3 +1,13 @@
+test_groups:
+  - name: pull-kubernetes-e2e-aks-engine-conformance
+    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-conformance
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
+    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmas
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
+    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmss
+  - name: pull-kubernetes-e2e-aks-engine-azure-file
+    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-file
+
 dashboard_groups:
 - name: provider-azure
   dashboard_names:
@@ -6,11 +16,11 @@ dashboard_groups:
     - provider-azure-blobfuse-csi-driver
     - provider-azure-cloud-provider-azure
     - provider-azure-dualstack
-    - provider-azure-periodic
-    - provider-azure-presubmit
     - provider-azure-scalability
-    - provider-azure-upstream
-    - provider-azure-windows
+    - provider-azure-master-signal
+    - provider-azure-1.20-signal
+    - provider-azure-1.19-signal
+    - provider-azure-1.18-signal
 
 dashboards:
 - name: provider-azure-azuredisk-csi-driver
@@ -18,8 +28,8 @@ dashboards:
 - name: provider-azure-blobfuse-csi-driver
 - name: provider-azure-cloud-provider-azure
 - name: provider-azure-dualstack
-- name: provider-azure-periodic
-- name: provider-azure-presubmit
 - name: provider-azure-scalability
-- name: provider-azure-upstream
-- name: provider-azure-windows
+- name: provider-azure-master-signal
+- name: provider-azure-1.20-signal
+- name: provider-azure-1.19-signal
+- name: provider-azure-1.18-signal
