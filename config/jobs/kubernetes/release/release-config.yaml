@@ -104,12 +104,13 @@ presubmits:
             - --project=k8s-staging-releng-test
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
+            - --env-passthrough=REGISTRY
             - images/build/cross
           env:
             - name: LOG_TO_STDOUT
               value: "y"
             - name: REGISTRY
-              value: gcr.io/k8s-staging-releng-test
+              value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
               cpu: 1000m
