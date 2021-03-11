@@ -14,7 +14,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
           command:
             - runner.sh
             - bash
@@ -85,7 +85,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
           command:
             - make
             - test
@@ -114,7 +114,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
           command:
             - runner.sh
             - bash
@@ -140,7 +140,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210309-0688fde-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
           command:
             - runner.sh
             - bash
@@ -167,7 +167,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
           command:
             - runner.sh
             - bash
