@@ -50,6 +50,7 @@ kubetest2_template = """
           --create-args="{{create_args}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
+          --publish-version-marker={{publish_version_marker}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
           --terraform-version={{terraform_version}} \\
           --test=kops \\
@@ -202,6 +203,7 @@ def build_test(cloud='aws',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
+               publish_version_marker=None,
                name_override=None,
                feature_flags=(),
                extra_flags=None,
@@ -214,6 +216,16 @@ def build_test(cloud='aws',
                runs_per_day=0):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
+    if kops_version is None:
+        # TODO: Move to kops-ci/markers/master/ once validated
+        kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+    elif kops_version.startswith("https://"):
+        kops_deploy_url = kops_version
+        kops_version = None
+    else:
+        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
+
+
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
     if networking == "cilium" and distro not in ["u2004", "deb10", "rhel8"]:
         return None
@@ -222,12 +234,6 @@ def build_test(cloud='aws',
 
     kops_image = distro_images[distro]
     kops_ssh_user = distros_ssh_user[distro]
-
-    if kops_version is None:
-        # TODO: Move to kops-ci/markers/master/ once validated
-        kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
-    else:
-        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     test_package_bucket = ''
     test_package_dir = ''
@@ -326,6 +332,10 @@ def build_test(cloud='aws',
         y = y.replace('{{focus_regex}}', focus_regex)
     else:
         y = remove_line_with_prefix(y, '--focus-regex')
+    if publish_version_marker:
+        y = y.replace('{{publish_version_marker}}', publish_version_marker)
+    else:
+        y = remove_line_with_prefix(y, '--publish-version-marker')
 
     spec = {
         'cloud': cloud,
