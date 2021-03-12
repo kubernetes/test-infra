@@ -277,7 +277,7 @@ def build_test(cloud='aws',
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
 
-    if skip_override:
+    if skip_override is not None:
         skip_regex = skip_override
 
     suffix = ""
@@ -544,7 +544,6 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-
         build_test(name_override="kops-aws-misc-amd64-conformance",
                    k8s_version="ci",
                    container_runtime="containerd",
@@ -556,6 +555,22 @@ def generate_misc():
                    skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-updown",
+                   k8s_version="stable",
+                   container_runtime="containerd",
+                   networking="calico",
+                   distro='u2004',
+                   kops_channel="alpha",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
+                   runs_per_day=24,
+                   extra_flags=["--node-size=c5.large",
+                                "--master-size=c5.large"],
+                   skip_override=r'',
+                   focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
+                   extra_dashboards=["kops-misc"]),
+
     ]
     return results
 
