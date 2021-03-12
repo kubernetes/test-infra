@@ -30,7 +30,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install requests google-cloud-pubsub==2.1.0 google-cloud-bigquery==2.2.0 influxdb ruamel.yaml==0.16
+RUN pip3 install requests google-cloud-pubsub==2.3.0 google-cloud-bigquery==2.11.0 influxdb ruamel.yaml==0.16
 
 RUN curl -fsSL https://downloads.python.org/pypy/pypy3.6-v7.3.1-linux64.tar.bz2 | tar xj -C opt  && \
     ln -s /opt/pypy*/bin/pypy3 /usr/bin

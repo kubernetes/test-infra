@@ -18,12 +18,6 @@ metadata:
   name: prow-prometheus-operator
 rules:
 - apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - '*'
-- apiGroups:
   - monitoring.coreos.com
   resources:
   - alertmanagers

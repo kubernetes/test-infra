@@ -25,6 +25,8 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 func TestDefaultProwYAMLGetter(t *testing.T) {
 	testDefaultProwYAMLGetter(localgit.New, t)
 }
@@ -347,7 +349,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				}
 			}
 
-			baseSHA, err := lg.RevParse(org, repo, "master")
+			baseSHA, err := lg.RevParse(org, repo, defaultBranch)
 			if err != nil {
 				t.Fatalf("failed to get baseSHA: %v", err)
 			}

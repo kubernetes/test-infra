@@ -98,10 +98,10 @@ data:
             path_strategy: explicit
           s3_credentials_secret: s3-credentials
           utility_images:
-            clonerefs: gcr.io/k8s-prow/clonerefs:v20210309-6b78fed7a6
-            entrypoint: gcr.io/k8s-prow/entrypoint:v20210309-6b78fed7a6
-            initupload: gcr.io/k8s-prow/initupload:v20210309-6b78fed7a6
-            sidecar: gcr.io/k8s-prow/sidecar:v20210309-6b78fed7a6
+            clonerefs: gcr.io/k8s-prow/clonerefs:v20210310-a49501d5de
+            entrypoint: gcr.io/k8s-prow/entrypoint:v20210310-a49501d5de
+            initupload: gcr.io/k8s-prow/initupload:v20210310-a49501d5de
+            sidecar: gcr.io/k8s-prow/sidecar:v20210310-a49501d5de
 
     tide:
       queries:
@@ -239,7 +239,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/hook:v20210310-a49501d5de
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -321,7 +321,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/sinker:v20210310-a49501d5de
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -359,7 +359,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/deck:v20210310-a49501d5de
         args:
         - --config-path=/etc/config/config.yaml
         - --plugin-config=/etc/plugins/plugins.yaml
@@ -450,7 +450,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/horologium:v20210310-a49501d5de
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -485,7 +485,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/tide:v20210310-a49501d5de
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -584,7 +584,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/status-reconciler:v20210310-a49501d5de
         args:
         - --dry-run=false
         - --continue-on-error=true
@@ -634,7 +634,7 @@ metadata:
   name: "deck"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "deck"
@@ -647,7 +647,7 @@ subjects:
   name: "deck"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "deck"
@@ -661,7 +661,7 @@ subjects:
   namespace: prow
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "deck"
@@ -680,7 +680,7 @@ rules:
       # - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "deck"
@@ -699,7 +699,7 @@ metadata:
   name: "horologium"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "horologium"
@@ -713,7 +713,7 @@ rules:
       - list
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "horologium"
@@ -732,7 +732,7 @@ metadata:
   name: "sinker"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "sinker"
@@ -779,7 +779,7 @@ rules:
     - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "sinker"
@@ -796,7 +796,7 @@ rules:
       - patch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "sinker"
@@ -809,7 +809,7 @@ subjects:
   name: "sinker"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "sinker"
@@ -829,7 +829,7 @@ metadata:
   name: "hook"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "hook"
@@ -853,7 +853,7 @@ rules:
       - update
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "hook"
@@ -872,7 +872,7 @@ metadata:
   name: "tide"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "tide"
@@ -888,7 +888,7 @@ rules:
       - watch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "tide"
@@ -907,7 +907,7 @@ metadata:
   name: "statusreconciler"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "statusreconciler"
@@ -920,7 +920,7 @@ rules:
       - create
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: "statusreconciler"
@@ -968,7 +968,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/ghproxy:v20210310-a49501d5de
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
@@ -1030,7 +1030,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --enable-controller=plank
-        image: gcr.io/k8s-prow/prow-controller-manager:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/prow-controller-manager:v20210310-a49501d5de
         volumeMounts:
         - name: github-token
           mountPath: /etc/github
@@ -1053,7 +1053,7 @@ metadata:
   name: prow-controller-manager
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: prow-controller-manager
@@ -1101,7 +1101,7 @@ rules:
     - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager
@@ -1118,7 +1118,7 @@ rules:
       - patch
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: prow
   name: prow-controller-manager
@@ -1131,7 +1131,7 @@ subjects:
   name: prow-controller-manager
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager
@@ -1165,7 +1165,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20210309-6b78fed7a6
+        image: gcr.io/k8s-prow/crier:v20210310-a49501d5de
         args:
         - --blob-storage-workers=10
         - --config-path=/etc/config/config.yaml
@@ -1240,7 +1240,7 @@ rules:
     - "patch"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: crier
   namespace: prow
@@ -1254,7 +1254,7 @@ subjects:
   namespace: prow
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: crier
   namespace: test-pods

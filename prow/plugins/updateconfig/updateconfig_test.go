@@ -43,46 +43,48 @@ import (
 
 const defaultNamespace = "default"
 
+var defaultBranch = localgit.DefaultBranch("")
+
 var remoteFiles = map[string]map[string]string{
 	"prow/config.yaml": {
-		"master": "old-config",
-		"12345":  "new-config",
+		defaultBranch: "old-config",
+		"12345":       "new-config",
 	},
 	"prow/binary.yaml": {
-		"master": "old-binary\x00\xFF\xFF",
-		"12345":  "new-binary\x00\xFF\xFF",
+		defaultBranch: "old-binary\x00\xFF\xFF",
+		"12345":       "new-binary\x00\xFF\xFF",
 	},
 	"prow/becoming-binary.yaml": {
-		"master": "not-yet-binary",
-		"12345":  "now-binary\x00\xFF\xFF",
+		defaultBranch: "not-yet-binary",
+		"12345":       "now-binary\x00\xFF\xFF",
 	},
 	"prow/becoming-text.yaml": {
-		"master": "not-yet-text\x00\xFF\xFF",
-		"12345":  "now-text",
+		defaultBranch: "not-yet-text\x00\xFF\xFF",
+		"12345":       "now-text",
 	},
 	"prow/plugins.yaml": {
-		"master": "old-plugins",
-		"12345":  "new-plugins",
+		defaultBranch: "old-plugins",
+		"12345":       "new-plugins",
 	},
 	"boskos/resources.yaml": {
-		"master": "old-boskos-config",
-		"12345":  "new-boskos-config",
+		defaultBranch: "old-boskos-config",
+		"12345":       "new-boskos-config",
 	},
 	"config/foo.yaml": {
-		"master": "old-foo-config",
-		"12345":  "new-foo-config",
+		defaultBranch: "old-foo-config",
+		"12345":       "new-foo-config",
 	},
 	"config/bar.yaml": {
-		"master": "old-bar-config",
-		"12345":  "new-bar-config",
+		defaultBranch: "old-bar-config",
+		"12345":       "new-bar-config",
 	},
 	"dir/subdir/fejta.yaml": {
-		"master": "old-fejta-config",
-		"12345":  "new-fejta-config",
+		defaultBranch: "old-fejta-config",
+		"12345":       "new-fejta-config",
 	},
 	"dir/subdir/fejtaverse/krzyzacy.yaml": {
-		"master": "old-krzyzacy-config",
-		"12345":  "new-krzyzacy-config",
+		defaultBranch: "old-krzyzacy-config",
+		"12345":       "new-krzyzacy-config",
 	},
 	"dir/subdir/fejtaverse/fejtabot.yaml": {
 		"54321": "new-fejtabot-config",
@@ -91,7 +93,7 @@ var remoteFiles = map[string]map[string]string{
 		"12345": "new-added-config",
 	},
 	"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
-		"master": "old-removed-config",
+		defaultBranch: "old-removed-config",
 	},
 }
 
@@ -103,10 +105,10 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.MakeFakeRepo(org, repo); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
-	if err := lg.AddCommit(org, repo, getFileMap("master")); err != nil {
+	if err := lg.AddCommit(org, repo, getFileMap(defaultBranch)); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
 	if err := lg.CheckoutNewBranch(org, repo, "12345"); err != nil {
@@ -115,7 +117,7 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.AddCommit(org, repo, getFileMap("12345")); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 	if err := lg.CheckoutNewBranch(org, repo, "54321"); err != nil {
@@ -124,7 +126,7 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.AddCommit(org, repo, getFileMap("54321")); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 	return c

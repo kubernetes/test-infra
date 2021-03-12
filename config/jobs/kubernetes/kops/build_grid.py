@@ -50,6 +50,7 @@ kubetest2_template = """
           --create-args="{{create_args}}" \\
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
           --kops-version-marker={{kops_deploy_url}} \\
+          --publish-version-marker={{publish_version_marker}} \\
           --kubernetes-version={{k8s_deploy_url}} \\
           --terraform-version={{terraform_version}} \\
           --test=kops \\
@@ -126,17 +127,15 @@ def build_cron(key, runs_per_day):
     runs_per_week += 1
     return "%d %d * * %d" % (minute, hour, day_of_week), runs_per_week
 
-def remove_line_with_prefix(s, prefix):
+def replace_or_remove_line(s, pattern, new_str):
     keep = []
-    found = False
     for line in s.split('\n'):
-        trimmed = line.strip()
-        if trimmed.startswith(prefix):
-            found = True
+        if pattern in line:
+            if new_str:
+                line = line.replace(pattern, new_str)
+                keep.append(line)
         else:
             keep.append(line)
-    if not found:
-        raise Exception(f"line not found with prefix: {prefix}")
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
@@ -202,6 +201,7 @@ def build_test(cloud='aws',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
+               publish_version_marker=None,
                name_override=None,
                feature_flags=(),
                extra_flags=None,
@@ -214,6 +214,16 @@ def build_test(cloud='aws',
                runs_per_day=0):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
+    if kops_version is None:
+        # TODO: Move to kops-ci/markers/master/ once validated
+        kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+    elif kops_version.startswith("https://"):
+        kops_deploy_url = kops_version
+        kops_version = None
+    else:
+        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
+
+
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
     if networking == "cilium" and distro not in ["u2004", "deb10", "rhel8"]:
         return None
@@ -222,12 +232,6 @@ def build_test(cloud='aws',
 
     kops_image = distro_images[distro]
     kops_ssh_user = distros_ssh_user[distro]
-
-    if kops_version is None:
-        # TODO: Move to kops-ci/markers/master/ once validated
-        kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
-    else:
-        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     test_package_bucket = ''
     test_package_dir = ''
@@ -271,7 +275,7 @@ def build_test(cloud='aws',
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
 
-    if skip_override:
+    if skip_override is not None:
         skip_regex = skip_override
 
     suffix = ""
@@ -310,22 +314,11 @@ def build_test(cloud='aws',
     y = y.replace('{{marker}}', marker)
     y = y.replace('{{skip_regex}}', skip_regex)
     y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
-    if terraform_version:
-        y = y.replace('{{terraform_version}}', terraform_version)
-    else:
-        y = remove_line_with_prefix(y, '--terraform-version=')
-    if test_package_bucket:
-        y = y.replace('{{test_package_bucket}}', test_package_bucket)
-    else:
-        y = remove_line_with_prefix(y, '--test-package-bucket')
-    if test_package_dir:
-        y = y.replace('{{test_package_dir}}', test_package_dir)
-    else:
-        y = remove_line_with_prefix(y, '--test-package-dir')
-    if focus_regex:
-        y = y.replace('{{focus_regex}}', focus_regex)
-    else:
-        y = remove_line_with_prefix(y, '--focus-regex')
+    y = replace_or_remove_line(y, '{{terraform_version}}', terraform_version)
+    y = replace_or_remove_line(y, '{{test_package_bucket}}', test_package_bucket)
+    y = replace_or_remove_line(y, '{{test_package_dir}}', test_package_dir)
+    y = replace_or_remove_line(y, '{{focus_regex}}', focus_regex)
+    y = replace_or_remove_line(y, '{{publish_version_marker}}', publish_version_marker)
 
     spec = {
         'cloud': cloud,
@@ -345,20 +338,11 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        f"kops-distro-{distro}",
         'kops-kubetest2',
+        f"kops-distro-{distro}",
+        f"kops-k8s-{k8s_version or 'latest'}",
+        f"kops-{kops_version or 'latest'}",
     ]
-
-    if k8s_version:
-        dashboards.append(f"kops-k8s-{k8s_version}")
-    else:
-        dashboards.append('kops-k8s-latest')
-
-    if kops_version:
-        dashboards.append(f"kops-{kops_version}")
-    else:
-        dashboards.append('kops-latest')
-
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
 
@@ -534,7 +518,6 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-
         build_test(name_override="kops-aws-misc-amd64-conformance",
                    k8s_version="ci",
                    container_runtime="containerd",
@@ -546,6 +529,34 @@ def generate_misc():
                    skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-aws-misc-updown",
+                   k8s_version="stable",
+                   container_runtime="containerd",
+                   networking="calico",
+                   distro='u2004',
+                   kops_channel="alpha",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
+                   runs_per_day=24,
+                   extra_flags=["--node-size=c5.large",
+                                "--master-size=c5.large"],
+                   skip_override=r'',
+                   focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
+                   extra_dashboards=["kops-misc"]),
+
+        build_test(name_override="kops-grid-scenario-cilium-arm64",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=["--zones=us-east-2b",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
+                                f"--image={u2004_arm}"],
+                   extra_dashboards=['kops-misc']),
     ]
     return results
 

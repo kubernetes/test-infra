@@ -19,7 +19,7 @@ metadata:
   name: "plank"
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: "plank"
@@ -37,7 +37,7 @@ rules:
       - patch
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "plank"
@@ -52,7 +52,7 @@ rules:
       - list
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: "plank"
@@ -65,7 +65,7 @@ subjects:
   name: "plank"
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: "plank"

@@ -601,6 +601,9 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		}
 	}
 
+	// disable runUnattendedUpgradesOnBootstrap to avoid health check during node reboot
+	v.Properties.LinuxProfile.RunUnattendedUpgradesOnBootstrap = false
+
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
 	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)

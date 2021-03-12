@@ -43,6 +43,8 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 var ownerFiles = map[string][]byte{
 	"emptyApprovers": []byte(`approvers:
 reviewers:
@@ -461,7 +463,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if len(test.filesRemoved) > 0 {
@@ -490,7 +492,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("Getting commit SHA: %v", err)
 			}
 			if len(test.filesChangedAfterPR) > 0 {
-				if err := lg.Checkout("org", "repo", "master"); err != nil {
+				if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 					t.Fatalf("Switching to master branch: %v", err)
 				}
 				if err := addFilesToRepo(lg, test.filesChangedAfterPR, test.addedContent); err != nil {
@@ -501,7 +503,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,
@@ -513,7 +515,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			fghc.PullRequests = map[int]*github.PullRequest{}
 			fghc.PullRequests[pr] = &github.PullRequest{
 				Base: github.PullRequestBranch{
-					Ref: "master",
+					Ref: defaultBranch,
 				},
 			}
 
@@ -623,7 +625,7 @@ func testParseOwnersFile(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("Making fake repo: %v", err)
 			}
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
@@ -1042,7 +1044,7 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
@@ -1078,7 +1080,7 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,
@@ -1242,7 +1244,7 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if len(test.filesRemoved) > 0 {
@@ -1284,7 +1286,7 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 					SHA: sha,
 				},
 				Base: github.PullRequestBranch{
-					Ref: "master",
+					Ref: defaultBranch,
 				},
 			}
 
@@ -1354,7 +1356,7 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			pullFiles := map[string][]byte{}
@@ -1387,7 +1389,7 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,

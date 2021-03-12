@@ -23,7 +23,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	coreapi "k8s.io/api/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -89,15 +93,14 @@ func TestReadRepo(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	cases := []struct {
-		name        string
-		goal        string
-		wd          string
-		gopath      string
-		dirs        []string
-		userInput   string
-		repoPathMap map[string]string
-		expected    string
-		err         bool
+		name      string
+		goal      string
+		wd        string
+		gopath    string
+		dirs      []string
+		userInput string
+		expected  string
+		err       bool
 	}{
 		{
 			name:     "find from local",
@@ -134,30 +137,11 @@ func TestReadRepo(t *testing.T) {
 			expected: path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
 		},
 		{
-			name:   "user provided path from command argument",
-			goal:   "k8s.io/test-infra2",
-			gopath: path.Join(dir, "prefer_gopath"),
-			wd:     path.Join(dir, "prefer_gopath_random", "random"),
-			dirs: []string{
-				path.Join(dir, "prefer_gopath", "src", "k8s.io/test-infra2"),
-				path.Join(dir, "prefer_gopath", "src", "test-infra2"),
-			},
-			repoPathMap: map[string]string{"k8s.io/test-infra2": "some/random/path"},
-			expected:    "some/random/path",
-		},
-		{
 			name:   "not exist",
 			goal:   "k8s.io/test-infra2",
 			gopath: path.Join(dir, "not_exist", "random1"),
 			wd:     path.Join(dir, "not_exist", "random2"),
 			err:    true,
-		},
-		{
-			name:      "not exist due to user error",
-			goal:      "k8s.io/test-infra2",
-			wd:        path.Join(dir, "not_exist_due_to_user_error", "go/src/k8s.io/test-infra2"),
-			expected:  "/random/other/path",
-			userInput: "/random/other/path",
 		},
 	}
 
@@ -182,7 +166,7 @@ func TestReadRepo(t *testing.T) {
 			defer os.Setenv("BUILD_WORKING_DIRECTORY", oldPwd)
 			os.Setenv("BUILD_WORKING_DIRECTORY", tc.wd)
 
-			actual, err := readRepo(context.Background(), tc.goal, tc.repoPathMap, func(path, def string) (string, error) {
+			actual, err := readRepo(tc.goal, func(path, def string) (string, error) {
 				return tc.userInput, nil
 			})
 			switch {
@@ -284,6 +268,247 @@ func TestFindRepoFromLocal(t *testing.T) {
 				t.Error("Failed to get an error")
 			case actual != expected:
 				t.Errorf("Actual %q != expected %q", actual, expected)
+			}
+		})
+	}
+}
+
+func TestResolveVolumeMounts(t *testing.T) {
+	cvm := []coreapi.VolumeMount{
+		{
+			Name:      "volume1",
+			MountPath: "/whatever/mountpath1",
+		},
+		{
+			Name:      "volume2",
+			MountPath: "/whatever/mountpath2",
+		},
+	}
+	pv := []coreapi.Volume{
+		{
+			Name: "volume1",
+			VolumeSource: coreapi.VolumeSource{
+				HostPath: &coreapi.HostPathVolumeSource{
+					Path: "/whatever/hostpath1",
+				},
+			},
+		},
+		{
+			Name: "volume2",
+			VolumeSource: coreapi.VolumeSource{
+				HostPath: &coreapi.HostPathVolumeSource{
+					Path: "/whatever/hostpath2",
+				},
+			},
+		},
+	}
+	fakeReadMount := func(ctx context.Context, mount coreapi.VolumeMount) (string, error) {
+		return strings.Replace(mount.MountPath, "mountpath", "hostpath", -1), nil
+	}
+
+	cases := []struct {
+		name                  string
+		containerVolumeMounts []coreapi.VolumeMount
+		podVolumes            []coreapi.Volume
+		skippedVolumeMounts   []string
+		extraVolumeMounts     map[string]string
+		expectErr             bool
+		expected              map[string]string
+	}{
+		{
+			name:     "no volume mounts",
+			expected: map[string]string{},
+		},
+		{
+			name:                  "only container volume mounts",
+			containerVolumeMounts: cvm,
+			podVolumes:            pv,
+			expected: map[string]string{
+				"/whatever/mountpath1": "/whatever/hostpath1",
+				"/whatever/mountpath2": "/whatever/hostpath2",
+			},
+		},
+		{
+			name:                  "no corresponding Pod volumes",
+			containerVolumeMounts: cvm,
+			podVolumes:            nil,
+			expectErr:             true,
+		},
+		{
+			name: "empty dir volume mount",
+			containerVolumeMounts: []coreapi.VolumeMount{
+				{
+					Name:      "empty-volume",
+					MountPath: "/whatever/mountpath1",
+				},
+			},
+			podVolumes: []coreapi.Volume{
+				{
+					Name: "empty-volume",
+					VolumeSource: coreapi.VolumeSource{
+						EmptyDir: &coreapi.EmptyDirVolumeSource{},
+					},
+				},
+			},
+			expected: map[string]string{
+				"/whatever/mountpath1": "",
+			},
+		},
+		{
+			name: "readonly volume mount",
+			containerVolumeMounts: []coreapi.VolumeMount{
+				{
+					Name:      "readonly-volume",
+					MountPath: "/whatever/mountpath1",
+					ReadOnly:  true,
+				},
+			},
+			podVolumes: []coreapi.Volume{
+				{
+					Name: "readonly-volume",
+					VolumeSource: coreapi.VolumeSource{
+						HostPath: &coreapi.HostPathVolumeSource{
+							Path: "/whatever/hostpath1",
+						},
+					},
+				},
+			},
+			expected: map[string]string{
+				"/whatever/mountpath1:ro": "/whatever/hostpath1",
+			},
+		},
+		{
+			name:                  "skip some volume mounts",
+			containerVolumeMounts: cvm,
+			podVolumes:            pv,
+			skippedVolumeMounts:   []string{"volume1"},
+			expected: map[string]string{
+				"/whatever/mountpath2": "/whatever/hostpath2",
+			},
+		},
+		{
+			name:                  "add extra volume mounts",
+			containerVolumeMounts: cvm,
+			podVolumes:            pv,
+			extraVolumeMounts: map[string]string{
+				"/whatever/mountpath3": "/whatever/hostpath3",
+			},
+			expected: map[string]string{
+				"/whatever/mountpath1": "/whatever/hostpath1",
+				"/whatever/mountpath2": "/whatever/hostpath2",
+				"/whatever/mountpath3": "/whatever/hostpath3",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := options{
+				skippedVolumesMounts: tc.skippedVolumeMounts,
+				extraVolumesMounts:   tc.extraVolumeMounts,
+			}
+			container := coreapi.Container{
+				VolumeMounts: tc.containerVolumeMounts,
+			}
+			pj := prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					PodSpec: &coreapi.PodSpec{
+						Volumes: tc.podVolumes,
+					},
+				},
+			}
+			got, err := opts.resolveVolumeMounts(context.Background(), pj, container, fakeReadMount)
+
+			if err != nil {
+				if !tc.expectErr {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			} else if tc.expectErr {
+				t.Error("Failed to get an error")
+			}
+			if diff := cmp.Diff(tc.expected, got); diff != "" {
+				t.Errorf("resolveEnvVars returns wrong result (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestResolveEnvVars(t *testing.T) {
+	cases := []struct {
+		name             string
+		containerEnvVars []coreapi.EnvVar
+		skippedEnvVars   []string
+		extraEnvVars     map[string]string
+		expected         map[string]string
+	}{
+		{
+			name:     "no env vars",
+			expected: map[string]string{},
+		},
+		{
+			name: "only container env vars",
+			containerEnvVars: []coreapi.EnvVar{
+				{
+					Name:  "env_key1",
+					Value: "env_val1",
+				},
+				{
+					Name:  "env_key2",
+					Value: "env_val2",
+				},
+			},
+			expected: map[string]string{
+				"env_key1": "env_val1",
+				"env_key2": "env_val2",
+			},
+		},
+		{
+			name: "skip some env vars",
+			containerEnvVars: []coreapi.EnvVar{
+				{
+					Name:  "env_key1",
+					Value: "env_val1",
+				},
+				{
+					Name:  "env_key2",
+					Value: "env_val2",
+				},
+			},
+			skippedEnvVars: []string{"env_key1"},
+			expected: map[string]string{
+				"env_key2": "env_val2",
+			},
+		},
+		{
+			name: "add extra env vars",
+			containerEnvVars: []coreapi.EnvVar{
+				{
+					Name:  "env_key1",
+					Value: "env_val1",
+				},
+			},
+			extraEnvVars: map[string]string{
+				"env_key2": "env_val2",
+			},
+			expected: map[string]string{
+				"env_key1": "env_val1",
+				"env_key2": "env_val2",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := options{
+				skippedEnvVars: tc.skippedEnvVars,
+				extraEnvVars:   tc.extraEnvVars,
+			}
+			container := coreapi.Container{
+				Env: tc.containerEnvVars,
+			}
+			got := opts.resolveEnvVars(container)
+			if diff := cmp.Diff(tc.expected, got); diff != "" {
+				t.Errorf("resolveEnvVars returns wrong result (-want +got):\n%s", diff)
 			}
 		})
 	}

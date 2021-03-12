@@ -14,7 +14,7 @@ postsubmits:
     - release-0.4
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"

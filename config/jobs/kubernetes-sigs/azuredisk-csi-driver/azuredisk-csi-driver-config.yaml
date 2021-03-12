@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -105,7 +105,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -129,7 +129,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -160,7 +160,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -175,7 +175,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.16
+        - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
@@ -210,7 +210,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -225,7 +225,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.16
+        - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
@@ -262,7 +262,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -312,7 +312,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -327,7 +327,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
@@ -364,7 +364,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -379,7 +379,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.18
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
@@ -416,7 +416,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -472,7 +472,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -528,7 +528,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -586,7 +586,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -640,7 +640,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -695,7 +695,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -748,7 +748,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -794,7 +794,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         args:
@@ -824,7 +824,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -878,7 +878,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest
@@ -893,7 +893,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.16
+        - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
@@ -939,7 +939,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - runner.sh
         - kubetest

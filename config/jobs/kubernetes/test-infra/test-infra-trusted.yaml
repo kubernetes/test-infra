@@ -132,7 +132,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20210309-6b78fed7a6
+      - image: gcr.io/k8s-prow/hmac:v20210310-a49501d5de
         command:
         - /hmac
         args:
@@ -577,31 +577,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - pkg/benchmarkjunit/
-  - name: post-test-infra-push-generic-autobumper
-    cluster: test-infra-trusted
-    run_if_changed: '^(experiment/(image-bumper|autobumper)|robots/pr-creator|prow/(github|config/secret))/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "generic-autobump-push"
-      # TODO(mpherman): uncomment the testgrid alerts once we know this works as intended
-      #testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      #testgrid-num-failures-to-alert: '3'
-      description: builds and pushes the generic autobumper image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - experiment/autobumper/
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -662,7 +637,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
         command:
         - make
         args:
@@ -1004,7 +979,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20210309-6b78fed7a6
+      image: gcr.io/k8s-prow/branchprotector:v20210310-a49501d5de
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1038,7 +1013,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20210309-6b78fed7a6
+      image: gcr.io/k8s-prow/label_sync:v20210310-a49501d5de
       command:
       - /app/label_sync/app.binary
       args:
@@ -1084,7 +1059,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20210309-6b78fed7a6
+    - image: gcr.io/k8s-prow/checkconfig:v20210310-a49501d5de
       command:
       - /checkconfig
       args:

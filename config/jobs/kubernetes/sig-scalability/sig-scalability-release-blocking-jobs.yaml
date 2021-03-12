@@ -9,6 +9,9 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 270m
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -16,11 +19,11 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - args:
-      - --timeout=270
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-scale-cluster
       - --env=CONCURRENT_SERVICE_SYNCS=5
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
@@ -28,6 +31,7 @@ periodics:
       - --extract-ci-bucket=k8s-release-dev
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
+      - --env=DUMP_TO_GCS_ONLY=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
@@ -40,7 +44,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 6
@@ -63,6 +67,18 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 360m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
@@ -70,13 +86,11 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - args:
-      - --timeout=360
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
@@ -94,15 +108,16 @@ periodics:
       - --env=CL2_ENABLE_HUGE_SERVICES=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
+      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -111,7 +126,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=330m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 6
@@ -133,6 +148,18 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
@@ -145,14 +172,11 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest-fast
@@ -166,15 +190,16 @@ periodics:
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --env=CL2_ENABLE_HUGE_SERVICES=true
+      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051
@@ -186,6 +211,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2

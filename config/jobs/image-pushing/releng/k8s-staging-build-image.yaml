@@ -19,10 +19,13 @@ postsubmits:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
               - --build-dir=.
+              - --env-passthrough=REGISTRY
               - images/build/debian-base
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -50,11 +53,14 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --env-passthrough=REGISTRY
               - --build-dir=.
               - images/build/debian-hyperkube-base
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -76,11 +82,14 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --env-passthrough=REGISTRY
               - --build-dir=.
               - images/build/debian-iptables
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -103,10 +112,13 @@ postsubmits:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
               - --build-dir=.
+              - --env-passthrough=REGISTRY
               - images/build/go-runner
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -128,11 +140,14 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --env-passthrough=REGISTRY
               - --build-dir=.
               - images/build/cross
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -154,11 +169,14 @@ postsubmits:
             args:
               - --project=k8s-staging-build-image
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --env-passthrough=REGISTRY
               - --build-dir=.
               - images/build/setcap
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
