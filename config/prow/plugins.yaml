@@ -990,6 +990,10 @@ plugins:
     - override
     - release-note
 
+  kubernetes-sigs/kubebuilder:
+    plugins:
+    - override
+
   containerd/cri:
     plugins:
     - assign
