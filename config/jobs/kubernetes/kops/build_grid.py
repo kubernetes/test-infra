@@ -127,17 +127,15 @@ def build_cron(key, runs_per_day):
     runs_per_week += 1
     return "%d %d * * %d" % (minute, hour, day_of_week), runs_per_week
 
-def remove_line_with_prefix(s, prefix):
+def replace_or_remove_line(s, pattern, new_str):
     keep = []
-    found = False
     for line in s.split('\n'):
-        trimmed = line.strip()
-        if trimmed.startswith(prefix):
-            found = True
+        if pattern in line:
+            if new_str:
+                line.replace(pattern, new_str)
+                keep.append(line)
         else:
             keep.append(line)
-    if not found:
-        raise Exception(f"line not found with prefix: {prefix}")
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
@@ -316,26 +314,11 @@ def build_test(cloud='aws',
     y = y.replace('{{marker}}', marker)
     y = y.replace('{{skip_regex}}', skip_regex)
     y = y.replace('{{kops_feature_flags}}', ','.join(feature_flags))
-    if terraform_version:
-        y = y.replace('{{terraform_version}}', terraform_version)
-    else:
-        y = remove_line_with_prefix(y, '--terraform-version=')
-    if test_package_bucket:
-        y = y.replace('{{test_package_bucket}}', test_package_bucket)
-    else:
-        y = remove_line_with_prefix(y, '--test-package-bucket')
-    if test_package_dir:
-        y = y.replace('{{test_package_dir}}', test_package_dir)
-    else:
-        y = remove_line_with_prefix(y, '--test-package-dir')
-    if focus_regex:
-        y = y.replace('{{focus_regex}}', focus_regex)
-    else:
-        y = remove_line_with_prefix(y, '--focus-regex')
-    if publish_version_marker:
-        y = y.replace('{{publish_version_marker}}', publish_version_marker)
-    else:
-        y = remove_line_with_prefix(y, '--publish-version-marker')
+    y = replace_or_remove_line(y, '{{terraform_version}}', terraform_version)
+    y = replace_or_remove_line(y, '{{test_package_bucket}}', test_package_bucket)
+    y = replace_or_remove_line(y, '{{test_package_dir}}', test_package_dir)
+    y = replace_or_remove_line(y, '{{focus_regex}}', focus_regex)
+    y = replace_or_remove_line(y, '{{publish_version_marker}}', publish_version_marker)
 
     spec = {
         'cloud': cloud,
@@ -355,20 +338,11 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         'google-aws',
-        f"kops-distro-{distro}",
         'kops-kubetest2',
+        f"kops-distro-{distro}",
+        f"kops-k8s-{k8s_version or 'latest'}",
+        f"kops-{kops_version or 'latest'}",
     ]
-
-    if k8s_version:
-        dashboards.append(f"kops-k8s-{k8s_version}")
-    else:
-        dashboards.append('kops-k8s-latest')
-
-    if kops_version:
-        dashboards.append(f"kops-{kops_version}")
-    else:
-        dashboards.append('kops-latest')
-
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
 
