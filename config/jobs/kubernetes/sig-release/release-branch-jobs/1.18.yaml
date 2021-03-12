@@ -278,6 +278,18 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.18-500
   cron: 0 15 * * *
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.18
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: release-1.18
+    path_alias: k8s.io/perf-tests
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
@@ -288,12 +300,6 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=k8s.io/kubernetes=release-1.18
-      - --repo=k8s.io/perf-tests=release-1.18
-      - --root=/go/src
-      - --timeout=120
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-500
       - --extract=ci/latest-1.18
       - --gcp-master-size=n1-standard-4
@@ -306,13 +312,14 @@ periodics:
       - --kubemark-nodes=500
       - --provider=gce
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -327,6 +334,10 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=100m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       name: ""
       resources: {}
@@ -344,6 +355,18 @@ periodics:
     testgrid-tab-name: gce-cos-1.18-scalability-100
   cluster: k8s-infra-prow-build
   cron: 0 4-16/12 * * *
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.18
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: release-1.18
+    path_alias: k8s.io/perf-tests
   labels:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
@@ -353,12 +376,6 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.18
-      - --repo=k8s.io/perf-tests=release-1.18
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest-1.18
@@ -370,15 +387,16 @@ periodics:
       - --provider=gce
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
+      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -395,6 +413,10 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       name: ""
       resources:
@@ -1165,6 +1187,18 @@ presubmits:
     branches:
     - release-1.18
     cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: release-1.18
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
@@ -1173,17 +1207,10 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-e2e-gce-100-performance
+    path_alias: k8s.io/kubernetes
     spec:
       containers:
       - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=release-1.18
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=120
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -1194,6 +1221,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
+        - --env=DUMP_TO_GCS_ONLY=true
         - --test=false
         - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
         - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
@@ -1201,7 +1229,7 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=100
         - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -1217,6 +1245,10 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         name: ""
         resources:
@@ -1230,6 +1262,18 @@ presubmits:
     branches:
     - release-1.18
     cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: release-1.18
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
@@ -1240,19 +1284,10 @@ presubmits:
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
     optional: true
+    path_alias: k8s.io/kubernetes
     spec:
       containers:
       - args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=release-1.18
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=120
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -1268,13 +1303,14 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
+        - --env=DUMP_TO_GCS_ONLY=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -1289,6 +1325,10 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         name: ""
         resources:
