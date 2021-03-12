@@ -1336,6 +1336,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: 0ffa16
+        description: Indicates a PR is trusted, used by tide for auto-merging PRs.
+        name: skip-review
+        target: prs
+        addedBy: autobump bot
       - color: f7c6c7
         description: Categorizes issue or PR as tracked by test-infra oncall.
         name: kind/oncall-hotlist

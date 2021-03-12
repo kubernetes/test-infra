@@ -14,6 +14,8 @@ includedConfigPaths:
 excludedConfigPaths:
   - "config/prow-staging"
 targetVersion: "latest"
+labels:
+  - "skip-review" # This label is used by tide for identifying trusted PR
 prefixes:
   - name: "Prow"
     prefix: "gcr.io/k8s-prow/"
