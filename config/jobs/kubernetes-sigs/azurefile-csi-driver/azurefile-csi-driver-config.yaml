@@ -127,7 +127,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.16
+        - --aksengine-orchestratorRelease=1.17
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/linux.json
@@ -244,7 +244,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration
     decorate: true
-    always_run: false
+    always_run: true
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -275,7 +275,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-orchestratorRelease=1.20
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/migration.json
