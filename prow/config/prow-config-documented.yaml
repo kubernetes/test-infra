@@ -479,7 +479,9 @@ plank:
     # matching entries.
     # This field is mutually exclusive with the DefaultDecorationConfigsMap field.
     default_decoration_config_entries:
-      - # ClusterRaw is the string field that compiles into the Cluster regexp field.
+      - # Cluster matches against the cluster alias of the build cluster that the
+        # ProwJob is configured to run on. Recall that ProwJobs default to running on
+        # the "default" build cluster if they omit the "cluster" field in config.
         cluster: ' '
 
         # Config is the DecorationConfig to apply if the filter fields all match the
@@ -487,6 +489,10 @@ plank:
         # by sequentially merging with later entries overriding fields from earlier
         # entries.
         config:
+            # CensorSecrets determines if the sidecar should be instructed to censor
+            # secret data that is otherwise mounted to the ProwJob Pod
+            censor_secrets: false
+
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ' '
@@ -615,7 +621,10 @@ plank:
                 # sidecar is the pull spec used for the sidecar utility
                 sidecar: ' '
 
-        # OrgRepoRaw is the string field that compiles into the Repo regexp field.
+        # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+        # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+        # job is a periodic without extra_refs, the empty string will be used.
+        # If this field is omitted all jobs will match.
         repo: ' '
 
     # DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
@@ -624,6 +633,10 @@ plank:
     # This field is mutually exclusive with the DefaultDecorationConfigEntries field.
     default_decoration_configs:
         "":
+            # CensorSecrets determines if the sidecar should be instructed to censor
+            # secret data that is otherwise mounted to the ProwJob Pod
+            censor_secrets: false
+
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ' '

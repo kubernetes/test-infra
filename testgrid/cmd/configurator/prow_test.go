@@ -18,7 +18,6 @@ package main
 
 import (
 	"reflect"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -1111,8 +1110,6 @@ func fakeProwConfig() *prowConfig.Config {
 			Plank: prowConfig.Plank{
 				DefaultDecorationConfigs: []*prowConfig.DefaultDecorationConfigEntry{
 					{
-						Repo:    regexp.MustCompile(".*"),
-						Cluster: regexp.MustCompile(".*"),
 						Config: &prowapi.DecorationConfig{
 							GCSConfiguration: &prowapi.GCSConfiguration{
 								PathPrefix: ProwDefaultGCSPath,

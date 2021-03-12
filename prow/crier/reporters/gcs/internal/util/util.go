@@ -112,7 +112,7 @@ func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir strin
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
 		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
 	} else {
-		ddc := cfg().Plank.MergeDefaultDecorationConfig(repo, pj.Spec.Cluster, nil)
+		ddc := cfg().Plank.GuessDefaultDecorationConfig(repo, pj.Spec.Cluster)
 		if ddc != nil && ddc.GCSConfiguration != nil {
 			gcsConfig = ddc.GCSConfiguration
 		} else {

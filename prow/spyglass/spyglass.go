@@ -372,7 +372,7 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 			// per job would probably be a bad idea (indeed, not even the tests try to do this).
 			// This decision should probably be revisited if we ever want other information from it.
 			// TODO (droslean): we should get the default decoration config depending on the org/repo.
-			ddc := sg.config().Plank.MergeDefaultDecorationConfig("", "", nil)
+			ddc := sg.config().Plank.GuessDefaultDecorationConfig("", "")
 			if ddc == nil || ddc.GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
 			}

@@ -227,7 +227,7 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 			gcsConfig = presubmit.DecorationConfig.GCSConfiguration
 		} else {
 			// for undecorated jobs assume the default
-			def := c.Plank.MergeDefaultDecorationConfig(fullRepo, presubmit.Cluster, nil)
+			def := c.Plank.GuessDefaultDecorationConfig(fullRepo, presubmit.Cluster)
 			if def == nil || def.GCSConfiguration == nil {
 				return toSearch, fmt.Errorf("failed to guess gcs config based on default decoration config: %w", err)
 			}

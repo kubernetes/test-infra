@@ -738,17 +738,17 @@ plank:
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "default-service-account"
-  - repo: "^org/"
+  - repo: "org"
     config:
       timeout: 1h
-  - repo: "^org/repo$"
+  - repo: "org/repo"
     config:
       timeout: 3h
-  - cluster: "^trusted$"
+  - cluster: "trusted"
     config:
       grace_period: 30s
-  - repo: "^org/foo$"
-    cluster: "^trusted$"
+  - repo: "org/foo"
+    cluster: "trusted"
     config:
       grace_period: 1m
 
@@ -3739,10 +3739,8 @@ default_decoration_configs:
 `,
 			expected: []*DefaultDecorationConfigEntry{
 				{
-					Repo:       regexp.MustCompile(".*"),
-					RepoRaw:    ".*",
-					Cluster:    regexp.MustCompile(".*"),
-					ClusterRaw: ".*",
+					OrgRepo: "*",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
 						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
@@ -3788,10 +3786,8 @@ default_decoration_configs:
 `,
 			expected: []*DefaultDecorationConfigEntry{
 				{
-					Repo:       regexp.MustCompile(".*"),
-					RepoRaw:    ".*",
-					Cluster:    regexp.MustCompile(".*"),
-					ClusterRaw: ".*",
+					OrgRepo: "*",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
 						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
@@ -3811,19 +3807,15 @@ default_decoration_configs:
 					},
 				},
 				{
-					Repo:       regexp.MustCompile("^org/.*"),
-					RepoRaw:    "^org/.*",
-					Cluster:    regexp.MustCompile(".*"),
-					ClusterRaw: ".*",
+					OrgRepo: "org",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
 					},
 				},
 				{
-					Repo:       regexp.MustCompile("^org/repo$"),
-					RepoRaw:    "^org/repo$",
-					Cluster:    regexp.MustCompile(".*"),
-					ClusterRaw: ".*",
+					OrgRepo: "org/repo",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
 					},
@@ -3851,10 +3843,8 @@ default_decoration_config_entries:
 `,
 			expected: []*DefaultDecorationConfigEntry{
 				{
-					Repo:       regexp.MustCompile(""),
-					RepoRaw:    "",
-					Cluster:    regexp.MustCompile(""),
-					ClusterRaw: "",
+					OrgRepo: "",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
 						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
@@ -3893,26 +3883,25 @@ default_decoration_config_entries:
         default_org: "kubernetes"
         default_repo: "kubernetes"
       gcs_credentials_secret: "default-service-account"
-  - repo: "^org/"
+  - repo: "org"
+    cluster: "*"
     config:
       timeout: 1h
-  - repo: "^org/repo$"
+  - repo: "org/repo"
     config:
       timeout: 3h
-  - cluster: "^trusted$"
+  - cluster: "trusted"
     config:
       grace_period: 30s
-  - repo: "^org/foo$"
-    cluster: "^trusted$"
+  - repo: "org/foo"
+    cluster: "trusted"
     config:
       grace_period: 1m
 `,
 			expected: []*DefaultDecorationConfigEntry{
 				{
-					Repo:       regexp.MustCompile(""),
-					RepoRaw:    "",
-					Cluster:    regexp.MustCompile(""),
-					ClusterRaw: "",
+					OrgRepo: "",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
 						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
@@ -3932,37 +3921,29 @@ default_decoration_config_entries:
 					},
 				},
 				{
-					Repo:       regexp.MustCompile("^org/"),
-					RepoRaw:    "^org/",
-					Cluster:    regexp.MustCompile(""),
-					ClusterRaw: "",
+					OrgRepo: "org",
+					Cluster: "*",
 					Config: &prowapi.DecorationConfig{
 						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
 					},
 				},
 				{
-					Repo:       regexp.MustCompile("^org/repo$"),
-					RepoRaw:    "^org/repo$",
-					Cluster:    regexp.MustCompile(""),
-					ClusterRaw: "",
+					OrgRepo: "org/repo",
+					Cluster: "",
 					Config: &prowapi.DecorationConfig{
 						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
 					},
 				},
 				{
-					Repo:       regexp.MustCompile(""),
-					RepoRaw:    "",
-					Cluster:    regexp.MustCompile("^trusted$"),
-					ClusterRaw: "^trusted$",
+					OrgRepo: "",
+					Cluster: "trusted",
 					Config: &prowapi.DecorationConfig{
 						GracePeriod: &prowapi.Duration{Duration: 30 * time.Second},
 					},
 				},
 				{
-					Repo:       regexp.MustCompile("^org/foo$"),
-					RepoRaw:    "^org/foo$",
-					Cluster:    regexp.MustCompile("^trusted$"),
-					ClusterRaw: "^trusted$",
+					OrgRepo: "org/foo",
+					Cluster: "trusted",
 					Config: &prowapi.DecorationConfig{
 						GracePeriod: &prowapi.Duration{Duration: 1 * time.Minute},
 					},
@@ -4032,77 +4013,79 @@ default_decoration_config_entries:
 // merging logic. It configures the upload bucket based on the org/repo and
 // uses either a GCS secret or k8s SA depending on the cluster.
 // A specific 'override' org overrides some fields in the trusted cluster only.
-var complexConfig = &Config{
-	JobConfig: JobConfig{
-		DecorateAllJobs: true,
-	},
-	ProwConfig: ProwConfig{
-		Plank: Plank{
-			DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
-				{
-					Repo:    regexp.MustCompile(".*"),
-					Cluster: regexp.MustCompile(".*"),
-					Config: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{
-							CloneRefs:  "clonerefs:global",
-							InitUpload: "initupload:global",
-							Entrypoint: "entrypoint:global",
-							Sidecar:    "sidecar:global",
-						},
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "global",
-							PathStrategy: "explicit",
-						},
-					},
-				},
-				{
-					Repo:    regexp.MustCompile("^org/"),
-					Cluster: regexp.MustCompile(".*"),
-					Config: &prowapi.DecorationConfig{
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "org-specific",
-							PathStrategy: "explicit",
+func complexConfig() *Config {
+	return &Config{
+		JobConfig: JobConfig{
+			DecorateAllJobs: true,
+		},
+		ProwConfig: ProwConfig{
+			Plank: Plank{
+				DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+					{
+						OrgRepo: "*",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							UtilityImages: &prowapi.UtilityImages{
+								CloneRefs:  "clonerefs:global",
+								InitUpload: "initupload:global",
+								Entrypoint: "entrypoint:global",
+								Sidecar:    "sidecar:global",
+							},
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "global",
+								PathStrategy: "explicit",
+							},
 						},
 					},
-				},
-				{
-					Repo:    regexp.MustCompile("^org/repo$"),
-					Cluster: regexp.MustCompile(".*"),
-					Config: &prowapi.DecorationConfig{
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "repo-specific",
-							PathStrategy: "explicit",
+					{
+						OrgRepo: "org",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "org-specific",
+								PathStrategy: "explicit",
+							},
 						},
 					},
-				},
-				{
-					Repo:    regexp.MustCompile(".*"),
-					Cluster: regexp.MustCompile("default"),
-					Config: &prowapi.DecorationConfig{
-						GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
-					},
-				},
-				{
-					Repo:    regexp.MustCompile(".*"),
-					Cluster: regexp.MustCompile("trusted"),
-					Config: &prowapi.DecorationConfig{
-						DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
-					},
-				},
-				{
-					Repo:    regexp.MustCompile("override"),
-					Cluster: regexp.MustCompile("trusted"),
-					Config: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{
-							CloneRefs: "clonerefs:override",
+					{
+						OrgRepo: "org/repo",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "repo-specific",
+								PathStrategy: "explicit",
+							},
 						},
-						DefaultServiceAccountName: pStr(""),
-						GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+					},
+					{
+						OrgRepo: "*",
+						Cluster: "default",
+						Config: &prowapi.DecorationConfig{
+							GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+						},
+					},
+					{
+						OrgRepo: "*",
+						Cluster: "trusted",
+						Config: &prowapi.DecorationConfig{
+							DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+						},
+					},
+					{
+						OrgRepo: "override",
+						Cluster: "trusted",
+						Config: &prowapi.DecorationConfig{
+							UtilityImages: &prowapi.UtilityImages{
+								CloneRefs: "clonerefs:override",
+							},
+							DefaultServiceAccountName: pStr(""),
+							GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+						},
 					},
 				},
 			},
 		},
-	},
+	}
 }
 
 func TestSetDecorationDefaults(t *testing.T) {
@@ -4131,8 +4114,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4178,8 +4161,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4197,8 +4180,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org/repo"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org/repo",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									GCSConfiguration: &prowapi.GCSConfiguration{
 										Bucket:       "test-bucket-by-repo",
@@ -4254,8 +4237,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4318,8 +4301,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4337,8 +4320,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org/repo"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org/repo",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-repo",
@@ -4384,8 +4367,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4403,8 +4386,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org/repo"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org/repo",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-repo",
@@ -4450,8 +4433,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4469,8 +4452,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org",
@@ -4516,8 +4499,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -4564,8 +4547,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -4583,8 +4566,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org",
@@ -4602,8 +4585,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org/repo"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org/repo",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org-repo",
@@ -4650,8 +4633,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -4669,8 +4652,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org",
@@ -4717,8 +4700,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4766,8 +4749,8 @@ func TestSetDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test",
@@ -4791,7 +4774,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:     "unrecognized org, no cluster => use global + default cluster configs",
-			config: complexConfig,
+			config: complexConfig(),
 			expected: &prowapi.DecorationConfig{
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:global",
@@ -4808,7 +4791,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "unrecognized repo and explicit 'default' cluster => use global + org + default cluster configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "default",
 			repo:    "org/foo",
 			expected: &prowapi.DecorationConfig{
@@ -4827,7 +4810,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "recognized repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "trusted",
 			repo:    "org/repo",
 			expected: &prowapi.DecorationConfig{
@@ -4846,7 +4829,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "override org and in trusted cluster => use global + trusted cluster + override configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "trusted",
 			repo:    "override/foo",
 			expected: &prowapi.DecorationConfig{
@@ -4866,7 +4849,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "override org and in default cluster => use global + default cluster configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "default",
 			repo:    "override/foo",
 			expected: &prowapi.DecorationConfig{
@@ -4923,8 +4906,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(".*"),
+								OrgRepo: "*",
+								Cluster: "*",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -4969,8 +4952,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -4988,8 +4971,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org",
@@ -5042,8 +5025,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -5061,8 +5044,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 								},
 							},
 							{
-								Repo:    regexp.MustCompile("org/repo"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "org/repo",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-org-repo",
@@ -5118,8 +5101,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -5167,8 +5150,8 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 					Plank: Plank{
 						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 							{
-								Repo:    regexp.MustCompile(".*"),
-								Cluster: regexp.MustCompile(""),
+								OrgRepo: "*",
+								Cluster: "",
 								Config: &prowapi.DecorationConfig{
 									UtilityImages: &prowapi.UtilityImages{
 										CloneRefs:  "clonerefs:test-by-*",
@@ -5192,7 +5175,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:     "no extraRefs[0] or cluster => use global + default cluster configs",
-			config: complexConfig,
+			config: complexConfig(),
 			expected: &prowapi.DecorationConfig{
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:global",
@@ -5209,7 +5192,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "extraRefs[0] has org and explicit 'default' cluster => use global + org + default cluster configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "default",
 			utilityConfig: UtilityConfig{
 				ExtraRefs: []prowapi.Refs{
@@ -5235,7 +5218,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "extraRefs[0] has repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "trusted",
 			utilityConfig: UtilityConfig{
 				ExtraRefs: []prowapi.Refs{
@@ -5261,7 +5244,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:      "extraRefs[0] has override org and explicit 'trusted' cluster => use global + trusted cluster + override configs",
-			config:  complexConfig,
+			config:  complexConfig(),
 			cluster: "trusted",
 			utilityConfig: UtilityConfig{
 				ExtraRefs: []prowapi.Refs{
@@ -5288,7 +5271,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 		},
 		{
 			id:     "extraRefs[0] has override org and no cluster => use global + default cluster configs",
-			config: complexConfig,
+			config: complexConfig(),
 			utilityConfig: UtilityConfig{
 				ExtraRefs: []prowapi.Refs{
 					{
@@ -5565,16 +5548,13 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 	}
 }
 
-// func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
-// }
-
 func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
 	const repo = "org/repo"
 	const cluster = "default"
 	p := Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
 		{
-			Repo:    regexp.MustCompile(`.*`),
-			Cluster: regexp.MustCompile(`.*`),
+			OrgRepo: "*",
+			Cluster: "*",
 			Config: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					MediaTypes: map[string]string{"text": "text"},
@@ -5583,8 +5563,8 @@ func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
 			},
 		},
 		{
-			Repo:    regexp.MustCompile(repo),
-			Cluster: regexp.MustCompile(`.*`),
+			OrgRepo: repo,
+			Cluster: "*",
 			Config: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					MediaTypes: map[string]string{"text": "text2"},
@@ -5592,8 +5572,8 @@ func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
 			},
 		},
 		{
-			Repo:    regexp.MustCompile(`.*`),
-			Cluster: regexp.MustCompile(cluster),
+			OrgRepo: "*",
+			Cluster: cluster,
 			Config: &prowapi.DecorationConfig{
 				DefaultServiceAccountName: pStr("service-account-name"),
 				GCSCredentialsSecret:      pStr(""),
@@ -5610,11 +5590,11 @@ func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
 	s2 := make(chan struct{})
 
 	go func() {
-		_ = p.MergeDefaultDecorationConfig(repo, cluster, jobDC)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s1)
 	}()
 	go func() {
-		_ = p.MergeDefaultDecorationConfig(repo, cluster, jobDC)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s2)
 	}()
 
