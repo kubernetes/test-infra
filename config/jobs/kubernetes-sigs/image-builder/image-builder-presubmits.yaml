@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -33,7 +33,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -55,7 +55,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           args:
             - runner.sh
             - "./images/capi/hack/ci-json-sort.sh"

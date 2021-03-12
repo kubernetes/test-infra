@@ -19,7 +19,7 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -86,7 +86,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -172,7 +172,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
