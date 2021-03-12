@@ -75,7 +75,7 @@ periodics:
   - org: kubernetes
     repo: perf-tests
     base_ref: master
-    base_sha: 39a6c09ddca620a430d38e5de1400844ea954c29f # head of perf-tests' master as of 2020-11-06
+    base_sha: 39a6c09ddca620a430d38e5de1400844ea954c2f # head of perf-tests' master as of 2020-11-06
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
