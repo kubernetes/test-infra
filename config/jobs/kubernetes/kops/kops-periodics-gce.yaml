@@ -25,6 +25,7 @@ periodics:
       # Creates a state store bucket in the project, let's use the GCP default service account for the nodes
       # until we have a dedicated node account.
       # - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-args=--networking=calico
       - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -62,6 +63,7 @@ periodics:
       - --ginkgo-parallel
       # Temporarily use default service account: https://github.com/kubernetes/test-infra/issues/17558
       #- --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-args=--networking=calico
       - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
