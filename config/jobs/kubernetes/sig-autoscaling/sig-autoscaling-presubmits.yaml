@@ -44,6 +44,6 @@ presubmits:
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=400m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         securityContext:
           privileged: true
