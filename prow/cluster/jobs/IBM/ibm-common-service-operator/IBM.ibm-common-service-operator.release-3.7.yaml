@@ -1,0 +1,151 @@
+presubmits:
+  IBM/ibm-common-service-operator:
+  - name: check-ibm-common-service-operator
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-3.7$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-operator
+    rerun_command: /test check-ibm-common-service-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-ibm-common-service-operator-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-3.7$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-operator
+    rerun_command: /test test-ibm-common-service-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-common-service-operator-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^release-3.7$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-operator
+    rerun_command: /test test-ibm-common-service-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-common-service-operator-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^release-3.7$
+    decorate: true
+    path_alias: github.com/IBM/ibm-common-service-operator
+    rerun_command: /test test-ibm-common-service-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+postsubmits:
+  IBM/ibm-common-service-operator:
+  - name: image-ibm-common-service-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^release-3.7$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-common-service-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^release-3.7$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-common-service-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^release-3.7$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-common-service-operator-postsubmit
+    cluster: default
+    branches:
+    - ^release-3.7$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-common-service-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
