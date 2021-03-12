@@ -132,7 +132,7 @@ def replace_or_remove_line(s, pattern, new_str):
     for line in s.split('\n'):
         if pattern in line:
             if new_str:
-                line.replace(pattern, new_str)
+                line = line.replace(pattern, new_str)
                 keep.append(line)
         else:
             keep.append(line)
@@ -545,6 +545,18 @@ def generate_misc():
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
 
+        build_test(name_override="kops-grid-scenario-cilium-arm64",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=["--zones=us-east-2b",
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
+                                f"--image={u2004_arm}"],
+                   extra_dashboards=['kops-misc']),
     ]
     return results
 
