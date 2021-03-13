@@ -124,8 +124,7 @@ presubmits:
         - bash
         args:
         - -c
-        - make
-        - test-e2e-aws-simple-1-20
+        - make test-e2e-aws-simple-1-20
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
