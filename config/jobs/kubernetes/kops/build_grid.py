@@ -638,6 +638,8 @@ def generate_versions():
     ]
     for version in ['1.20', '1.19', '1.18', '1.17', '1.16', '1.15']:
         distro = 'deb9' if version in ['1.17', '1.16', '1.15'] else 'u2004'
+        if version == '1.15':
+            skip_regex += r'|Services.*rejected.*endpoints'
         results.append(
             build_test(
                 container_runtime='containerd',
