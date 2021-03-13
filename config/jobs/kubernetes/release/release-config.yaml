@@ -89,7 +89,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-kube-cross
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/cross\/'
@@ -125,7 +124,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-go-runner
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/go-runner\/'
@@ -161,7 +159,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-base
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-base\/'
@@ -197,7 +194,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-hyperkube-base
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-hyperkube-base\/'
@@ -233,7 +229,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-iptables
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-iptables\/'
@@ -269,7 +264,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-setcap
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/setcap\/'
@@ -305,7 +299,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-k8s-cloud-builder
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/k8s-cloud-builder\/'
@@ -337,6 +330,111 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-image-k8s-cloud-builder
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-k8s-ci-builder
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/releng\/k8s-ci-builder\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/releng/k8s-ci-builder
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-k8s-ci-builder
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-releng-ci
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/releng\/ci\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF,REGISTRY
+            - --build-dir=.
+            - images/releng/ci
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-releng-ci
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-kubepkg
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: 'cloudbuild-kubepkg.yaml|Dockerfile-kubepkg*'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF,REGISTRY
+            - --gcb-config=./cloudbuild-kubepkg.yaml
+            - .
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-kubepkg
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
