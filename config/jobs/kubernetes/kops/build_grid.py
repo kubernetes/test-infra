@@ -464,13 +464,6 @@ def generate_misc():
                    terraform_version="0.14.6",
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-misc-channelalpha",
-                   k8s_version="stable",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=24,
-                   extra_dashboards=["kops-misc"]),
-
         build_test(name_override="kops-aws-misc-ha-euwest1",
                    k8s_version="stable",
                    networking="calico",
