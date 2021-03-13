@@ -68,7 +68,7 @@ kubetest2_template = """
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
-      image: {{e2e_image}}
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -235,7 +235,6 @@ def build_test(cloud='aws',
 
     test_package_bucket = ''
     test_package_dir = ''
-    e2e_image = 'gcr.io/k8s-testimages/kubekins-e2e:latest-master'
     if k8s_version == 'latest':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
@@ -250,13 +249,8 @@ def build_test(cloud='aws',
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
         k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
-        e2e_image = f"gcr.io/k8s-testimages/kubekins-e2e:latest-{k8s_version}"
     else:
         raise Exception('missing required k8s_version')
-
-    # temporary test before migrating all jobs to use this image
-    if k8s_version in ['1.15', '1.16']:
-        e2e_image = 'gcr.io/k8s-testimages/kubekins-e2e:latest-master'
 
     create_args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
 
@@ -311,7 +305,6 @@ def build_test(cloud='aws',
     y = y.replace('{{create_args}}', create_args)
     y = y.replace('{{k8s_deploy_url}}', k8s_deploy_url)
     y = y.replace('{{kops_deploy_url}}', kops_deploy_url)
-    y = y.replace('{{e2e_image}}', e2e_image)
     y = y.replace('{{test_parallelism}}', str(test_parallelism))
     y = y.replace('{{job_timeout}}', str(test_timeout_minutes + 30) + 'm')
     y = y.replace('{{test_timeout}}', str(test_timeout_minutes) + 'm')
