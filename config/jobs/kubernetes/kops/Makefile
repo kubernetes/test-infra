@@ -15,4 +15,3 @@
 .PHONY: generate
 generate:
 	python3 build_grid.py
-	python3 build_pipeline.py > kops-pipeline.yaml
