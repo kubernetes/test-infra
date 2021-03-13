@@ -89,7 +89,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-kube-cross
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/cross\/'
@@ -125,7 +124,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-go-runner
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/go-runner\/'
@@ -161,7 +159,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-base
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-base\/'
@@ -197,7 +194,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-hyperkube-base
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-hyperkube-base\/'
@@ -233,7 +229,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-debian-iptables
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/debian-iptables\/'
@@ -269,7 +264,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-setcap
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/build\/setcap\/'
@@ -305,7 +299,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-k8s-cloud-builder
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/k8s-cloud-builder\/'
@@ -341,7 +334,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-k8s-ci-builder
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/releng\/k8s-ci-builder\/'
@@ -377,7 +369,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-releng-ci
-    optional: false
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/releng\/ci\/'
@@ -413,7 +404,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-kubepkg
-    optional: false
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: 'cloudbuild-kubepkg.yaml|Dockerfile-kubepkg*'
