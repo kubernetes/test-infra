@@ -649,6 +649,33 @@ def generate_versions():
         )
     return results
 
+######################
+# kops-pipeline.yaml #
+######################
+def generate_pipeline():
+    results = []
+    focus_regex = r'\[k8s.io\]\sNetworking.*\[Conformance\]'
+    for version in ['master', '1.20', '1.19']:
+        branch = version if version == 'master' else f"release-{version}"
+        publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
+        kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
+        results.append(
+            build_test(
+                container_runtime='containerd',
+                k8s_version=version.replace('master', 'latest'),
+                kops_version=kops_version,
+                kops_channel='alpha',
+                name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
+                networking='calico',
+                extra_dashboards=['kops-versions'],
+                runs_per_day=24,
+                skip_override=r'\[Slow\]|\[Serial\]',
+                focus_regex=focus_regex,
+                publish_version_marker=publish_version_marker,
+            )
+        )
+    return results
+
 ########################
 # YAML File Generation #
 ########################
@@ -658,6 +685,7 @@ files = {
     'kops-periodics-misc2.yaml': generate_misc,
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
     'kops-periodics-versions.yaml': generate_versions,
+    'kops-pipeline.yaml': generate_pipeline,
 }
 
 def main():
