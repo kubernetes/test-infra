@@ -312,7 +312,6 @@ presubmits:
           args:
             - --project=k8s-staging-releng-test
             - --scratch-bucket=gs://k8s-staging-releng-test
-            - --build-dir=.
             - --env-passthrough=PULL_BASE_REF,REGISTRY
             - images/k8s-cloud-builder
           env:
