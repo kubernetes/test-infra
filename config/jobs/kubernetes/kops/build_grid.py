@@ -464,13 +464,6 @@ def generate_misc():
                    terraform_version="0.14.6",
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-misc-channelalpha",
-                   k8s_version="stable",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=24,
-                   extra_dashboards=["kops-misc"]),
-
         build_test(name_override="kops-aws-misc-ha-euwest1",
                    k8s_version="stable",
                    networking="calico",
@@ -620,6 +613,42 @@ def generate_network_plugins():
         )
     return results
 
+################################
+# kops-periodics-versions.yaml #
+################################
+def generate_versions():
+    skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+    results = [
+        build_test(
+            container_runtime='containerd',
+            k8s_version='ci',
+            kops_channel='alpha',
+            name_override='kops-aws-k8s-latest',
+            networking='calico',
+            extra_dashboards=['kops-versions'],
+            runs_per_day=24,
+            # This version marker is only used by the k/k presubmit job
+            publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
+            skip_override=skip_regex
+        )
+    ]
+    for version in ['1.20', '1.19', '1.18', '1.17', '1.16', '1.15']:
+        distro = 'deb9' if version in ['1.17', '1.16', '1.15'] else 'u2004'
+        results.append(
+            build_test(
+                container_runtime='containerd',
+                distro=distro,
+                k8s_version=version,
+                kops_channel='alpha',
+                name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
+                networking='calico',
+                extra_dashboards=['kops-versions'],
+                runs_per_day=8,
+                skip_override=skip_regex
+            )
+        )
+    return results
+
 ########################
 # YAML File Generation #
 ########################
@@ -627,7 +656,8 @@ files = {
     'kops-periodics-distros.yaml': generate_distros,
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
-    'kops-periodics-network-plugins.yaml': generate_network_plugins
+    'kops-periodics-network-plugins.yaml': generate_network_plugins,
+    'kops-periodics-versions.yaml': generate_versions,
 }
 
 def main():
