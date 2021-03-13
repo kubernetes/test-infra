@@ -254,6 +254,10 @@ def build_test(cloud='aws',
     else:
         raise Exception('missing required k8s_version')
 
+    # temporary test before migrating all jobs to use this image
+    if k8s_version in ['1.15', '1.16']:
+        e2e_image = 'gcr.io/k8s-testimages/kubekins-e2e:latest-master'
+
     create_args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
 
     if container_runtime:
