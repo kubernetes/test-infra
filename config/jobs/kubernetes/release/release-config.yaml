@@ -321,7 +321,7 @@ presubmits:
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
             - --env-passthrough=PULL_BASE_REF,REGISTRY
-            - images/releng/k8s-ci-builder
+            - images/k8s-cloud-builder
           env:
             - name: LOG_TO_STDOUT
               value: "y"
