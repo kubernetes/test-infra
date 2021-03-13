@@ -114,11 +114,13 @@ postsubmits:
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,REGISTRY
               - images/k8s-cloud-builder
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
