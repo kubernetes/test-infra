@@ -48,6 +48,7 @@ release(
     component("horologium", "deployment", "rbac", "service"),
     component("ing", "ingress"),
     component("kube-state-metrics", "deployment", "rbac", "service"),
+    component("kubernetes-external-secrets", "deployment", "rbac", "service", "crd"),
     component(
         "mem-limit-range",
         "limitrange",
