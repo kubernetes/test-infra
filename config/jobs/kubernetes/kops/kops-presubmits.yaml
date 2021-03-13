@@ -121,8 +121,9 @@ presubmits:
       - image: gcr.io/cloud-marketplace-containers/google/bazel:3.5.0
         imagePullPolicy: Always
         command:
-        - runner.sh
+        - bash
         args:
+        - -c
         - make
         - test-e2e-aws-simple-1-20
         # docker-in-docker needs privileged mode
