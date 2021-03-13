@@ -19,6 +19,9 @@ dashboard_groups:
   - kops-distro-rhel8
   - kops-distro-u1804
   - kops-distro-u2004
+  - kops-k8s-1.15
+  - kops-k8s-1.16
+  - kops-k8s-1.17
   - kops-k8s-1.18
   - kops-k8s-1.19
   - kops-k8s-1.20
@@ -48,6 +51,9 @@ dashboards:
 - name: kops-distro-rhel8
 - name: kops-distro-u1804
 - name: kops-distro-u2004
+- name: kops-k8s-1.15
+- name: kops-k8s-1.16
+- name: kops-k8s-1.17
 - name: kops-k8s-1.18
 - name: kops-k8s-1.19
 - name: kops-k8s-1.20
