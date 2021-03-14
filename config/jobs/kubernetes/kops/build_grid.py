@@ -678,17 +678,17 @@ def generate_pipeline():
 ########################
 # YAML File Generation #
 ########################
-files = {
+periodics_files = {
     'kops-periodics-distros.yaml': generate_distros,
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
     'kops-periodics-versions.yaml': generate_versions,
-    'kops-pipeline.yaml': generate_pipeline,
+    'kops-periodics-pipeline.yaml': generate_pipeline,
 }
 
 def main():
-    for filename, generate_func in files.items():
+    for filename, generate_func in periodics_files.items():
         print(f"Generating {filename}")
         output = []
         runs_per_week = 0
