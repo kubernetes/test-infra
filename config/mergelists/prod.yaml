@@ -1,0 +1,4 @@
+target: "gs://k8s-testgrid/config"
+sources:
+- name: ""
+  location: "gs://k8s-testgrid/configs/k8s/config"
