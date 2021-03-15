@@ -8,6 +8,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/api:go_default_library",
