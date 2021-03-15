@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/version: 1.9.7
+    app: kube-state-metrics
   name: kube-state-metrics
   namespace: prow-monitoring
 spec:
