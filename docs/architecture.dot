@@ -2,7 +2,7 @@
 # dot architecture.dot -Tsvg -oarchitecture.svg
 
 digraph G {
-	label="Kubernetes Test Infrastructure (Last updated 2020-03-04)"  # UPDATE WHEN CHANGED!
+	label="Kubernetes Test Infrastructure (Last updated 2021-03-04)"  # UPDATE WHEN CHANGED!
     labelloc="t"
     graph[compound=true]
 

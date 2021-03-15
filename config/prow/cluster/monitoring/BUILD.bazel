@@ -22,6 +22,7 @@ release(
     component("monitoring-prow-k8s-io", "managedcertificate"),
     component("additional-scrape-configs", "secret"),
     component("blackbox_prober", MULTI_KIND),
+    component("kube-state-metrics_servicemonitors", MULTI_KIND),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")

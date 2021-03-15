@@ -259,56 +259,72 @@ func TestGetCCs(t *testing.T) {
 		testSeed  int64
 		assignees []string
 		// order matters for CCs
-		expectedCCs []string
+		expectedCCs          []string
+		expectedAssignedCCs  []string
+		expectedSuggestedCCs []string
 	}{
 		{
-			testName:          "Empty PR",
-			filenames:         []string{},
-			currentlyApproved: sets.NewString(),
-			testSeed:          0,
-			expectedCCs:       []string{},
+			testName:             "Empty PR",
+			filenames:            []string{},
+			currentlyApproved:    sets.NewString(),
+			testSeed:             0,
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
-			testName:          "Single Root FFile PR Approved",
-			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			testSeed:          13,
-			expectedCCs:       []string{},
+			testName:             "Single Root FFile PR Approved",
+			filenames:            []string{"kubernetes.go"},
+			currentlyApproved:    sets.NewString(rootApprovers.List()[0]),
+			testSeed:             13,
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
-			testName:          "Single Root File PR Unapproved Seed = 13",
-			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(),
-			testSeed:          13,
-			expectedCCs:       []string{"alice"},
+			testName:             "Single Root File PR Unapproved Seed = 13",
+			filenames:            []string{"kubernetes.go"},
+			currentlyApproved:    sets.NewString(),
+			testSeed:             13,
+			expectedCCs:          []string{"alice"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"alice"},
 		},
 		{
-			testName:          "Single Root File PR No One Seed = 10",
-			filenames:         []string{"kubernetes.go"},
-			testSeed:          10,
-			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"bob"},
+			testName:             "Single Root File PR No One Seed = 10",
+			filenames:            []string{"kubernetes.go"},
+			testSeed:             10,
+			currentlyApproved:    sets.NewString(),
+			expectedCCs:          []string{"bob"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"bob"},
 		},
 		{
-			testName:          "Combo and Other; Neither Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"dan"},
+			testName:             "Combo and Other; Neither Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    sets.NewString(),
+			expectedCCs:          []string{"dan"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"dan"},
 		},
 		{
-			testName:          "Combo and Other; Combo Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: eApprovers,
-			expectedCCs:       []string{"dan"},
+			testName:             "Combo and Other; Combo Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    eApprovers,
+			expectedCCs:          []string{"dan"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"dan"},
 		},
 		{
-			testName:          "Combo and Other; Both Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: dApprovers, // dApprovers can approve combo and d directory
-			expectedCCs:       []string{},
+			testName:             "Combo and Other; Both Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    dApprovers, // dApprovers can approve combo and d directory
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
 			testName:          "Combo, C, D; None Approved",
@@ -316,7 +332,9 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// chris can approve c and combo, debbie can approve d
-			expectedCCs: []string{"chris", "debbie"},
+			expectedCCs:          []string{"chris", "debbie"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"chris", "debbie"},
 		},
 		{
 			testName:          "A, B, C; Nothing Approved",
@@ -324,7 +342,9 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Need an approver from each of the three owners files
-			expectedCCs: []string{"anne", "bill", "carol"},
+			expectedCCs:          []string{"anne", "bill", "carol"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"anne", "bill", "carol"},
 		},
 		{
 			testName:  "A, B, C; Partially approved by non-suggested approvers",
@@ -333,7 +353,9 @@ func TestGetCCs(t *testing.T) {
 			// Approvers are valid approvers, but not the one we would suggest
 			currentlyApproved: sets.NewString("Art", "Ben"),
 			// We don't suggest approvers for a and b, only for unapproved c.
-			expectedCCs: []string{"carol"},
+			expectedCCs:          []string{"carol"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:  "A, B, C; Nothing approved, but assignees can approve",
@@ -344,7 +366,9 @@ func TestGetCCs(t *testing.T) {
 			assignees:         []string{"Art", "Ben"},
 			// We suggest assigned people rather than "suggested" people
 			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
-			expectedCCs: []string{"art", "ben", "carol"},
+			expectedCCs:          []string{"art", "ben", "carol"},
+			expectedAssignedCCs:  []string{"art", "ben"},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
@@ -354,7 +378,9 @@ func TestGetCCs(t *testing.T) {
 			// Assignees are a mix of potential approvers and random people
 			assignees: []string{"Art", "Ben", "John", "Jack"},
 			// We suggest assigned people rather than "suggested" people
-			expectedCCs: []string{"art", "ben", "carol"},
+			expectedCCs:          []string{"art", "ben", "carol"},
+			expectedAssignedCCs:  []string{"art", "ben"},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:          "Assignee is top OWNER, No one has approved",
@@ -362,8 +388,10 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Assignee is a root approver
-			assignees:   []string{"alice"},
-			expectedCCs: []string{"alice"},
+			assignees:            []string{"alice"},
+			expectedCCs:          []string{"alice"},
+			expectedAssignedCCs:  []string{"alice"},
+			expectedSuggestedCCs: []string{},
 		},
 	}
 
@@ -377,6 +405,14 @@ func TestGetCCs(t *testing.T) {
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
 			t.Errorf("Failed for test %v.  Expected CCs: %v. Found %v", test.testName, test.expectedCCs, calculated)
+		}
+		calculated = testApprovers.AssignedCCs()
+		if !reflect.DeepEqual(test.expectedAssignedCCs, calculated) {
+			t.Errorf("Failed for test %v.  Expected AssignedCCs: %v. Found %v", test.testName, test.expectedAssignedCCs, calculated)
+		}
+		calculated = testApprovers.SuggestedCCs()
+		if !reflect.DeepEqual(test.expectedSuggestedCCs, calculated) {
+			t.Errorf("Failed for test %v.  Expected SuggestedCCs: %v. Found %v", test.testName, test.expectedSuggestedCCs, calculated)
 		}
 	}
 }

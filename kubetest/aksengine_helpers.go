@@ -73,8 +73,9 @@ type ServicePrincipalProfile struct {
 }
 
 type LinuxProfile struct {
-	AdminUsername string `json:"adminUsername"`
-	SSHKeys       *SSH   `json:"ssh"`
+	RunUnattendedUpgradesOnBootstrap bool   `json:"runUnattendedUpgradesOnBootstrap"`
+	AdminUsername                    string `json:"adminUsername"`
+	SSHKeys                          *SSH   `json:"ssh"`
 }
 
 type SSH struct {

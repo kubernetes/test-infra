@@ -25,6 +25,7 @@ periodics:
       # Creates a state store bucket in the project, let's use the GCP default service account for the nodes
       # until we have a dedicated node account.
       # - --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-args=--networking=calico
       - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -32,7 +33,7 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
     testgrid-days-of-results: "30"
@@ -62,6 +63,7 @@ periodics:
       - --ginkgo-parallel
       # Temporarily use default service account: https://github.com/kubernetes/test-infra/issues/17558
       #- --kops-args=--gce-service-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+      - --kops-args=--networking=calico
       - --kops-feature-flags=GoogleCloudBucketACL
       - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt

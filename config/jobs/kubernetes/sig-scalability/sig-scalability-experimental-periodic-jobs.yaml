@@ -1,73 +1,4 @@
 periodics:
-- interval: 30m
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-gci-gce-scalability-podutils
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: gce-cos-master-scalability-100-podutils
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=e2e-big
-      - --extract=ci/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
-      - --gcp-node-image=gci
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --metadata-sources=cl2-metadata.json
-      - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-node-exporter
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=120m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      resources:
-        requests:
-          cpu: 2
-          memory: 6Gi
-        limits:
-          cpu: 2
-          memory: 6Gi
-
 - name: ci-kubernetes-storage-scalability
   tags:
     - "perfDashPrefix: storage"
@@ -96,7 +27,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -148,7 +79,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -214,7 +145,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210311-0d43454-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

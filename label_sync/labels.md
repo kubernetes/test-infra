@@ -27,6 +27,7 @@
 - [Labels that apply to kubernetes/release, for both issues and PRs](#labels-that-apply-to-kubernetesrelease-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/sig-release, for both issues and PRs](#labels-that-apply-to-kubernetessig-release-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/test-infra, for both issues and PRs](#labels-that-apply-to-kubernetestest-infra-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/test-infra, only for PRs](#labels-that-apply-to-kubernetestest-infra-only-for-prs)
 - [Labels that apply to kubernetes/website, for both issues and PRs](#labels-that-apply-to-kuberneteswebsite-for-both-issues-and-prs)
 
 
@@ -407,6 +408,12 @@ larger set of contributors to apply/remove them.
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 | <a id="area/robots" href="#area/robots">`area/robots`</a> | Issues or PRs related to code in /robots| label | |
 | <a id="kind/oncall-hotlist" href="#kind/oncall-hotlist">`kind/oncall-hotlist`</a> | Categorizes issue or PR as tracked by test-infra oncall.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes/test-infra, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="skip-review" href="#skip-review">`skip-review`</a> | Indicates a PR is trusted, used by tide for auto-merging PRs.| autobump bot | |
 
 ## Labels that apply to kubernetes/website, for both issues and PRs
 
