@@ -29,3 +29,32 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cloud-provider-gcp-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+    - name: post-gcp-compute-persistent-disk-csi-driver-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+        testgrid-tab-name: post-image-k8s-staging-cloud-provider-gcp
+      decorate: true
+      branches:
+        # For publishing canary images.
+        - ^master$
+        - ^release-
+        # For publishing tagged images. Those will only get built once, i.e.
+        # existing images are not getting overwritten. A new tag must be set to
+        # trigger another image build. Images are only built for tags that follow
+        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-cloud-provider-gcp
+              - --scratch-bucket=gs://k8s-staging-cloud-provider-gcp-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
