@@ -883,12 +883,21 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 						resp.Body.Close()
 						break
 					}
-				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
+				} else {
+					acceptedScopes := resp.Header.Get("X-Accepted-OAuth-Scopes")
 					authorizedScopes := resp.Header.Get("X-OAuth-Scopes")
 					if authorizedScopes == "" {
 						authorizedScopes = "no"
 					}
-					err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, oauthScopes)
+
+					want := sets.NewString(strings.Split(acceptedScopes, ",")...)
+					got := strings.Split(authorizedScopes, ",")
+					if !want.HasAny(got...) {
+						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
+					} else {
+						body, _ := ioutil.ReadAll(resp.Body)
+						err = fmt.Errorf("the GitHub API request returns a 403 error: %s", string(body))
+					}
 					resp.Body.Close()
 					break
 				}
