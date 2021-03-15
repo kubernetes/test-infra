@@ -32,8 +32,6 @@ spec:
     matchExpressions:
     - key: app
       operator: Exists
-    - key: app.kubernetes.io/name
-      operator: Exists
   version: v2.7.1
   image: docker.io/prom/prometheus
   externalLabels: {}
