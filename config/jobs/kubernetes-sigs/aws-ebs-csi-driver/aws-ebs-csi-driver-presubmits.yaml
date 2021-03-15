@@ -113,7 +113,7 @@ presubmits:
       description: aws ebs csi driver migration test on latest kubernetes
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-latest
-    always_run: false
+    always_run: true
     decorate: true
     skip_branches:
       - gh-pages
