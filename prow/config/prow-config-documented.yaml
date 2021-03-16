@@ -388,6 +388,10 @@ deck:
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
 gerrit:
+    # DeckURL is the root URL of Deck. This is used to construct links to
+    # job runs for a given CL.
+    deck_url: ' '
+
     # TickInterval is how often we do a sync with binded gerrit instance
     tick_interval: 0s
 

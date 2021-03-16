@@ -999,3 +999,77 @@ func TestProcessChange(t *testing.T) {
 		})
 	}
 }
+
+func TestDeckLinkForPR(t *testing.T) {
+	tcs := []struct {
+		name         string
+		deckURL      string
+		refs         prowapi.Refs
+		changeStatus string
+		expected     string
+	}{
+		{
+			name:         "No deck_url specified",
+			changeStatus: client.New,
+			expected:     "",
+		},
+		{
+			name:    "deck_url specified, repo without slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest-infra",
+		},
+		{
+			name:    "deck_url specified, repo with slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test/infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest%2Finfra",
+		},
+		{
+			name:    "deck_url specified, change is merged (triggering postsubmits)",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.Merged,
+			expected:     "",
+		},
+	}
+
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := deckLinkForPR(tc.deckURL, tc.refs, tc.changeStatus)
+			if err != nil {
+				t.Errorf("unexpected error generating Deck link: %w", err)
+			}
+			if result != tc.expected {
+				t.Errorf("expected deck link %s, but got %s", tc.expected, result)
+			}
+		})
+	}
+}
