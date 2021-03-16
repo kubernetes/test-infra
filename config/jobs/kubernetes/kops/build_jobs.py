@@ -550,18 +550,29 @@ def generate_misc():
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-grid-scenario-cilium-arm64",
+        build_test(name_override="kops-grid-scenario-cilium10-arm64",
                    cloud="aws",
                    networking="cilium",
                    distro="u2004",
                    kops_channel="alpha",
-                   runs_per_day=1,
+                   runs_per_day=24,
                    extra_flags=["--zones=us-east-2b",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
                                 f"--image={u2004_arm}"],
                    extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-grid-scenario-cilium10-amd64",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=24,
+                   extra_flags=["--zones=us-east-2b",
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0"],
+                   extra_dashboards=['kops-misc']),
+
     ]
     return results
 
