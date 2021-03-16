@@ -353,7 +353,7 @@ milestone_applier:
     release-0.3: v0.3.x
   kubernetes-sigs/cluster-api-provider-azure:
     master: v0.5.0
-    release-0.4: v0.4.12
+    release-0.4: v0.4.14
   kubernetes-sigs/cluster-api-provider-digitalocean:
     master: v0.4
     release-0.4: v0.4
