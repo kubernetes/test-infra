@@ -558,6 +558,9 @@ type Gerrit struct {
 	// RateLimit defines how many changes to query per gerrit API call
 	// default is 5
 	RateLimit int `json:"ratelimit,omitempty"`
+	// DeckURL is the root URL of Deck. This is used to construct links to
+	// job runs for a given CL.
+	DeckURL string `json:"deck_url,omitempty"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -1378,9 +1381,13 @@ func (c *Config) validateComponentConfig() error {
 			}, ""))
 		}
 	}
+	if c.Gerrit.DeckURL != "" {
+		if _, err := url.Parse(c.Gerrit.DeckURL); err != nil {
+			return fmt.Errorf(`Invalid value for gerrit.deck_url: %v`, err)
+		}
+	}
 
 	var validationErrs []error
-
 	if c.ManagedWebhooks.OrgRepoConfig != nil {
 		for repoName, repoValue := range c.ManagedWebhooks.OrgRepoConfig {
 			if repoValue.TokenCreatedAfter.After(time.Now()) {
