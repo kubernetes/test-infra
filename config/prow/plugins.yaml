@@ -346,6 +346,11 @@ milestone_applier:
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
+  kubernetes-sigs/cluster-api:
+    master: v0.4.x
+    release-0.4: v0.4.x
+    operator-0.4: v0.4.x # Remove this when it gets merged back.
+    release-0.3: v0.3.x
   kubernetes-sigs/cluster-api-provider-azure:
     master: v0.5.0
     release-0.4: v0.4.12
