@@ -46,7 +46,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.18-signal
     testgrid-tab-name: dualstack-azure-e2e-1-18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.18 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -97,7 +97,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.19-signal
     testgrid-tab-name: dualstack-azure-e2e-1-19
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.19 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -149,7 +149,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.20-signal
     testgrid-tab-name: dualstack-azure-e2e-1-20
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.20 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -202,7 +202,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-master-signal
     testgrid-tab-name: dualstack-azure-e2e-master-iptables
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack and Conformance e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud in iptables mode"
@@ -255,7 +255,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-master-signal
     testgrid-tab-name: dualstack-azure-e2e-master-ipvs
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack and Conformance e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud in ipvs mode"
@@ -311,7 +311,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
+      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack
       testgrid-tab-name: pr-dualstack-e2e-ipvs
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests for dualstack on azure in ipvs mode
@@ -364,7 +364,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
+      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack
       testgrid-tab-name: pr-dualstack-e2e-iptables
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests for dualstack on azure in iptables mode

@@ -50,7 +50,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-1903-1-18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -105,7 +105,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-1909-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -161,7 +161,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-sac, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-2004-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -217,7 +217,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-2004-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -271,7 +271,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-2004-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

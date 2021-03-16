@@ -62,7 +62,7 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, provider-azure-upstream, provider-azure-periodic
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-v1alpha3-k8s-main-release-0-4
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
