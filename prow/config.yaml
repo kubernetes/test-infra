@@ -33,6 +33,7 @@ tide:
     IBM/ibm-common-service-operator: squash
     IBM/ibm-namespace-scope-operator: squash
     IBM/ibm-common-service-webhook: squash
+    IBM/ibm-crossplane-operator: squash
     IBM/ibm-elastic-stack-operator: squash
     IBM/ibm-grafana-ocpthanos-proxy: squash
     IBM/ibm-monitoring-grafana-operator: squash
@@ -95,6 +96,7 @@ tide:
     - IBM/ibm-common-service-operator
     - IBM/ibm-namespace-scope-operator
     - IBM/ibm-common-service-webhook
+    - IBM/ibm-crossplane-operator
     - IBM/ibm-elastic-stack-operator
     - IBM/ibm-grafana-ocpthanos-proxy
     - IBM/ibm-monitoring-grafana-operator
