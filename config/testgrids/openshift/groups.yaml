@@ -38,4 +38,5 @@ dashboard_groups:
   - redhat-openshift-presubmit-master-gcp
   - redhat-osd
   - redhat-assisted-installer
+  - redhat-single-node
   name: redhat
