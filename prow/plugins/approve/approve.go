@@ -40,10 +40,11 @@ const (
 	// PluginName defines this plugin's registered name.
 	PluginName = "approve"
 
-	approveCommand  = "APPROVE"
-	cancelArgument  = "cancel"
-	lgtmCommand     = "LGTM"
-	noIssueArgument = "no-issue"
+	approveCommand       = "APPROVE"
+	cancelArgument       = "cancel"
+	lgtmCommand          = "LGTM"
+	noIssueArgument      = "no-issue"
+	removeApproveCommand = "REMOVE-APPROVE"
 )
 
 var (
@@ -137,11 +138,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/approve [no-issue|cancel]",
+		Usage:       "/[remove-]approve [no-issue|cancel]",
 		Description: "Approves a pull request",
 		Featured:    true,
 		WhoCanUse:   "Users listed as 'approvers' in appropriate OWNERS files.",
-		Examples:    []string{"/approve", "/approve no-issue"},
+		Examples:    []string{"/approve", "/approve no-issue", "/remove-approve"},
 	})
 	return pluginHelp, nil
 }
@@ -613,6 +614,10 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			name := strings.ToUpper(match[1])
 			if name != approveCommand && name != lgtmCommand {
+				continue
+			}
+			if name == removeApproveCommand {
+				approversHandler.RemoveApprover(c.Author)
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))

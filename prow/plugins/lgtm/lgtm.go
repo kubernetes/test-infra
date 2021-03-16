@@ -48,7 +48,7 @@ var (
 	// LGTMRe is the regex that matches lgtm comments
 	LGTMRe = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	// LGTMCancelRe is the regex that matches lgtm cancel comments
-	LGTMCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
+	LGTMCancelRe        = regexp.MustCompile(`(?mi)^/remove-lgtm|lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
 )
 
@@ -111,11 +111,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/lgtm [cancel] or GitHub Review action",
+		Usage:       "/[remove-]lgtm [cancel] or GitHub Review action",
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
 		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
-		Examples:    []string{"/lgtm", "/lgtm cancel", "<a href=\"https://help.github.com/articles/about-pull-request-reviews/\">'Approve' or 'Request Changes'</a>"},
+		Examples:    []string{"/lgtm", "/lgtm cancel", "/remove-lgtm", "<a href=\"https://help.github.com/articles/about-pull-request-reviews/\">'Approve' or 'Request Changes'</a>"},
 	})
 	return pluginHelp, nil
 }
