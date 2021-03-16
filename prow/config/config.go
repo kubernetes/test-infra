@@ -1031,6 +1031,7 @@ type ManagedWebhookInfo struct {
 // ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
 type ManagedWebhooks struct {
 	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
+	AutoAcceptInvitation     bool                          `json:"auto_accept_invitation"`
 	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
 }
 

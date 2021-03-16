@@ -2811,7 +2811,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		t.Run(clientType.Method(i).Name, func(t *testing.T) {
 
 			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
-				if !strings.HasPrefix(r.URL.Path, "/app") {
+				if !strings.HasPrefix(r.URL.Path, "/app") && !strings.HasPrefix(r.URL.Path, "/user/repository_invitations") && !strings.HasPrefix(r.URL.Path, "/user/memberships/orgs") {
 					var orgVal string
 					if v := r.Context().Value(githubOrgHeaderKey); v != nil {
 						orgVal = v.(string)

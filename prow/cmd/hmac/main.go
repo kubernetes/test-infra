@@ -178,9 +178,68 @@ func main() {
 		hmacMapForRecovery:    map[string]github.HMACsForRepo{},
 	}
 
+	if err := c.handleInvitation(); err != nil {
+		logrus.WithError(err).Fatal("Error accepting invitations.")
+	}
+
 	if err := c.handleConfigUpdate(); err != nil {
 		logrus.WithError(err).Fatal("Error handling hmac config update.")
 	}
+}
+
+func (c *client) handleInvitation() error {
+	if !c.newHMACConfig.AutoAcceptInvitation {
+		logrus.Debug("Skip accepting github invitations as not configured.")
+		return nil
+	}
+	// Accept repos invitations first
+	repoIvs, err := c.githubHookClient.ListCurrentUserRepoInvitations()
+	if err != nil {
+		return err
+	}
+	for _, iv := range repoIvs {
+		if github.RepoPermissionLevel(iv.Permission) != github.Admin {
+			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
+				iv.Repository.FullName, github.Admin, iv.Permission)
+			continue
+		}
+		for repoName := range c.newHMACConfig.OrgRepoConfig {
+			// Only consider strict matching for repo level invitation,
+			// reasons for not considering org matching:
+			// 1. The FullName is org/repo
+			// 2. If an org is defined as managed webhook but only invite
+			// bot as admin on repo level, the webhook setup will fail
+			// 3. Also we are not ready to receive spamming webhook from the
+			// org if it only configured a repo in hmac
+			if iv.Repository.FullName == repoName {
+				if err := c.githubHookClient.AcceptUserRepoInvitation(iv.InvitationID); err != nil {
+					return fmt.Errorf("failed accepting repo invitation: %w", err)
+				}
+			}
+		}
+	}
+	// Accept org invitation
+	orgIvs, err := c.githubHookClient.ListCurrentUserOrgInvitations()
+	if err != nil {
+		return err
+	}
+	for _, iv := range orgIvs {
+		if github.RepoPermissionLevel(iv.Role) != github.Admin {
+			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
+				iv.Org.Login, github.Admin, iv.Role)
+			continue
+		}
+		for repoName := range c.newHMACConfig.OrgRepoConfig {
+			// Accept org invitation even if only single repo want hmac
+			if repoName == iv.Org.Login || strings.HasPrefix(repoName, iv.Org.Login+"/") {
+				if err := c.githubHookClient.AcceptUserOrgInvitation(iv.Org.Login); err != nil {
+					return fmt.Errorf("failed accepting org invitation: %w", err)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *client) handleConfigUpdate() error {

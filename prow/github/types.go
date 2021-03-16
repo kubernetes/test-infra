@@ -1063,10 +1063,24 @@ type OrgInvitation struct {
 	Inviter TeamMember `json:"inviter"`
 }
 
-type UserInvitation struct {
-	InvitationID int                 `json:"id`
+// UserRepoInvitation is returned by repo invitation obtained by user.
+type UserRepoInvitation struct {
+	InvitationID int                 `json:"id"`
 	Repository   *Repo               `json:"repository,omitempty"`
 	Permission   RepoPermissionLevel `json:"permissions"`
+}
+
+// UserOrganization contains info consumed by UserOrgInvitation.
+type UserOrganization struct {
+	// Login is the name of org
+	Login string `json:"login"`
+}
+
+// UserOrgInvitation is returned by org invitation obtained by user.
+type UserOrgInvitation struct {
+	State string           `json:"state"`
+	Role  string           `json:"role"`
+	Org   UserOrganization `json:"organization"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.

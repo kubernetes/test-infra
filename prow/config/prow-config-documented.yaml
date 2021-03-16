@@ -470,6 +470,7 @@ log_level: ' '
 # ManagedWebhooks contains information about all github repositories and organizations which are using
 # non-global Hmac token.
 managed_webhooks:
+    auto_accept_invitation: false
     org_repo_config:
         "":
             token_created_after: "0001-01-01T00:00:00Z"

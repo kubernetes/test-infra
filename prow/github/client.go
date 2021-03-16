@@ -70,9 +70,6 @@ type OrganizationClient interface {
 	ListOrgInvitations(org string) ([]OrgInvitation, error)
 	ListOrgMembers(org, role string) ([]TeamMember, error)
 	HasPermission(org, repo, user string, roles ...string) (bool, error)
-	ListCurrentUserInvitations() ([]UserInvitation, error)
-	AcceptUserInvitation(invitationID int) error
-	DeclineUserInvitation(invitationID int) error
 	GetUserPermission(org, repo, user string) (string, error)
 	UpdateOrgMembership(org, user string, admin bool) (*OrgMembership, error)
 	RemoveOrgMembership(org, user string) error
@@ -88,6 +85,10 @@ type HookClient interface {
 	CreateRepoHook(org, repo string, req HookRequest) (int, error)
 	DeleteOrgHook(org string, id int, req HookRequest) error
 	DeleteRepoHook(org, repo string, id int, req HookRequest) error
+	ListCurrentUserRepoInvitations() ([]UserRepoInvitation, error)
+	AcceptUserRepoInvitation(invitationID int) error
+	ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error)
+	AcceptUserOrgInvitation(org string) error
 }
 
 // CommentClient interface for comment related API actions
@@ -1359,25 +1360,25 @@ func (c *client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
 	return ret, nil
 }
 
-// ListCurrentUserInvitations lists pending invitations for the authenticated user.
+// ListCurrentUserRepoInvitations lists pending invitations for the authenticated user.
 //
 // https://docs.github.com/en/rest/reference/repos#list-repository-invitations-for-the-authenticated-user
-func (c *client) ListCurrentUserInvitations() ([]UserInvitation, error) {
-	c.log("ListCurrentUserInvitations")
+func (c *client) ListCurrentUserRepoInvitations() ([]UserRepoInvitation, error) {
+	c.log("ListCurrentUserRepoInvitations")
 	if c.fake {
 		return nil, nil
 	}
 	path := "/user/repository_invitations"
-	var ret []UserInvitation
+	var ret []UserRepoInvitation
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		"",
 		func() interface{} {
-			return &[]UserInvitation{}
+			return &[]UserRepoInvitation{}
 		},
 		func(obj interface{}) {
-			ret = append(ret, *(obj.(*[]UserInvitation))...)
+			ret = append(ret, *(obj.(*[]UserRepoInvitation))...)
 		},
 	)
 	if err != nil {
@@ -1386,11 +1387,11 @@ func (c *client) ListCurrentUserInvitations() ([]UserInvitation, error) {
 	return ret, nil
 }
 
-// AcceptUserInvitation accepts invitation for the authenticated user.
+// AcceptUserRepoInvitation accepts invitation for the authenticated user.
 //
 // https://docs.github.com/en/rest/reference/repos#accept-a-repository-invitation
-func (c *client) AcceptUserInvitation(invitationID int) error {
-	c.log("AcceptUserInvitation", invitationID)
+func (c *client) AcceptUserRepoInvitation(invitationID int) error {
+	c.log("AcceptUserRepoInvitation", invitationID)
 
 	_, err := c.request(&request{
 		method:    http.MethodPatch,
@@ -1402,17 +1403,39 @@ func (c *client) AcceptUserInvitation(invitationID int) error {
 	return err
 }
 
-// DeclineUserInvitation rejects invitation for the authenticated user.
-//
-// https://docs.github.com/en/rest/reference/repos#decline-a-repository-invitation
-func (c *client) DeclineUserInvitation(invitationID int) error {
-	c.log("DeclineUserInvitation", invitationID)
+func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
+	c.log("ListCurrentUserOrgInvitations")
+	if c.fake {
+		return nil, nil
+	}
+	path := "/user/memberships/orgs"
+	var ret []UserOrgInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]UserOrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]UserOrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (c *client) AcceptUserOrgInvitation(org string) error {
+	c.log("AcceptUserOrgInvitation", org)
 
 	_, err := c.request(&request{
-		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/user/repository_invitations/%d", invitationID),
-		org:       "",
-		exitCodes: []int{204},
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/user/memberships/orgs/%s", org),
+		org:         "",
+		requestBody: &struct{ org, state string }{org: org, state: "active"},
+		exitCodes:   []int{204},
 	}, nil)
 
 	return err
