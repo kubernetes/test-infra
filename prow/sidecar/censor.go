@@ -392,6 +392,14 @@ func loadSecrets(paths []string) ([][]byte, error) {
 	var secrets [][]byte
 	for _, path := range paths {
 		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			if strings.HasPrefix(info.Name(), "..") {
+				// kubernetes volumes also include files we
+				// should not look be looking into for keys
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
 			if info.IsDir() {
 				return nil
 			}
