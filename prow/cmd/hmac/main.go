@@ -45,7 +45,8 @@ import (
 )
 
 type options struct {
-	configPath string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
 
 	dryRun        bool
 	github        prowflagutil.GitHubOptions
@@ -92,6 +93,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster and namespace in the kubeconfig.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	fs.StringVar(&o.hookUrl, "hook-url", "", "Prow hook external webhook URL (e.g. https://prow.k8s.io/hook).")
@@ -134,7 +136,7 @@ func main() {
 	}
 
 	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	newHMACConfig := configAgent.Config().ManagedWebhooks

@@ -37,6 +37,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"gopkg.in/robfig/cron.v2"
@@ -1085,14 +1086,14 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string, additionals ...func(*Config) error) (c *Config, err error) {
+func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
 			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
-	c, err = loadConfig(prowConfig, jobConfig)
+	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs)
 	if err != nil {
 		return nil, err
 	}
@@ -1181,7 +1182,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 }
 
 // loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string) (*Config, error) {
+func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -1194,6 +1195,46 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	var nc Config
 	if err := yamlToConfig(prowConfig, &nc); err != nil {
 		return nil, err
+	}
+	for _, additionalProwConfigDir := range additionalProwConfigDirs {
+		var errs []error
+		errs = append(errs, filepath.Walk(additionalProwConfigDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				// Finish walking and handle all errors in bulk at the end, otherwise this is annoying as a user
+				errs = append(errs, err)
+				return nil
+			}
+			// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+			// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+			// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+			// get duplicate data.
+			if strings.HasPrefix(info.Name(), "..") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
+			if info.IsDir() || (filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml") {
+				return nil
+			}
+
+			var cfg ProwConfig
+			if err := yamlToConfig(path, &cfg); err != nil {
+				errs = append(errs, err)
+				return nil
+			}
+
+			if err := nc.ProwConfig.mergeFrom(&cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
+			}
+
+			return nil
+		}))
+
+		if err := utilerrors.NewAggregate(errs); err != nil {
+			return nil, err
+		}
 	}
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
@@ -1242,7 +1283,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	return &nc, nil
 }
 
-// yamlToConfig converts a yaml file into a Config object
+// yamlToConfig converts a yaml file into a Config object.
 func yamlToConfig(path string, nc interface{}) error {
 	b, err := ReadFileMaybeGZIP(path)
 	if err != nil {
@@ -1257,7 +1298,11 @@ func yamlToConfig(path string, nc interface{}) error {
 		jc = v
 	case *Config:
 		jc = &v.JobConfig
+	default:
+		// No job config, skip inserting filepaths into the jobs
+		return nil
 	}
+
 	for rep := range jc.PresubmitsStatic {
 		fix := func(job *Presubmit) {
 			job.SourcePath = path
@@ -2475,4 +2520,14 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 		vsm[i] = *NewOrgRepo(v)
 	}
 	return vsm
+}
+
+// mergeFrom merges two prow configs. It must be called _before_ doing any
+// defaulting.
+func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
+	emptyReference := &ProwConfig{BranchProtection: additional.BranchProtection}
+	if diff := cmp.Diff(additional, emptyReference); diff != "" {
+		return fmt.Errorf("only 'branch-protection' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff)
+	}
+	return pc.BranchProtection.merge(&additional.BranchProtection)
 }

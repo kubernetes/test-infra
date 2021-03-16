@@ -2,6 +2,14 @@ branch-protection:
     # AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
     allow_deletions: false
 
+    # AllowDisabledJobPolicies allows a branch to choose to opt out of branch protection
+    # even if Prow has registered required jobs for that branch.
+    allow_disabled_job_policies: false
+
+    # AllowDisabledPolicies allows a child to disable all protection even if the
+    # branch has inherited protection options from a parent.
+    allow_disabled_policies: false
+
     # AllowForcePushes permits force pushes to the protected branch by anyone with write access to the repository.
     allow_force_pushes: false
 
@@ -182,6 +190,11 @@ branch-protection:
 
     # Protect overrides whether branch protection is enabled if set.
     protect: false
+
+    # ProtectTested determines if branch protection rules are set for all repos
+    # that Prow has registered jobs for, regardless of if those repos are in the
+    # branch protection config.
+    protect-tested-repos: false
 
     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
     required_linear_history: false

@@ -1446,7 +1446,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 			t.Errorf("failed to close tempFile: %v", err)
 		}
 
-		cfg, err := config.Load(tempConfig.Name(), "")
+		cfg, err := config.Load(tempConfig.Name(), "", nil)
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}

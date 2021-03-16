@@ -35,19 +35,20 @@ import (
 )
 
 type options struct {
-	jobName       string
-	configPath    string
-	jobConfigPath string
-	triggerJob    bool
-	outputPath    string
-	kubeOptions   prowflagutil.KubernetesOptions
-	baseRef       string
-	baseSha       string
-	pullNumber    int
-	pullSha       string
-	pullAuthor    string
-	org           string
-	repo          string
+	jobName                    string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
+	jobConfigPath              string
+	triggerJob                 bool
+	outputPath                 string
+	kubeOptions                prowflagutil.KubernetesOptions
+	baseRef                    string
+	baseSha                    string
+	pullNumber                 int
+	pullSha                    string
+	pullAuthor                 string
+	org                        string
+	repo                       string
 
 	local bool
 
@@ -227,7 +228,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Bad flags")
 	}
 
-	conf, err := config.Load(o.configPath, o.jobConfigPath)
+	conf, err := config.Load(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings())
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config")
 	}

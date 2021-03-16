@@ -32,6 +32,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowConfig "k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -53,19 +54,20 @@ func (m *multiString) Set(v string) error {
 const pollingTime = time.Second
 
 type options struct {
-	creds              string
-	inputs             multiString
-	oneshot            bool
-	output             string
-	printText          bool
-	validateConfigFile bool
-	worldReadable      bool
-	writeYAML          bool
-	prowConfig         string
-	prowJobConfig      string
-	defaultYAML        string
-	updateDescription  bool
-	prowJobURLPrefix   string
+	creds                      string
+	inputs                     multiString
+	oneshot                    bool
+	output                     string
+	printText                  bool
+	validateConfigFile         bool
+	worldReadable              bool
+	writeYAML                  bool
+	prowConfig                 string
+	prowJobConfig              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	defaultYAML                string
+	updateDescription          bool
+	prowJobURLPrefix           string
 }
 
 func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
@@ -79,6 +81,7 @@ func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
 	fs.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
 	fs.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
 	fs.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
 	fs.BoolVar(&o.updateDescription, "update-description", false, "add prowjob info to description even if non-empty")
 	fs.StringVar(&o.prowJobURLPrefix, "prowjob-url-prefix", "", "for prowjob_config_url in descriptions: {prowjob-url-prefix}/{prowjob.sourcepath}")
@@ -270,7 +273,7 @@ func main() {
 
 	prowConfigAgent := &prowConfig.Agent{}
 	if opt.prowConfig != "" && opt.prowJobConfig != "" {
-		if err := prowConfigAgent.Start(opt.prowConfig, opt.prowJobConfig); err != nil {
+		if err := prowConfigAgent.Start(opt.prowConfig, opt.prowJobConfig, opt.supplementalProwConfigDirs.Strings()); err != nil {
 			log.Fatalf("FAIL: couldn't load prow config: %v", err)
 		}
 	}

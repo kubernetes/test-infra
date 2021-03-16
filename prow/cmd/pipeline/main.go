@@ -46,12 +46,13 @@ import (
 )
 
 type options struct {
-	allContexts            bool
-	buildCluster           string
-	configPath             string
-	kubeconfig             string
-	totURL                 string
-	instrumentationOptions prowflagutil.InstrumentationOptions
+	allContexts                bool
+	buildCluster               string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
+	kubeconfig                 string
+	totURL                     string
+	instrumentationOptions     prowflagutil.InstrumentationOptions
 }
 
 func parseOptions() options {
@@ -67,6 +68,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
+	flags.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	o.instrumentationOptions.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
@@ -115,8 +117,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
-	const ignoreJobConfig = ""
-	if err := configAgent.Start(o.configPath, ignoreJobConfig); err != nil {
+	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
