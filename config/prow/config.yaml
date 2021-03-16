@@ -458,6 +458,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        node-feature-discovery-operator:
+          branches:
+            gh-pages:
+              protect: false
 
 tide:
   sync_period: 2m
