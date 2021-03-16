@@ -14,15 +14,15 @@ spec:
       key: ""
     honorLabels: true
     interval: 2m
-    port: https-main
-    scheme: https
+    port: http-metrics
+    scheme: http
     scrapeTimeout: 2m
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     bearerTokenSecret:
       key: ""
     interval: 2m
-    port: https-self
-    scheme: https
+    port: telemetry
+    scheme: http
     scrapeTimeout: 2m
   jobLabel: app.kubernetes.io/name
   namespaceSelector:
