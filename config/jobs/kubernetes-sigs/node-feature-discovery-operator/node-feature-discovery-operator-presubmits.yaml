@@ -2,6 +2,8 @@ presubmits:
   kubernetes-sigs/node-feature-discovery-operator:
   - name: pull-node-feature-discovery-operator-verify
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -14,6 +16,8 @@ presubmits:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-operator-build-image
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
