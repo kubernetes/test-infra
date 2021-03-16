@@ -43,13 +43,14 @@ import (
 const (
 	forkRemoteName = "bumper-fork-remote"
 
-	latestVersion          = "latest"
-	upstreamVersion        = "upstream"
-	upstreamStagingVersion = "upstream-staging"
-	tagVersion             = "vYYYYMMDD-deadbeef"
-	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
-	defaultHeadBranchName  = "autobump"
-	defaultOncallGroup     = "testinfra"
+	latestVersion                 = "latest"
+	upstreamVersion               = "upstream"
+	upstreamStagingVersion        = "upstream-staging"
+	tagVersion                    = "vYYYYMMDD-deadbeef"
+	defaultUpstreamURLBase        = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	defaultGitHubTargetBranchName = "master"
+	defaultHeadBranchName         = "autobump"
+	defaultOncallGroup            = "testinfra"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -89,6 +90,8 @@ type Options struct {
 	GitHubOrg string `yaml:"gitHubOrg"`
 	// The target GitHub repo name where the autobump PR will be created. Only required when SkipPullRequest is false.
 	GitHubRepo string `yaml:"gitHubRepo"`
+	// GitHubTargetBranch is the target GitHub branch where the autobump PR will be created against with. Default is master.
+	GitHubTargetBranch string `yaml:"githubGitHubTargetBranch"`
 	// The GitHub username to use. If not specified, uses values from the user associated with the access token.
 	GitHubLogin string `yaml:"gitHubLogin"`
 	// The path to the GitHub token file. Only required when SkipPullRequest is false.
@@ -230,8 +233,13 @@ func validateOptions(o *Options) error {
 		o.UpstreamURLBase = defaultUpstreamURLBase
 		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
 	}
-	if !o.SkipPullRequest && o.HeadBranchName == "" {
-		o.HeadBranchName = defaultHeadBranchName
+	if !o.SkipPullRequest {
+		if o.GitHubTargetBranch == "" {
+			o.GitHubTargetBranch = defaultGitHubTargetBranchName
+		}
+		if o.HeadBranchName == "" {
+			o.HeadBranchName = defaultHeadBranchName
+		}
 	}
 	if o.OncallGroup == "" {
 		o.OncallGroup = defaultOncallGroup
@@ -321,7 +329,7 @@ func Run(o *Options) error {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
-		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, "master", o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubTargetBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	}
