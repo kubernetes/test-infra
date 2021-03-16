@@ -362,6 +362,12 @@ milestone_applier:
     master: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/controller-runtime:
+    master: v0.9.x
+    release-0.8: v0.8.x
+    release-0.7: v0.7.x
+    release-0.6: v0.6.x
+    release-0.5: v0.5.x
   kubernetes/website:
     dev-1.21: 1.21
 
