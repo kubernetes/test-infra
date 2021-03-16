@@ -79,6 +79,8 @@ presubmits:
           command:
           - make
           args:
+          - -C
+          - ./images/capi
           - validate-all
           env:
           - name: AZURE_LOCATION
