@@ -1,5 +1,6 @@
 dashboard_groups:
 - dashboard_names:
+  - redhat-assisted-installer
   - redhat-openshift-informing
   - redhat-openshift-ocp-release-4.1-blocking
   - redhat-openshift-ocp-release-4.1-informing
@@ -37,6 +38,5 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.9-informing
   - redhat-openshift-presubmit-master-gcp
   - redhat-osd
-  - redhat-assisted-installer
   - redhat-single-node
   name: redhat
