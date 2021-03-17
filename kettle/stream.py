@@ -100,9 +100,10 @@ def retry(func, *args, **kwargs):
             traceback.print_exc()
             time.sleep(1.4 ** attempt)
         except api_exceptions.BadRequest as err:
-            args_str = ','.join(map(str, args))
+            args_size = sys.getsizeof(args)
             kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
-            print(f"Error running {func.__name__}({','.join([args_str, kwargs_str])}) : {err}")
+            print(f"Error running {func.__name__} \
+                   ([bytes in args]{','.join([args_size, kwargs_str])}) : {err}")
             return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
