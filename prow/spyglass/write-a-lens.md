@@ -21,7 +21,8 @@ A minimal example of a lens  called `samplelens`, located at `lenses/samplelens`
 package samplelens
 import (
 	"encoding/json"
-	
+
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -41,16 +42,16 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header returns the content of <head>
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
 // Body returns the displayed HTML for the <body>
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return "Hi! I'm a lens!"
 }
 ```

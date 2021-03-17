@@ -7,6 +7,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/junit",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/spyglass/api:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
         "@com_github_googlecloudplatform_testgrid//metadata/junit:go_default_library",

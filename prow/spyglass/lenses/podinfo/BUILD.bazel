@@ -7,6 +7,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/podinfo",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "//prow/entrypoint:go_default_library",
         "//prow/spyglass/api:go_default_library",
