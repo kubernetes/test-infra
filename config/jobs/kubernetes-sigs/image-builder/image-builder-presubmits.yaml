@@ -96,3 +96,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
+  - name: pull-image-builder-gcp-all
+    path_alias: sigs.k8s.io/image-builder
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    max_concurrency: 5
+    labels:
+      preset-service-account: "true"
+    run_if_changed: 'images/capi/.*'
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+          args:
+            - runner.sh
+            - "./images/capi/packer/gce/scripts/ci-gce.sh"
+          env:
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-pull-image-builder-gcp-all
