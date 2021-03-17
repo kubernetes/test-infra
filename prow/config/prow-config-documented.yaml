@@ -470,6 +470,10 @@ log_level: ' '
 # ManagedWebhooks contains information about all github repositories and organizations which are using
 # non-global Hmac token.
 managed_webhooks:
+    # Controls whether org/repo invitation for prow bot should be automatically
+    # accepted or not. Only admin level invitations related to orgs and repos
+    # in the managed_webhooks config will be accepted and all other invitations
+    # will be left pending.
     auto_accept_invitation: false
     org_repo_config:
         "":

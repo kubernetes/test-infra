@@ -5971,6 +5971,7 @@ in_repo_config:
     - default
 log_level: info
 managed_webhooks:
+  auto_accept_invitation: false
   respect_legacy_global_token: false
 owners_dir_blacklist: {}
 plank:

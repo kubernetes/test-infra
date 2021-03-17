@@ -198,7 +198,7 @@ func (c *client) handleInvitation() error {
 		return err
 	}
 	for _, iv := range repoIvs {
-		if github.RepoPermissionLevel(iv.Permission) != github.Admin {
+		if iv.Permission != github.Admin {
 			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
 				iv.Repository.FullName, github.Admin, iv.Permission)
 			continue
@@ -215,6 +215,7 @@ func (c *client) handleInvitation() error {
 				if err := c.githubHookClient.AcceptUserRepoInvitation(iv.InvitationID); err != nil {
 					return fmt.Errorf("failed accepting repo invitation: %w", err)
 				}
+				logrus.Infof("Successfully accepted invitation from %s", iv.Repository.FullName)
 			}
 		}
 	}
@@ -224,7 +225,7 @@ func (c *client) handleInvitation() error {
 		return err
 	}
 	for _, iv := range orgIvs {
-		if github.RepoPermissionLevel(iv.Role) != github.Admin {
+		if iv.Role != github.OrgAdmin {
 			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
 				iv.Org.Login, github.Admin, iv.Role)
 			continue
@@ -235,6 +236,7 @@ func (c *client) handleInvitation() error {
 				if err := c.githubHookClient.AcceptUserOrgInvitation(iv.Org.Login); err != nil {
 					return fmt.Errorf("failed accepting org invitation: %w", err)
 				}
+				logrus.Infof("Successfully accepted invitation from %s", iv.Org.Login)
 			}
 		}
 	}

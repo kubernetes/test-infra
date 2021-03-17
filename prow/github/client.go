@@ -1403,6 +1403,9 @@ func (c *client) AcceptUserRepoInvitation(invitationID int) error {
 	return err
 }
 
+// ListCurrentUserOrgInvitations lists org invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/orgs#get-organization-membership-for-a-user
 func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
 	c.log("ListCurrentUserOrgInvitations")
 	if c.fake {
@@ -1410,15 +1413,23 @@ func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
 	}
 	path := "/user/memberships/orgs"
 	var ret []UserOrgInvitation
-	err := c.readPaginatedResults(
+	err := c.readPaginatedResultsWithValues(
 		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"state":    []string{"pending"},
+		},
 		acceptNone,
 		"",
 		func() interface{} {
 			return &[]UserOrgInvitation{}
 		},
 		func(obj interface{}) {
-			ret = append(ret, *(obj.(*[]UserOrgInvitation))...)
+			for _, uoi := range *(obj.(*[]UserOrgInvitation)) {
+				if uoi.State == "pending" {
+					ret = append(ret, *(obj.(*[]UserOrgInvitation))...)
+				}
+			}
 		},
 	)
 	if err != nil {
@@ -1427,14 +1438,17 @@ func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
 	return ret, nil
 }
 
+// AcceptUserOrgInvitation accepts org invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/orgs#update-an-organization-membership-for-the-authenticated-user
 func (c *client) AcceptUserOrgInvitation(org string) error {
 	c.log("AcceptUserOrgInvitation", org)
 
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/user/memberships/orgs/%s", org),
-		org:         "",
-		requestBody: &struct{ org, state string }{org: org, state: "active"},
+		org:         org,
+		requestBody: &struct{ state string }{state: "active"},
 		exitCodes:   []int{204},
 	}, nil)
 

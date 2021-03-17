@@ -2802,6 +2802,12 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		// They fetch the user, which doesn't exist in case of github app.
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
+		// Bound to user, not org specific
+		"ListCurrentUserRepoInvitations",
+		// Bound to user, not org specific
+		"AcceptUserRepoInvitation",
+		// Bound to user, not org specific
+		"ListCurrentUserOrgInvitations",
 	)
 
 	for i := 0; i < clientType.NumMethod(); i++ {
@@ -2811,7 +2817,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		t.Run(clientType.Method(i).Name, func(t *testing.T) {
 
 			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
-				if !strings.HasPrefix(r.URL.Path, "/app") && !strings.HasPrefix(r.URL.Path, "/user/repository_invitations") && !strings.HasPrefix(r.URL.Path, "/user/memberships/orgs") {
+				if !strings.HasPrefix(r.URL.Path, "/app") {
 					var orgVal string
 					if v := r.Context().Value(githubOrgHeaderKey); v != nil {
 						orgVal = v.(string)

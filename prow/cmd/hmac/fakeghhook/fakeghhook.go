@@ -17,6 +17,7 @@ limitations under the License.
 package fakeghhook
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -32,7 +33,6 @@ type FakeClient struct {
 	RepoHooks           map[string][]github.Hook
 	UserRepoInvitations []github.UserRepoInvitation
 	UserOrgInvitations  []github.UserOrgInvitation
-	Errors              []error
 }
 
 func (f *FakeClient) ListOrgHooks(org string) ([]github.Hook, error) {
@@ -127,15 +127,10 @@ func (f *FakeClient) DeleteRepoHook(org, repo string, id int, req github.HookReq
 }
 
 func (f *FakeClient) ListCurrentUserRepoInvitations() ([]github.UserRepoInvitation, error) {
-	return f.UserRepoInvitations, f.getNextError()
+	return f.UserRepoInvitations, nil
 }
 
 func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
-	err := f.getNextError()
-	if err != nil {
-		return err
-	}
-	// Must exist
 	found := -1
 	for idx, iv := range f.UserRepoInvitations {
 		if iv.InvitationID == invitationID {
@@ -143,22 +138,18 @@ func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
 			break
 		}
 	}
-	if found != -1 {
-		f.UserRepoInvitations = append(f.UserRepoInvitations[:found], f.UserRepoInvitations[found+1:]...)
+	if found == -1 {
+		return errors.New("invitation doesn't exist")
 	}
+	f.UserRepoInvitations = append(f.UserRepoInvitations[:found], f.UserRepoInvitations[found+1:]...)
 	return nil
 }
 
 func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation, error) {
-	return f.UserOrgInvitations, f.getNextError()
+	return f.UserOrgInvitations, nil
 }
 
 func (f *FakeClient) AcceptUserOrgInvitation(org string) error {
-	err := f.getNextError()
-	if err != nil {
-		return err
-	}
-	// Must exist
 	found := -1
 	for idx, iv := range f.UserOrgInvitations {
 		if iv.Org.Login == org {
@@ -166,9 +157,10 @@ func (f *FakeClient) AcceptUserOrgInvitation(org string) error {
 			break
 		}
 	}
-	if found != -1 {
-		f.UserOrgInvitations = append(f.UserOrgInvitations[:found], f.UserOrgInvitations[found+1:]...)
+	if found == -1 {
+		return errors.New("invitation doesn't exist")
 	}
+	f.UserOrgInvitations = append(f.UserOrgInvitations[:found], f.UserOrgInvitations[found+1:]...)
 	return nil
 }
 
@@ -191,15 +183,6 @@ func deleteHook(m map[string][]github.Hook, key string, req github.HookRequest) 
 
 	if !hookExists {
 		return fmt.Errorf("hook for %q does not exist, cannot delete", req.Config.URL)
-	}
-	return nil
-}
-
-func (f *FakeClient) getNextError() error {
-	if len(f.Errors) > 0 {
-		err := f.Errors[0]
-		f.Errors = f.Errors[1:]
-		return err
 	}
 	return nil
 }

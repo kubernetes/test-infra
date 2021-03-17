@@ -52,7 +52,10 @@ managed_webhooks:
   # Whether this tool should respect the legacy global token.
   # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.   
   respect_legacy_global_token: true
-  # Controls whether org/repo invitation for prow bot should be automatically accepted or not
+  # Controls whether org/repo invitation for prow bot should be automatically
+  # accepted or not. Only admin level invitations related to orgs and repos
+  # in the managed_webhooks config will be accepted and all other invitations
+  # will be left pending.
   auto_accept_invitation: true
   # Config for orgs and repos that have been onboarded to this Prow instance.
   org_repo_config:

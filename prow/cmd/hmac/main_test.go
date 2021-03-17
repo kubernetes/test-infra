@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -660,11 +661,10 @@ func TestHandleInvitation(t *testing.T) {
 		name          string
 		urivs         []github.UserRepoInvitation
 		uoivs         []github.UserOrgInvitation
-		errs          []error
 		newHMACConfig config.ManagedWebhooks
 		wantUrivs     []github.UserRepoInvitation
 		wantUoivs     []github.UserOrgInvitation
-		wantErr       bool
+		wantErr       error
 	}{
 		{
 			name: "accept repo invitation",
@@ -683,7 +683,6 @@ func TestHandleInvitation(t *testing.T) {
 				},
 			},
 			wantUrivs: []github.UserRepoInvitation{},
-			wantErr:   false,
 		},
 		{
 			name: "accept org invitation",
@@ -702,7 +701,6 @@ func TestHandleInvitation(t *testing.T) {
 				},
 			},
 			wantUoivs: []github.UserOrgInvitation{},
-			wantErr:   false,
 		},
 		{
 			name: "accept org invitation with single repo webhook",
@@ -721,7 +719,6 @@ func TestHandleInvitation(t *testing.T) {
 				},
 			},
 			wantUoivs: []github.UserOrgInvitation{},
-			wantErr:   false,
 		},
 		{
 			name: "dont accept repo invitation with org webhook",
@@ -747,7 +744,6 @@ func TestHandleInvitation(t *testing.T) {
 					Permission: "admin",
 				},
 			},
-			wantErr: false,
 		},
 		{
 			name: "dont accept invitation when opt out",
@@ -790,7 +786,6 @@ func TestHandleInvitation(t *testing.T) {
 					Role: "admin",
 				},
 			},
-			wantErr: false,
 		},
 	}
 
@@ -799,14 +794,15 @@ func TestHandleInvitation(t *testing.T) {
 			fgc := fakeghhook.FakeClient{
 				UserRepoInvitations: tc.urivs,
 				UserOrgInvitations:  tc.uoivs,
-				Errors:              tc.errs,
 			}
 			c := client{
 				newHMACConfig:    tc.newHMACConfig,
 				githubHookClient: &fgc,
 			}
-			if want, got := tc.wantErr, c.handleInvitation(); want != ((got != nil) && want) {
-				t.Fatalf("Error mismatch. Want: %v, got: %v", want, got != nil)
+
+			if wantErr, gotErr := tc.wantErr, c.handleInvitation(); (wantErr == nil && gotErr != nil) || (wantErr != nil && gotErr == nil) ||
+				(wantErr != nil && gotErr != nil && !strings.Contains(gotErr.Error(), wantErr.Error())) {
+				t.Fatalf("Error mismatch. Want: %v, got: %v", wantErr, gotErr)
 			}
 			if diff := cmp.Diff(tc.wantUrivs, fgc.UserRepoInvitations); diff != "" {
 				t.Fatalf("User repo invitation mismatch. Want(-), got(+): %s", diff)
