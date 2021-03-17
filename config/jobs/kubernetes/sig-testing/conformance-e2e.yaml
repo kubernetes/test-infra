@@ -2,8 +2,8 @@ presubmits:
   kubernetes/kubernetes:
   # conformance test using image against kubernetes master branch with `kind`
   - name: pull-kubernetes-conformance-image-test
-    branches:
-    - master
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -46,8 +46,9 @@ presubmits:
       description: Runs conformance tests using kind and the conformance image
 
   - name: pull-kubernetes-conformance-kind-ipv6-parallel
-    branches:
-    - master
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -59,7 +60,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-6badf7a-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -70,16 +71,11 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
-        - "--repo=sigs.k8s.io/kind=master"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        command:
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
