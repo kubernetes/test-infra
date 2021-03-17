@@ -37,13 +37,14 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configPath, jobConfigPath, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configPath, jobConfigPath string, supplementalProwConfigDirs []string, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
 	sc := &statusController{
-		logger:        logrus.WithField("client", "statusController"),
-		opener:        opener,
-		statusURI:     statusURI,
-		configPath:    configPath,
-		jobConfigPath: jobConfigPath,
+		logger:                     logrus.WithField("client", "statusController"),
+		opener:                     opener,
+		statusURI:                  statusURI,
+		configPath:                 configPath,
+		jobConfigPath:              jobConfigPath,
+		supplementalProwConfigDirs: supplementalProwConfigDirs,
 	}
 
 	return &Controller{

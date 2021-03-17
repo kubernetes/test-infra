@@ -21,7 +21,14 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	fuzz "github.com/google/gofuzz"
+	"github.com/mohae/deepcopy"
+
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -587,7 +594,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						AllowDisabledPolicies: true,
+						AllowDisabledPolicies: utilpointer.BoolPtr(true),
 						Policy: Policy{
 							Protect: yes,
 							Restrictions: &Restrictions{
@@ -655,7 +662,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						ProtectTested: true,
+						ProtectTested: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org": {},
 						},
@@ -720,7 +727,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						ProtectTested: true,
+						ProtectTested: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org": {},
 						},
@@ -749,7 +756,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						ProtectTested: true,
+						ProtectTested: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org": {
 								Policy: Policy{
@@ -783,8 +790,8 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						AllowDisabledJobPolicies: true,
-						ProtectTested:            true,
+						AllowDisabledJobPolicies: utilpointer.BoolPtr(true),
+						ProtectTested:            utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org": {
 								Repos: map[string]Repo{
@@ -856,7 +863,7 @@ func TestReposWithDisabledPolicy(t *testing.T) {
 								Contexts: []string{"hello", "world"},
 							},
 						},
-						AllowDisabledPolicies: true,
+						AllowDisabledPolicies: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org1": {
 								Repos: map[string]Repo{
@@ -963,7 +970,7 @@ func TestUnprotectedBranches(t *testing.T) {
 								Contexts: []string{"hello", "world"},
 							},
 						},
-						AllowDisabledPolicies: true,
+						AllowDisabledPolicies: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org1": {
 								Repos: map[string]Repo{
@@ -1003,7 +1010,7 @@ func TestUnprotectedBranches(t *testing.T) {
 								Contexts: []string{"hello", "world"},
 							},
 						},
-						AllowDisabledPolicies: true,
+						AllowDisabledPolicies: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org1": {
 								Repos: map[string]Repo{
@@ -1099,7 +1106,7 @@ func TestUnprotectedBranches(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						AllowDisabledJobPolicies: true,
+						AllowDisabledJobPolicies: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org1": {
 								Repos: map[string]Repo{
@@ -1135,7 +1142,7 @@ func TestUnprotectedBranches(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					BranchProtection: BranchProtection{
-						AllowDisabledJobPolicies: true,
+						AllowDisabledJobPolicies: utilpointer.BoolPtr(true),
 						Orgs: map[string]Org{
 							"org1": {
 								Repos: map[string]Repo{
@@ -1210,5 +1217,64 @@ func TestUnprotectedBranches(t *testing.T) {
 				t.Errorf("actual branch warnings %+v != expected %+v", branchWarns, tc.expectedBranchWarns)
 			}
 		})
+	}
+}
+
+// TestBranchProtectionMergeMergesAnythingWithoutAnError verifies that merging any
+// BranchProtection into an empty Branchprotection succeeds and that the resulting
+// Branchprotection is equal to the one we merged from.
+func TestBranchProtectionMergeMergesAnythingWithoutAnError(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 100; i++ {
+		fuzzedBP := &BranchProtection{}
+		fuzz.New().Fuzz(fuzzedBP)
+
+		mergedBP := &BranchProtection{}
+		if err := mergedBP.merge(fuzzedBP); err != nil {
+			t.Fatalf("failed to merge branchprotection: %v", err)
+		}
+
+		if diff := cmp.Diff(mergedBP, fuzzedBP); diff != "" {
+			t.Errorf("after merging the fuzzed BP, the merged and the fuzzed BP still differ: %s", diff)
+		}
+	}
+}
+
+// TestBranchprotectionMergeErrorsOnConflicts verifies that merging any non-empty BranchProtectionConfig
+// into itself errors.
+func TestBranchprotectionMergeErrorsOnConflicts(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 100; i++ {
+		fuzzedBP := &BranchProtection{}
+		fuzz.New().Fuzz(fuzzedBP)
+
+		if err := fuzzedBP.merge(fuzzedBP); err == nil && !apiequality.Semantic.DeepEqual(fuzzedBP, &BranchProtection{}) {
+			serialized, serializeErr := yaml.Marshal(fuzzedBP)
+			if serializeErr != nil {
+				t.Fatalf("merging non-empty branchproteciton config into itself did not yield an error and serializing it afterwards failed: %v. Raw object: %+v", serializeErr, fuzzedBP)
+			}
+			t.Fatalf("merging non-empty branchproteciton config into itself did not yield an error; Serialized config:\n%s", string(serialized))
+		}
+
+	}
+}
+
+// TestBranchprotectionMergeRemainsUnchangedWhenMergingEmptyIn verifies that when merging
+// any empty BranchProtectionConfig into a non-empty BranchProtectionConfig does not result
+// in changes to the latter.
+func TestBranchprotectionMergeRemainsUnchangedWhenMergingEmptyIn(t *testing.T) {
+	t.Parallel()
+	for i := 0; i < 100; i++ {
+		fuzzedBP := &BranchProtection{}
+		fuzz.New().Fuzz(fuzzedBP)
+
+		fuzzedBPDeepCopy := deepcopy.Copy(fuzzedBP)
+		if err := fuzzedBP.merge(&BranchProtection{}); err != nil {
+			t.Fatalf("failed to merge branchprotection: %v", err)
+		}
+
+		if diff := cmp.Diff(fuzzedBPDeepCopy, fuzzedBP); diff != "" {
+			t.Errorf("after merging the the empty BP, the merged and the fuzzed BP differ: %s", diff)
+		}
 	}
 }

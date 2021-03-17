@@ -59,9 +59,10 @@ import (
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs flagutil.Strings
+	pluginConfig               string
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -176,6 +177,7 @@ func parseOptions() (options, error) {
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
@@ -227,7 +229,7 @@ func validate(o options) error {
 	}
 
 	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()

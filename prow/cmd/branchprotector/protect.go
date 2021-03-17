@@ -44,13 +44,14 @@ const (
 )
 
 type options struct {
-	config             string
-	jobConfig          string
-	confirm            bool
-	verifyRestrictions bool
-	tokens             int
-	tokenBurst         int
-	github             flagutil.GitHubOptions
+	config                     string
+	jobConfig                  string
+	supplementalProwConfigDirs flagutil.Strings
+	confirm                    bool
+	verifyRestrictions         bool
+	tokens                     int
+	tokenBurst                 int
+	github                     flagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
@@ -70,6 +71,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
 	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -107,7 +109,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	cfg, err := config.Load(o.config, o.jobConfig, o.supplementalProwConfigDirs.Strings())
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
@@ -196,7 +198,7 @@ func (p *protector) protect() {
 	}
 
 	// Do not automatically protect tested repositories
-	if !bp.ProtectTested {
+	if bp.ProtectTested == nil || !*bp.ProtectTested {
 		return
 	}
 

@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -249,7 +250,7 @@ deck:
 			t.Fatalf("fail to write spyglass config: %v", err)
 		}
 
-		cfg, err := Load(spyglassConfig, "")
+		cfg, err := Load(spyglassConfig, "", nil)
 		if (err != nil) != tc.expectError {
 			t.Fatalf("tc %s: expected error: %v, got: %v, error: %v", tc.name, tc.expectError, (err != nil), err)
 		}
@@ -798,7 +799,7 @@ periodics:
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			cfg, err := Load(prowConfig, "")
+			cfg, err := Load(prowConfig, "", nil)
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -2482,7 +2483,7 @@ in_repo_config:
 				}
 			}
 
-			cfg, err := Load(prowConfig, jobConfig)
+			cfg, err := Load(prowConfig, jobConfig, nil)
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -2779,7 +2780,7 @@ github_reporter:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "")
+		cfg, err := Load(prowConfig, "", nil)
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -2857,7 +2858,7 @@ deck:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		_, err = Load(prowConfig, "")
+		_, err = Load(prowConfig, "", nil)
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -3045,7 +3046,7 @@ tide:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "")
+		cfg, err := Load(prowConfig, "", nil)
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -3968,7 +3969,7 @@ default_decoration_configs:
       default_org: "kubernetes"
       default_repo: "kubernetes"
     gcs_credentials_secret: "default-service-account"
-        
+
 default_decoration_config_entries:
   - config:
       timeout: 2h
@@ -5870,22 +5871,31 @@ deck:
 	}
 }
 
-func loadConfigYaml(prowConfigYaml string, t *testing.T) (*Config, error) {
-	prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-	if err != nil {
-		t.Fatalf("fail to make tempdir: %v", err)
-	}
-	defer os.RemoveAll(prowConfigDir)
+func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs ...string) (*Config, error) {
+	prowConfigDir := t.TempDir()
 
 	prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 	if err := ioutil.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
 		t.Fatalf("fail to write prow config: %v", err)
 	}
 
-	return Load(prowConfig, "")
+	var supplementalProwConfigDirs []string
+	for idx, cfg := range supplementalProwConfigs {
+		dir := filepath.Join(prowConfigDir, strconv.Itoa(idx))
+		supplementalProwConfigDirs = append(supplementalProwConfigDirs, dir)
+		if err := os.Mkdir(dir, 0755); err != nil {
+			t.Fatalf("failed to create dir %s for supplemental prow config: %v", dir, err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(dir, "config.yaml"), []byte(cfg), 0644); err != nil {
+			t.Fatalf("failed to write supplemental prow config: %v", err)
+		}
+	}
+
+	return Load(prowConfig, "", supplementalProwConfigDirs)
 }
 
 func TestGenYamlDocs(t *testing.T) {
+	t.Parallel()
 	const fixtureName = "./prow-config-documented.yaml"
 	inputFiles, err := filepath.Glob("*.go")
 	if err != nil {
@@ -5916,5 +5926,120 @@ func TestGenYamlDocs(t *testing.T) {
 	}
 	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
 		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
+	}
+}
+
+func TestProwConfigMerging(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name                    string
+		prowConfig              string
+		supplementalProwConfigs []string
+		expectedErrorSubstr     string
+		expectedProwConfig      string
+	}{
+		{
+			name:       "Additional branch protection config gets merged in",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+branch-protection:
+  allow_disabled_job_policies: true`,
+			},
+			expectedProwConfig: `branch-protection:
+  allow_disabled_job_policies: true
+config_version_sha: abc
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  respect_legacy_global_token: false
+owners_dir_blacklist: {}
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`,
+		},
+		{
+			name:       "Additional branch protection config with duplication errors",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+branch-protection:
+  allow_disabled_job_policies: true`,
+				`
+branch-protection:
+  allow_disabled_job_policies: true`,
+			},
+			expectedErrorSubstr: "both branchprotection configs set allow_disabled_job_policies",
+		},
+		{
+			name:       "Config not supported by merge logic errors",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+plank:
+  JobURLPrefixDisableAppendStorageProvider: true`,
+			},
+			expectedErrorSubstr: "only 'branch-protection' may be set via additional config, all other fields have no merging logic yet. Diff:",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			config, err := loadConfigYaml(tc.prowConfig, t, tc.supplementalProwConfigs...)
+			if !strings.Contains(fmt.Sprintf("%v", err), tc.expectedErrorSubstr) {
+				t.Fatalf("expected error %v to contain string %s", err, tc.expectedErrorSubstr)
+			} else if err != nil && tc.expectedErrorSubstr == "" {
+				t.Fatalf("config loading errored: %v", err)
+			}
+			if config == nil && tc.expectedProwConfig == "" {
+				return
+			}
+
+			serialized, err := yaml.Marshal(config)
+			if err != nil {
+				t.Fatalf("failed to serialize prow config: %v", err)
+			}
+			if diff := cmp.Diff(tc.expectedProwConfig, string(serialized)); diff != "" {
+				t.Errorf("expected prow config differs from actual: %s", diff)
+			}
+		})
 	}
 }

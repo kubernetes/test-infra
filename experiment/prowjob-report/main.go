@@ -40,6 +40,7 @@ import (
 
 	// pjv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	cfg "k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 // TODO: parse testgrid config to catch
@@ -47,6 +48,7 @@ import (
 //	- jobs that don't declare testgrid info via annotations
 var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
+var supplementalProwConfigDirs prowflagutil.Strings
 var reportFormat = flag.String("format", "csv", "Output format [csv|json|html] defaults to csv")
 var reportDate = flag.String("date", "now", "Date to include in report ('now' is converted to today)")
 
@@ -54,6 +56,7 @@ var reportDate = flag.String("date", "now", "Date to include in report ('now' is
 var prowConfig *cfg.Config
 
 func main() {
+	flag.Var(&supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	flag.Parse()
 	if *configPath == "" {
 		fmt.Println("--config must set")
@@ -64,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	conf, err := cfg.Load(*configPath, *jobConfigPath)
+	conf, err := cfg.Load(*configPath, *jobConfigPath, supplementalProwConfigDirs.Strings())
 	if err != nil {
 		fmt.Printf("configPath: %v\n", *configPath)
 		fmt.Printf("jobConfigPath: %v\n", *jobConfigPath)

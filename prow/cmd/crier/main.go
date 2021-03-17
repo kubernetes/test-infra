@@ -51,8 +51,9 @@ type options struct {
 	github           prowflagutil.GitHubOptions
 	githubEnablement prowflagutil.GitHubEnablementOptions
 
-	configPath    string
-	jobConfigPath string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
+	jobConfigPath              string
 
 	gerritWorkers         int
 	pubsubWorkers         int
@@ -165,6 +166,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
@@ -200,7 +202,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
