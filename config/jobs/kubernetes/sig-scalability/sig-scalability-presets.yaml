@@ -93,6 +93,8 @@ presets:
     value: 50
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
     value: true
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -228,6 +230,8 @@ presets:
     value: true
   - name: LOG_DUMP_SAVE_SERVICES
     value: "containerd"
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
@@ -291,6 +295,8 @@ presets:
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
 - labels:
     preset-e2e-scalability-presubmits: "true"

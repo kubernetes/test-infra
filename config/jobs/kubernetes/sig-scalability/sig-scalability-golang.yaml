@@ -102,7 +102,6 @@ periodics:
       - --provider=gce
       - --kubemark
       - --kubemark-nodes=2500
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/golang/run-e2e.sh
       - --test-cmd-args=cluster-loader2
