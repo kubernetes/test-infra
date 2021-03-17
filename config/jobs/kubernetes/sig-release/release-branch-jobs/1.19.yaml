@@ -270,7 +270,6 @@ periodics:
       - --kubemark-nodes=500
       - --provider=gce
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -344,7 +343,6 @@ periodics:
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
       - --env=CL2_ENABLE_HUGE_SERVICES=true
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -1177,7 +1175,6 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
         - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
-        - --env=DUMP_TO_GCS_ONLY=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -1250,7 +1247,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
-        - --env=DUMP_TO_GCS_ONLY=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh

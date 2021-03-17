@@ -38,7 +38,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --provider=gce
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -101,7 +100,6 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -159,7 +157,6 @@ periodics:
           - --gcp-zone=us-east1-b
           - --provider=gce
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
-          - --env=DUMP_TO_GCS_ONLY=true
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
           - --test-cmd-args=cluster-loader2

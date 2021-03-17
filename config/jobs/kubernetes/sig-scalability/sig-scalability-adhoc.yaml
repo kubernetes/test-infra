@@ -48,7 +48,6 @@ presubmits:
         - --tear-down-previous
         - # TODO(pohly@): Custom overrides, clean up after finishing the tests.
         - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=1000 --kube-api-burst=1000
-        - --env=DUMP_TO_GCS_ONLY=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
         - --timeout=100m
