@@ -346,7 +346,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-cri-o
       testgrid-tab-name: pr-crio-gce-e2e
-    always_run: false
+    always_run: true
+    skip_report: true
     optional: true
     max_concurrency: 12
     labels:
