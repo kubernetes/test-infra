@@ -42,7 +42,7 @@ func TestHook(t *testing.T) {
 
 	t.Parallel()
 
-	githubClient := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, github.DefaultGraphQLEndpoint, "http://localhost/fakeghserver")
+	githubClient := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, "", "http://localhost/fakeghserver")
 
 	issueID, err := githubClient.CreateIssue(org, repo, "Dummy PR, do not merge", "", 0, []string{}, []string{})
 	if err != nil {

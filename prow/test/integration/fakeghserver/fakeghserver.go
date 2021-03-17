@@ -193,7 +193,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interf
 		if issueID, exist := vars["issue_id"]; exist {
 			id, err := strconv.Atoi(issueID)
 			if err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			if r.Method == http.MethodGet { // List
 				var issues []prowgh.IssueComment
@@ -208,7 +208,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interf
 			if r.Method == http.MethodPost { // Create
 				data := prowgh.IssueComment{}
 				if err = unmarshal(r, &data); err != nil {
-					return "", http.StatusInternalServerError, err
+					return "", http.StatusUnprocessableEntity, err
 				}
 				return "", http.StatusCreated, ghc.CreateComment(org, repo, id, data.Body)
 			}
@@ -217,7 +217,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interf
 			var id int
 			id, err := strconv.Atoi(commentID)
 			if err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			if r.Method == http.MethodDelete { // Delete
 				return "", http.StatusOK, ghc.DeleteComment(org, repo, id)
@@ -225,7 +225,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interf
 			if r.Method == http.MethodPatch { // Edit
 				content := &prowgh.IssueComment{}
 				if err := unmarshal(r, content); err != nil {
-					return "", http.StatusInternalServerError, err
+					return "", http.StatusUnprocessableEntity, err
 				}
 				return "", http.StatusOK, ghc.EditComment(org, repo, id, content.Body)
 			}
@@ -246,7 +246,7 @@ func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, 
 		if issueID, exist := vars["issue_id"]; exist { // Issue label
 			id, err := strconv.Atoi(issueID)
 			if err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			if r.Method == http.MethodGet { // List
 				var labels []prowgh.Label
@@ -261,7 +261,7 @@ func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, 
 			if r.Method == http.MethodPost { // Create
 				var labels []string
 				if err = unmarshal(r, &labels); err != nil {
-					return "", http.StatusInternalServerError, err
+					return "", http.StatusUnprocessableEntity, err
 				}
 				return "", http.StatusCreated, ghc.AddLabels(org, repo, id, labels...)
 			}
@@ -277,7 +277,7 @@ func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, 
 		} else if r.Method == http.MethodPost { // Create repo label
 			data := prowgh.Label{}
 			if err := unmarshal(r, &data); err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			return "", http.StatusCreated, ghc.AddRepoLabel(org, repo, data.Name, data.Description, data.Color)
 		}

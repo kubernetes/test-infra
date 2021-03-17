@@ -45,7 +45,7 @@ spec:
         - --github-endpoint=http://fakeghserver
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
+        - --plugin-config=/etc/plugins/plugins.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -58,9 +58,6 @@ spec:
           readOnly: true
         - name: config
           mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
         - name: plugins
           mountPath: /etc/plugins
@@ -88,10 +85,6 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
       - name: plugins
         configMap:
           name: plugins
-      
