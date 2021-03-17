@@ -45,7 +45,7 @@ periodics:
         - name: ENABLE_TOPOLOGY
           value: "false"
   annotations:
-    testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-periodic
+    testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-azuredisk-csi-driver-periodic
     testgrid-tab-name: periodic-24h-azuredisk-csi-driver-e2e-single-az
     description: "Periodic (24h): Run E2E tests on a single-az cluster for Azure Disk CSI driver."
     testgrid-num-columns-recent: '30'
