@@ -8,7 +8,17 @@
     <tbody>
         {{range $ix, $link := .Links}}
         <tr>
-            <td class="name">{{$link.Name}}</td><td><button class="copy" data-link="{{$link.URL}}">Copy</button><div class="link">{{$link.URL}}</div></td>
+            <td class="name">{{$link.Name}}</td>
+            <td>
+                <button class="copy" data-link="{{$link.URL}}">Copy</button>
+                <div class="link">
+                    {{if $link.Link}}
+                        <a href="{{$link.Link}}">{{$link.URL}}</a>
+                    {{else}}
+                        {{$link.URL}}
+                    {{end}}
+                </div>
+            </td>
         </tr>
         {{end}}
     </tbody>
