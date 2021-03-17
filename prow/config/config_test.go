@@ -344,10 +344,11 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 func TestDecorationRawYaml(t *testing.T) {
 	t.Parallel()
 	var testCases = []struct {
-		name        string
-		expectError bool
-		rawConfig   string
-		expected    *prowapi.DecorationConfig
+		name              string
+		expectError       bool
+		expectStrictError bool
+		rawConfig         string
+		expected          *prowapi.DecorationConfig
 	}{
 		{
 			name:        "no default",
@@ -439,6 +440,70 @@ periodics:
 		{
 			name: "with default and repo, use default",
 			rawConfig: `
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'random/repo':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:random"
+        initupload: "initupload:random"
+        entrypoint: "entrypoint:random"
+        sidecar: "sidecar:org"
+      gcs_configuration:
+        bucket: "ignore"
+        path_strategy: "legacy"
+        default_org: "random"
+        default_repo: "repo"
+      gcs_credentials_secret: "random-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: pStr("default-service-account"),
+			},
+		},
+		{
+			name:              "with non-existent additional field",
+			expectStrictError: true,
+			rawConfig: `
+lolNotARealField: bogus
 plank:
   default_decoration_configs:
     '*':
@@ -729,11 +794,21 @@ periodics:
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			cfg, err := Load(prowConfig, "")
+			// all errors in Load should also apply in LoadStrict
+			// some errors in LoadStrict will not apply in Load
+			tc.expectStrictError = tc.expectStrictError || tc.expectError
+			cfg, err := LoadStrict(prowConfig, "")
+			if tc.expectStrictError && err == nil {
+				t.Errorf("tc %s: Expect error for LoadStrict, but got nil", tc.name)
+			} else if !tc.expectStrictError && err != nil {
+				t.Fatalf("tc %s: Expect no error for LoadStrict, but got error %v", tc.name, err)
+			}
+
+			cfg, err = Load(prowConfig, "")
 			if tc.expectError && err == nil {
-				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+				t.Errorf("tc %s: Expect error for Load, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
-				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
+				t.Fatalf("tc %s: Expect no error for Load, but got error %v", tc.name, err)
 			}
 
 			if tc.expected != nil {
