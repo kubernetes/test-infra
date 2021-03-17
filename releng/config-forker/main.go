@@ -104,6 +104,13 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 	return newPresubmits, nil
 }
 
+func shouldDecorate(c *config.JobConfig, util config.UtilityConfig) bool {
+	if util.Decorate != nil {
+		return *util.Decorate
+	}
+	return c.DecorateAllJobs
+}
+
 func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
 	for _, periodic := range conf.Periodics {
@@ -117,7 +124,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 				c := &p.Spec.Containers[i]
 				c.Image = fixImage(c.Image, version)
 				c.Env = fixEnvVars(c.Env, version)
-				if !config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
+				if !shouldDecorate(&conf, p.JobBase.UtilityConfig) {
 					c.Command = fixBootstrapArgs(c.Command, version)
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
@@ -128,7 +135,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 				}
 			}
 		}
-		if config.ShouldDecorate(&conf, p.JobBase.UtilityConfig) {
+		if shouldDecorate(&conf, p.JobBase.UtilityConfig) {
 			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {

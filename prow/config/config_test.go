@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -36,6 +37,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -713,6 +715,73 @@ periodics:
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 					MediaTypes:   map[string]string{"log": "text/plain"},
+				},
+				GCSCredentialsSecret: pStr("default-service-account"),
+			},
+		},
+		{
+			name: "new format; global, org, repo, cluster, org+cluster",
+			rawConfig: `
+plank:
+  default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+  - repo: "org"
+    config:
+      timeout: 1h
+  - repo: "org/repo"
+    config:
+      timeout: 3h
+  - cluster: "trusted"
+    config:
+      grace_period: 30s
+  - repo: "org/foo"
+    cluster: "trusted"
+    config:
+      grace_period: 1m
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  cluster: trusted
+  extra_refs:
+  - org: org
+    repo: foo
+    base_ref: master
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."
+`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 1 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 1 * time.Minute},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
 				},
 				GCSCredentialsSecret: pStr("default-service-account"),
 			},
@@ -3637,12 +3706,396 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 	}
 }
 
+func TestFinalizeDefaultDecorationConfigs(t *testing.T) {
+	tcs := []struct {
+		name      string
+		raw       string
+		expected  []*DefaultDecorationConfigEntry
+		expectErr bool
+	}{
+		{
+			name:     "omitted config",
+			raw:      "deck:",
+			expected: nil,
+		},
+		{
+			name: "old format; global only",
+			raw: `
+default_decoration_configs:
+  '*':
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+`,
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+			},
+		},
+		{
+			name: "old format; org repo ordered",
+			raw: `
+default_decoration_configs:
+  '*':
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+  'org/repo':
+    timeout: 1h
+  'org':
+    timeout: 3h
+`,
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+				{
+					OrgRepo: "org",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "org/repo",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
+					},
+				},
+			},
+		},
+		{
+			name: "new format; global only",
+			raw: `
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+`,
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+			},
+		},
+		{
+			name: "new format; global, org, repo, cluster, org+cluster",
+			raw: `
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+  - repo: "org"
+    cluster: "*"
+    config:
+      timeout: 1h
+  - repo: "org/repo"
+    config:
+      timeout: 3h
+  - cluster: "trusted"
+    config:
+      grace_period: 30s
+  - repo: "org/foo"
+    cluster: "trusted"
+    config:
+      grace_period: 1m
+`,
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+						GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "clonerefs:default",
+							InitUpload: "initupload:default",
+							Entrypoint: "entrypoint:default",
+							Sidecar:    "sidecar:default",
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "default-bucket",
+							PathStrategy: prowapi.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+						GCSCredentialsSecret: pStr("default-service-account"),
+					},
+				},
+				{
+					OrgRepo: "org",
+					Cluster: "*",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 1 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "org/repo",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						Timeout: &prowapi.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "",
+					Cluster: "trusted",
+					Config: &prowapi.DecorationConfig{
+						GracePeriod: &prowapi.Duration{Duration: 30 * time.Second},
+					},
+				},
+				{
+					OrgRepo: "org/foo",
+					Cluster: "trusted",
+					Config: &prowapi.DecorationConfig{
+						GracePeriod: &prowapi.Duration{Duration: 1 * time.Minute},
+					},
+				},
+			},
+		},
+		{
+			name: "both formats, expect error",
+			raw: `
+default_decoration_configs:
+  "*":
+    timeout: 1h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+        
+default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+`,
+			expectErr: true,
+		},
+	}
+
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			p := Plank{}
+			if err := yaml.Unmarshal([]byte(tc.raw), &p); err != nil {
+				t.Errorf("error unmarshaling: %w", err)
+			}
+			if err := p.FinalizeDefaultDecorationConfigs(); err != nil && !tc.expectErr {
+				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %w", err)
+			} else if err == nil && tc.expectErr {
+				t.Error("expected error, but did not receive one")
+			}
+			if diff := cmp.Diff(tc.expected, p.DefaultDecorationConfigs, cmpopts.IgnoreUnexported(regexp.Regexp{})); diff != "" {
+				t.Errorf("expected result diff: %s", diff)
+			}
+		})
+	}
+}
+
+// complexConfig is shared by multiple test cases that test DefaultDecorationConfig
+// merging logic. It configures the upload bucket based on the org/repo and
+// uses either a GCS secret or k8s SA depending on the cluster.
+// A specific 'override' org overrides some fields in the trusted cluster only.
+func complexConfig() *Config {
+	return &Config{
+		JobConfig: JobConfig{
+			DecorateAllJobs: true,
+		},
+		ProwConfig: ProwConfig{
+			Plank: Plank{
+				DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+					{
+						OrgRepo: "*",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							UtilityImages: &prowapi.UtilityImages{
+								CloneRefs:  "clonerefs:global",
+								InitUpload: "initupload:global",
+								Entrypoint: "entrypoint:global",
+								Sidecar:    "sidecar:global",
+							},
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "global",
+								PathStrategy: "explicit",
+							},
+						},
+					},
+					{
+						OrgRepo: "org",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "org-specific",
+								PathStrategy: "explicit",
+							},
+						},
+					},
+					{
+						OrgRepo: "org/repo",
+						Cluster: "*",
+						Config: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "repo-specific",
+								PathStrategy: "explicit",
+							},
+						},
+					},
+					{
+						OrgRepo: "*",
+						Cluster: "default",
+						Config: &prowapi.DecorationConfig{
+							GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+						},
+					},
+					{
+						OrgRepo: "*",
+						Cluster: "trusted",
+						Config: &prowapi.DecorationConfig{
+							DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+						},
+					},
+					{
+						OrgRepo: "override",
+						Cluster: "trusted",
+						Config: &prowapi.DecorationConfig{
+							UtilityImages: &prowapi.UtilityImages{
+								CloneRefs: "clonerefs:override",
+							},
+							DefaultServiceAccountName: pStr(""),
+							GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func TestSetDecorationDefaults(t *testing.T) {
 	yes := true
 	no := false
+
 	testCases := []struct {
 		id            string
 		repo          string
+		cluster       string
 		config        *Config
 		utilityConfig UtilityConfig
 		expected      *prowapi.DecorationConfig
@@ -3651,7 +4104,7 @@ func TestSetDecorationDefaults(t *testing.T) {
 			id:            "no dc in presubmit or in plank's config, expect no changes",
 			utilityConfig: UtilityConfig{Decorate: &yes},
 			config:        &Config{ProwConfig: ProwConfig{}},
-			expected:      nil,
+			expected:      &prowapi.DecorationConfig{},
 		},
 		{
 			id:            "no dc in presubmit or in plank's by repo config, expect plank's defaults",
@@ -3659,21 +4112,25 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3702,28 +4159,36 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
-							"org/repo": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-repo",
-									PathStrategy: "single-by-repo",
-									DefaultOrg:   "org-by-repo",
-									DefaultRepo:  "repo-by-repo",
+							{
+								OrgRepo: "org/repo",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-repo",
+										PathStrategy: "single-by-repo",
+										DefaultOrg:   "org-by-repo",
+										DefaultRepo:  "repo-by-repo",
+									},
 								},
 							},
 						},
@@ -3770,21 +4235,25 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3830,36 +4299,44 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
-							"org/repo": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-repo",
-									InitUpload: "initupload:test-by-repo",
-									Entrypoint: "entrypoint:test-by-repo",
-									Sidecar:    "sidecar:test-by-repo",
+							{
+								OrgRepo: "org/repo",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-repo",
+										InitUpload: "initupload:test-by-repo",
+										Entrypoint: "entrypoint:test-by-repo",
+										Sidecar:    "sidecar:test-by-repo",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-repo",
+										PathStrategy: "single",
+										DefaultOrg:   "org-test",
+										DefaultRepo:  "repo-test",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-repo",
-									PathStrategy: "single",
-									DefaultOrg:   "org-test",
-									DefaultRepo:  "repo-test",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -3888,36 +4365,44 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
-							"org/repo": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-repo",
-									InitUpload: "initupload:test-by-repo",
-									Entrypoint: "entrypoint:test-by-repo",
-									Sidecar:    "sidecar:test-by-repo",
+							{
+								OrgRepo: "org/repo",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-repo",
+										InitUpload: "initupload:test-by-repo",
+										Entrypoint: "entrypoint:test-by-repo",
+										Sidecar:    "sidecar:test-by-repo",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-repo",
+										PathStrategy: "single-by-repo",
+										DefaultOrg:   "org-by-repo",
+										DefaultRepo:  "repo-by-repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-repo",
-									PathStrategy: "single-by-repo",
-									DefaultOrg:   "org-by-repo",
-									DefaultRepo:  "repo-by-repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-repo"),
 							},
 						},
 					},
@@ -3946,36 +4431,44 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
-							"org": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org",
-									InitUpload: "initupload:test-by-org",
-									Entrypoint: "entrypoint:test-by-org",
-									Sidecar:    "sidecar:test-by-org",
+							{
+								OrgRepo: "org",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org",
+										InitUpload: "initupload:test-by-org",
+										Entrypoint: "entrypoint:test-by-org",
+										Sidecar:    "sidecar:test-by-org",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org",
+										PathStrategy: "single-by-org",
+										DefaultOrg:   "org-by-org",
+										DefaultRepo:  "repo-by-org",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org",
-									PathStrategy: "single-by-org",
-									DefaultOrg:   "org-by-org",
-									DefaultRepo:  "repo-by-org",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4004,21 +4497,25 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4048,51 +4545,63 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
-							"org": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org",
-									InitUpload: "initupload:test-by-org",
-									Entrypoint: "entrypoint:test-by-org",
-									Sidecar:    "sidecar:test-by-org",
+							{
+								OrgRepo: "org",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org",
+										InitUpload: "initupload:test-by-org",
+										Entrypoint: "entrypoint:test-by-org",
+										Sidecar:    "sidecar:test-by-org",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org",
+										PathStrategy: "single-by-org",
+										DefaultOrg:   "org-by-org",
+										DefaultRepo:  "repo-by-org",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org",
-									PathStrategy: "single-by-org",
-									DefaultOrg:   "org-by-org",
-									DefaultRepo:  "repo-by-org",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
-							"org/repo": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org-repo",
-									InitUpload: "initupload:test-by-org-repo",
-									Entrypoint: "entrypoint:test-by-org-repo",
-									Sidecar:    "sidecar:test-by-org-repo",
+							{
+								OrgRepo: "org/repo",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org-repo",
+										InitUpload: "initupload:test-by-org-repo",
+										Entrypoint: "entrypoint:test-by-org-repo",
+										Sidecar:    "sidecar:test-by-org-repo",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org-repo",
+										PathStrategy: "single-by-org-repo",
+										DefaultOrg:   "org-by-org-repo",
+										DefaultRepo:  "repo-by-org-repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org-repo",
-									PathStrategy: "single-by-org-repo",
-									DefaultOrg:   "org-by-org-repo",
-									DefaultRepo:  "repo-by-org-repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -4122,36 +4631,44 @@ func TestSetDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
-							"org": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org",
-									InitUpload: "initupload:test-by-org",
-									Entrypoint: "entrypoint:test-by-org",
-									Sidecar:    "sidecar:test-by-org",
+							{
+								OrgRepo: "org",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org",
+										InitUpload: "initupload:test-by-org",
+										Entrypoint: "entrypoint:test-by-org",
+										Sidecar:    "sidecar:test-by-org",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org",
+										PathStrategy: "single-by-org",
+										DefaultOrg:   "org-by-org",
+										DefaultRepo:  "repo-by-org",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org",
-									PathStrategy: "single-by-org",
-									DefaultOrg:   "org-by-org",
-									DefaultRepo:  "repo-by-org",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4181,21 +4698,25 @@ func TestSetDecorationDefaults(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
@@ -4226,33 +4747,134 @@ func TestSetDecorationDefaults(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test",
-									InitUpload: "initupload:test",
-									Entrypoint: "entrypoint:test",
-									Sidecar:    "sidecar:test",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test",
+										InitUpload: "initupload:test",
+										Entrypoint: "entrypoint:test",
+										Sidecar:    "sidecar:test",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket",
+										PathStrategy: "single",
+										DefaultOrg:   "org",
+										DefaultRepo:  "repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket",
-									PathStrategy: "single",
-									DefaultOrg:   "org",
-									DefaultRepo:  "repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs"),
 							},
 						},
 					},
 				},
 			},
 		},
+		{
+			id:     "unrecognized org, no cluster => use global + default cluster configs",
+			config: complexConfig(),
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "unrecognized repo and explicit 'default' cluster => use global + org + default cluster configs",
+			config:  complexConfig(),
+			cluster: "default",
+			repo:    "org/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "org-specific",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "recognized repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
+			config:  complexConfig(),
+			cluster: "trusted",
+			repo:    "org/repo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "repo-specific",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+			},
+		},
+		{
+			id:      "override org and in trusted cluster => use global + trusted cluster + override configs",
+			config:  complexConfig(),
+			cluster: "trusted",
+			repo:    "override/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:override",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr(""),
+				GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+			},
+		},
+		{
+			id:      "override org and in default cluster => use global + default cluster configs",
+			config:  complexConfig(),
+			cluster: "default",
+			repo:    "override/foo",
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			presubmit := &Presubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
-			postsubmit := &Postsubmit{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
+			c := &Config{}
+			jb := &JobBase{Cluster: tc.cluster, UtilityConfig: tc.utilityConfig}
+			c.defaultJobBase(jb)
+			presubmit := &Presubmit{JobBase: *jb}
+			postsubmit := &Postsubmit{JobBase: *jb}
 
 			setPresubmitDecorationDefaults(tc.config, presubmit, tc.repo)
 			if diff := cmp.Diff(presubmit.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
@@ -4272,6 +4894,7 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 	no := false
 	testCases := []struct {
 		id            string
+		cluster       string
 		config        *Config
 		utilityConfig UtilityConfig
 		expected      *prowapi.DecorationConfig
@@ -4281,21 +4904,25 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "*",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4323,36 +4950,44 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
-							"org": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org",
-									InitUpload: "initupload:test-by-org",
-									Entrypoint: "entrypoint:test-by-org",
-									Sidecar:    "sidecar:test-by-org",
+							{
+								OrgRepo: "org",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org",
+										InitUpload: "initupload:test-by-org",
+										Entrypoint: "entrypoint:test-by-org",
+										Sidecar:    "sidecar:test-by-org",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org",
+										PathStrategy: "single-by-org",
+										DefaultOrg:   "org-by-org",
+										DefaultRepo:  "repo-by-org",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org",
-									PathStrategy: "single-by-org",
-									DefaultOrg:   "org-by-org",
-									DefaultRepo:  "repo-by-org",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org"),
 							},
 						},
 					},
@@ -4388,36 +5023,44 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 			config: &Config{
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
-							"org/repo": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-org-repo",
-									InitUpload: "initupload:test-by-org-repo",
-									Entrypoint: "entrypoint:test-by-org-repo",
-									Sidecar:    "sidecar:test-by-org-repo",
+							{
+								OrgRepo: "org/repo",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-org-repo",
+										InitUpload: "initupload:test-by-org-repo",
+										Entrypoint: "entrypoint:test-by-org-repo",
+										Sidecar:    "sidecar:test-by-org-repo",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-org-repo",
+										PathStrategy: "single-by-org-repo",
+										DefaultOrg:   "org-by-org-repo",
+										DefaultRepo:  "repo-by-org-repo",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-org-repo",
-									PathStrategy: "single-by-org-repo",
-									DefaultOrg:   "org-by-org-repo",
-									DefaultRepo:  "repo-by-org-repo",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-org-repo"),
 							},
 						},
 					},
@@ -4456,21 +5099,25 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
@@ -4501,122 +5148,162 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					Plank: Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								UtilityImages: &prowapi.UtilityImages{
-									CloneRefs:  "clonerefs:test-by-*",
-									InitUpload: "initupload:test-by-*",
-									Entrypoint: "entrypoint:test-by-*",
-									Sidecar:    "sidecar:test-by-*",
+						DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+							{
+								OrgRepo: "*",
+								Cluster: "",
+								Config: &prowapi.DecorationConfig{
+									UtilityImages: &prowapi.UtilityImages{
+										CloneRefs:  "clonerefs:test-by-*",
+										InitUpload: "initupload:test-by-*",
+										Entrypoint: "entrypoint:test-by-*",
+										Sidecar:    "sidecar:test-by-*",
+									},
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "test-bucket-by-*",
+										PathStrategy: "single-by-*",
+										DefaultOrg:   "org-by-*",
+										DefaultRepo:  "repo-by-*",
+									},
+									GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 								},
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "test-bucket-by-*",
-									PathStrategy: "single-by-*",
-									DefaultOrg:   "org-by-*",
-									DefaultRepo:  "repo-by-*",
-								},
-								GCSCredentialsSecret: pStr("credentials-gcs-by-*"),
 							},
 						},
 					},
 				},
 			},
 		},
+		{
+			id:     "no extraRefs[0] or cluster => use global + default cluster configs",
+			config: complexConfig(),
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has org and explicit 'default' cluster => use global + org + default cluster configs",
+			config:  complexConfig(),
+			cluster: "default",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "org-specific",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has repo and explicit 'trusted' cluster => use global + org + repo + trusted cluster configs",
+			config:  complexConfig(),
+			cluster: "trusted",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "repo-specific",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr("trusted-cluster-uses-SA"),
+			},
+		},
+		{
+			id:      "extraRefs[0] has override org and explicit 'trusted' cluster => use global + trusted cluster + override configs",
+			config:  complexConfig(),
+			cluster: "trusted",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "override",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:override",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				DefaultServiceAccountName: pStr(""),
+				GCSCredentialsSecret:      pStr("trusted-cluster-override-uses-secret"),
+			},
+		},
+		{
+			id:     "extraRefs[0] has override org and no cluster => use global + default cluster configs",
+			config: complexConfig(),
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "override",
+						Repo: "foo",
+					},
+				},
+			},
+			expected: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:global",
+					InitUpload: "initupload:global",
+					Entrypoint: "entrypoint:global",
+					Sidecar:    "sidecar:global",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "global",
+					PathStrategy: "explicit",
+				},
+				GCSCredentialsSecret: pStr("default-cluster-uses-secret"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			periodic := &Periodic{JobBase: JobBase{UtilityConfig: tc.utilityConfig}}
+			c := &Config{}
+			periodic := &Periodic{JobBase: JobBase{Cluster: tc.cluster, UtilityConfig: tc.utilityConfig}}
+			c.defaultJobBase(&periodic.JobBase)
 			setPeriodicDecorationDefaults(tc.config, periodic)
 			if diff := cmp.Diff(periodic.DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
 				t.Error(diff)
-			}
-		})
-	}
-}
-
-func TestDecorationRequested(t *testing.T) {
-	yes := true
-	no := false
-	testCases := []struct {
-		name        string
-		decorateAll bool
-		presubmits  map[string][]Presubmit
-		postsubmits map[string][]Postsubmit
-		periodics   []Periodic
-		expected    bool
-	}{
-		{
-			name:        "decorate_all_jobs set",
-			decorateAll: true,
-			presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{JobBase: JobBase{Name: "presubmit-job"}},
-				},
-			},
-			expected: true,
-		},
-		{
-			name: "at-least one job is decorated",
-			presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{JobBase: JobBase{Name: "presubmit-job"}},
-				},
-			},
-			postsubmits: map[string][]Postsubmit{
-				"org/repo": {
-					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &yes}}},
-				},
-			},
-			expected: true,
-		},
-		{
-			name:        "decorate_all_jobs set, at-least one job does not opt out",
-			decorateAll: true,
-			presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
-				},
-			},
-			postsubmits: map[string][]Postsubmit{
-				"org/repo": {
-					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
-				},
-			},
-			periodics: []Periodic{
-				{JobBase: JobBase{Name: "periodic-job"}},
-			},
-			expected: true,
-		},
-		{
-			name: "decorate_all_jobs set, all jobs opt out",
-			presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
-				},
-			},
-			postsubmits: map[string][]Postsubmit{
-				"org/repo": {
-					{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
-				},
-			},
-			periodics: []Periodic{
-				{JobBase: JobBase{UtilityConfig: UtilityConfig{Decorate: &no}}},
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			jobConfig := &JobConfig{
-				DecorateAllJobs:   tc.decorateAll,
-				PresubmitsStatic:  tc.presubmits,
-				PostsubmitsStatic: tc.postsubmits,
-				Periodics:         tc.periodics,
-			}
-
-			if actual := jobConfig.decorationRequested(); actual != tc.expected {
-				t.Errorf("expected %t got %t", tc.expected, actual)
 			}
 		})
 	}
@@ -4861,30 +5548,53 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 	}
 }
 
-func TestGetDefaultDecorationConfigsThreadSafety(t *testing.T) {
-	const repo = "repo"
-	p := Plank{DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-		"*": {
-			GCSConfiguration: &prowapi.GCSConfiguration{
-				MediaTypes: map[string]string{"text": "text"},
+func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
+	const repo = "org/repo"
+	const cluster = "default"
+	p := Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+		{
+			OrgRepo: "*",
+			Cluster: "*",
+			Config: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					MediaTypes: map[string]string{"text": "text"},
+				},
+				GCSCredentialsSecret: pStr("service-account-secret"),
 			},
 		},
-		repo: {
-			GCSConfiguration: &prowapi.GCSConfiguration{
-				MediaTypes: map[string]string{"text": "text"},
+		{
+			OrgRepo: repo,
+			Cluster: "*",
+			Config: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					MediaTypes: map[string]string{"text": "text2"},
+				},
+			},
+		},
+		{
+			OrgRepo: "*",
+			Cluster: cluster,
+			Config: &prowapi.DecorationConfig{
+				DefaultServiceAccountName: pStr("service-account-name"),
+				GCSCredentialsSecret:      pStr(""),
 			},
 		},
 	}}
+	jobDC := &prowapi.DecorationConfig{
+		GCSConfiguration: &prowapi.GCSConfiguration{
+			Bucket: "special-bucket",
+		},
+	}
 
 	s1 := make(chan struct{})
 	s2 := make(chan struct{})
 
 	go func() {
-		_ = p.GetDefaultDecorationConfigs(repo)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s1)
 	}()
 	go func() {
-		_ = p.GetDefaultDecorationConfigs(repo)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s2)
 	}()
 
