@@ -46,6 +46,7 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --plugin-config=/etc/plugins/plugins.yaml
+        - --hmac-secret-file=/etc/webhook/hmac
         ports:
           - name: http
             containerPort: 8888
