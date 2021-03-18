@@ -20,7 +20,6 @@
 # Things wrapper.sh handles:
 # - starting / stopping docker-in-docker
 # -- configuring the docker daemon for IPv6
-# - confuring bazel caching
 # - activating GCP service account credentials
 # - ensuring GOPATH/bin is in PATH
 #
@@ -57,15 +56,6 @@ early_exit_handler() {
 }
 
 trap early_exit_handler TERM INT
-
-# Check if the job has opted-in to bazel remote caching and if so generate 
-# .bazelrc entries pointing to the remote cache
-export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-  >&2 echo "wrapper.sh] [SETUP] Bazel remote cache is enabled, generating .bazelrcs ..."
-  /usr/local/bin/create_bazel_cache_rcs.sh
-  >&2 echo "wrapper.sh] [SETUP] Done setting up .bazelrcs"
-fi
 
 # optionally enable ipv6 docker
 export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
