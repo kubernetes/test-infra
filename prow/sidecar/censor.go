@@ -88,7 +88,7 @@ func (o Options) censor() error {
 
 	for _, item := range o.GcsOptions.Items {
 		if err := filepath.Walk(item, func(absPath string, info os.FileInfo, err error) error {
-			if info.IsDir() {
+			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
 			}
 			logger := logrus.WithField("path", item)
