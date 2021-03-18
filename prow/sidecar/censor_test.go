@@ -97,6 +97,14 @@ func copyTestData(t *testing.T) string {
 		if info.IsDir() {
 			return os.MkdirAll(dest, info.Mode())
 		}
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			link, err := os.Readlink(path)
+			if err != nil {
+				t.Fatalf("failed to read input link: %v", err)
+			}
+			t.Logf("linking %s to %s", dest, link)
+			return os.Symlink(link, dest)
+		}
 		out, err := os.Create(dest)
 		if err != nil {
 			return err
