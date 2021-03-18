@@ -623,12 +623,18 @@ func clone(c Client, bug *Bug) (int, error) {
 	if err != nil {
 		return id, err
 	}
-	depends := BugUpdate{
+	bugUpdate := BugUpdate{
 		DependsOn: &IDUpdate{
 			Add: []int{bug.ID},
 		},
 	}
-	err = c.UpdateBug(id, depends)
+	for _, originalBlocks := range bug.Blocks {
+		if bugUpdate.Blocks == nil {
+			bugUpdate.Blocks = &IDUpdate{}
+		}
+		bugUpdate.Blocks.Add = append(bugUpdate.Blocks.Add, originalBlocks)
+	}
+	err = c.UpdateBug(id, bugUpdate)
 	return id, err
 }
 
