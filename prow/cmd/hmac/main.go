@@ -199,7 +199,7 @@ func (c *client) handleInvitation() error {
 	}
 	for _, iv := range repoIvs {
 		if iv.Permission != github.Admin {
-			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
+			logrus.Errorf("invalid invitation from %s is not accepted. Permission want: %v, got: %s",
 				iv.Repository.FullName, github.Admin, iv.Permission)
 			continue
 		}
