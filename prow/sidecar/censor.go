@@ -260,7 +260,9 @@ func validRelPath(p string) bool {
 
 // archive re-packs the dir into the destination
 func archive(srcDir, destArchive string) error {
-	output, err := ioutil.TempFile("", "tmp-archive")
+	// we want the temporary file we use for output to be in the same directory as the real destination, so
+	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
+	output, err := ioutil.TempFile(filepath.Dir(destArchive), "tmp-archive")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file for archive: %w", err)
 	}
@@ -327,7 +329,9 @@ func handleFile(path string, censorer secretutil.Censorer, bufferSize int) error
 		return fmt.Errorf("could not open file for censoring: %w", err)
 	}
 
-	output, err := ioutil.TempFile("", "tmp-censor")
+	// we want the temporary file we use for output to be in the same directory as the real destination, so
+	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
+	output, err := ioutil.TempFile(filepath.Dir(path), "tmp-censor")
 	if err != nil {
 		return fmt.Errorf("could not create temporary file for censoring: %w", err)
 	}
