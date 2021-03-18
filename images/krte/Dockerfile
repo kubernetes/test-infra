@@ -26,7 +26,7 @@ ARG GO_VERSION
 # - adding gsutil etc. to path (where we will install them)
 # - disabling prompts when installing gsutil etc.
 # - hinting that we are in a docker container
-ENV IMAGE=${IMAGE_ARG} \
+ENV KRTE_IMAGE=${IMAGE_ARG} \
     BAZEL_VERSION=${BAZEL_VERSION_ARG} \
     GOPATH=/home/prow/go \
     PATH=/home/prow/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \

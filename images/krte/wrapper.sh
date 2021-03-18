@@ -31,7 +31,7 @@ set -o pipefail
 set -o nounset
 
 >&2 echo "wrapper.sh] [INFO] Wrapping Test Command: \`$*\`"
->&2 echo "wrapper.sh] [INFO] Running in: ${IMAGE}"
+>&2 echo "wrapper.sh] [INFO] Running in: ${KRTE_IMAGE}"
 >&2 echo "wrapper.sh] [INFO] See: https://github.com/kubernetes/test-infra/blob/master/images/krte/wrapper.sh"
 printf '%0.s=' {1..80} >&2; echo >&2
 >&2 echo "wrapper.sh] [SETUP] Performing pre-test setup ..."
