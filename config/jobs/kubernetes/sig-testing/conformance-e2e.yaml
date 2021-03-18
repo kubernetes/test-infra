@@ -47,6 +47,7 @@ presubmits:
 
   - name: pull-kubernetes-conformance-kind-ipv6-parallel
     decorate: true
+    path_alias: k8s.io/kubernetes
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     always_run: false
