@@ -102,7 +102,6 @@ func copyTestData(t *testing.T) string {
 			if err != nil {
 				t.Fatalf("failed to read input link: %v", err)
 			}
-			t.Logf("linking %s to %s", dest, link)
 			return os.Symlink(link, dest)
 		}
 		out, err := os.Create(dest)
@@ -164,6 +163,9 @@ func TestCensorIntegration(t *testing.T) {
 
 	if err := unarchive(archiveFile, archiveDir); err != nil {
 		t.Fatalf("failed to unarchive input: %v", err)
+	}
+	if err := os.Remove(archiveFile); err != nil {
+		t.Fatalf("failed to removce archive: %v", err)
 	}
 
 	testutil.CompareWithFixtureDir(t, "testdata/output", tempDir)
