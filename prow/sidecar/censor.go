@@ -46,6 +46,7 @@ func (o Options) censor() error {
 	} else {
 		concurrency = *o.CensoringConcurrency
 	}
+	logrus.WithField("concurrency", concurrency).Debug("Censoring artifacts.")
 	sem := semaphore.NewWeighted(concurrency)
 	wg := &sync.WaitGroup{}
 	errors := make(chan error)
@@ -63,6 +64,7 @@ func (o Options) censor() error {
 	if err != nil {
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
+	logrus.WithField("secrets", len(secrets)).Debug("Loaded secrets to censor.")
 	censorer := secretutil.NewCensorer()
 	censorer.RefreshBytes(secrets...)
 
@@ -73,6 +75,7 @@ func (o Options) censor() error {
 	if largest := censorer.LargestSecret(); 2*largest > bufferSize {
 		bufferSize = 2 * largest
 	}
+	logrus.WithField("buffer_size", bufferSize).Debug("Determined censoring buffer size.")
 	censorFile := fileCensorer(sem, errors, censorer, bufferSize)
 	censor := func(file string) {
 		censorFile(wg, file)
@@ -88,6 +91,7 @@ func (o Options) censor() error {
 			if info.IsDir() {
 				return nil
 			}
+			logger := logrus.WithField("path", item)
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
@@ -96,10 +100,12 @@ func (o Options) censor() error {
 
 			switch contentType {
 			case "application/x-gzip", "application/zip":
+				logger.Debug("Censoring archive.")
 				if err := handleArchive(absPath, censorFile); err != nil {
 					return fmt.Errorf("could not censor archive %s: %w", absPath, err)
 				}
 			default:
+				logger.Debug("Censoring file.")
 				censor(absPath)
 			}
 			return nil
