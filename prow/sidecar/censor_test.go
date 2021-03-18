@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -226,4 +227,68 @@ func TestRoundTrip(t *testing.T) {
 		t.Fatalf("failed to unarchive input: %v", err)
 	}
 	testutil.CompareWithFixtureDir(t, archiveInputs, unarchiveOutput)
+}
+
+func TestLoadDockerCredentials(t *testing.T) {
+	expected := []string{"a", "b", "c", "d", "e", "f"}
+	dockercfgraw := []byte(`{
+	"registry": {
+		"password": "a",
+		"auth": "b"
+	},
+	"other": {
+		"password": "c",
+		"auth": "d"
+	},
+	"third": {
+		"auth": "e"
+	},
+	"fourth": {
+		"password": "f"
+	}
+}`)
+	dockerconfigjsonraw := []byte(`{
+	"auths": {
+		"registry": {
+			"password": "a",
+			"auth": "b"
+		},
+		"other": {
+			"password": "c",
+			"auth": "d"
+		},
+		"third": {
+			"auth": "e"
+		},
+		"fourth": {
+			"password": "f"
+		}
+	}
+}`)
+	malformed := []byte(`notreallyjson`)
+
+	if _, err := loadDockercfgAuths(malformed); err == nil {
+		t.Error("dockercfg: expected loading malformed data to error, but it did not")
+	}
+	if _, err := loadDockerconfigJsonAuths(malformed); err == nil {
+		t.Error("dockerconfigjson: expected loading malformed data to error, but it did not")
+	}
+
+	actual, err := loadDockercfgAuths(dockercfgraw)
+	if err != nil {
+		t.Errorf("dockercfg: expected loading data not to error, but it did: %v", err)
+	}
+	sort.Strings(actual)
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Errorf("dockercfg: got incorrect values: %s", err)
+	}
+
+	actual, err = loadDockerconfigJsonAuths(dockerconfigjsonraw)
+	if err != nil {
+		t.Errorf("dockerconfigjson: expected loading data not to error, but it did: %v", err)
+	}
+	sort.Strings(actual)
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Errorf("dockerconfigjson: got incorrect values: %s", err)
+	}
 }
