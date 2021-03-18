@@ -60,7 +60,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-6badf7a-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
