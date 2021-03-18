@@ -582,6 +582,7 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 		upstreamServerResponse string
 		expectedRes            string
 		expectError            bool
+		prefix                 string
 	}{
 		{
 			description:            "empty upstream URL will return an error",
@@ -589,6 +590,7 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 			upstreamServerResponse: "",
 			expectedRes:            "",
 			expectError:            true,
+			prefix:                 "gcr.io/k8s-prow/",
 		},
 		{
 			description:            "an invalid upstream URL will return an error",
@@ -596,6 +598,7 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 			upstreamServerResponse: "",
 			expectedRes:            "",
 			expectError:            true,
+			prefix:                 "gcr.io/k8s-prow/",
 		},
 		{
 			description:            "an invalid response will return an error",
@@ -603,6 +606,7 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 			upstreamServerResponse: "whatever-response",
 			expectedRes:            "",
 			expectError:            true,
+			prefix:                 "gcr.io/k8s-prow/",
 		},
 		{
 			description:            "a valid response will return the correct tag",
@@ -610,6 +614,15 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 			upstreamServerResponse: "     image: gcr.io/k8s-prow/deck:v20200717-cf288082e1",
 			expectedRes:            "v20200717-cf288082e1",
 			expectError:            false,
+			prefix:                 "gcr.io/k8s-prow/",
+		},
+		{
+			description:            "a valid response will return the correct tag with other prefixes in the same file",
+			upstreamURL:            "auto",
+			upstreamServerResponse: "other random garbage\n image: gcr.io/k8s-other/deck:v22222222-cf288082e1\n image: gcr.io/k8s-prow/deck:v20200717-cf288082e1\n     image: gcr.io/k8s-another/deck:v11111111-cf288082e1",
+			expectedRes:            "v20200717-cf288082e1",
+			expectError:            false,
+			prefix:                 "gcr.io/k8s-prow/",
 		},
 	}
 
@@ -624,7 +637,7 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 				tc.upstreamURL = testServer.URL
 			}
 
-			res, err := parseUpstreamImageVersion(tc.upstreamURL)
+			res, err := parseUpstreamImageVersion(tc.upstreamURL, tc.prefix)
 			if res != tc.expectedRes {
 				t.Errorf("The expected result %q != the actual result %q", tc.expectedRes, res)
 			}
@@ -662,7 +675,7 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 		StagingRefConfigFile: boskosStagingRefConfigFile,
 	}
 
-	fakeImageVersionParser := func(upstreamAddress string) (string, error) {
+	fakeImageVersionParser := func(upstreamAddress, prefix string) (string, error) {
 		switch upstreamAddress {
 		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
 			return prowProdFakeVersion, nil
@@ -778,7 +791,7 @@ func TestUpstreamConfigVersions(t *testing.T) {
 		StagingRefConfigFile: boskosStagingRefConfigFile,
 	}
 
-	fakeImageVersionParser := func(upstreamAddress string) (string, error) {
+	fakeImageVersionParser := func(upstreamAddress, prefix string) (string, error) {
 		switch upstreamAddress {
 		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
 			return prowProdFakeVersion, nil
