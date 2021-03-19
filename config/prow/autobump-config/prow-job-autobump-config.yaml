@@ -1,0 +1,27 @@
+---
+gitHubLogin: "k8s-ci-robot"
+gitHubToken: "/etc/github-token/oauth"
+gitName: "Kubernetes Prow Robot"
+gitEmail: "k8s.ci.robot@gmail.com"
+onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+skipPullRequest: false
+gitHubOrg: "kubernetes"
+gitHubRepo: "test-infra"
+remoteName: "test-infra"
+headBranchName: "prowjobs-autobump"
+upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+includedConfigPaths:
+  - "config/jobs"
+extraFiles:
+  - "config/jobs/image-pushing/k8s-staging-e2e-test-images.sh"
+  - "config/jobs/image-pushing/k8s-staging-sig-storage.sh"
+  - "config/jobs/kubernetes/kops/build_jobs.py"
+  - "releng/generate_tests.py"
+  - "images/kubekins-e2e/Dockerfile"
+targetVersion: "latest"
+prefixes:
+  - name: "K8s-Test-Images"
+    prefix: "gcr.io/k8s-testimages/"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: false
+    consistentImages: false

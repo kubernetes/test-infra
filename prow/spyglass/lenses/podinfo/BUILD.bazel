@@ -1,6 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "rollup_bundle", "ts_library")
 
 go_library(
     name = "go_default_library",
@@ -8,6 +7,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/podinfo",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",
         "//prow/entrypoint:go_default_library",
         "//prow/spyglass/api:go_default_library",
@@ -28,7 +28,6 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    enable_code_splitting = False,
     entry_point = ":podinfo.ts",
     deps = [
         ":script",
@@ -45,7 +44,7 @@ filegroup(
     name = "resources",
     srcs = [
         "style.css",
-        ":script_bundle",
+        ":script_bundle.min",
     ],
     visibility = ["//visibility:public"],
 )

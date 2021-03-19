@@ -19,15 +19,15 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-okd-installer-e2e-aws-4.6
+    name: periodic-ci-openshift-release-master-okd-4.6-e2e-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-okd-installer-e2e-aws-4.6
+    test_group_name: periodic-ci-openshift-release-master-okd-4.6-e2e-aws
   name: redhat-openshift-okd-release-4.6-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-installer-e2e-aws-4.6
-  name: release-openshift-okd-installer-e2e-aws-4.6
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.6-e2e-aws
+  name: periodic-ci-openshift-release-master-okd-4.6-e2e-aws

@@ -28,6 +28,7 @@ import (
 
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	utilpointer "k8s.io/utils/pointer"
@@ -36,9 +37,16 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/initupload"
+	"k8s.io/test-infra/prow/pod-utils/wrapper"
 	"k8s.io/test-infra/prow/sidecar"
+	"k8s.io/test-infra/prow/testutil"
 )
+
+func pStr(str string) *string {
+	return &str
+}
 
 func cookieVolumeOnly(secret string) coreapi.Volume {
 	v, _, _ := cookiefileVolume(secret)
@@ -490,7 +498,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 						MediaTypes:   map[string]string{"log": "text/plain"},
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					CookiefileSecret:     "yummy/.gitcookies",
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -543,7 +551,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					CookiefileSecret:     "yummy",
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -596,7 +604,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SSHHostFingerprints:  []string{"hello", "world"},
 				},
@@ -651,7 +659,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -704,7 +712,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: prowapi.KubernetesAgent,
@@ -744,7 +752,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          &truth,
 				},
@@ -803,7 +811,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
 					},
-					GCSCredentialsSecret: "secret-name",
+					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					CookiefileSecret:     "yummy",
 				},
@@ -844,6 +852,61 @@ func TestProwJobToPod(t *testing.T) {
 							Args:    []string{"other", "args"},
 							Env: []coreapi.EnvVar{
 								{Name: "MY_ENV", Value: "stones"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			podName: "pod",
+			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "job-name",
+				DecorationConfig: &prowapi.DecorationConfig{
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
+					UtilityImages: &prowapi.UtilityImages{
+						CloneRefs:  "clonerefs:tag",
+						InitUpload: "initupload:tag",
+						Entrypoint: "entrypoint:tag",
+						Sidecar:    "sidecar:tag",
+					},
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket:       "my-bucket",
+						PathStrategy: "legacy",
+						DefaultOrg:   "kubernetes",
+						DefaultRepo:  "kubernetes",
+						MediaTypes:   map[string]string{"log": "text/plain"},
+					},
+					// Specify K8s SA rather than cloud storage secret key.
+					DefaultServiceAccountName: pStr("default-SA"),
+					CookiefileSecret:          "yummy/.gitcookies",
+				},
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
+					Pulls: []prowapi.Pull{{
+						Number: 1,
+						Author: "author-name",
+						SHA:    "pull-sha",
+					}},
+					PathAlias: "somewhere/else",
+				},
+				ExtraRefs: []prowapi.Refs{},
+				PodSpec: &coreapi.PodSpec{
+					Containers: []coreapi.Container{
+						{
+							Image:   "tester",
+							Command: []string{"/bin/thing"},
+							Args:    []string{"some", "args"},
+							Env: []coreapi.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
@@ -961,7 +1024,7 @@ func TestProwJobToPod_setsTerminationGracePeriodSeconds(t *testing.T) {
 					},
 				},
 			},
-			expectedTerminationGracePeriodSeconds: 10,
+			expectedTerminationGracePeriodSeconds: 12,
 		},
 		{
 			name: "Existing GracePeriodSeconds is not overwritten",
@@ -988,6 +1051,193 @@ func TestProwJobToPod_setsTerminationGracePeriodSeconds(t *testing.T) {
 			if tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds == nil || *tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds != tc.expectedTerminationGracePeriodSeconds {
 				t.Errorf("expected pods TerminationGracePeriodSeconds to be %d was %v", tc.expectedTerminationGracePeriodSeconds, tc.prowjob.Spec.PodSpec.TerminationGracePeriodSeconds)
 			}
+		})
+	}
+}
+
+func TestSidecar(t *testing.T) {
+	var testCases = []struct {
+		name                                    string
+		config                                  *prowapi.DecorationConfig
+		gcsOptions                              gcsupload.Options
+		blobStorageMounts                       []coreapi.VolumeMount
+		logMount                                coreapi.VolumeMount
+		outputMount                             *coreapi.VolumeMount
+		encodedJobSpec                          string
+		requirePassingEntries, ignoreInterrupts bool
+		secretVolumeMounts                      []coreapi.VolumeMount
+		wrappers                                []wrapper.Options
+	}{
+		{
+			name: "basic case",
+			config: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{Sidecar: "sidecar-image"},
+			},
+			gcsOptions: gcsupload.Options{
+				Items:            []string{"first", "second"},
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "bucket"},
+			},
+			blobStorageMounts:     []coreapi.VolumeMount{{Name: "blob", MountPath: "/blob"}},
+			logMount:              coreapi.VolumeMount{Name: "logs", MountPath: "/logs"},
+			outputMount:           &coreapi.VolumeMount{Name: "outputs", MountPath: "/outputs"},
+			encodedJobSpec:        "spec",
+			requirePassingEntries: true,
+			ignoreInterrupts:      true,
+			wrappers:              []wrapper.Options{{Args: []string{"yes"}}},
+		},
+		{
+			name: "with secrets",
+			config: &prowapi.DecorationConfig{
+				UtilityImages: &prowapi.UtilityImages{Sidecar: "sidecar-image"},
+			},
+			gcsOptions: gcsupload.Options{
+				Items:            []string{"first", "second"},
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "bucket"},
+			},
+			blobStorageMounts:     []coreapi.VolumeMount{{Name: "blob", MountPath: "/blob"}},
+			logMount:              coreapi.VolumeMount{Name: "logs", MountPath: "/logs"},
+			outputMount:           &coreapi.VolumeMount{Name: "outputs", MountPath: "/outputs"},
+			encodedJobSpec:        "spec",
+			requirePassingEntries: true,
+			ignoreInterrupts:      true,
+			secretVolumeMounts: []coreapi.VolumeMount{
+				{Name: "very", MountPath: "/very"},
+				{Name: "secret", MountPath: "/secret"},
+				{Name: "stuff", MountPath: "/stuff"},
+			},
+			wrappers: []wrapper.Options{{Args: []string{"yes"}}},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			container, err := Sidecar(
+				testCase.config, testCase.gcsOptions,
+				testCase.blobStorageMounts, testCase.logMount, testCase.outputMount,
+				testCase.encodedJobSpec,
+				testCase.requirePassingEntries, testCase.ignoreInterrupts,
+				testCase.secretVolumeMounts, testCase.wrappers...,
+			)
+			if err != nil {
+				t.Fatalf("%s: got an error from Sidecar(): %v", testCase.name, err)
+			}
+			testutil.CompareWithSerializedFixture(t, container)
+		})
+	}
+}
+
+func TestDecorate(t *testing.T) {
+	gCSCredentialsSecret := "gcs-secret"
+	defaultServiceAccountName := "default-sa"
+	censor := true
+	var testCases = []struct {
+		name      string
+		spec      *coreapi.PodSpec
+		pj        *prowapi.ProwJob
+		rawEnv    map[string]string
+		outputDir string
+	}{
+		{
+			name: "basic happy case",
+			spec: &coreapi.PodSpec{
+				Volumes: []coreapi.Volume{
+					{Name: "secret", VolumeSource: coreapi.VolumeSource{Secret: &coreapi.SecretVolumeSource{SecretName: "secretname"}}},
+				},
+				Containers: []coreapi.Container{
+					{Name: "test", Command: []string{"/bin/ls"}, Args: []string{"-l", "-a"}, VolumeMounts: []coreapi.VolumeMount{{Name: "secret", MountPath: "/secret"}}},
+				},
+				ServiceAccountName: "tester",
+			},
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: time.Minute},
+						GracePeriod: &prowapi.Duration{Duration: time.Hour},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "cloneimage",
+							InitUpload: "initimage",
+							Entrypoint: "entrypointimage",
+							Sidecar:    "sidecarimage",
+						},
+						Resources: &prowapi.Resources{
+							CloneRefs:       &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							InitUpload:      &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							PlaceEntrypoint: &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							Sidecar:         &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "bucket",
+							PathStrategy: "single",
+							DefaultOrg:   "org",
+							DefaultRepo:  "repo",
+						},
+						GCSCredentialsSecret:      &gCSCredentialsSecret,
+						DefaultServiceAccountName: &defaultServiceAccountName,
+					},
+					Refs: &prowapi.Refs{
+						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
+						Pulls: []prowapi.Pull{{Number: 1, SHA: "aksdjhfkds"}},
+					},
+					ExtraRefs: []prowapi.Refs{{Org: "other", Repo: "something", BaseRef: "release", BaseSHA: "sldijfsd"}},
+				},
+			},
+			rawEnv: map[string]string{"custom": "env"},
+		},
+		{
+			name: "censor secrets in sidecar",
+			spec: &coreapi.PodSpec{
+				Volumes: []coreapi.Volume{
+					{Name: "secret", VolumeSource: coreapi.VolumeSource{Secret: &coreapi.SecretVolumeSource{SecretName: "secretname"}}},
+				},
+				Containers: []coreapi.Container{
+					{Name: "test", Command: []string{"/bin/ls"}, Args: []string{"-l", "-a"}, VolumeMounts: []coreapi.VolumeMount{{Name: "secret", MountPath: "/secret"}}},
+				},
+				ServiceAccountName: "tester",
+			},
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: time.Minute},
+						GracePeriod: &prowapi.Duration{Duration: time.Hour},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "cloneimage",
+							InitUpload: "initimage",
+							Entrypoint: "entrypointimage",
+							Sidecar:    "sidecarimage",
+						},
+						Resources: &prowapi.Resources{
+							CloneRefs:       &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							InitUpload:      &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							PlaceEntrypoint: &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							Sidecar:         &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "bucket",
+							PathStrategy: "single",
+							DefaultOrg:   "org",
+							DefaultRepo:  "repo",
+						},
+						GCSCredentialsSecret:      &gCSCredentialsSecret,
+						DefaultServiceAccountName: &defaultServiceAccountName,
+						CensorSecrets:             &censor,
+					},
+					Refs: &prowapi.Refs{
+						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
+						Pulls: []prowapi.Pull{{Number: 1, SHA: "aksdjhfkds"}},
+					},
+					ExtraRefs: []prowapi.Refs{{Org: "other", Repo: "something", BaseRef: "release", BaseSHA: "sldijfsd"}},
+				},
+			},
+			rawEnv: map[string]string{"custom": "env"},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if err := decorate(testCase.spec, testCase.pj, testCase.rawEnv, testCase.outputDir); err != nil {
+				t.Fatalf("got an error from decorate(): %v", err)
+			}
+			testutil.CompareWithSerializedFixture(t, testCase.spec)
 		})
 	}
 }

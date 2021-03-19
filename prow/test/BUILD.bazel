@@ -23,6 +23,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/test/data:all-srcs",
+        "//prow/test/integration:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

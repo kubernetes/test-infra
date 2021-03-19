@@ -51,8 +51,10 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	}
 
 	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
-	if err != nil {
-		logrus.Warningf("error retrieving artifact names from gcs storage: %v", err)
+	// Don't care errors that are not supposed logged as http errors, for example
+	// context cancelled error due to user cancelled request.
+	if err != nil && err != context.Canceled {
+		logrus.WithError(err).Warn("error retrieving artifact names from gcs storage")
 	}
 
 	artifactNamesSet := sets.NewString(artifactNames...)

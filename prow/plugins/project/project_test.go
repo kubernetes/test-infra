@@ -104,17 +104,6 @@ func TestProjectCommand(t *testing.T) {
 		},
 	}
 
-	fakeClient := &fakegithub.FakeClient{
-		RepoProjects:      repoProjects,
-		ProjectColumnsMap: projectColumnsMap,
-		ColumnIDMap:       columnIDMap,
-		IssueComments:     make(map[int][]github.IssueComment),
-	}
-	botUser, err := fakeClient.BotUser()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	type testCase struct {
 		name            string
 		action          github.GenericCommentEventAction
@@ -288,7 +277,7 @@ func TestProjectCommand(t *testing.T) {
 			body:            "/project 0.0.0 To do",
 			repo:            "kubernetes",
 			org:             "kubernetes",
-			commenter:       botUser.Login,
+			commenter:       fakegithub.Bot,
 			previousProject: "",
 			previousColumn:  "",
 			expectedProject: "",
@@ -310,8 +299,14 @@ func TestProjectCommand(t *testing.T) {
 		},
 	}
 
+	fakeClient := fakegithub.NewFakeClient()
+	fakeClient.RepoProjects = repoProjects
+	fakeClient.ProjectColumnsMap = projectColumnsMap
+	fakeClient.ColumnIDMap = columnIDMap
+
 	prevCommentCount := 0
 	for _, tc := range testcases {
+		tc := tc
 		fakeClient.Project = tc.previousProject
 		fakeClient.Column = tc.previousColumn
 		fakeClient.ColumnCardsMap = map[int][]github.ProjectCard{}

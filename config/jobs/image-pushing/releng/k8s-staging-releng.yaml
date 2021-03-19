@@ -13,7 +13,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+    - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
       command:
         - /run.sh
       args:
@@ -48,7 +48,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+    - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
       command:
         - /run.sh
       args:
@@ -77,22 +77,26 @@ postsubmits:
         testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
+      run_if_changed: '^(cmd\/|compile-release-tools|go.(mod|sum)|images\/releng\/k8s-ci-builder\/|pkg\/)'
       branches:
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
+              - --env-passthrough=REGISTRY
               - --build-dir=.
               - images/releng/k8s-ci-builder
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -108,17 +112,19 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,REGISTRY
               - images/k8s-cloud-builder
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -134,18 +140,20 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,REGISTRY
               - --build-dir=.
               - images/releng/ci
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
@@ -160,18 +168,20 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,REGISTRY
               - --gcb-config=./cloudbuild-kubepkg.yaml
               - .
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
         rerun_auth_config:
           github_team_ids:
             - 2241179 # release-managers

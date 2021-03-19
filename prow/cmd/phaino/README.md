@@ -29,13 +29,19 @@ volumes that the Prow Job may require.
 
 ### Common options
 
-* `--grace=5m` controls how long to wait for interrupted jobs before terminating.
+* `--grace=5m` controls how long to wait for interrupted jobs before terminating
 * `--print` the command that runs each job without running it
 * `--privileged` jobs are allowed to run instead of rejected
 * `--timeout=10m` controls how long to allow jobs to run before interrupting them
+* `--gopath=/go` provides the GOPATH that is used in the container
+* `--skip-volume-mounts=volume1,volume2` includes the unwanted volume mounts that are defined in the job spec
+* `--extra-volume-mounts=/go/src/k8s.io/test-infra=/Users/xyz/k8s-test-infra` includes the extra volume mounts needed for the container. Key is the mount path and value is the local path
+* `--skip-envs=env1,env2` includes the unwanted env vars that are defined in the job spec
+* `--extra-envs=env1=val1,env2=val2` includes the extra env vars needed for the container
+* `--use-local-gcloud-credentials` controls whether to use the same gcloud credentials as local or not
+* `--use-local-kubeconfig` controls whether to use the same kubeconfig as local or not
 
 See `bazel run //prow/cmd/phaino -- --help` for full option list.
-
 
 ### Usage examples
 #### URL example

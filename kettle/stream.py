@@ -29,6 +29,7 @@ import time
 import multiprocessing.pool
 
 try:
+    from google.api_core import exceptions as api_exceptions
     from google.cloud import bigquery
     from google.cloud import pubsub_v1
     import google.cloud.exceptions
@@ -40,7 +41,7 @@ import model
 import make_db
 import make_json
 
-MAX_ROW_UPLOAD = 25
+MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2855
 
 def process_changes(results):
     """Split GCS change events into trivial ack_ids and builds to further process."""
@@ -95,6 +96,12 @@ def retry(func, *args, **kwargs):
             # retry with exponential backoff
             traceback.print_exc()
             time.sleep(1.4 ** attempt)
+        except api_exceptions.BadRequest as err:
+            args_size = sys.getsizeof(args)
+            kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
+            print(f"Error running {func.__name__} \
+                   ([bytes in args]{args_size} with {kwargs_str]}) : {err}")
+            return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
 
@@ -128,9 +135,9 @@ def insert_data(bq_client, table, rows_iter):
         # Insert rows with row_ids into table, retrying as necessary.
         errors = retry(bq_client.insert_rows, table, chunk, skip_invalid_rows=True)
         if not errors:
-            print('Loaded {} builds into {}'.format(len(chunk), table.full_table_id))
+            print(f'Loaded {len(chunk)} builds into {table.full_table_id}')
         else:
-            print('Errors:')
+            print(f'Errors on Chunk: {chunk}')
             pprint.pprint(errors)
             pprint.pprint(table.schema)
 

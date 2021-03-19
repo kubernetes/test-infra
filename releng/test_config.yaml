@@ -344,7 +344,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -384,7 +384,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -423,7 +423,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -461,7 +461,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -522,23 +522,28 @@ k8sVersions:
   dev:
     args:
     - --extract=ci/latest
+    - --extract-ci-bucket=k8s-release-dev
     version: master
   beta:
     args:
     - --extract=ci/latest-1.20
+    - --extract-ci-bucket=k8s-release-dev
     version: '1.20'
   stable1:
     args:
-    - --extract=ci/latest-1.19
-    version: '1.19'
+    - --extract=ci/latest-1.20
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.20'
   stable2:
     args:
-    - --extract=ci/latest-1.18
-    version: '1.18'
+    - --extract=ci/latest-1.19
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.19'
   stable3:
     args:
-    - --extract=ci/latest-1.17
-    version: '1.17'
+    - --extract=ci/latest-1.18
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.18'
 
 testSuites:
   alphafeatures:
@@ -659,23 +664,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.20
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.19
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+    - --repo=k8s.io/kubernetes=release-1.20
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.18
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - --repo=k8s.io/kubernetes=release-1.19
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.19
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.17
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.17
+    - --repo=k8s.io/kubernetes=release-1.18
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.18
 
 nodeTestSuites:
   default:

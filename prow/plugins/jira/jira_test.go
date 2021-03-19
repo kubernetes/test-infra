@@ -17,24 +17,103 @@ limitations under the License.
 package jira
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
 	jiraclient "k8s.io/test-infra/prow/jira"
+	"k8s.io/test-infra/prow/plugins"
 )
+
+func TestRegex(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "Simple",
+			input:    "issue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with leading space",
+			input:    " issue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing space",
+			input:    "issue-123 ",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with leading newline",
+			input:    "\nissue-123",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing newline",
+			input:    "issue-123\n",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Simple with trailing colon",
+			input:    "issue-123:",
+			expected: []string{"issue-123"},
+		},
+		{
+			name:     "Multiple matches",
+			input:    "issue-123\nissue-456",
+			expected: []string{"issue-123", "issue-456"},
+		},
+		{
+			name:  "Trailing character, no match",
+			input: "issue-123a",
+		},
+		{
+			name:     "Issue from url",
+			input:    "https://my-jira.com/browse/ABC-123",
+			expected: []string{"ABC-123"},
+		},
+		{
+			name:  "Trailing special characters, no match",
+			input: "rehearse-15676-pull",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := extractCandidatesFromText(tc.input)
+			if diff := cmp.Diff(tc.expected, result); diff != "" {
+				t.Errorf("expected differs from actual: %s", diff)
+			}
+		})
+	}
+}
 
 type fakeJiraClient struct {
 	existingIssues []jira.Issue
 	existingLinks  map[string][]jira.RemoteLink
 	newLinks       []jira.RemoteLink
+	getIssueError  error
+}
+
+func (f *fakeJiraClient) ListProjects() (*jira.ProjectList, error) {
+	return nil, nil
 }
 
 func (f *fakeJiraClient) GetIssue(id string) (*jira.Issue, error) {
+	if f.getIssueError != nil {
+		return nil, f.getIssueError
+	}
 	for _, existingIssue := range f.existingIssues {
 		if existingIssue.ID == id {
 			return &existingIssue, nil
@@ -90,6 +169,9 @@ func TestHandle(t *testing.T) {
 	testCases := []struct {
 		name                   string
 		event                  github.GenericCommentEvent
+		cfg                    *plugins.Jira
+		projectCache           *threadsafeSet
+		getIssueClientError    error
 		existingIssues         []jira.Issue
 		existingLinks          map[string][]jira.RemoteLink
 		expectedNewLinks       []jira.RemoteLink
@@ -108,6 +190,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -130,6 +213,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -151,6 +235,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -172,6 +257,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -193,6 +279,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -214,6 +301,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
+			projectCache: &threadsafeSet{data: sets.NewString("abc")},
 		},
 		{
 			name: "Link already exists, nothing to do",
@@ -224,8 +312,34 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3"}}}},
+		},
+		{
+			name: "Valid issue in disabled project, case insensitive matching and no link",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue",
+				Body:       "Some text and also ENTERPRISE-4",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache:   &threadsafeSet{data: sets.NewString("enterprise")},
+			cfg:            &plugins.Jira{DisabledJiraProjects: []string{"Enterprise"}},
+			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
+		},
+		{
+			name: "Project 404 gets served from cache, nothing happens",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue",
+				Body:       "ABC-123",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache:        &threadsafeSet{},
+			getIssueClientError: errors.New("error: didn't serve 404 from cache"),
 		},
 	}
 
@@ -234,10 +348,11 @@ func TestHandle(t *testing.T) {
 			jiraClient := &fakeJiraClient{
 				existingIssues: tc.existingIssues,
 				existingLinks:  tc.existingLinks,
+				getIssueError:  tc.getIssueClientError,
 			}
 			githubClient := &fakeGitHubClient{}
 
-			if err := handle(jiraClient, githubClient, logrus.NewEntry(logrus.New()), &tc.event); err != nil {
+			if err := handleWithProjectCache(jiraClient, githubClient, tc.cfg, logrus.NewEntry(logrus.New()), &tc.event, tc.projectCache); err != nil {
 				t.Fatalf("handle failed: %v", err)
 			}
 
@@ -328,12 +443,70 @@ because of [ABC-123](https://my-jira.com/browse/ABC-123)`,
 			body:     "https://my-jira.com/browse/ABC-123",
 			expected: "https://my-jira.com/browse/ABC-123",
 		},
+		{
+			name: "code section is not replaced",
+			body: `This change:
+is very important` + "\n```bash\n" +
+				`ABC-123` +
+				"\n```\n" + `ABC-123
+`,
+			expected: `This change:
+is very important` + "\n```bash\n" +
+				`ABC-123` +
+				"\n```\n" + `[ABC-123](https://my-jira.com/browse/ABC-123)
+`,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			if diff := cmp.Diff(insertLinksIntoComment(tc.body, []string{issueName}, fakeJiraUrl), tc.expected); diff != "" {
 				t.Errorf("actual result differs from expected result: %s", diff)
+			}
+		})
+	}
+}
+
+func TestProjectCachingJiraClient(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		client         jiraclient.Client
+		issueToRequest string
+		cache          *threadsafeSet
+		expectedError  error
+	}{
+		{
+			name:           "404 gets served from cache",
+			client:         &fakeJiraClient{},
+			issueToRequest: "issue-123",
+			cache:          &threadsafeSet{data: sets.String{}},
+			expectedError:  jiraclient.NewNotFoundError(errors.New("404 from cache")),
+		},
+		{
+			name:           "Success",
+			client:         &fakeJiraClient{existingIssues: []jira.Issue{{ID: "issue-123"}}},
+			issueToRequest: "issue-123",
+			cache:          &threadsafeSet{data: sets.NewString("issue")},
+		},
+		{
+			name:           "Success case-insensitive",
+			client:         &fakeJiraClient{existingIssues: []jira.Issue{{ID: "ISSUE-123"}}},
+			issueToRequest: "ISSUE-123",
+			cache:          &threadsafeSet{data: sets.NewString("issue")},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cachingClient := &projectCachingJiraClient{
+				Client: tc.client,
+				cache:  tc.cache,
+			}
+
+			_, err := cachingClient.GetIssue(tc.issueToRequest)
+			if diff := cmp.Diff(tc.expectedError, err, cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
+				t.Fatalf("expected error differs from expected: %s", diff)
 			}
 		})
 	}

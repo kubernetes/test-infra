@@ -1,9 +1,12 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kettle
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: kettle
   template:
     metadata:
       labels:
@@ -18,6 +21,8 @@ spec:
           value: /etc/service-account/service-account.json
         - name: DEPLOYMENT
           value: prod
+        - name: SUBSCRIPTION_PATH
+          value: kubernetes-jenkins/gcs-changes/kettle
         volumeMounts:
         - name: service
           mountPath: /etc/service-account

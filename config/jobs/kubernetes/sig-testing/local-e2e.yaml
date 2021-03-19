@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -24,7 +24,7 @@ presubmits:
         - "--timeout=140"
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
@@ -54,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       args:
       - "--timeout=140"
       - "--bare"

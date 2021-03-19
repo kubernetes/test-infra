@@ -19,6 +19,7 @@ package blockade
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -34,12 +35,17 @@ import (
 
 var (
 	// Sample changes:
-	docFile    = github.PullRequestChange{Filename: "docs/documentation.md", BlobURL: "<URL1>"}
-	docOwners  = github.PullRequestChange{Filename: "docs/OWNERS", BlobURL: "<URL2>"}
-	docOwners2 = github.PullRequestChange{Filename: "docs/2/OWNERS", BlobURL: "<URL3>"}
-	srcGo      = github.PullRequestChange{Filename: "src/code.go", BlobURL: "<URL4>"}
-	srcSh      = github.PullRequestChange{Filename: "src/shell.sh", BlobURL: "<URL5>"}
-	docSh      = github.PullRequestChange{Filename: "docs/shell.sh", BlobURL: "<URL6>"}
+	docFile         = github.PullRequestChange{Filename: "docs/documentation.md", BlobURL: "<URL1>"}
+	docOwners       = github.PullRequestChange{Filename: "docs/OWNERS", BlobURL: "<URL2>"}
+	docOwners2      = github.PullRequestChange{Filename: "docs/2/OWNERS", BlobURL: "<URL3>"}
+	srcGo           = github.PullRequestChange{Filename: "src/code.go", BlobURL: "<URL4>"}
+	srcSh           = github.PullRequestChange{Filename: "src/shell.sh", BlobURL: "<URL5>"}
+	docSh           = github.PullRequestChange{Filename: "docs/shell.sh", BlobURL: "<URL6>"}
+	conformanceYaml = github.PullRequestChange{Filename: "test/conformance/testdata/conformance.yaml", BlobURL: "<URL6>"}
+
+	// branches
+	releaseBranchRegexp = "^release-*"
+	releaseBranchRe     = regexp.MustCompile(releaseBranchRegexp)
 
 	// Sample blockades:
 	blockDocs = plugins.Blockade{
@@ -68,16 +74,36 @@ var (
 		BlockRegexps: []string{`.*`},
 		Explanation:  "5",
 	}
+	blockConformanceOnReleaseBranch = plugins.Blockade{
+		Repos:        []string{"org/repo"},
+		BranchRegexp: &releaseBranchRegexp,
+		BranchRe:     releaseBranchRe,
+		BlockRegexps: []string{`test/conformance/testdata/.*`},
+		Explanation:  "6",
+	}
+	blockBadBranchRe = plugins.Blockade{
+		Repos:        []string{"org/repo"},
+		BranchRegexp: &releaseBranchRegexp,
+		BlockRegexps: []string{`test/conformance/testdata/.*`},
+		Explanation:  "6",
+	}
 )
 
 // TestCalculateBlocks validates that changes are blocked or allowed correctly.
 func TestCalculateBlocks(t *testing.T) {
 	tcs := []struct {
 		name            string
+		branch          string
 		changes         []github.PullRequestChange
 		config          []plugins.Blockade
 		expectedSummary summary
 	}{
+		{
+			name:            "nil BranchRe",
+			config:          []plugins.Blockade{blockBadBranchRe},
+			changes:         []github.PullRequestChange{},
+			expectedSummary: summary{},
+		},
 		{
 			name:    "blocked by 1/1 blockade (no exceptions), extra file",
 			config:  []plugins.Blockade{blockDocs},
@@ -147,10 +173,36 @@ func TestCalculateBlocks(t *testing.T) {
 			changes:         []github.PullRequestChange{docOwners, srcGo},
 			expectedSummary: summary{},
 		},
+		{
+			name:    "blocked by 1/1 blockade on release branch w/ single file",
+			branch:  "release-1.20",
+			config:  []plugins.Blockade{blockConformanceOnReleaseBranch},
+			changes: []github.PullRequestChange{conformanceYaml},
+			expectedSummary: summary{
+				"6": []github.PullRequestChange{conformanceYaml},
+			},
+		},
+		{
+			name:            "don't block conformance on main branch",
+			branch:          "main",
+			config:          []plugins.Blockade{blockConformanceOnReleaseBranch},
+			changes:         []github.PullRequestChange{conformanceYaml},
+			expectedSummary: summary{},
+		},
+		{
+			name:    "blocked by 2/2 blockades on release branch (no exceptions), extra file",
+			branch:  "release-1.20",
+			config:  []plugins.Blockade{blockConformanceOnReleaseBranch, blockDocsExceptOwners},
+			changes: []github.PullRequestChange{conformanceYaml, docFile, srcGo},
+			expectedSummary: summary{
+				"2": []github.PullRequestChange{docFile},
+				"6": []github.PullRequestChange{conformanceYaml},
+			},
+		},
 	}
 
 	for _, tc := range tcs {
-		blockades := compileApplicableBlockades("org", "repo", logrus.WithField("plugin", PluginName), tc.config)
+		blockades := compileApplicableBlockades("org", "repo", tc.branch, logrus.WithField("plugin", PluginName), tc.config)
 		sum := calculateBlocks(tc.changes, blockades)
 		if !reflect.DeepEqual(sum, tc.expectedSummary) {
 			t.Errorf("[%s] Expected summary: %#v, actual summary: %#v.", tc.name, tc.expectedSummary, sum)
@@ -295,14 +347,9 @@ func TestHandle(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		expectAdded := []string{}
-		fakeClient := &fakegithub.FakeClient{
-			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
-			IssueComments:      make(map[int][]github.IssueComment),
-			PullRequestChanges: make(map[int][]github.PullRequestChange),
-			IssueLabelsAdded:   []string{},
-			IssueLabelsRemoved: []string{},
-		}
+		var expectAdded []string
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.RepoLabelsExisting = []string{labels.BlockedPaths, otherLabel}
 		if tc.hasLabel {
 			label := formatLabel(labels.BlockedPaths)
 			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)
@@ -337,7 +384,7 @@ func TestHandle(t *testing.T) {
 		if !reflect.DeepEqual(expectAdded, fakeClient.IssueLabelsAdded) {
 			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.IssueLabelsAdded)
 		}
-		expectRemoved := []string{}
+		var expectRemoved []string
 		if tc.labelRemoved != "" {
 			expectRemoved = append(expectRemoved, formatLabel(tc.labelRemoved))
 		}
@@ -377,6 +424,7 @@ func TestHelpProvider(t *testing.T) {
 				Blockades: []plugins.Blockade{
 					{
 						Repos:            []string{"org2/repo"},
+						BranchRegexp:     &releaseBranchRegexp,
 						BlockRegexps:     []string{"no", "nope"},
 						ExceptionRegexps: []string{"except", "exceptional"},
 						Explanation:      "Because I have decided so.",

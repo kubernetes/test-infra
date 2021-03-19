@@ -9,9 +9,10 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -28,6 +29,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
@@ -36,7 +38,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         resources:
           requests:
             cpu: 7300m
@@ -53,12 +55,13 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-apidiff-main
@@ -68,15 +71,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
-    skip_branches:
-    - gh-pages
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    - ^operator-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         command:
         - "runner.sh"
-        - "make"
-        - "verify"
+        - ./scripts/ci-verify.sh
         resources:
           requests:
             cpu: 7300m
@@ -92,9 +96,10 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^operator-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -116,7 +121,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -145,7 +150,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -176,10 +181,25 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
+        env:
+          - name: BUILD_NODE_IMAGE_TAG
+            value: "ci/latest"
+          - name: KUBERNETES_VERSION
+            value: "ci/latest"
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "v1.20.0"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "ci/latest"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.4.13-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "1.7.0"
+          - name: GINKGO_FOCUS
+            value: "\\[Periodic-K8SVersion\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

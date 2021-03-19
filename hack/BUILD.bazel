@@ -1,5 +1,5 @@
 load("@py3_deps//:requirements.bzl", "requirement")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary", "nodejs_test")
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -258,7 +258,7 @@ sh_binary(
     name = "update-gopherage",
     srcs = ["update-gopherage.sh"],
     data = [
-        "//gopherage/cmd/html/static:zz.browser_bundle.es2015.js",
+        "//gopherage/cmd/html/static:browser_bundle.es2015.js",
     ],
 )
 
@@ -267,7 +267,6 @@ sh_test(
     srcs = ["verify-gopherage.sh"],
     data = [
         "//gopherage/cmd/html/static:browser_bundle.es2015.js",
-        "//gopherage/cmd/html/static:zz.browser_bundle.es2015.js",
     ],
     tags = ["lint"],
 )

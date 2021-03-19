@@ -28,12 +28,15 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
 	AddRemoteLink(id string, link *jira.RemoteLink) error
+	ListProjects() (*jira.ProjectList, error)
 	JiraClient() *jira.Client
 	JiraURL() string
 }
@@ -71,6 +74,15 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 
 	retryingClient := retryablehttp.NewClient()
 	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: log}
+	retryingClient.HTTPClient.Transport = &metricsTransport{
+		upstream:       retryingClient.HTTPClient.Transport,
+		pathSimplifier: pathSimplifier().Simplify,
+		recorder:       requestResults,
+	}
+	retryingClient.HTTPClient.Transport = userAgentSettingTransport{
+		userAgent: version.UserAgent(),
+		upstream:  retryingClient.HTTPClient.Transport,
+	}
 
 	if o.BasicAuth != nil {
 		retryingClient.HTTPClient.Transport = &basicAuthRoundtripper{
@@ -81,6 +93,16 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 
 	jiraClient, err := jira.NewClient(retryingClient.StandardClient(), endpoint)
 	return &client{upstream: jiraClient, url: endpoint}, err
+}
+
+type userAgentSettingTransport struct {
+	userAgent string
+	upstream  http.RoundTripper
+}
+
+func (u userAgentSettingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Set("User-Agent", u.userAgent)
+	return u.upstream.RoundTrip(r)
 }
 
 type client struct {
@@ -102,6 +124,14 @@ func (jc *client) GetIssue(id string) (*jira.Issue, error) {
 	}
 
 	return issue, nil
+}
+
+func (jc *client) ListProjects() (*jira.ProjectList, error) {
+	projects, response, err := jc.upstream.Project.GetList()
+	if err != nil {
+		return nil, JiraError(response, err)
+	}
+	return projects, nil
 }
 
 func IsNotFound(err error) bool {

@@ -11,14 +11,14 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       command:
       - "./scripts/ci-test.sh"
       resources:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-test-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
@@ -35,7 +35,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -46,7 +46,7 @@ periodics:
           requests:
             cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-e2e-release-0-3
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
@@ -60,7 +60,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       command:
       - "runner.sh"
       - "make"
@@ -79,5 +79,5 @@ periodics:
       - key: cluster-lifecycle-github-token
         path: cluster-lifecycle-github-token
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-verify-book-links-release-0-3

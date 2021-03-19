@@ -17,6 +17,8 @@ limitations under the License.
 package hook
 
 import (
+	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -87,7 +89,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(re.Action), "plugin": p}
-			if err := h(agent, re); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, re) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -143,7 +145,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(rce.Action), "plugin": p}
-			if err := h(agent, rce); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, rce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -199,7 +201,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(pr.Action), "plugin": p}
-			if err := h(agent, pr); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, pr) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -251,7 +253,7 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
-			if err := h(agent, pe); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, pe) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PushEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -282,7 +284,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(i.Action), "plugin": p}
-			if err := h(agent, i); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, i) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -340,7 +342,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ic.Action), "plugin": p}
-			if err := h(agent, ic); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, ic) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -393,7 +395,7 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
-			if err := h(agent, se); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, se) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling StatusEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -430,7 +432,7 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ce.Action), "plugin": p}
-			if err := h(agent, *ce); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, *ce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -441,4 +443,13 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func errorOnPanic(f func() error) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic caught: %v. stack is: %s", r, debug.Stack())
+		}
+	}()
+	return f()
 }

@@ -34,6 +34,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
@@ -273,7 +274,7 @@ func TestTerminateDupes(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.Name, func(t *testing.T) {
-			var prowJobs []ctrlruntimeclient.Object
+			var prowJobs []runtime.Object
 			for i := range tc.PJs {
 				pj := &tc.PJs[i]
 				prowJobs = append(prowJobs, pj)
@@ -756,7 +757,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.PJ)
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			for alias, pods := range tc.Pods {
-				var data []ctrlruntimeclient.Object
+				var data []runtime.Object
 				for i := range pods {
 					pod := pods[i]
 					data = append(data, &pod)
@@ -1594,7 +1595,7 @@ func TestSyncPendingJob(t *testing.T) {
 				pm[tc.Pods[i].ObjectMeta.Name] = tc.Pods[i]
 			}
 			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.PJ)
-			var data []ctrlruntimeclient.Object
+			var data []runtime.Object
 			for i := range tc.Pods {
 				pod := tc.Pods[i]
 				data = append(data, &pod)
@@ -1698,7 +1699,7 @@ func TestOrderedJobs(t *testing.T) {
 		{1, 2, 0},
 		{2, 0, 1},
 	} {
-		newPjs := make([]ctrlruntimeclient.Object, 3)
+		newPjs := make([]runtime.Object, 3)
 		for i := 0; i < len(pjs); i++ {
 			newPjs[i] = &pjs[orders[i]]
 		}
@@ -1996,7 +1997,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			}
 			close(jobs)
 
-			var prowJobs []ctrlruntimeclient.Object
+			var prowJobs []runtime.Object
 			for i := range test.PJs {
 				test.PJs[i].Namespace = "prowjobs"
 				test.PJs[i].Spec.Agent = prowapi.KubernetesAgent
@@ -2209,7 +2210,7 @@ func TestMaxConcurency(t *testing.T) {
 				}
 				result = c.canExecuteConcurrently(&tc.ProwJob)
 			} else {
-				var prowJobs []ctrlruntimeclient.Object
+				var prowJobs []runtime.Object
 				for i := range tc.ExistingProwJobs {
 					tc.ExistingProwJobs[i].Namespace = "prowjobs"
 					prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
@@ -2380,7 +2381,7 @@ func TestSyncAbortedJob(t *testing.T) {
 				},
 			}
 
-			var pods []ctrlruntimeclient.Object
+			var pods []runtime.Object
 			var podMap map[string]v1.Pod
 			if tc.Pod != nil {
 				pods = append(pods, tc.Pod)

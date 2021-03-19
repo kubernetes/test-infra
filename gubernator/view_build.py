@@ -258,7 +258,7 @@ class BuildHandler(view_base.BaseHandler):
         external_config = get_build_config(prefix, self.app.config)
         if external_config is not None:
             if external_config.get('spyglass'):
-                spyglass_link = 'https://' + external_config['prow_url'] + '/view/gcs/' + build_dir
+                spyglass_link = 'https://' + external_config['prow_url'] + '/view/gs/' + build_dir
             if '/pull/' in prefix:
                 pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
             if want_build_log and not build_log:

@@ -23,8 +23,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/google/gofuzz"
+	fuzz "github.com/google/gofuzz"
 )
+
+func pStr(str string) *string {
+	return &str
+}
 
 func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
@@ -97,7 +101,17 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 		{
 			name: "gcs secret name provided",
 			provided: &DecorationConfig{
-				GCSCredentialsSecret: "somethingSecret",
+				GCSCredentialsSecret: pStr("somethingSecret"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "gcs secret name unset",
+			provided: &DecorationConfig{
+				GCSCredentialsSecret: pStr(""),
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
@@ -107,10 +121,30 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 		{
 			name: "s3 secret name provided",
 			provided: &DecorationConfig{
-				S3CredentialsSecret: "overwritten",
+				S3CredentialsSecret: pStr("overwritten"),
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name unset",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: pStr(""),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "default service account name provided",
+			provided: &DecorationConfig{
+				DefaultServiceAccountName: pStr("gcs-upload-sa"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.DefaultServiceAccountName = orig.DefaultServiceAccountName
 				return def
 			},
 		},
@@ -193,8 +227,8 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "secretName",
-				S3CredentialsSecret:  "s3-secret",
+				GCSCredentialsSecret: pStr("secretName"),
+				S3CredentialsSecret:  pStr("s3-secret"),
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
 				SkipCloning:          &truth,
@@ -216,7 +250,25 @@ func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
 			def := &DecorationConfig{}
 			fuzz.New().Fuzz(def)
 
-			defaulted := (&DecorationConfig{}).ApplyDefault(def)
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &DecorationConfig{
+				UtilityImages:    &UtilityImages{},
+				Resources:        &Resources{},
+				GCSConfiguration: &GCSConfiguration{},
+			}
+			if def.UtilityImages == nil {
+				def.UtilityImages = &UtilityImages{}
+			}
+			if def.Resources == nil {
+				def.Resources = &Resources{}
+			}
+			if def.GCSConfiguration == nil {
+				def.GCSConfiguration = &GCSConfiguration{}
+			}
+			defaulted := toDefault.ApplyDefault(def)
 
 			if diff := cmp.Diff(def, defaulted); diff != "" {
 				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)

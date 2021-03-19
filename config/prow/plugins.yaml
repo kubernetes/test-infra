@@ -19,9 +19,6 @@ triggers:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
-  - kubeflow
-  join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
-- repos:
   - tensorflow/minigo
   join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
 - repos:
@@ -53,21 +50,18 @@ approve:
   - kubernetes/minikube
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
-  - kubernetes/publishing-bot
-  - kubernetes/release
-  - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/system-validators
   - kubernetes/utils
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/kops
   - kubernetes/website
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
   - kubernetes/enhancements
-  - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
   - kubernetes-csi
@@ -85,18 +79,29 @@ approve:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/downloadkubernetes
+  - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
+  - kubernetes-sigs/kubetest2
+  - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/release-notes
   - kubernetes-sigs/slack-infra
+  - kubernetes-sigs/zeitgeist
   - kubernetes/community
   - kubernetes/k8s.io
   - kubernetes/org
+  - kubernetes/publishing-bot
+  - kubernetes/release
   - kubernetes/repo-infra
+  - kubernetes/sig-release
   - kubernetes/test-infra
   - kubernetes/cloud-provider-gcp
   require_self_approval: false
   ignore_review_state: false
 - repos:
-  - kubernetes-sigs/service-apis
+  - kubernetes-sigs/gateway-api
   lgtm_acts_as_approve: false
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
@@ -112,29 +117,31 @@ label:
     # This label is used by the API review process
     # https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics
     - api-review
-    # These labels are used by Kubeflow
-    # TODO(https://github.com/kubernetes/test-infra/issues/8648): Switch
-    # to configuring prefixes and not individual labels once  that's supported.
-    - community/discussion
-    - community/maintenance
-    - community/question
-    - cuj/build-train-deploy
-    - cuj/multi-user
-    - platform/aws
-    - platform/azure
-    - platform/gcp
-    - platform/minikube
-    - platform/other
+    # These labels are used to make Tide merge with a non-default merge method
     - tide/merge-method-merge
     - tide/merge-method-rebase
     - tide/merge-method-squash
 
+
 lgtm:
 - repos:
   - bazelbuild
-  - kubernetes/repo-infra
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/downloadkubernetes
+  - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
+  - kubernetes-sigs/kubetest2
+  - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/release-notes
+  - kubernetes-sigs/zeitgeist
+  - kubernetes/k8s.io
+  - kubernetes/kops
+  - kubernetes/publishing-bot
+  - kubernetes/release
+  - kubernetes/repo-infra
+  - kubernetes/sig-release
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
@@ -147,6 +154,11 @@ blockades:
   blockregexps:
   - ^examples/
   explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^pkg/util/[^/]+\.go$
+  explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
 - repos:
   - kubernetes/community
   blockregexps:
@@ -241,15 +253,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.17:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
         release-1.18:
             - cpanato # Release Manager
             - feiskyer # Release Manager
@@ -326,23 +329,31 @@ milestone_applier:
     release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
-    release-1.17: v1.17
+  kubernetes/org:
+    main: v1.21
   kubernetes/release:
     master: v1.21
   kubernetes/sig-release:
     master: v1.21
   kubernetes/test-infra:
     master: v1.21
+  kubernetes/k8s.io:
+    main: v1.21
   kubernetes/kops:
-    master: v1.20
+    master: v1.21
+    release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
+  kubernetes-sigs/cluster-api:
+    master: v0.4.x
+    release-0.4: v0.4.x
+    operator-0.4: v0.4.x # Remove this when it gets merged back.
+    release-0.3: v0.3.x
   kubernetes-sigs/cluster-api-provider-azure:
-    master: v0.4.11
-    release-0.4: v0.4
-    release-0.3: v0.3
+    master: v0.5.0
+    release-0.4: v0.4.14
   kubernetes-sigs/cluster-api-provider-digitalocean:
     master: v0.4
     release-0.4: v0.4
@@ -351,6 +362,12 @@ milestone_applier:
     master: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/controller-runtime:
+    master: v0.9.x
+    release-0.8: v0.8.x
+    release-0.7: v0.7.x
+    release-0.6: v0.6.x
+    release-0.5: v0.5.x
   kubernetes/website:
     dev-1.21: 1.21
 
@@ -394,6 +411,10 @@ repo_milestone:
     maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
     maintainers_friendly_name: Cluster API Provider GCP Maintainers
+  kubernetes-sigs/cluster-api-provider-nested:
+    maintainers_id: 4158805
+    maintainers_team: cluster-api-provider-nested-maintainers
+    maintainers_friendly_name: Cluster API Provider Nested Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
@@ -447,8 +468,6 @@ project_config:
               To do
             Doc Writing and Editing:
               To do
-    kubeflow:
-      org_maintainers_team_id: 3198542 # kubeflow-project-maintainers
 
 config_updater:
   maps:
@@ -639,454 +658,421 @@ plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
   # Repos that do not send prow webhooks will see no effect.
   bazelbuild:
-  - approve  # Allow OWNERS to /approve
-  - assign  # Allow /assign and /cc
-  - blunderbuss  # Auto-assign people
-  - cat # /meow replies with cat pictures
-  - dog # /bark replies with dog pictures
-  - help  # Support /help and /good-first-issue
-  - hold  # Support /hold to delay merge
-  - lgtm  # Allow /lgtm
-  - lifecycle  # Allow /lifecycle stale
-  - override
-  - size  # Auto-label size of PR
-  - trigger  # Allow people to configure CI jobs to /test
-  - verify-owners # Validates OWNERS file changes in PRs.
-  - wip  # Auto-hold PRs with WIP in title
-  - yuks # Let prow tell a /joke
+    plugins:
+    - approve  # Allow OWNERS to /approve
+    - assign  # Allow /assign and /cc
+    - blunderbuss  # Auto-assign people
+    - cat # /meow replies with cat pictures
+    - dog # /bark replies with dog pictures
+    - help  # Support /help and /good-first-issue
+    - hold  # Support /hold to delay merge
+    - lgtm  # Allow /lgtm
+    - lifecycle  # Allow /lifecycle stale
+    - override
+    - size  # Auto-label size of PR
+    - trigger  # Allow people to configure CI jobs to /test
+    - verify-owners # Validates OWNERS file changes in PRs.
+    - wip  # Auto-hold PRs with WIP in title
+    - yuks # Let prow tell a /joke
 
   google/cadvisor:
-  - trigger
-
-  kubeflow:
-  - approve   # Enable /approve and /assign commands.
-  - assign
-  - blunderbuss
-  - golint
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle   # Lets PRs & issues be flagged as stale
-  - override
-  - project # Lets issues be tagged into projects
-  - size
-  - skip  # Allows cleaning up stale commit statuses
-  - verify-owners   # Validates OWNERS file changes in PRs.
-  - wip   # Applies a label to PRs with wip in the title to block merge
-
-  kubeflow/arena:
-  - trigger
-
-  kubeflow/batch-predict:
-  - trigger
-
-  kubeflow/caffe2-operator:
-  - trigger
-
-  kubeflow/chainer-operator:
-  - trigger
-
-  kubeflow/common:
-  - trigger
-
-  kubeflow/community-infra:
-  - trigger
-
-  kubeflow/examples:
-  - trigger
-
-  kubeflow/experimental-seldon:
-  - trigger
-
-  kubeflow/fairing:
-  - trigger
-
-  kubeflow/gcp-blueprints:
-  - trigger
-
-  kubeflow/internal-acls:
-  - trigger
-
-  kubeflow/kfp-tekton:
-  - trigger
-
-  kubeflow/kfp-tekton-backend:
-  - trigger
-
-  kubeflow/kubebench:
-  - trigger
-
-  kubeflow/kubeflow:
-  - trigger
-
-  kubeflow/metadata:
-  - trigger
-
-  kubeflow/mpi-operator:
-  - trigger
-
-  kubeflow/mxnet-operator:
-  - trigger
-
-  kubeflow/pipelines:
-  - trigger
-
-  kubeflow/reporting:
-  - trigger
-
-  kubeflow/testing:
-  - trigger
-
-  kubeflow/tf-operator:
-  - trigger
-
-  kubeflow/website:
-  - trigger
-
-  kubeflow/xgboost-operator:
-  - trigger
+    plugins:
+    - trigger
 
   kubernetes:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - golint
-  - goose
-  - heart
-  - help
-  - hold
-  - invalidcommitmsg
-  - label
-  - lgtm
-  - lifecycle
-  - owners-label
-  - pony
-  - retitle
-  - shrug
-  - sigmention
-  - size
-  - skip
-  - slackevents
-  - trick-or-treat
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
+    plugins:
+    - approve
+    - assign
+    - blunderbuss
+    - cat
+    - cla
+    - dog
+    - golint
+    - goose
+    - heart
+    - help
+    - hold
+    - invalidcommitmsg
+    - label
+    - lgtm
+    - lifecycle
+    - milestoneapplier
+    - owners-label
+    - pony
+    - retitle
+    - shrug
+    - sigmention
+    - size
+    - skip
+    - slackevents
+    - trick-or-treat
+    - trigger
+    - verify-owners
+    - welcome
+    - wip
+    - yuks
 
   kubernetes/cloud-provider-aws:
-  - milestone
-  - milestonestatus
-  - release-note
-  - require-matching-label
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+    - require-matching-label
 
   kubernetes/cloud-provider-openstack:
-  - override
-  - release-note
+    plugins:
+    - override
+    - release-note
 
   kubernetes/community:
-  - blockade
-  - milestone
-  - require-matching-label
+    plugins:
+    - blockade
+    - milestone
+    - require-matching-label
 
   kubernetes/dashboard:
-  - override
+    plugins:
+    - override
 
   kubernetes/enhancements:
-  - blockade
-  - milestone
-  - milestoneapplier
-  - require-matching-label
-  - stage
+    plugins:
+    - blockade
+    - milestone
+    - require-matching-label
+    - stage
+
+  kubernetes/k8s.io:
+    plugins:
+    - milestone
 
   kubernetes/kops:
-  - mergecommitblocker
-  - milestone
-  - milestoneapplier
+    plugins:
+    - mergecommitblocker
+    - milestone
 
   kubernetes/kubeadm:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes/kubectl:
-  - require-matching-label
+    plugins:
+    - require-matching-label
 
   kubernetes/kubernetes:
-  - blockade
-  - cherry-pick-unapproved
-  - mergecommitblocker
-  - milestone
-  - milestoneapplier
-  - milestonestatus
-  - override
-  - release-note
-  - require-matching-label
+    plugins:
+    - blockade
+    - cherry-pick-unapproved
+    - mergecommitblocker
+    - milestone
+    - milestonestatus
+    - override
+    - release-note
+    - require-matching-label
 
   kubernetes/org:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes/publishing-bot:
-  - override
+    plugins:
+    - override
 
   kubernetes/release:
-  - blockade
-  - mergecommitblocker
-  - milestone
-  - milestoneapplier
-  - override
-  - release-note
-  - require-matching-label
+    plugins:
+    - blockade
+    - mergecommitblocker
+    - milestone
+    - override
+    - release-note
+    - require-matching-label
 
   kubernetes/sig-release:
-  - mergecommitblocker
-  - milestone
-  - milestoneapplier
-  - override
-  - require-matching-label
+    plugins:
+    - mergecommitblocker
+    - milestone
+    - override
+    - require-matching-label
 
   kubernetes/system-validators:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes/test-infra:
-  - config-updater
-  - milestone
-  - milestoneapplier
-  - override
-  - project
+    plugins:
+    - config-updater
+    - milestone
+    - override
+    - project
 
   kubernetes/utils:
-  - override
+    plugins:
+    - override
 
   kubernetes/website:
-  - milestone
-  - milestoneapplier
-  - project
-  - require-matching-label
+    plugins:
+    - milestone
+    - project
+    - require-matching-label
 
   kubernetes-client:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - goose
-  - heart
-  - help
-  - hold
-  - invalidcommitmsg
-  - label
-  - lgtm
-  - lifecycle
-  - owners-label
-  - pony
-  - retitle
-  - shrug
-  - size
-  - skip
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
+    plugins:
+    - approve
+    - assign
+    - blunderbuss
+    - cat
+    - cla
+    - dog
+    - goose
+    - heart
+    - help
+    - hold
+    - invalidcommitmsg
+    - label
+    - lgtm
+    - lifecycle
+    - owners-label
+    - pony
+    - retitle
+    - shrug
+    - size
+    - skip
+    - trigger
+    - verify-owners
+    - welcome
+    - wip
+    - yuks
 
   kubernetes-csi:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - goose
-  - heart
-  - help
-  - hold
-  - invalidcommitmsg
-  - label
-  - lgtm
-  - lifecycle
-  - owners-label
-  - pony
-  - retitle
-  - release-note
-  - shrug
-  - size
-  - skip
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
+    plugins:
+    - approve
+    - assign
+    - blunderbuss
+    - cat
+    - cla
+    - dog
+    - goose
+    - heart
+    - help
+    - hold
+    - invalidcommitmsg
+    - label
+    - lgtm
+    - lifecycle
+    - owners-label
+    - pony
+    - retitle
+    - release-note
+    - shrug
+    - size
+    - skip
+    - trigger
+    - verify-owners
+    - welcome
+    - wip
+    - yuks
 
   kubernetes-sigs:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - goose
-  - heart
-  - help
-  - hold
-  - invalidcommitmsg
-  - label
-  - lgtm
-  - lifecycle
-  - owners-label
-  - pony
-  - retitle
-  - shrug
-  - size
-  - skip
-  - trick-or-treat
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
+    plugins:
+    - approve
+    - assign
+    - blunderbuss
+    - cat
+    - cla
+    - dog
+    - goose
+    - heart
+    - help
+    - hold
+    - invalidcommitmsg
+    - label
+    - lgtm
+    - lifecycle
+    - milestoneapplier
+    - owners-label
+    - pony
+    - retitle
+    - shrug
+    - size
+    - skip
+    - trick-or-treat
+    - trigger
+    - verify-owners
+    - welcome
+    - wip
+    - yuks
 
   kubernetes-sigs/cloud-provider-azure:
-  - milestone
-  - milestonestatus
-  - release-note
-  - require-matching-label
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+    - require-matching-label
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
-  - release-note
+    plugins:
+    - release-note
 
   kubernetes-sigs/gcp-filestore-csi-driver:
-  - release-note
+    plugins:
+    - release-note
 
   kubernetes-sigs/boskos:
-  - override
+    plugins:
+    - override
 
   kubernetes-sigs/kind:
-  - override
+    plugins:
+    - override
 
   kubernetes-sigs/controller-runtime:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes-sigs/cluster-api:
-  - milestone
-  - override
+    plugins:
+    - milestone
+    - override
 
   kubernetes-sigs/cluster-api-provider-aws:
-  - milestone
-  - override
+    plugins:
+    - milestone
+    - override
+    - release-note
 
   kubernetes-sigs/cluster-api-provider-azure:
-  - milestone
-  - milestoneapplier
-  - milestonestatus
-  - release-note
-  - require-matching-label
-  - override
-
-  kubernetes-sigs/cluster-api-provider-gcp:
-  - milestone
-  - milestoneapplier
-  - milestonestatus
-  - release-note
-  - require-matching-label
-  - override
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+    - require-matching-label
+    - override
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
-  - milestone
-  - milestoneapplier
-  - milestonestatus
-  - release-note
-  - require-matching-label
-
-  kubernetes-sigs/cluster-api-provider-ibmcloud:
-  - milestone
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-docker:
-  - milestone
+    plugins:
+    - milestone
+
+  kubernetes-sigs/cluster-api-provider-gcp:
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+    - require-matching-label
+    - override
+
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+    plugins:
+    - milestone
+
+  kubernetes-sigs/cluster-api-provider-nested:
+    plugins:
+    - milestone
+    - override
 
   kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes-sigs/image-builder:
-  - mergecommitblocker
+    plugins:
+    - mergecommitblocker
 
   kubernetes-sigs/etcdadm:
-  - milestone
+    plugins:
+    - milestone
 
   kubernetes-sigs/contributor-playground:
-  - require-matching-label
+    plugins:
+    - require-matching-label
 
   kubernetes-sigs/security-profiles-operator:
-  - release-note
+    plugins:
+    - release-note
 
   kubernetes-sigs/k8s-container-image-promoter:
-  - mergecommitblocker
-  - override
-  - release-note
+    plugins:
+    - mergecommitblocker
+    - override
+    - release-note
+
+  kubernetes-sigs/kubebuilder:
+    plugins:
+    - override
 
   containerd/cri:
-  - assign
-  - cla
-  - label
-  - lgtm
-  - lifecycle
-  - size
-  - trigger
+    plugins:
+    - assign
+    - cla
+    - label
+    - lgtm
+    - lifecycle
+    - size
+    - trigger
 
   containerd/containerd:
-  - assign  # Allow /assign and /cc
-  - trigger # Allow people to configure CI jobs to /test
+    plugins:
+    - assign  # Allow /assign and /cc
+    - trigger # Allow people to configure CI jobs to /test
 
   tensorflow/k8s:
-  - trigger
+    plugins:
+    - trigger
 
   tensorflow/minigo:
-  - trigger
-  - lgtm
-  - size
+    plugins:
+    - trigger
+    - lgtm
+    - size
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
-  - trigger
+    plugins:
+    - trigger
 
   GoogleCloudPlatform/k8s-cluster-bundle:
-  - trigger
-  - lgtm
-  - size
-  - welcome
+    plugins:
+    - trigger
+    - lgtm
+    - size
+    - welcome
 
   GoogleCloudPlatform/netd:
-  - trigger
-  - lgtm
-  - golint
-  - approve
-  - verify-owners
-  - size
-  - assign
-  - help
-  - hold
-  - cat
-  - dog
-  - wip
+    plugins:
+    - trigger
+    - lgtm
+    - golint
+    - approve
+    - verify-owners
+    - size
+    - assign
+    - help
+    - hold
+    - cat
+    - dog
+    - wip
 
   cncf/apisnoop:
-  - wip
-  - trigger
-  - assign
-  - cla
-  - cat # /meow replies with cat pictures
-  - dog # /bark replies with dog pictures
-  - goose
-  - heart
-  - help
-  - hold
-  - label
-  - lgtm
-  - retitle
-  - shrug
-  - size
+    plugins:
+    - wip
+    - trigger
+    - assign
+    - cla
+    - cat # /meow replies with cat pictures
+    - dog # /bark replies with dog pictures
+    - goose
+    - heart
+    - help
+    - hold
+    - label
+    - lgtm
+    - retitle
+    - shrug
+    - size
 
 external_plugins:
   kubernetes:

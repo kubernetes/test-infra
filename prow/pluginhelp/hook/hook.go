@@ -31,8 +31,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -110,7 +111,7 @@ func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, r
 	for _, ext := range externals {
 		allPlugins = append(allPlugins, ext.Name)
 		go func(ext plugins.ExternalPlugin) {
-			help, err := externalHelpProvider(ha.log, ext.Endpoint)(revMap[ext.Name])
+			help, err := externalHelpProvider(ext.Endpoint)(revMap[ext.Name])
 			if err != nil {
 				ha.log.WithError(err).Errorf("Getting help from external plugin %q.", ext.Name)
 				help = nil
@@ -157,7 +158,7 @@ func (ha *HelpAgent) GeneratePluginHelp() *pluginhelp.Help {
 		"": allPlugins,
 	}
 	for repo, plugins := range config.Plugins {
-		repoPlugins[repo] = plugins
+		repoPlugins[repo] = plugins.Plugins
 	}
 	repoExternalPlugins := map[string][]string{
 		"": allExternalPlugins,
@@ -197,7 +198,7 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 	return flattened.List()
 }
 
-func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.ExternalPluginHelpProvider {
+func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpProvider {
 	return func(enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
 		u, err := url.Parse(endpoint)
 		if err != nil {
@@ -242,7 +243,7 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 		} else {
 			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
-		for _, plugin := range enabledPlugins {
+		for _, plugin := range enabledPlugins.Plugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
@@ -303,6 +304,22 @@ func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets
 	return oa.orgToRepos
 }
 
+func reposForOrgOrUser(ghc githubClient, orgOrUser string) ([]github.Repo, error) {
+	var errs [2]error
+	inError := map[bool]string{true: "user", false: "org"}
+
+	// Check as an org first, it is more likely in normal use case
+	for i, isUser := range []bool{false, true} {
+		if repos, err := ghc.GetRepos(orgOrUser, isUser); err == nil {
+			return repos, nil
+		} else {
+			errs[i] = fmt.Errorf("failed to get repos for %s %s: %w", inError[isUser], orgOrUser, err)
+		}
+	}
+
+	return nil, errors.NewAggregate(errs[:])
+}
+
 func (oa *orgAgent) sync(config *plugins.Configuration) {
 
 	// QUESTION: If we fail to list repos for a single org should we reuse the old orgToRepos or just
@@ -313,9 +330,9 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 	orgs := orgsInConfig(config)
 	orgToRepos := map[string]sets.String{}
 	for _, org := range orgs.List() {
-		repos, err := oa.ghc.GetRepos(org, false /*isUser*/)
+		repos, err := reposForOrgOrUser(oa.ghc, org)
 		if err != nil {
-			oa.log.WithError(err).Errorf("Getting repos in org: %s.", org)
+			oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
 			// Remove 'org' from 'orgs' here to force future resync?
 			continue
 		}

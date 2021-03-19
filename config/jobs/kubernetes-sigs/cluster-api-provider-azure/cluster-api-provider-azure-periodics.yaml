@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-v1alpha3
+- name: periodic-cluster-api-provider-azure-conformance-v1alpha4
   decorate: true
   decoration_config:
     timeout: 4h
@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -28,10 +28,10 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: periodic-conformance-v1alpha3
+    testgrid-tab-name: capz-periodic-conformance-v1alpha4-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts
+- name: periodic-cluster-api-provider-azure-conformance-v1alpha4-with-ci-artifacts
   decorate: true
   decoration_config:
     timeout: 4h
@@ -47,7 +47,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -62,8 +62,8 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, provider-azure-upstream, provider-azure-periodic
-    testgrid-tab-name: periodic-capz-conformance-k8s-master
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capz-periodic-conformance-v1alpha4-k8s-main
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-capi-e2e
@@ -83,7 +83,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -97,7 +97,7 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: periodic-capi-e2e
+    testgrid-tab-name: capz-periodic-capi-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-coverage
   interval: 12h
@@ -114,7 +114,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
       command:
       - runner.sh
       - bash
@@ -151,7 +151,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -167,5 +167,5 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: periodic-capi-e2e-full
+    testgrid-tab-name: capz-periodic-capi-e2e-full-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io

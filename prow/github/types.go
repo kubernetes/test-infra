@@ -273,8 +273,9 @@ type PullRequest struct {
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
-	Milestone *Milestone `json:"milestone,omitempty"`
-	Commits   int        `json:"commits"`
+	Milestone         *Milestone `json:"milestone,omitempty"`
+	Commits           int        `json:"commits"`
+	AuthorAssociation string     `json:"author_association,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -342,6 +343,17 @@ type Repo struct {
 	// is being used, if listing a team's repos this will be for the
 	// team's privilege level in the repo
 	Permissions RepoPermissions `json:"permissions"`
+	Parent      ParentRepo      `json:"parent"`
+}
+
+// ParentRepo contains a small subsection of general repository information: it
+// just includes the information needed to confirm that a parent repo exists
+// and what the name of that repo is.
+type ParentRepo struct {
+	Owner    User   `json:"owner"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	HTMLURL  string `json:"html_url"`
 }
 
 // Repo contains detailed repository information, including items
@@ -663,7 +675,8 @@ type IssueEvent struct {
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
 	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
-	Label Label `json:"label"`
+	Label  Label `json:"label"`
+	Sender User  `json:"sender"`
 
 	// GUID is included in the header of the request received by GitHub.
 	GUID string
@@ -899,6 +912,17 @@ type ReviewCommentEvent struct {
 	GUID string
 }
 
+// DiffSide enumerates the sides of the diff that the PR's changes appear on.
+// See also: https://docs.github.com/en/rest/reference/pulls#create-a-review-comment-for-a-pull-request
+type DiffSide string
+
+const (
+	// DiffSideLeft means left side of the diff.
+	DiffSideLeft = "LEFT"
+	// DiffSideRight means right side of the diff.
+	DiffSideRight = "RIGHT"
+)
+
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
 	ID        int       `json:"id"`
@@ -911,7 +935,11 @@ type ReviewComment struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// Position will be nil if the code has changed such that the comment is no
 	// longer relevant.
-	Position *int `json:"position"`
+	Position  *int     `json:"position,omitempty"`
+	Side      DiffSide `json:"side,omitempty"`
+	StartSide DiffSide `json:"start_side,omitempty"`
+	Line      int      `json:"line,omitempty"`
+	StartLine int      `json:"start_line,omitempty"`
 }
 
 // ReviewAction is the action that a review can be made with.
@@ -944,6 +972,9 @@ type DraftReviewComment struct {
 }
 
 // Content is some base64 encoded github file content
+// It include selected fields available in content record returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
 type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
@@ -1324,4 +1355,15 @@ type AppInstallationToken struct {
 	ExpiresAt    time.Time               `json:"expires_at,omitempty"`
 	Permissions  InstallationPermissions `json:"permissions,omitempty"`
 	Repositories []Repo                  `json:"repositories,omitempty"`
+}
+
+// DirectoryContent contains information about a github directory.
+// It include selected fields available in content records returned by
+// GH "GET" method. See also:
+// https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-repository-content
+type DirectoryContent struct {
+	SHA  string `json:"sha"`
+	Type string `json:"type"`
+	Name string `json:"name"`
+	Path string `json:"path"`
 }

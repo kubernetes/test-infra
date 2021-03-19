@@ -36,7 +36,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         args:
@@ -52,4 +52,4 @@ presubmits:
           go get sigs.k8s.io/kubetest2@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=exec -- kubectl get all --all-namespaces --kubeconfig="${ARTIFACTS}/kubetest2-kubeconfig";
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down;

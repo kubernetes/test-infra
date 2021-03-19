@@ -345,9 +345,8 @@ Available variants:
 	defer ts.Close()
 
 	// github fake client
-	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
-	}
+	fc := fakegithub.NewFakeClient()
+	fc.IssueComments = make(map[int][]github.IssueComment)
 
 	// run test for each case
 	for _, testcase := range testcases {
@@ -463,9 +462,8 @@ func TestCats(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
 		e := &github.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,

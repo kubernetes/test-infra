@@ -17,6 +17,7 @@ limitations under the License.
 package gerrit
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -27,8 +28,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1040,7 +1041,7 @@ func TestReport(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fgc := &fgc{instance: "gerrit"}
-			allpj := []ctrlruntimeclient.Object{tc.pj}
+			allpj := []runtime.Object{tc.pj}
 			for idx, pj := range tc.existingPJs {
 				pj.Name = strconv.Itoa(idx)
 				allpj = append(allpj, pj)
@@ -1048,7 +1049,7 @@ func TestReport(t *testing.T) {
 
 			reporter := &Client{gc: fgc, lister: fakectrlruntimeclient.NewFakeClient(allpj...)}
 
-			shouldReport := reporter.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+			shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
 				t.Errorf("shouldReport: %v, expectReport: %v", shouldReport, tc.expectReport)
 			}
@@ -1057,7 +1058,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), tc.pj)
+			reportedJobs, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

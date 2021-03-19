@@ -1,0 +1,16 @@
+presubmits:
+  kubernetes-sigs/prometheus-adapter:
+  - name: pull-prometheus-adapter-verify
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/prometheus-adapter
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - make
+        args:
+        - verify
+    annotations:
+      testgrid-dashboards: sig-instrumentation-prometheus-adapter
+      testgrid-tab-name: pr-verify

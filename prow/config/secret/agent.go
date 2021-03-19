@@ -18,22 +18,22 @@ limitations under the License.
 package secret
 
 import (
-	"bytes"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/secretutil"
 )
 
 // Agent watches a path and automatically loads the secrets stored.
 type Agent struct {
 	sync.RWMutex
 	secretsMap map[string][]byte
+	*secretutil.ReloadingCensorer
 }
 
 // Start creates goroutines to monitor the files that contain the secret value.
@@ -46,13 +46,15 @@ func (a *Agent) Start(paths []string) error {
 	}
 
 	a.secretsMap = secretsMap
+	a.ReloadingCensorer = secretutil.NewCensorer()
+	a.refreshCensorer()
 
 	// Start one goroutine for each file to monitor and update the secret's values.
 	for secretPath := range secretsMap {
 		go a.reloadSecret(secretPath)
 	}
 
-	logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, a.getSecrets))
+	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, a.ReloadingCensorer))
 
 	return nil
 }
@@ -119,6 +121,16 @@ func (a *Agent) setSecret(secretPath string, secretValue []byte) {
 	a.Lock()
 	defer a.Unlock()
 	a.secretsMap[secretPath] = secretValue
+	a.refreshCensorer()
+}
+
+// refreshCensorer should be called when the lock is held and the secrets map changes
+func (a *Agent) refreshCensorer() {
+	var secrets [][]byte
+	for _, value := range a.secretsMap {
+		secrets = append(secrets, value)
+	}
+	a.ReloadingCensorer.RefreshBytes(secrets...)
 }
 
 // GetTokenGenerator returns a function that gets the value of a given secret.
@@ -128,17 +140,16 @@ func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	}
 }
 
-const censored = "CENSORED"
-
-var censoredBytes = []byte(censored)
-
 // Censor replaces sensitive parts of the content with a placeholder.
 func (a *Agent) Censor(content []byte) []byte {
-	for sKey := range a.secretsMap {
-		secret := a.GetSecret(sKey)
-		content = bytes.ReplaceAll(content, secret, censoredBytes)
+	a.RLock()
+	defer a.RUnlock()
+	if a.ReloadingCensorer == nil {
+		// there's no constructor for an Agent so we can't ensure that everyone is
+		// trying to censor *after* actually loading a secret ...
+		return content
 	}
-	return content
+	return secretutil.AdaptCensorer(a.ReloadingCensorer)(content)
 }
 
 func (a *Agent) getSecrets() sets.String {

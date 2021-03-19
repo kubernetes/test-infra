@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 
@@ -76,7 +77,7 @@ func (s *PushServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		s.Subscriber.Metrics.ResponseCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
-			responseCodeLabel: string(HTTPCode),
+			responseCodeLabel: strconv.Itoa(HTTPCode),
 		}).Inc()
 		if finalError != nil {
 			http.Error(w, finalError.Error(), HTTPCode)

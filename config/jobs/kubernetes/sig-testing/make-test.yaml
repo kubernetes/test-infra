@@ -1,4 +1,105 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-unit
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-blocking
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: false
+    always_run: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+          command:
+            - runner.sh
+            - bash
+            - -c
+          args:
+            # TODO: stop depending on custom timeout
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - name: pull-kubernetes-unit-experimental
+    # try clonerefs with preclone
+    decoration_config:
+      utility_images:
+        clonerefs: "gcr.io/spiffxp-gke-dev/clonerefs-k8s-preclone:latest"
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    optional: true
+    always_run: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      # let's see if we can run unit tests as a non-root user
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+          imagePullPolicy: Always
+          command:
+            - make
+            - test
+            - KUBE_RACE=-race
+            # TODO: stop depending on custom timeout
+            - KUBE_TIMEOUT=--timeout=240s
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
 periodics:
+  - interval: 1h
+    name: ci-kubernetes-unit
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '3'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-master-informing
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    decorate: true
+    cluster: k8s-infra-prow-build
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+          command:
+            - make
+            - test
+            - KUBE_RACE=-race
+            # TODO: stop depending on custom timeout
+            - KUBE_TIMEOUT=--timeout=240s
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
   - interval: 1h
     name: ci-kubernetes-generate-make-test-cache
     annotations:
@@ -13,7 +114,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           command:
             - runner.sh
             - bash
@@ -22,8 +123,7 @@ periodics:
             - |
               result=0
               # Run the tests as usual
-              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
+              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
               # Send the cache off to gcs
               time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
               time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
@@ -40,7 +140,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           command:
             - runner.sh
             - bash
@@ -52,7 +152,25 @@ periodics:
               mkdir -p _output/local/go/
               time tar -xzf cache.tar.gz -C _output/local/go
               # Run tests as usual
-              result=0
-              ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
-              time make test KUBE_TIMEOUT="--timeout=600s" || result=$?
-              exit $result
+              time make test KUBE_TIMEOUT=--timeout=600s
+  - interval: 6h
+    name: ci-kubernetes-generate-make-test-count10
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+          command:
+            - runner.sh
+            - bash
+            - -c
+          args:
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'

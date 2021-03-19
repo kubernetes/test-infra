@@ -16,7 +16,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -62,14 +62,12 @@ presubmits:
     max_concurrency: 12
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -100,8 +98,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -114,7 +111,7 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --env=KUBE_CONTAINER_RUNTIME=containerd
@@ -123,27 +120,28 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-node-e2e-containerd
     branches:
     - master
     always_run: false
     optional: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -156,7 +154,7 @@ presubmits:
         - --deployment=node
         - --gcp-project-type=node-e2e-project
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
@@ -177,7 +175,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -190,7 +188,7 @@ presubmits:
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
-        - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
@@ -215,7 +213,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -249,7 +247,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -283,7 +281,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -295,7 +293,7 @@ presubmits:
             - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
-            - --node-test-args=--feature-gates=HugePageStorageMediumSize=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
             - --node-tests=true
             - --provider=gce
             - --test_args=--nodes=1 --skip="" --focus="\[Feature:HugePages\]"
@@ -319,7 +317,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -348,7 +346,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-cri-o
       testgrid-tab-name: pr-crio-gce-e2e
-    always_run: false
+    always_run: true
+    skip_report: true
     optional: true
     max_concurrency: 12
     labels:
@@ -358,7 +357,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -397,7 +396,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release

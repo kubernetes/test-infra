@@ -22,36 +22,65 @@ release(
     component("monitoring-prow-k8s-io", "managedcertificate"),
     component("additional-scrape-configs", "secret"),
     component("blackbox_prober", MULTI_KIND),
+    component("kube-state-metrics_servicemonitors", MULTI_KIND),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 
 k8s_object(
-    name = "alertmanager_crd",
+    name = "prometheus_crd_alertmanagerconfigs",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml",
 )
 
 k8s_object(
-    name = "prometheus_crd",
+    name = "prometheus_crd_alertmanagers",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml",
 )
 
 k8s_object(
-    name = "prometheusrule_crd",
+    name = "prometheus_crd_podmonitors",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml",
 )
 
 k8s_object(
-    name = "servicemonitor_crd",
+    name = "prometheus_crd_probes",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd_prometheuses",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd_prometheusrules",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd_servicemonitors",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml",
+)
+
+k8s_object(
+    name = "prometheus_crd_bundle",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml",
 )
 
 k8s_object(
@@ -66,10 +95,13 @@ load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 k8s_objects(
     name = "prow_monitoring_objects",
     objects = [
-        ":alertmanager_crd",
-        ":prometheus_crd",
-        ":prometheusrule_crd",
-        ":servicemonitor_crd",
+        "prometheus_crd_alertmanagerconfigs",
+        "prometheus_crd_alertmanagers",
+        "prometheus_crd_podmonitors",
+        "prometheus_crd_probes",
+        "prometheus_crd_prometheuses",
+        "prometheus_crd_prometheusrules",
+        "prometheus_crd_servicemonitors",
         "//config/prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",

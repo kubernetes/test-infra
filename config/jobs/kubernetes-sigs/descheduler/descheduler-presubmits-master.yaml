@@ -13,7 +13,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.5
+      - image: golang:1.15.8
         command:
         - make
         args:
@@ -30,7 +30,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.5
+      - image: golang:1.15.8
         command:
         - make
         args:
@@ -47,7 +47,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.5
+      - image: golang:1.15.8
         command:
         - make
         args:
@@ -67,13 +67,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.20.0"
+          value: "v1.20.2"
         - name: KIND_E2E
           value: "true"
         args:
@@ -97,13 +97,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.19.1"
+          value: "v1.19.7"
         - name: KIND_E2E
           value: "true"
         args:
@@ -127,13 +127,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.18.8"
+          value: "v1.18.15"
         - name: KIND_E2E
           value: "true"
         args:

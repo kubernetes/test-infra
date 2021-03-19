@@ -689,13 +689,11 @@ Instructions for interacting with me using PR comments are available [here](http
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			client := fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
-				},
-				IssueComments: map[int][]github.IssueComment{},
+			client := fakegithub.NewFakeClient()
+			client.PullRequests = map[int]*github.PullRequest{
+				1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 			}
-			event, err := digestComment(&client, logrus.WithField("testCase", testCase.name), testCase.e)
+			event, err := digestComment(client, logrus.WithField("testCase", testCase.name), testCase.e)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -740,6 +738,7 @@ func TestHandle(t *testing.T) {
 		bugs                  []bugzilla.Bug
 		bugComments           map[int][]bugzilla.Comment
 		bugErrors             []int
+		bugErrorMessages      map[int]string
 		bugCreateErrors       []string
 		subComponents         map[int]map[string][]string
 		options               plugins.BugzillaBranchOptions
@@ -767,12 +766,41 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:      "error fetching bug leaves a comment",
 			bugErrors: []int{123},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
 <code>
 injected error getting bug
+</code>
+
+</details>
+
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:             "github 403 gets explained",
+			bugErrors:        []int{123},
+			bugErrorMessages: map[int]string{123: "There was an error reported for a GitHub REST call"},
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. We were able to detect the following conditions from the error:
+
+- The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.
+
+
+<details><summary>Full error message.</summary>
+
+<code>
+There was an error reported for a GitHub REST call
 </code>
 
 </details>
@@ -963,7 +991,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
 			bugErrors: []int{124},
 			options:   plugins.BugzillaBranchOptions{DependentBugStates: &verified},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1184,7 +1212,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1396,7 +1424,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1428,7 +1456,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1462,7 +1490,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
 			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
-			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details. 
+			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
 
@@ -1664,11 +1692,10 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			e := *base // copy so parallel tests don't collide
-			gc := fakegithub.FakeClient{
-				IssueLabelsExisting: []string{},
-				IssueComments:       map[int][]github.IssueComment{},
-				PullRequests:        map[int]*github.PullRequest{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.IssueLabelsExisting = []string{}
+			gc.IssueComments = map[int][]github.IssueComment{}
+			gc.PullRequests = map[int]*github.PullRequest{}
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
@@ -1676,13 +1703,14 @@ Instructions for interacting with me using PR comments are available [here](http
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
-				EndpointString:  "www.bugzilla",
-				Bugs:            map[int]bugzilla.Bug{},
-				SubComponents:   map[int]map[string][]string{},
-				BugComments:     testCase.bugComments,
-				BugErrors:       sets.NewInt(),
-				BugCreateErrors: sets.NewString(),
-				ExternalBugs:    map[int][]bugzilla.ExternalBug{},
+				EndpointString:   "www.bugzilla",
+				Bugs:             map[int]bugzilla.Bug{},
+				SubComponents:    map[int]map[string][]string{},
+				BugComments:      testCase.bugComments,
+				BugErrors:        sets.NewInt(),
+				BugErrorMessages: testCase.bugErrorMessages,
+				BugCreateErrors:  sets.NewString(),
+				ExternalBugs:     map[int][]bugzilla.ExternalBug{},
 			}
 			for _, bug := range testCase.bugs {
 				bc.Bugs[bug.ID] = bug
@@ -1705,7 +1733,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
@@ -1743,7 +1771,7 @@ Instructions for interacting with me using PR comments are available [here](http
 	}
 }
 
-func checkComments(client fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
+func checkComments(client *fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
 	wantedComments := 0
 	if expectedComment != "" {
 		wantedComments = 1

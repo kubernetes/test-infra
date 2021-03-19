@@ -231,11 +231,11 @@ func (dumpLens) Config() lenses.LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -248,7 +248,7 @@ func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, 
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
@@ -883,16 +883,17 @@ func TestRunToPR(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-						"*": {
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-								PathStrategy: "legacy",
+					DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+						map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+									PathStrategy: "legacy",
+								},
 							},
-						},
-					},
+						}),
 				},
 			},
 		})
@@ -1101,14 +1102,15 @@ func TestGCSPathRoundTrip(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									DefaultOrg:  tc.defaultOrg,
-									DefaultRepo: tc.defaultRepo,
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowapi.DecorationConfig{
+								"*": {
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										DefaultOrg:  tc.defaultOrg,
+										DefaultRepo: tc.defaultRepo,
+									},
 								},
-							},
-						},
+							}),
 					},
 				},
 			},

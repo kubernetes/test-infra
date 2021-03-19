@@ -4,11 +4,11 @@ postsubmits:
     cluster: test-infra-trusted
     decorate: true
     branches:
-    - ^master$
+    - ^main$
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-org
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-org
         command:
         - bazel
         args:
@@ -44,7 +44,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -64,7 +64,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -85,7 +85,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -99,10 +99,19 @@ postsubmits:
     branches:
     - ^master$
     max_concurrency: 1
+    reporter_config:
+      slack:
+        channel: "prow-alerts"
+        job_states_to_report:
+        - success
+        - failure
+        - aborted
+        - error
+        report_template: 'Deploying prow: {{.Status.State}}. <{{.Spec.Refs.BaseLink}}|Commit {{.Spec.Refs.BaseSHA}}> <{{.Status.URL}}|View logs> <https://testgrid.k8s.io/sig-testing-prow#deploy-prow|Job history on Testgrid>'
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - prow/deploy.sh
         args:
@@ -123,7 +132,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20210105-c50d055243
+      - image: gcr.io/k8s-prow/hmac:v20210318-ffb8032f91
         command:
         - /hmac
         args:
@@ -170,7 +179,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210204-b06ec78-test-infra
         command:
         - prow/push.sh
     annotations:
@@ -201,7 +210,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -225,7 +234,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -249,7 +258,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -272,7 +281,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -296,7 +305,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -320,7 +329,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -344,7 +353,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -368,7 +377,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -392,7 +401,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -416,7 +425,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -440,7 +449,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -464,7 +473,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -488,7 +497,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -512,7 +521,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -536,7 +545,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -560,7 +569,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -568,31 +577,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - pkg/benchmarkjunit/
-  - name: post-test-infra-push-generic-autobumper
-    cluster: test-infra-trusted
-    run_if_changed: '^(experiment/(image-bumper|autobumper)|robots/pr-creator|prow/(github|config/secret))/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "generic-autobump-push"
-      # TODO(mpherman): uncomment the testgrid alerts once we know this works as intended
-      #testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      #testgrid-num-failures-to-alert: '3'
-      description: builds and pushes the generic autobumper image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - experiment/autobumper/
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -609,7 +593,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - images/builder/ci-runner.sh
         args:
@@ -626,7 +610,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20200520-v0.4-30-g9d6313a
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
         - gsutil
         args:
@@ -653,7 +637,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - make
         args:
@@ -682,7 +666,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210204-b06ec78-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -704,7 +688,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210204-b06ec78-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -784,7 +768,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: org
-    base_ref: master
+    base_ref: main
   spec:
     containers:
     - image: launcher.gcr.io/google/bazel:0.29.1
@@ -819,7 +803,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210204-b06ec78-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -856,7 +840,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210204-b06ec78-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -893,14 +877,11 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/generic_autobump:v20210308-634c5e5
       command:
-      - runner.sh
+      - /generic_autobump
       args:
-      - go
-      - run
-      - experiment/autobumper/main.go
-      - --config=config/prow/autobump-config.yaml
+      - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
@@ -918,7 +899,40 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow
-    description: runs prow/autobump.sh to create/update a PR that bumps prow to the latest RC
+    description: runs experiment/autobumper to create/update a PR that bumps prow to the latest RC
+- cron: "06 15-23 * * 1-5"  # Run at 7:06-15:06 PST (15:05 UTC) Mon-Fri
+  name: ci-test-infra-autobump-prowjobs
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/generic_autobump:v20210308-634c5e5
+      command:
+      - /generic_autobump
+      args:
+      - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prowjobs
+    description: runs experiment/autobumper to create/update a PR that bumps prowjobs to the latest RC
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
@@ -929,7 +943,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
       command:
       - bazel
       args:
@@ -965,7 +979,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20210105-c50d055243
+      image: gcr.io/k8s-prow/branchprotector:v20210318-ffb8032f91
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -999,7 +1013,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20210105-c50d055243
+      image: gcr.io/k8s-prow/label_sync:v20210318-ffb8032f91
       command:
       - /app/label_sync/app.binary
       args:
@@ -1045,7 +1059,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/checkconfig:v20210318-ffb8032f91
       command:
       - /checkconfig
       args:

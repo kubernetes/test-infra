@@ -1,10 +1,10 @@
 presubmits:
   containerd/containerd:
   - name: pull-containerd-build
-    always_run: false
-    optional: true
+    always_run: true
     branches:
     - master
+    - release/1.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-containerd-io
@@ -14,19 +14,19 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         args:
         - ./test/build.sh
 
   - name: pull-containerd-node-e2e
-    always_run: false
-    optional: true
+    always_run: true
     max_concurrency: 8
     decorate: true
     branches:
     - master
+    - release/1.5
     decoration_config:
       timeout: 100m
     extra_refs:
@@ -48,7 +48,10 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
         command:
         - sh
         - -c
@@ -67,4 +70,4 @@ presubmits:
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
-          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"

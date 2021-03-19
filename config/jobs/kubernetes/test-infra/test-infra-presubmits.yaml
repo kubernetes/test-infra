@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -18,6 +18,9 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: //...
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: bazel
@@ -50,7 +53,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -79,7 +82,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20210105-c50d055243
+      - image: gcr.io/k8s-prow/checkconfig:v20210318-ffb8032f91
         command:
         - /checkconfig
         args:
@@ -100,10 +103,8 @@ presubmits:
   - name: pull-test-infra-integration
     branches:
     - master
-    always_run: false
+    always_run: true # TODO(fejta): merge into bazel test //...
     decorate: true
-    skip_report: true
-    optional: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -111,15 +112,19 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-test-infra
         command:
         - runner.sh
         args:
-        - prow/test/integration/test.sh
+        - ./prow/test/integration/integration-test.sh
         - --config=ci
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration

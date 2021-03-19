@@ -6,7 +6,7 @@ presubmits:
     path_alias: k8s.io/client-go
     spec:
       containers:
-      - image: golang:1.14.4
+      - image: golang:1.15.8
         env:
         - name: GO111MODULE
           value: "on"

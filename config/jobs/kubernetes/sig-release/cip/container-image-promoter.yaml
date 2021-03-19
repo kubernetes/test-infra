@@ -10,7 +10,7 @@ presubmits:
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     max_concurrency: 10
     branches:
-    - ^master$
+    - ^main$
     spec:
       containers:
       - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
@@ -51,11 +51,11 @@ presubmits:
     run_if_changed: '^infra/gcp/backup_tools/'
     max_concurrency: 1
     branches:
-    - ^master$
+    - ^main$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-1.17
         command:
         - infra/gcp/backup_tools/backup_test.sh
         env:
@@ -78,7 +78,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
@@ -108,7 +108,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -136,7 +136,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - "make"
         args:

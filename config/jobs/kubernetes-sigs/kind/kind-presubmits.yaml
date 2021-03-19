@@ -9,14 +9,14 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-  - name: pull-kind-unit
+  - name: pull-kind-test
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -24,11 +24,11 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - make
-        - unit
+        - test
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-experimental
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-experimental
         command:
         - wrapper.sh
         - make
@@ -52,8 +52,6 @@ presubmits:
   - name: pull-kind-e2e-kubernetes
     always_run: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
@@ -68,7 +66,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - bash
@@ -84,8 +82,6 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -99,8 +95,6 @@ presubmits:
   - name: pull-kind-conformance-parallel-ga-only
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
@@ -115,15 +109,13 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
         - name: GA_ONLY
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         command:
         - wrapper.sh
         - bash
@@ -145,8 +137,6 @@ presubmits:
   - name: pull-kind-conformance-parallel-ipv6
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
@@ -161,7 +151,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -172,8 +162,6 @@ presubmits:
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
-        - name: BUILD_TYPE
-          value: bazel
         command:
         - wrapper.sh
         - bash
@@ -196,8 +184,6 @@ presubmits:
     always_run: false
     optional: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
@@ -212,7 +198,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - bash
@@ -228,8 +214,6 @@ presubmits:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -242,11 +226,91 @@ presubmits:
             # during the tests more like 3-20m is used
             cpu: 2000m
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.20
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-20
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.20
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.19
+      path_alias: k8s.io/kubernetes
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-19
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|Conntrack|udp|UDP|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.19
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes-1-18
     always_run: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
@@ -261,7 +325,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-1.18
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.18
         command:
         - wrapper.sh
         - bash
@@ -277,8 +341,6 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -295,8 +357,6 @@ presubmits:
   - name: pull-kind-conformance-parallel-1-17
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
@@ -311,13 +371,11 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-1.17
+      - image: gcr.io/k8s-testimages/krte:v20210204-b06ec78-1.17
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         command:
         - wrapper.sh
         - bash
@@ -338,8 +396,6 @@ presubmits:
   - name: pull-kind-conformance-parallel-1-16
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
@@ -359,8 +415,6 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         command:
         - wrapper.sh
         - bash
@@ -381,8 +435,6 @@ presubmits:
   - name: pull-kind-conformance-parallel-1-15
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: true
@@ -402,8 +454,6 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        - name: BUILD_TYPE
-          value: not-bazel
         command:
         - wrapper.sh
         - bash

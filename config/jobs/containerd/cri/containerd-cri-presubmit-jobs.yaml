@@ -9,7 +9,10 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        env:
+        - name: GO111MODULE
+          value: "off"
         command:
         - runner.sh
         args:
@@ -41,7 +44,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - sh
         - -c
@@ -65,38 +68,20 @@ presubmits:
   - name: pull-cri-containerd-verify
     always_run: true
     branches:
-    - release/1.0
-    - release/1.2
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      # Use go 1.10 for old branches, because gofmt result changed in go 1.11.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.12
-        args:
-        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./test/verify.sh
-
-  - name: pull-cri-containerd-verify
-    always_run: true
-    branches:
     - master
     - release/1.3
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --scenario=execute
         - --
+        - --env=GO111MODULE=off
         - ./test/verify.sh
 
   - name: pull-cri-containerd-windows-cri
@@ -117,7 +102,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-windows-cri
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         args:

@@ -33,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networking "k8s.io/api/networking/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -630,7 +631,8 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
 			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 		} else {
-			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
+			var oldIng *extensionsv1beta1.IngressList
+			oldIng, err = kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 			if err == nil {
 				ing, err = toNewIngress(oldIng)
 			}

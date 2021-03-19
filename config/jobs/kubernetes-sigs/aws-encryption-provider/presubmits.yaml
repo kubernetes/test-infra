@@ -6,7 +6,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         args:
         - make
         - lint
@@ -14,7 +14,7 @@ presubmits:
         - name: GO111MODULE
           value: "on"
     annotations:
-      testgrid-dashboards: sig-aws-encryption-provider
+      testgrid-dashboards: provider-aws-encryption-provider
       testgrid-tab-name: verify
       description: aws-encryption-provider verification
       testgrid-num-columns-recent: '30'
@@ -24,7 +24,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         args:
         - make
         - test
@@ -34,7 +34,7 @@ presubmits:
         - name: GO111MODULE
           value: "on"
     annotations:
-      testgrid-dashboards: sig-aws-encryption-provider
+      testgrid-dashboards: provider-aws-encryption-provider
       testgrid-tab-name: unit-test
       description: aws-encryption-provider unit tests
       testgrid-num-columns-recent: '30'

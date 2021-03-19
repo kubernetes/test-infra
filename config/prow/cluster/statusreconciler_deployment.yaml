@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20210105-c50d055243
+        image: gcr.io/k8s-prow/status-reconciler:v20210318-ffb8032f91
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -44,7 +44,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --job-config-path=/etc/job-config
-        - --blacklist=kubernetes/kubernetes
+        - --denylist=kubernetes/kubernetes
         volumeMounts:
         - name: oauth
           mountPath: /etc/github

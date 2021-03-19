@@ -213,13 +213,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				IsPR:       testCase.isPr,
 				Body:       testCase.body,
 			}
-			gc := fakegithub.FakeClient{
-				Issues:        map[int]*github.Issue{1: {Title: "Old"}},
-				PullRequests:  map[int]*github.PullRequest{1: {Title: "Old"}},
-				IssueComments: map[int][]github.IssueComment{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.Issues = map[int]*github.Issue{1: {Title: "Old"}}
+			gc.PullRequests = map[int]*github.PullRequest{1: {Title: "Old"}}
+			gc.IssueComments = map[int][]github.IssueComment{}
 
-			err := handleGenericComment(&gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
+			err := handleGenericComment(gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

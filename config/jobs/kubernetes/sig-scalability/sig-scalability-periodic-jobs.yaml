@@ -10,19 +10,28 @@ periodics:
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=60
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest
@@ -34,12 +43,13 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/node_docker.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
@@ -57,22 +67,30 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
-    preset-e2e-scalability-containerd: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=60
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest
@@ -84,12 +102,13 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/node_containerd.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
@@ -113,20 +132,30 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 260m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=260
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-100
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
@@ -138,6 +167,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -146,7 +176,7 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -155,6 +185,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -178,20 +209,29 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-scheduler
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-100
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
@@ -203,6 +243,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -212,13 +253,14 @@ periodics:
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=150m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -242,23 +284,31 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-scheduler-highqps
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-100-scheduler-highqps
-      - --build=bazel
-      - --extract=bazel
+      - --extract=ci/latest
       - --gcp-master-size=e2-standard-2
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-4
@@ -268,6 +318,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
@@ -278,13 +329,14 @@ periodics:
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=150m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -308,24 +360,34 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}, gcp-project=k8s-jenkins-blocking-kubemark -> gcp-project-type=scalability-project, us-central1-f -> us-east1-b"
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-master-500
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=120
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-500
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-4
@@ -336,6 +398,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
+      - --metadata-sources=cl2-metadata.json
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -344,7 +407,7 @@ periodics:
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -352,6 +415,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=100m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -378,21 +442,31 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1100m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
     testgrid-num-failures-to-alert: '1'
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=1100
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-5000
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -403,16 +477,17 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -420,6 +495,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -449,6 +525,18 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1100m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000-scheduler
@@ -456,14 +544,11 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=1100
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-5000
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -474,22 +559,24 @@ periodics:
       - --kubemark
       - --kubemark-nodes=5000
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -510,20 +597,29 @@ periodics:
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 300m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-high-density
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=300
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-100pods
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -535,13 +631,14 @@ periodics:
       - --kubemark-master-size=n1-standard-32
       - --kubemark-nodes=600
       - --provider=gce
+      - --metadata-sources=cl2-metadata.json
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=600
       - --test-cmd-args=--provider=kubemark
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       # TODO(https://github.com/kubernetes/perf-tests/issues/1007): load test should be used to test high-density.
       - --test-cmd-args=--testconfig=testing/density/high-density-config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -549,6 +646,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -567,18 +665,24 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 10m
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/execute.py
       args:
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=10
-      - --scenario=execute
-      - --
       - ./benchmark/runner.sh
       resources:
         requests:
@@ -606,7 +710,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -642,7 +746,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -678,19 +782,28 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=kube-dns-benchmark
       - --extract=ci/latest
@@ -701,8 +814,8 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=kube-dns
-      - --test-cmd-args=/workspace/_artifacts/out
-      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-args=$(ARTIFACTS)/out
+      - --test-cmd-args=$(ARTIFACTS)
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
       resources:
@@ -723,19 +836,28 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=node-local-dns-benchmark
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
@@ -747,8 +869,8 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=node-local-dns
-      - --test-cmd-args=/workspace/_artifacts/out
-      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-args=$(ARTIFACTS)/out
+      - --test-cmd-args=$(ARTIFACTS)
       - --test-cmd-args=169.254.20.10
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m

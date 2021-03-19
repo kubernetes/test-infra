@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -239,8 +240,8 @@ func TestAddedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, expected := addedBlockingPresubmits(oldConfig, newConfig), testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct added presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			if actual, _ := addedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("%s: did not get correct added presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
 			}
 		})
 	}
@@ -389,8 +390,8 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, expected := removedBlockingPresubmits(oldConfig, newConfig), testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			if actual, _ := removedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
 			}
 		})
 	}
@@ -542,8 +543,8 @@ func TestMigratedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, expected := migratedBlockingPresubmits(oldConfig, newConfig), testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			if actual, _ := migratedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
 			}
 		})
 	}
@@ -866,7 +867,7 @@ func TestControllerReconcile(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name: "ignored org skips creation, still does retire and migrate",
+			name: "ignored org skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -891,7 +892,7 @@ func TestControllerReconcile(t *testing.T) {
 			},
 		},
 		{
-			name: "ignored org/repo skips creation, still does retire and migrate",
+			name: "ignored org/repo skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -911,6 +912,56 @@ func TestControllerReconcile(t *testing.T) {
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org/repo skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org/repo"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
@@ -1130,7 +1181,7 @@ func TestControllerReconcile(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			controller, check := testCase.generator()
-			err := controller.reconcile(delta)
+			err := controller.reconcile(delta, logrusEntry())
 			if err == nil && testCase.expectErr {
 				t.Errorf("expected an error, but got none")
 			}
@@ -1140,6 +1191,10 @@ func TestControllerReconcile(t *testing.T) {
 			check(t)
 		})
 	}
+}
+
+func logrusEntry() *logrus.Entry {
+	return logrus.NewEntry(logrus.StandardLogger())
 }
 
 func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs map[prKey]sets.String) {

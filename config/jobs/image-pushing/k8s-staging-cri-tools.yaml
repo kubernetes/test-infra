@@ -11,16 +11,18 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=uid
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "uid"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username
@@ -34,16 +36,18 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=username
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "username"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-uid-group
@@ -57,16 +61,18 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=uid-group
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "uid-group"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username-group
@@ -80,16 +86,18 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE=username-group
+              - --env-passthrough=IMAGE_TYPE
               - images/image-user
             env:
+              - name: IMAGE_TYPE
+                value: "username-group"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-multi-arch
@@ -103,7 +111,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:

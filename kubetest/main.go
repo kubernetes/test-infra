@@ -48,16 +48,18 @@ const defaultGinkgoParallel = 25
 
 var (
 	artifacts = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
-	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose   = false
-	timeout   = time.Duration(0)
 	boskos, _ = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.", "", "")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
+	gitTag    = ""                              // initializing default zero value. ldflags will populate this during build time.
+	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	timeout   = time.Duration(0)
+	verbose   = false
 )
 
 type options struct {
 	build                buildStrategy
+	boskosWaitDuration   time.Duration
 	charts               bool
 	checkLeaks           bool
 	checkSkew            bool
@@ -114,6 +116,7 @@ type options struct {
 	soakDuration            time.Duration
 	sshUser                 string
 	stage                   stageStrategy
+	storageTestDriverPath   string
 	test                    bool
 	testArgs                string
 	testCmd                 string
@@ -121,12 +124,13 @@ type options struct {
 	testCmdArgs             []string
 	up                      bool
 	upgradeArgs             string
-	boskosWaitDuration      time.Duration
+	version                 bool
 }
 
 func defineFlags() *options {
 	o := options{}
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
@@ -171,7 +175,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
-	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
+	flag.StringVar(&o.runtimeConfig, "runtime-config", "", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/kubernetes_skew")
@@ -179,6 +183,7 @@ func defineFlags() *options {
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
+	flag.StringVar(&o.storageTestDriverPath, "storage-testdriver-repo-path", "", "Relative path for external e2e test driver config in the csi driver repo")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
@@ -186,7 +191,7 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
-	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
+	flag.BoolVar(&o.version, "version", false, "Command to print version")
 
 	// The "-v" flag was also used by glog, which is used by k8s.io/client-go. Duplicate flags cause panics.
 	// 1. Even if we could convince glog to change, they have too many consumers to ever do so.
@@ -272,6 +277,7 @@ func validateFlags(o *options) error {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Printf("Running kubetest version: %s\n", gitTag)
 
 	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
 	rand.Seed(time.Now().UnixNano())
@@ -285,6 +291,11 @@ func main() {
 
 	if err := validateFlags(o); err != nil {
 		log.Fatalf("Flags validation failed. err: %v", err)
+	}
+
+	if o.version {
+		log.Printf("kubetest version: %s\n", gitTag)
+		return
 	}
 
 	control = process.NewControl(timeout, interrupt, terminate, verbose)
@@ -511,6 +522,7 @@ func writeMetadata(path, metadataSources string) error {
 	ver := findVersion()
 	m["job-version"] = ver // TODO(krzyzacy): retire
 	m["revision"] = ver
+	m["kubetest-version"] = gitTag
 	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
 	for _, e := range os.Environ() {
 		p := strings.SplitN(e, "=", 2)

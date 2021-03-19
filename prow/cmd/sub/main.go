@@ -48,9 +48,10 @@ type options struct {
 	port           int
 	pushSecretFile string
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs flagutil.Strings
+	pluginConfig               string
 
 	dryRun                 bool
 	gracePeriod            time.Duration
@@ -78,6 +79,7 @@ func init() {
 
 	fs.StringVar(&flagOptions.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&flagOptions.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&flagOptions.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
@@ -92,7 +94,7 @@ func main() {
 	logrusutil.ComponentInit()
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath); err != nil {
+	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath, flagOptions.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

@@ -43,18 +43,20 @@ const (
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	pluginConfig               string
 
-	continueOnError         bool
-	addedPresubmitDenylist  prowflagutil.Strings
-	addedPresubmitBlacklist prowflagutil.Strings
-	dryRun                  bool
-	kubernetes              prowflagutil.KubernetesOptions
-	github                  prowflagutil.GitHubOptions
-	storage                 prowflagutil.StorageClientOptions
-	instrumentationOptions  prowflagutil.InstrumentationOptions
+	continueOnError           bool
+	addedPresubmitDenylist    prowflagutil.Strings
+	addedPresubmitDenylistAll prowflagutil.Strings
+	addedPresubmitBlacklist   prowflagutil.Strings
+	dryRun                    bool
+	kubernetes                prowflagutil.KubernetesOptions
+	github                    prowflagutil.GitHubOptions
+	storage                   prowflagutil.StorageClientOptions
+	instrumentationOptions    prowflagutil.InstrumentationOptions
 
 	tokenBurst    int
 	tokensPerHour int
@@ -71,11 +73,13 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitDenylist, "denylist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
+	fs.Var(&o.addedPresubmitDenylistAll, "denylist-all", "Org or org/repo to ignore reconciling, set more than once to add more.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "[Will be deprecated after May 2021] Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -109,6 +113,11 @@ func (o *options) getDenyList() sets.String {
 	return sets.NewString(denyList...)
 }
 
+func (o *options) getDenyListAll() sets.String {
+	denyListAll := o.addedPresubmitDenylistAll.Strings()
+	return sets.NewString(denyListAll...)
+}
+
 func main() {
 	logrusutil.ComponentInit()
 
@@ -122,7 +131,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -158,8 +167,7 @@ func main() {
 		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
-	denyList := o.getDenyList()
-	c := statusreconciler.NewController(o.continueOnError, denyList, opener, o.configPath, o.jobConfigPath, o.statusURI, prowJobClient, githubClient, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, o.getDenyList(), o.getDenyListAll(), opener, o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings(), o.statusURI, prowJobClient, githubClient, pluginAgent)
 	interrupts.Run(func(ctx context.Context) {
 		c.Run(ctx)
 	})

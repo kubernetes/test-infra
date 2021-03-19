@@ -1,0 +1,33 @@
+---
+gitHubLogin: "k8s-ci-robot"
+gitHubToken: "/etc/github-token/oauth"
+gitName: "Kubernetes Prow Robot"
+gitEmail: "k8s.ci.robot@gmail.com"
+onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+skipPullRequest: false
+gitHubOrg: "kubernetes"
+gitHubRepo: "test-infra"
+remoteName: "test-infra"
+upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+includedConfigPaths:
+  - "."
+excludedConfigPaths:
+  - "config/prow-staging"
+targetVersion: "latest"
+labels:
+  - "skip-review" # This label is used by tide for identifying trusted PR
+prefixes:
+  - name: "Prow"
+    prefix: "gcr.io/k8s-prow/"
+    refConfigFile: "config/prow/cluster/deck_deployment.yaml"
+    stagingRefConfigFile: "config/prow-staging/cluster/deck_deployment.yaml"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: true
+    consistentImages: true
+  - name: "Boskos"
+    prefix: "gcr.io/k8s-staging-boskos/"
+    refConfigFile: "config/prow/cluster/boskos.yaml"
+    stagingRefConfigFile: "config/prow-staging/cluster/boskos.yaml"
+    repo: "https://github.com/kubernetes-sigs/boskos"
+    summarise: false
+    consistentImages: true

@@ -1,0 +1,128 @@
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: crier
+  namespace: default
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: crier
+rules:
+- apiGroups:
+    - "prow.k8s.io"
+  resources:
+    - "prowjobs"
+  verbs:
+    - "get"
+    - "watch"
+    - "list"
+    - "patch"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: crier
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+    - "events"
+  verbs:
+    - "get"
+    - "list"
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+  verbs:
+    - "patch"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: crier-namespaced
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crier
+subjects:
+- kind: ServiceAccount
+  name: crier
+  namespace: default
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: crier-namespaced
+  namespace: test-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crier
+subjects:
+- kind: ServiceAccount
+  name: crier
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: crier
+  namespace: default
+  name: crier
+spec:
+  ports:
+    - name: metrics
+      port: 9090
+  selector:
+    app: crier
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: crier
+  labels:
+    app: crier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crier
+  template:
+    metadata:
+      labels:
+        app: crier
+    spec:
+      serviceAccountName: crier
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: crier
+        image: localhost:5000/crier
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --github-endpoint=http://fakeghserver
+        - --github-token-path=/etc/github/oauth
+        - --github-workers=1
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+      - name: oauth
+        secret:
+          secretName: oauth-token

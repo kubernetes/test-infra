@@ -1,5 +1,5 @@
 plank:
-  job_url_template: '{{if .Spec.Refs}}{{if eq .Spec.Refs.Org "kubernetes-security"}}https://console.cloud.google.com/storage/browser/kubernetes-security-prow/{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
+  job_url_template: 'https://prow.k8s.io/view/gs/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
   report_templates:
     '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3A{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210105-c50d055243"
-        initupload: "gcr.io/k8s-prow/initupload:v20210105-c50d055243"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210105-c50d055243"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210105-c50d055243"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210318-ffb8032f91"
+        initupload: "gcr.io/k8s-prow/initupload:v20210318-ffb8032f91"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210318-ffb8032f91"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210318-ffb8032f91"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -81,6 +81,10 @@ deck:
         name: podinfo
       required_files:
         - ^podinfo\.json$
+    - lens:
+        name: links
+      required_files:
+        - artifacts/.*\.link\.txt
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
@@ -180,6 +184,14 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cloud-provider-aws:
+          branches:
+            gh-pages:
+              protect: false
+        cloud-provider-openstack:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
@@ -229,6 +241,10 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        ingress-nginx:
+          branches:
+            gh-pages:
+              protect: false
         kompose:
           required_status_checks:
             contexts:
@@ -240,6 +256,7 @@ branch-protection:
             contexts:
             - build-linux-amd64
             - build-macos-amd64
+            - build-windows-amd64
             - verify
         kubelet:
           restrictions:
@@ -278,14 +295,7 @@ branch-protection:
             - ci-validate-manifests
           branches:
             gh-pages:
-              required_status_checks:
-                contexts: []
-              restrictions:
-                users:
-                - k8s-ci-robot
-                teams:
-                - kube-state-metrics-admins
-                - kube-state-metrics-maintainers
+              protect: false
         kube-scheduler:
           restrictions:
             users: []
@@ -440,34 +450,18 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-subdir-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         node-feature-discovery:
           branches:
             gh-pages:
               protect: false
-    kubeflow:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/google
-      exclude:
-      - "^revert-" # don't protect revert branches
-      - "^dependabot/" # don't protect branches created by dependabot
-      - "-patch-" # don't protect branches created by editing on GitHub UI
 
 tide:
   sync_period: 2m
   queries:
-  - orgs:
-    - kubeflow
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-rebase
   - orgs:
     - kubernetes
     - kubernetes-client
@@ -522,6 +516,30 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    milestone: v1.21
+    includedBranches:
+    - master
     labels:
     - lgtm
     - approved
@@ -552,7 +570,6 @@ tide:
     - do-not-merge/work-in-progress
 
   merge_method:
-    kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
@@ -566,9 +583,6 @@ tide:
     kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
-  merge_commit_template:
-    kubeflow:
-      title: "{{ .Title }} (#{{ .Number }})"
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -587,6 +601,10 @@ tide:
             skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+  priority:
+  - labels: [ "kind/flake", "priority/critical-urgent" ]
+  - labels: [ "kind/failing-test", "priority/critical-urgent" ]
+  - labels: [ "kind/bug", "priority/critical-urgent" ]
 
 push_gateway:
   endpoint: pushgateway
@@ -680,6 +698,8 @@ presets:
     value: "0"
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
+  - name: KUBE_BUILD_CONFORMANCE
+    value: "n"
   volumes:
   - name: azure-cred
     secret:

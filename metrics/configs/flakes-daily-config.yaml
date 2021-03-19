@@ -41,18 +41,17 @@ query: |
             job,
             if(substr(job, 0, 3) = 'pr:',
               regexp_extract(
-                (
-                  select i.value
-                  from t.metadata i
-                  where i.key = 'repos'
-                ),
+                repo,
                 r'[^,]+,\d+:([a-f0-9]+)"'
               ),
               version
             ) commit,  /* repo commit for PR or version for CI */
             result,  /* SUCCESS if the build passed */
             date_trunc(date(started), DAY) day
-          FROM `k8s-gubernator.build.all` as t
+          from (
+                select *,
+                       ifnull(b.repos, (select i.value from b.metadata i where i.key = 'repos')) repo from `k8s-gubernator.build.all` as b
+          ) as t
           where
             /* Select results that have occurred on or after the day of <LAST_DATA_TIME> (those results were
                for the day before), but don't include results from today, only return results for complete days. */
@@ -60,13 +59,7 @@ query: |
             and datetime(started) < datetime_trunc(current_datetime(), DAY) /* Drop results from partial day */
             and (
               (substr(job, 0, 3) = 'ci-' and version != 'unknown') or
-              exists(
-                select as struct
-                  i
-                from t.metadata i
-                where i.key = 'repos' and
-                array_length(split(replace(i.value,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
-              )
+              array_length(split(replace(t.repo,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
             )
         )
         group by job, day, commit

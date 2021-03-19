@@ -2,8 +2,8 @@ presubmits:
   kubernetes/kubernetes:
   # conformance test using image against kubernetes master branch with `kind`
   - name: pull-kubernetes-conformance-image-test
-    branches:
-    - master
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -11,13 +11,11 @@ presubmits:
     run_if_changed: 'conformance'
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -48,8 +46,10 @@ presubmits:
       description: Runs conformance tests using kind and the conformance image
 
   - name: pull-kubernetes-conformance-kind-ipv6-parallel
-    branches:
-    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -57,13 +57,11 @@ presubmits:
     run_if_changed: '^test/'
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -74,16 +72,11 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
-        - "--repo=sigs.k8s.io/kind=master"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        command:
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -106,13 +99,11 @@ periodics:
   name: ci-kubernetes-conformance-image-test
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -152,8 +143,6 @@ periodics:
   skip_branches:
   - release-\d+\.\d+ # per-release settings
   labels:
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
@@ -165,15 +154,13 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      - name: BUILD_TYPE
-        value: bazel
       - name: GA_ONLY
         value: "true"
       # we need privileged mode in order to do docker in docker

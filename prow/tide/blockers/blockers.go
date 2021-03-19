@@ -33,7 +33,7 @@ var (
 )
 
 type githubClient interface {
-	Query(context.Context, interface{}, map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 }
 
 // Blocker specifies an issue number that should block tide from merging.
@@ -71,8 +71,10 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 
 // FindAll finds issues with label in the specified orgs/repos that should block tide.
 func FindAll(ghc githubClient, log *logrus.Entry, label, orgRepoTokens string) (Blockers, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 	issues, err := search(
-		context.Background(),
+		ctx,
 		ghc,
 		log,
 		blockerQuery(label, orgRepoTokens),
@@ -146,7 +148,8 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 	var remaining int
 	for {
 		sq := searchQuery{}
-		if err := ghc.Query(ctx, &sq, vars); err != nil {
+		// TODO alvaroaleman: Add github apps support
+		if err := ghc.QueryWithGitHubAppsSupport(ctx, &sq, vars, ""); err != nil {
 			return nil, err
 		}
 		totalCost += int(sq.RateLimit.Cost)

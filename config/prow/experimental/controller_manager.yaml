@@ -22,7 +22,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/prow-controller-manager:v20210105-c50d055243
+        image: gcr.io/k8s-prow/prow-controller-manager:v20210318-ffb8032f91
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -45,7 +45,7 @@ metadata:
   name: prow-controller-manager
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: prow-controller-manager
@@ -78,7 +78,7 @@ rules:
       - create
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager
@@ -94,7 +94,7 @@ rules:
       - create
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: prow-controller-manager
@@ -107,7 +107,7 @@ subjects:
   name: prow-controller-manager
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: test-pods
   name: prow-controller-manager

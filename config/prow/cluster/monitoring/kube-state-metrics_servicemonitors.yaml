@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/version: 1.9.7
+    app: kube-state-metrics
+  name: kube-state-metrics
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    bearerTokenSecret:
+      key: ""
+    honorLabels: true
+    interval: 2m
+    port: http-metrics
+    scheme: http
+    scrapeTimeout: 2m
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    bearerTokenSecret:
+      key: ""
+    interval: 2m
+    port: telemetry
+    scheme: http
+    scrapeTimeout: 2m
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics

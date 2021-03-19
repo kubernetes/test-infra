@@ -11,7 +11,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
@@ -22,6 +22,78 @@ periodics:
       args:
       - -c
       - "cd groups && make run -- --confirm"
+- name: ci-k8sio-audit
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-alert-email: hh@ii.coop
+    testgrid-num-failures-to-alert: '100'
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  rerun_auth_config:
+    github_users:
+      - hh
+  spec:
+    serviceAccountName: k8s-infra-gcp-auditor
+    containers:
+    - name: groups
+      image: gcr.io/k8s-staging-releng/releng-ci:latest
+      command:
+      - bash
+      args:
+      - -c
+      - |
+        echo "Ensure gcloud creds are working" >&2
+        gcloud config list
+        echo "Running Audit Script to dump GCP configuration to yaml" >&2
+        pushd ./audit
+        bash ./audit-gcp.sh
+        popd
+
+        echo "Generate pr-creator binary from k/test-infra/robots" >&2
+        pushd ../../kubernetes/test-infra
+        go build -o /workspace/pr-creator robots/pr-creator/main.go
+        popd
+
+        echo "Prepare commit for possible PR" >&2
+        GH_TOKEN=$(cat /etc/github-token/token)
+        GH_USER=cncf-ci
+        GH_NAME="CNCF CI Bot"
+        GH_EMAIL="cncf-ci@ii.coop"
+        FORK_GH_REPO=k8s.io
+        FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
+        git config user.name "${GH_NAME}"
+        git config user.email "${GH_EMAIL}"
+        git add --all audit
+        git commit -m "audit: update as of $(date +%Y-%m-%d)"
+        echo -e "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}:..." >&2
+        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
+
+        echo "Creating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into k8s.io:main..." >&2
+        /workspace/pr-creator \
+          --github-token-path=/etc/github-token/token \
+          --org=kubernetes --repo=k8s.io --branch=main \
+          --source="${GH_USER}:${FORK_GH_BRANCH}" \
+          --head-branch="${FORK_GH_BRANCH}" \
+          --title="audit: update as of $(date +%Y-%m-%d)" \
+          --body="Audit Updates wg-k8s-infra" \
+          --confirm
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: cncf-ci-github-token
 
 postsubmits:
   kubernetes/k8s.io:
@@ -30,6 +102,8 @@ postsubmits:
     decorate: true
     max_concurrency: 1
     run_if_changed: '^groups/groups.yaml'
+    branches:
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -51,7 +125,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^dns/zone-configs/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -72,7 +146,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
@@ -96,7 +170,7 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio

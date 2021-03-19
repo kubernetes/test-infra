@@ -9,11 +9,11 @@ postsubmits:
         description: Builds the auditlogger image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:
@@ -31,11 +31,11 @@ postsubmits:
         description: Builds the snoopdb image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
             command:
               - /run.sh
             args:

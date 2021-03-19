@@ -26,6 +26,11 @@ blockades:
     blockregexps:
       - ""
 
+    # BranchRegexp is the regular expression for branches that the the blockade applies to.
+    # If BranchRegexp is not specified, the blockade applies to all branches by default.
+    # Compiles into BranchRe during config load.
+    branchregexp: ""
+
     # ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
     exceptionregexps:
       - ""
@@ -386,6 +391,12 @@ help:
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
+jira:
+    # DisabledJiraProjects are projects for which we will never try to create a link,
+    # for example including `enterprise` here would disable linking for all issues
+    # that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
+    disabled_jira_projects:
+      - ""
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
@@ -413,6 +424,13 @@ override:
 
 # Owners contains configuration related to handling OWNERS files.
 owners:
+    # Filenames allows configuring repos to use a separate set of filenames for
+    # any plugin that interacts with these files. Keys are in "org/repo" format.
+    filenames:
+        "":
+            owners: ' '
+            owners_aliases: ' '
+
     # LabelsBlackList holds a list of labels that should not be present in any
     # OWNERS file, preventing their automatic addition by the owners-label plugin.
     # This check is performed by the verify-owners plugin.
@@ -436,11 +454,15 @@ owners:
 
 # Plugins is a map of repositories (eg "k/k") to lists of
 # plugin names.
-# You can find a comprehensive list of the default avaulable plugins here
+# You can find a comprehensive list of the default available plugins here
 # https://github.com/kubernetes/test-infra/tree/master/prow/plugins
 # note that you're also able to add external plugins.
 plugins:
-    "": null
+    "":
+        excluded_repos:
+          - ""
+        plugins:
+          - ""
 project_config:
     # Org level configs for github projects; key is org name
     project_org_configs:

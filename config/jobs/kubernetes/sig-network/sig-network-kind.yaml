@@ -6,8 +6,6 @@ presubmits:
     skip_report: false
     decorate: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -16,19 +14,19 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        - name: BUILD_TYPE
+          value: docker
         - name: FOCUS
           value: \[Conformance\]|DualStack
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -57,8 +55,6 @@ presubmits:
     skip_report: false
     decorate: true
     labels:
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
@@ -67,19 +63,19 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
         command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        - name: BUILD_TYPE
+          value: docker
         - name: FOCUS
           value: \[Conformance\]|DualStack
         - name: PARALLEL
           value: "true"
-        - name: BUILD_TYPE
-          value: bazel
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -111,8 +107,6 @@ periodics:
   name: ci-kubernetes-kind-network
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -125,7 +119,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
@@ -135,8 +129,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -162,8 +154,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -176,7 +166,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
@@ -192,8 +182,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -219,8 +207,6 @@ periodics:
   name: ci-kubernetes-kind-network-dual
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -233,13 +219,15 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
+      - name: BUILD_TYPE
+        value: docker
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
@@ -249,8 +237,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -276,8 +262,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -290,7 +274,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
@@ -300,8 +284,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: KUBE_PROXY_MODE
         value: "ipvs"
       - name: FOCUS
@@ -329,8 +311,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -343,7 +323,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
@@ -361,8 +341,6 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -388,8 +366,6 @@ periodics:
   name: ci-kubernetes-kind-network-ipvs-dual
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -402,13 +378,15 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
+      - name: BUILD_TYPE
+        value: docker
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
@@ -420,8 +398,6 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -448,8 +424,6 @@ periodics:
   name: ci-kubernetes-kind-network-parallel
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -460,7 +434,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -468,8 +442,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
@@ -500,8 +472,6 @@ periodics:
   name: ci-kubernetes-kind-network-parallel-ipv6
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -512,7 +482,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201208-8b354d9-master
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -526,8 +496,6 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: BUILD_TYPE
-        value: bazel
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP

@@ -59,9 +59,10 @@ import (
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs flagutil.Strings
+	pluginConfig               string
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -176,6 +177,7 @@ func parseOptions() (options, error) {
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
@@ -227,7 +229,7 @@ func validate(o options) error {
 	}
 
 	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
@@ -409,10 +411,10 @@ func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
 		// Done partitioning the repos.
 
 		if policyIsStrict(org.Policy) {
-			// This org is strict, record with repo exceptions (blacklist).
+			// This org is strict, record with repo exceptions ("denylist")
 			strictOrgExceptions[orgName] = nonStrictExplicitRepos
 		} else {
-			// The org is not strict, record member repos that are (whitelist).
+			// The org is not strict, record member repos that are allowed
 			strictRepos.Insert(strictExplicitRepos.UnsortedList()...)
 		}
 	}
@@ -621,11 +623,11 @@ func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *
 }
 
 // orgRepoConfig describes a set of repositories with an explicit
-// whitelist and a mapping of blacklists for owning orgs
+// allowlist and a mapping of denied repos for owning orgs
 type orgRepoConfig struct {
-	// orgExceptions holds explicit blacklists of repos for owning orgs
+	// orgExceptions holds explicit denylists of repos for owning orgs
 	orgExceptions map[string]sets.String
-	// repos is a whitelist of repos
+	// repos is an allowed list of repos
 	repos sets.String
 }
 
@@ -723,10 +725,10 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts1 := range c.orgExceptions {
-		// keep only items in both blacklists that are not in the
-		// explicit repo whitelists for the other configuration;
+		// keep only items in both denylists that are not in the
+		// explicit repo allowlist for the other configuration;
 		// we know from how the orgRepoConfigs are constructed that
-		// a org blacklist won't intersect it's own repo whitelist
+		// a org denylist won't intersect it's own repo allowlist
 		pruned := excepts1.Difference(c2.repos)
 		if excepts2, ok := c2.orgExceptions[org]; ok {
 			res.orgExceptions[org] = pruned.Intersection(excepts2.Difference(c.repos))
@@ -736,15 +738,15 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts2 := range c2.orgExceptions {
-		// update any blacklists not previously updated
+		// update any denylists not previously updated
 		if _, exists := res.orgExceptions[org]; !exists {
 			res.orgExceptions[org] = excepts2.Difference(c.repos)
 		}
 	}
 
-	// we need to prune out repos in the whitelists which are
+	// we need to prune out repos in the allowed lists which are
 	// covered by an org already; we know from above that no
-	// org blacklist in the result will contain a repo whitelist
+	// org denylist in the result will contain a repo allowlist
 	for _, repo := range c.repos.Union(c2.repos).UnsortedList() {
 		parts := strings.SplitN(repo, "/", 2)
 		if len(parts) != 2 {
@@ -763,14 +765,15 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 		orgs  []string
 		repos []string
 	)
+	var orgMap map[string]sets.String
 	if external {
 		orgs, repos = c.EnabledReposForExternalPlugin(plugin)
+		orgMap = make(map[string]sets.String, len(orgs))
+		for _, org := range orgs {
+			orgMap[org] = nil
+		}
 	} else {
-		orgs, repos = c.EnabledReposForPlugin(plugin)
-	}
-	orgMap := make(map[string]sets.String, len(orgs))
-	for _, org := range orgs {
-		orgMap[org] = nil
+		orgs, repos, orgMap = c.EnabledReposForPlugin(plugin)
 	}
 	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
 }
@@ -805,19 +808,19 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
 	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
-		if presubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, presubmit.JobBase.UtilityConfig) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && !*presubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
 	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
-		if postsubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, postsubmit.JobBase.UtilityConfig) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && !*postsubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
 	for _, periodic := range cfg.AllPeriodics() {
-		if periodic.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, periodic.JobBase.UtilityConfig) {
+		if periodic.Agent == string(v1.KubernetesAgent) && !*periodic.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
 	}

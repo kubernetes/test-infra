@@ -28,18 +28,20 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/gofuzz"
+	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -53,6 +55,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/history"
 )
+
+var defaultBranch = localgit.DefaultBranch("")
 
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
 	if len(actual) != len(expected) {
@@ -517,14 +521,16 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
-	err error
+	err  error
+	lock sync.Mutex
 
-	prs       []PullRequest
-	refs      map[string]string
-	merged    int
-	setStatus bool
-	statuses  map[string]github.Status
-	mergeErrs map[int]error
+	prs        map[string][]PullRequest
+	refs       map[string]string
+	merged     int
+	setStatus  bool
+	statuses   map[string]github.Status
+	mergeErrs  map[int]error
+	queryCalls int
 
 	expectedSHA    string
 	combinedStatus map[string]string
@@ -549,12 +555,17 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
-func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+func (f *fgc) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
 	sq, ok := q.(*searchQuery)
 	if !ok {
 		return errors.New("unexpected query type")
 	}
-	for _, pr := range f.prs {
+
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.queryCalls++
+
+	for _, pr := range f.prs[org] {
 		sq.Search.Nodes = append(
 			sq.Search.Nodes,
 			struct {
@@ -635,19 +646,19 @@ func TestDividePool(t *testing.T) {
 			org:    "k",
 			repo:   "t-i",
 			number: 5,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
 			repo:   "t-i",
 			number: 6,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
 			repo:   "k",
 			number: 123,
-			branch: "master",
+			branch: defaultBranch,
 		},
 		{
 			org:    "k",
@@ -667,14 +678,14 @@ func TestDividePool(t *testing.T) {
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
 			jobType: prowapi.BatchJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
@@ -691,21 +702,21 @@ func TestDividePool(t *testing.T) {
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "abc",
 		},
 		{
 			jobType: prowapi.PresubmitJob,
 			org:     "o",
 			repo:    "t-i",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 		{
 			jobType: prowapi.PresubmitJob,
 			org:     "k",
 			repo:    "other",
-			baseRef: "master",
+			baseRef: defaultBranch,
 			baseSHA: "123",
 		},
 	}
@@ -728,7 +739,7 @@ func TestDividePool(t *testing.T) {
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc,
+		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, false,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -887,8 +898,8 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		log:    logrus.WithField("component", "tide"),
 		org:    "o",
 		repo:   "r",
-		branch: "master",
-		sha:    "master",
+		branch: defaultBranch,
+		sha:    defaultBranch,
 	}
 	for _, testpr := range testprs {
 		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", testpr.number)); err != nil {
@@ -897,7 +908,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
 			t.Fatalf("Error adding commit: %v", err)
 		}
-		if err := lg.Checkout("o", "r", "master"); err != nil {
+		if err := lg.Checkout("o", "r", defaultBranch); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
 		oid := githubql.String(fmt.Sprintf("origin/pr-%d", testpr.number))
@@ -1150,7 +1161,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		nones           []int
 		batchMerges     []int
 		presubmits      map[int][]config.Presubmit
-		preExistingJobs []ctrlruntimeclient.Object
+		preExistingJobs []runtime.Object
 		mergeErrs       map[int]error
 
 		merged           int
@@ -1380,7 +1391,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1388,8 +1399,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1417,7 +1428,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1425,8 +1436,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1458,7 +1469,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					{Reporter: config.Reporter{Context: "if-changed"}},
 				},
 			},
-			preExistingJobs: []ctrlruntimeclient.Object{&prowapi.ProwJob{
+			preExistingJobs: []runtime.Object{&prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{Name: "my-job", Namespace: "pj-ns"},
 				Spec: prowapi.ProwJobSpec{
 					Job:  "bar",
@@ -1466,8 +1477,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					Refs: &prowapi.Refs{
 						Org:     "o",
 						Repo:    "r",
-						BaseRef: "master",
-						BaseSHA: "master",
+						BaseRef: defaultBranch,
+						BaseSHA: defaultBranch,
 						Pulls: []prowapi.Pull{
 							{Number: 1, SHA: "origin/pr-1"},
 							{Number: 3, SHA: "origin/pr-3"},
@@ -1622,8 +1633,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				},
 				org:    "o",
 				repo:   "r",
-				branch: "master",
-				sha:    "master",
+				branch: defaultBranch,
+				sha:    defaultBranch,
 			}
 			genPulls := func(nums []int) []PullRequest {
 				var prs []PullRequest
@@ -1634,7 +1645,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
 						t.Fatalf("Error adding commit: %v", err)
 					}
-					if err := lg.Checkout("o", "r", "master"); err != nil {
+					if err := lg.Checkout("o", "r", defaultBranch); err != nil {
 						t.Fatalf("Error checking out master: %v", err)
 					}
 					oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
@@ -1660,6 +1671,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				nil,
 				nil,
 				nil,
+				false,
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
@@ -1883,6 +1895,15 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 	return pr
 }
 
+func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) PullRequest {
+	pr := testPR(org, repo, branch, number, mergeable)
+	for _, label := range labels {
+		labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
+		pr.Labels.Nodes = append(pr.Labels.Nodes, labelNode)
+	}
+	return pr
+}
+
 func TestSync(t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
@@ -1973,7 +1994,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{
-			prs: tc.prs,
+			prs: map[string][]PullRequest{"": tc.prs},
 			refs: map[string]string{
 				"org/repo heads/A": "SHA",
 				"org/repo A":       "SHA",
@@ -2694,7 +2715,7 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter:  config.Reporter{Context: "presubmit"},
 					AlwaysRun: true,
 					Brancher: config.Brancher{
-						Branches: []string{"master", "dev"},
+						Branches: []string{defaultBranch, "dev"},
 					},
 				},
 				{
@@ -2705,7 +2726,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				Reporter:  config.Reporter{Context: "presubmit"},
 				AlwaysRun: true,
 				Brancher: config.Brancher{
-					Branches: []string{"master", "dev"},
+					Branches: []string{defaultBranch, "dev"},
 				},
 			}}},
 		},
@@ -2882,7 +2903,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
-			branch: "master",
+			branch: defaultBranch,
 			sha:    "master-sha",
 			prs:    append(tc.prs, samplePR),
 		}
@@ -3304,12 +3325,12 @@ func TestPresubmitsForBatch(t *testing.T) {
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
-				Brancher:  config.Brancher{Branches: []string{"master"}},
+				Brancher:  config.Brancher{Branches: []string{defaultBranch}},
 			}},
 			expected: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
-				Brancher:  config.Brancher{Branches: []string{"master"}},
+				Brancher:  config.Brancher{Branches: []string{defaultBranch}},
 			}},
 		},
 		{
@@ -3457,7 +3478,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 				logger: logrus.WithField("test", tc.name),
 			}
 
-			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", "master")
+			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", defaultBranch)
 			if err != nil {
 				t.Fatalf("failed to get presubmits for batch: %v", err)
 			}
@@ -3617,7 +3638,7 @@ func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string, state
 	return pj
 }
 
-func newFakeManager(objs ...ctrlruntimeclient.Object) *fakeManager {
+func newFakeManager(objs ...runtime.Object) *fakeManager {
 	client := &indexingClient{
 		Client:     fakectrlruntimeclient.NewFakeClient(objs...),
 		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},
@@ -3938,6 +3959,131 @@ func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
 			res := deduplicateContexts([]Context{context})
 			if diff := cmp.Diff(context, res[0]); diff != "" {
 				t.Errorf("deduplicateContexts lost data, new object differs: %s", diff)
+			}
+		})
+	}
+}
+
+func TestPickSmallestPassingNumber(t *testing.T) {
+	priorities := []config.TidePriority{
+		{Labels: []string{"kind/failing-test"}},
+		{Labels: []string{"area/deflake"}},
+		{Labels: []string{"kind/bug", "priority/critical-urgent"}},
+	}
+	testCases := []struct {
+		name     string
+		prs      []PullRequest
+		expected int
+	}{
+		{
+			name: "no label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+			},
+			expected: 3,
+		},
+		{
+			name: "deflake PR",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 7,
+		},
+		{
+			name: "same label",
+			prs: []PullRequest{
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			},
+			expected: 1,
+		},
+		{
+			name: "missing one label",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+			},
+			expected: 3,
+		},
+		{
+			name: "complete",
+			prs: []PullRequest{
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+				testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+				testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"}),
+				testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"}),
+			},
+			expected: 9,
+		},
+	}
+	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			if int(got.Number) != tc.expected {
+				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
+			}
+		})
+	}
+}
+
+func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name                     string
+		usesGitHubAppsAuth       bool
+		prs                      map[string][]PullRequest
+		expectedNumberOfApiCalls int
+	}{
+		{
+			name:               "Apps auth is used, one call per org",
+			usesGitHubAppsAuth: true,
+			prs: map[string][]PullRequest{
+				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+			},
+			expectedNumberOfApiCalls: 2,
+		},
+		{
+			name:               "Apps auth is unused, one call for all orgs",
+			usesGitHubAppsAuth: false,
+			prs: map[string][]PullRequest{"": {
+				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
+			}},
+			expectedNumberOfApiCalls: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Controller{
+				logger: logrus.WithField("test", tc.name),
+				config: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+				},
+				ghc:                &fgc{prs: tc.prs},
+				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
+			}
+
+			prs, err := c.query()
+			if err != nil {
+				t.Fatalf("query() failed: %v", err)
+			}
+			if n := len(prs); n != 2 {
+				t.Errorf("expected to get two prs back, got %d", n)
+			}
+			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, c.ghc.(*fgc).queryCalls); diff != "" {
+				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
 			}
 		})
 	}

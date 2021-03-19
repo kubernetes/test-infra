@@ -17,14 +17,17 @@ limitations under the License.
 package approvers
 
 import (
-	"testing"
-
-	"github.com/sirupsen/logrus"
-
 	"net/url"
 	"reflect"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 func TestUnapprovedFiles(t *testing.T) {
@@ -149,33 +152,33 @@ func TestGetFiles(t *testing.T) {
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", sets.NewString(rootApprovers.List()[0]), "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", ownersconfig.DefaultOwnersFile, sets.NewString(rootApprovers.List()[0]), "master"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", ownersconfig.DefaultOwnersFile, "master"}},
 		},
 		{
 			testName:          "Single File PR in B Fully Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: bApprovers,
-			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", bApprovers, "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", ownersconfig.DefaultOwnersFile, bApprovers, "master"}},
 		},
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", ownersconfig.DefaultOwnersFile, "master"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{
-				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", "master"},
-				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", ownersconfig.DefaultOwnersFile, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", ownersconfig.DefaultOwnersFile, "master"},
 			},
 		},
 		{
@@ -183,8 +186,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: eApprovers,
 			expectedFiles: []File{
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", eApprovers, "master"},
-				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", ownersconfig.DefaultOwnersFile, eApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", ownersconfig.DefaultOwnersFile, "master"},
 			},
 		},
 		{
@@ -192,8 +195,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: edcApprovers.Intersection(dApprovers),
 			expectedFiles: []File{
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", edcApprovers.Intersection(dApprovers), "master"},
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", edcApprovers.Intersection(dApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", ownersconfig.DefaultOwnersFile, edcApprovers.Intersection(dApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", ownersconfig.DefaultOwnersFile, edcApprovers.Intersection(dApprovers), "master"},
 			},
 		},
 		{
@@ -201,9 +204,9 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			currentlyApproved: cApprovers,
 			expectedFiles: []File{
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", cApprovers, "master"},
-				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "c", cApprovers, "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", ownersconfig.DefaultOwnersFile, cApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", ownersconfig.DefaultOwnersFile, "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "c", ownersconfig.DefaultOwnersFile, cApprovers, "master"},
 			},
 		},
 		{
@@ -211,22 +214,24 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/test.go", "a/d/test.go", "b/test"},
 			currentlyApproved: rootApprovers.Union(aApprovers).Union(bApprovers),
 			expectedFiles: []File{
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a", rootApprovers.Union(aApprovers), "master"},
-				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", rootApprovers.Union(bApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a", ownersconfig.DefaultOwnersFile, rootApprovers.Union(aApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", ownersconfig.DefaultOwnersFile, rootApprovers.Union(bApprovers), "master"},
 			},
 		},
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
-		testApprovers.RequireIssue = false
-		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", false)
-		}
-		calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
-		if !reflect.DeepEqual(test.expectedFiles, calculated) {
-			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
-		}
+		t.Run(test.testName, func(t *testing.T) {
+			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
+			testApprovers.RequireIssue = false
+			for approver := range test.currentlyApproved {
+				testApprovers.AddApprover(approver, "REFERENCE", false)
+			}
+			calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
+			if diff := cmp.Diff(test.expectedFiles, calculated, cmpopts.EquateEmpty(), cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
+				t.Errorf("expected files differ from actual: %s", diff)
+			}
+		})
 	}
 }
 
@@ -254,56 +259,72 @@ func TestGetCCs(t *testing.T) {
 		testSeed  int64
 		assignees []string
 		// order matters for CCs
-		expectedCCs []string
+		expectedCCs          []string
+		expectedAssignedCCs  []string
+		expectedSuggestedCCs []string
 	}{
 		{
-			testName:          "Empty PR",
-			filenames:         []string{},
-			currentlyApproved: sets.NewString(),
-			testSeed:          0,
-			expectedCCs:       []string{},
+			testName:             "Empty PR",
+			filenames:            []string{},
+			currentlyApproved:    sets.NewString(),
+			testSeed:             0,
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
-			testName:          "Single Root FFile PR Approved",
-			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			testSeed:          13,
-			expectedCCs:       []string{},
+			testName:             "Single Root FFile PR Approved",
+			filenames:            []string{"kubernetes.go"},
+			currentlyApproved:    sets.NewString(rootApprovers.List()[0]),
+			testSeed:             13,
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
-			testName:          "Single Root File PR Unapproved Seed = 13",
-			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(),
-			testSeed:          13,
-			expectedCCs:       []string{"alice"},
+			testName:             "Single Root File PR Unapproved Seed = 13",
+			filenames:            []string{"kubernetes.go"},
+			currentlyApproved:    sets.NewString(),
+			testSeed:             13,
+			expectedCCs:          []string{"alice"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"alice"},
 		},
 		{
-			testName:          "Single Root File PR No One Seed = 10",
-			filenames:         []string{"kubernetes.go"},
-			testSeed:          10,
-			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"bob"},
+			testName:             "Single Root File PR No One Seed = 10",
+			filenames:            []string{"kubernetes.go"},
+			testSeed:             10,
+			currentlyApproved:    sets.NewString(),
+			expectedCCs:          []string{"bob"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"bob"},
 		},
 		{
-			testName:          "Combo and Other; Neither Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"dan"},
+			testName:             "Combo and Other; Neither Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    sets.NewString(),
+			expectedCCs:          []string{"dan"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"dan"},
 		},
 		{
-			testName:          "Combo and Other; Combo Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: eApprovers,
-			expectedCCs:       []string{"dan"},
+			testName:             "Combo and Other; Combo Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    eApprovers,
+			expectedCCs:          []string{"dan"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"dan"},
 		},
 		{
-			testName:          "Combo and Other; Both Approved",
-			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			testSeed:          0,
-			currentlyApproved: dApprovers, // dApprovers can approve combo and d directory
-			expectedCCs:       []string{},
+			testName:             "Combo and Other; Both Approved",
+			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
+			testSeed:             0,
+			currentlyApproved:    dApprovers, // dApprovers can approve combo and d directory
+			expectedCCs:          []string{},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{},
 		},
 		{
 			testName:          "Combo, C, D; None Approved",
@@ -311,7 +332,9 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// chris can approve c and combo, debbie can approve d
-			expectedCCs: []string{"chris", "debbie"},
+			expectedCCs:          []string{"chris", "debbie"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"chris", "debbie"},
 		},
 		{
 			testName:          "A, B, C; Nothing Approved",
@@ -319,7 +342,9 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Need an approver from each of the three owners files
-			expectedCCs: []string{"anne", "bill", "carol"},
+			expectedCCs:          []string{"anne", "bill", "carol"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"anne", "bill", "carol"},
 		},
 		{
 			testName:  "A, B, C; Partially approved by non-suggested approvers",
@@ -328,7 +353,9 @@ func TestGetCCs(t *testing.T) {
 			// Approvers are valid approvers, but not the one we would suggest
 			currentlyApproved: sets.NewString("Art", "Ben"),
 			// We don't suggest approvers for a and b, only for unapproved c.
-			expectedCCs: []string{"carol"},
+			expectedCCs:          []string{"carol"},
+			expectedAssignedCCs:  []string{},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:  "A, B, C; Nothing approved, but assignees can approve",
@@ -339,7 +366,9 @@ func TestGetCCs(t *testing.T) {
 			assignees:         []string{"Art", "Ben"},
 			// We suggest assigned people rather than "suggested" people
 			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
-			expectedCCs: []string{"art", "ben", "carol"},
+			expectedCCs:          []string{"art", "ben", "carol"},
+			expectedAssignedCCs:  []string{"art", "ben"},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
@@ -349,7 +378,9 @@ func TestGetCCs(t *testing.T) {
 			// Assignees are a mix of potential approvers and random people
 			assignees: []string{"Art", "Ben", "John", "Jack"},
 			// We suggest assigned people rather than "suggested" people
-			expectedCCs: []string{"art", "ben", "carol"},
+			expectedCCs:          []string{"art", "ben", "carol"},
+			expectedAssignedCCs:  []string{"art", "ben"},
+			expectedSuggestedCCs: []string{"carol"},
 		},
 		{
 			testName:          "Assignee is top OWNER, No one has approved",
@@ -357,8 +388,10 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Assignee is a root approver
-			assignees:   []string{"alice"},
-			expectedCCs: []string{"alice"},
+			assignees:            []string{"alice"},
+			expectedCCs:          []string{"alice"},
+			expectedAssignedCCs:  []string{"alice"},
+			expectedSuggestedCCs: []string{},
 		},
 	}
 
@@ -372,6 +405,14 @@ func TestGetCCs(t *testing.T) {
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
 			t.Errorf("Failed for test %v.  Expected CCs: %v. Found %v", test.testName, test.expectedCCs, calculated)
+		}
+		calculated = testApprovers.AssignedCCs()
+		if !reflect.DeepEqual(test.expectedAssignedCCs, calculated) {
+			t.Errorf("Failed for test %v.  Expected AssignedCCs: %v. Found %v", test.testName, test.expectedAssignedCCs, calculated)
+		}
+		calculated = testApprovers.SuggestedCCs()
+		if !reflect.DeepEqual(test.expectedSuggestedCCs, calculated) {
+			t.Errorf("Failed for test %v.  Expected SuggestedCCs: %v. Found %v", test.testName, test.expectedSuggestedCCs, calculated)
 		}
 	}
 }
@@ -391,13 +432,15 @@ func TestIsApproved(t *testing.T) {
 		"c":       cApprovers,
 		"a/d":     dApprovers,
 		"a/combo": edcApprovers,
+		"d":       {},
 	}
 	tests := []struct {
-		testName          string
-		filenames         []string
-		currentlyApproved sets.String
-		testSeed          int64
-		isApproved        bool
+		testName               string
+		filenames              []string
+		allowFolderCreationMap map[string]bool
+		currentlyApproved      sets.String
+		testSeed               int64
+		isApproved             bool
 	}{
 		{
 			testName:          "Empty PR",
@@ -462,17 +505,62 @@ func TestIsApproved(t *testing.T) {
 			currentlyApproved: sets.NewString("Anne", "Ben", "Carol"),
 			isApproved:        true,
 		},
+		{
+			testName:               "File in folder with AllowFolderCreation does not get approved",
+			filenames:              []string{"a/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation gets approved",
+			filenames:              []string{"a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation whose ownersfile has no approvers gets approved",
+			filenames:              []string{"d/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"d": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation and other unapproved file does not get approved",
+			filenames:              []string{"b/unapproved.go", "a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
+		{
+			testName:               "Subfolder in folder with AllowFolderCreation and approved file, approved",
+			filenames:              []string{"b/approved.go", "a/new-folder/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			currentlyApproved:      sets.NewString(bApprovers.List()[0]),
+			isApproved:             true,
+		},
+		{
+			testName:               "Nested subfolder in folder with AllowFolderCreation gets approved",
+			filenames:              []string{"a/new-folder/child/grandchild/test.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             true,
+		},
+		{
+			testName:               "Change in folder with Owners whose parent has AllowFolderCreation does not get approved",
+			filenames:              []string{"a/d/new-file.go"},
+			allowFolderCreationMap: map[string]bool{"a": true},
+			isApproved:             false,
+		},
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
-		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", false)
-		}
-		calculated := testApprovers.IsApproved()
-		if test.isApproved != calculated {
-			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
-		}
+		t.Run(test.testName, func(t *testing.T) {
+			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, func(fr *FakeRepo) { fr.autoApproveUnownedSubfolders = test.allowFolderCreationMap }), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
+			for approver := range test.currentlyApproved {
+				testApprovers.AddApprover(approver, "REFERENCE", false)
+			}
+			calculated := testApprovers.IsApproved()
+			if test.isApproved != calculated {
+				t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
+			}
+		})
 	}
 }
 

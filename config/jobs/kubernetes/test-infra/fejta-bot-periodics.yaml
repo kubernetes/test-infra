@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -72,7 +72,7 @@ periodics:
       - |-
         --comment=Unknown CLA label state. Rechecking for CLA labels.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /check-cla
       - --template
       - --ceiling=10
@@ -94,7 +94,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -112,7 +112,7 @@ periodics:
         Reopen the issue with `/reopen`.
         Mark the issue as fresh with `/remove-lifecycle rotten`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /close
       - --template
       - --ceiling=10
@@ -134,7 +134,7 @@ periodics:
     description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -190,7 +190,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -211,7 +211,7 @@ periodics:
 
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /lifecycle rotten
       - --template
       - --ceiling=10
@@ -233,7 +233,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -254,7 +254,7 @@ periodics:
 
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
         /lifecycle stale
       - --template
       - --ceiling=10
@@ -277,7 +277,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/issue-creator:v20210318-ffb8032f91
       command:
       - /app/robots/issue-creator/app.binary
       args:
@@ -306,7 +306,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210105-c50d055243
+    - image: gcr.io/k8s-prow/commenter:v20210318-ffb8032f91
       command:
       - /app/robots/commenter/app.binary
       args:

@@ -9,27 +9,35 @@ presubmits:
     max_concurrency: 12
     skip_branches:
     - release-\d+\.\d+  # per-release image
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=120
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -45,7 +53,7 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=100
         - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -53,7 +61,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
@@ -62,31 +70,41 @@ presubmits:
           requests:
             cpu: 6
             memory: "14Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-big-performance
     always_run: false
     max_concurrency: 1
     branches:
     - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 270m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=270
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
         - --extract=local
@@ -102,13 +120,13 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -117,6 +135,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
@@ -125,24 +145,31 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 270m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=270
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
@@ -160,7 +187,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           limits:
             cpu: 6
@@ -168,31 +195,41 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-large-performance
     always_run: false
     max_concurrency: 1
     branches:
     - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 570m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=570
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=local
@@ -208,14 +245,14 @@ presubmits:
         - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
         - --test-cmd-args=--nodes=2000
         - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/overrides/2000_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
@@ -224,6 +261,8 @@ presubmits:
           requests:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     cluster: k8s-infra-prow-build
@@ -233,10 +272,22 @@ presubmits:
     max_concurrency: 12
     skip_branches:
     - release-\d+\.\d+  # per-release image
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
@@ -245,19 +296,12 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -278,7 +322,7 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -287,6 +331,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
@@ -300,36 +345,41 @@ presubmits:
             cpu: 6
             memory: 16Gi
         securityContext:
-          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
+          privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     always_run: false
     max_concurrency: 1
     branches:
     - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 1220m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-scale: "true"
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=1220"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
@@ -347,12 +397,13 @@ presubmits:
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=5000
         - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=1200m
         - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
@@ -366,7 +417,7 @@ presubmits:
             cpu: 6
             memory: "16Gi"
         securityContext:
-          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
+          privileged: true
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
@@ -374,7 +425,16 @@ presubmits:
     skip_report: false
     max_concurrency: 3
     branches:
-      - master
+    - master
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 140m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-benchmark-kube-dns
@@ -384,14 +444,11 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - args:
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --root=/go/src
-        - --timeout=140
-        - --scenario=kubernetes_e2e
-        - --
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --check-leaked-resources
         - --cluster=kube-dns-benchmark
         - --extract=ci/latest
@@ -401,11 +458,10 @@ presubmits:
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=kube-dns
-        - --test-cmd-args=/workspace/_artifacts/out
-        - --test-cmd-args=/workspace/_artifacts
+        - --test-cmd-args=$(ARTIFACTS)/out
+        - --test-cmd-args=$(ARTIFACTS)
         - --test-cmd-name=KubeDnsBenchmark
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
 
   - name: pull-perf-tests-clusterloader2
     always_run: false
@@ -413,24 +469,28 @@ presubmits:
     max_concurrency: 3
     branches:
     - master
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-containerd: "true"
       preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=120
-        - --scenario=kubernetes_e2e
-        - --
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --cluster=
         - --extract=ci/latest
         - --gcp-nodes=100
@@ -440,13 +500,14 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=100
         - --test-cmd-args=--prometheus-scrape-node-exporter
         - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -455,7 +516,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           limits:
             cpu: 2
@@ -469,65 +530,70 @@ presubmits:
     skip_report: false
     max_concurrency: 3
     branches:
-      - master
+    - master
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --service-account=/etc/service-account/service-account.json
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=120
-            - --scenario=kubernetes_e2e
-            - --
-            - --cluster=
-            - --extract=ci/latest
-            - --gcp-master-size=n1-standard-2
-            - --gcp-node-size=e2-standard-4
-            - --gcp-nodes=4
-            - --gcp-project-type=scalability-presubmit-project
-            - --gcp-zone=us-east1-b
-            - --kubemark
-            - --kubemark-nodes=100
-            - --provider=gce
-            - --tear-down-previous
-            - --test=false
-            - --test_args=--ginkgo.focus=xxxx
-            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-            - --test-cmd-args=cluster-loader2
-            - --test-cmd-args=--nodes=100
-            - --test-cmd-args=--prometheus-scrape-node-exporter
-            - --test-cmd-args=--provider=kubemark
-            - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-            - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
-            - --test-cmd-args=--report-dir=/workspace/_artifacts
-            - --test-cmd-args=--testconfig=testing/load/config.yaml
-            - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-            - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
-            - --test-cmd-name=ClusterLoaderV2
-            - --timeout=100m
-            - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
-          resources:
-            limits:
-              cpu: 2
-              memory: "6Gi"
-            requests:
-              cpu: 2
-              memory: "6Gi"
-          securityContext:
-            privileged: true
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-master-size=n1-standard-2
+        - --gcp-node-size=e2-standard-4
+        - --gcp-nodes=4
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --kubemark
+        - --kubemark-nodes=100
+        - --provider=gce
+        - --tear-down-previous
+        - --test=false
+        - --test_args=--ginkgo.focus=xxxx
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=kubemark
+        - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
+        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-perf-tests-util-images
     always_run: false
@@ -535,33 +601,35 @@ presubmits:
     max_concurrency: 10
     run_if_changed: ^util-images/.*$
     branches:
-      - master
+    - master
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 60m
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/bootstrap:v20201217-27f76e20d2
-          args:
-          - --root=/go/src
-          - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-          - --timeout=60
-          - --scenario=execute
-          - --
-          - /go/src/k8s.io/perf-tests/util-images/presubmit.sh
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "2Gi"
-            limits:
-              cpu: 1
-              memory: "2Gi"
+      - image: gcr.io/k8s-testimages/bootstrap:v20210226-def39e5
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
+        args:
+        - /home/prow/go/src/k8s.io/perf-tests/util-images/presubmit.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
 
   # TODO(jprzychodzen): Remove after deprecation of release-1.19
   - name: pull-perf-tests-verify-all

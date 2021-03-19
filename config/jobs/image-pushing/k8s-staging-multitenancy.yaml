@@ -1,0 +1,22 @@
+postsubmits:
+  kubernetes-sigs/externalip-webhook:
+    - name: post-externalip-webhook-push-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: wg-multi-tenancy-externalip
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-multitenancy
+              - --scratch-bucket=gs://k8s-staging-multitenancy-gcb
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

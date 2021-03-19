@@ -2,30 +2,35 @@
 # dot architecture.dot -Tsvg -oarchitecture.svg
 
 digraph G {
-	label="Last updated 2017-07-13"  # UPDATE WHEN CHANGED!
+	label="Kubernetes Test Infrastructure (Last updated 2021-03-04)"  # UPDATE WHEN CHANGED!
+    labelloc="t"
+    graph[compound=true]
 
 	# external services
-	legend_ext, GCS, PubSub, GitHub, BigQuery [style=filled, fillcolor=gray, shape=square]
+	legend_ext, GCS, PubSub, "GitHub\nthrough\nghproxy", BigQuery [style=filled, fillcolor=gray, shape=square]
 
 	# things that host websites
-	legend_site, Triage, Mungegithub, Deck, Testgrid, Gubernator [shape=house, fillcolor=lightblue, style=filled]
+	legend_site Spyglass, Deck, "Testgrid (closed)", Gubernator, Velodrome, Boskos, Greenhouse [shape=house, fillcolor=lightblue, style=filled]
+
+    legend_cloud GCE, GKE, AWS [shape=doubleoctagon, fillcolor=gray, style=filled]
+
+    legend_prowjob Metrics, Triage, ProwJobs [shape=square, fillcolor=dodgerblue1, style=filled]
+
+    legend_stock InfluxDB, Prometheus [shape=cylinder, fillcolor=gray98, style=filled]
 
 	# handy links!
 	Triage [href="https://go.k8s.io/triage"]
 	Gubernator [href="https://gubernator.k8s.io"]
-	Testgrid [href="https://testgrid.k8s.io"]
+	"Testgrid (closed)" [href="https://testgrid.k8s.io"]
 	Deck [href="https://prow.k8s.io"]
-	Mungegithub [href="https://submit-queue.k8s.io"]
 	BigQuery [href="https://bigquery.cloud.google.com/table/k8s-gubernator:build.week"]
 
 	subgraph cluster_Prow {
 		label="Prow"
 		color=blue
 		Hook [label="Hook\nhandle GitHub events"]
-		Splice [label="Splice\nstart batch jobs"]
 		Deck [label="Deck\nfrontend"]
 		Plank [label="Plank\nProwJob controller"]
-		Tot [label="Tot\nvend build numbers"]
 		Sinker [label="Sinker\ndeletes old\npods/ProwJobs"]
 		Horologium [label="Horologium\ncreate periodic ProwJobs"]
 		Job
@@ -37,6 +42,9 @@ digraph G {
 		rank=sink
 		legend_ext [label="External\nService"]
 		legend_site [label="Serves\nHTTP"]
+		legend_cloud [label="Cloud\nor\nCloud service"]
+        legend_prowjob [label="ProwJobs"]
+        legend_stock [label="Hosted stock"]
 	}
 
 	# CONNECTIONS START HERE:
@@ -44,23 +52,20 @@ digraph G {
 	# top to bottom, following edges. dir="back" is an orientation hint
 	# to the layout engine, to try to keep hierarchy in a sensible order.
 	# hack to get legend near the bottom
-	Testgrid -> legend_ext [style="invis"]
+	"Testgrid (closed)" -> legend_ext [style="invis"]
 
 	Kettle [label="Kettle\nget GCS results into BQ"]
 
-	GitHub -> Gubernator [label="PR events"]
-	GitHub -> Mungegithub [dir="both"]
-	Mungegithub -> Splice [dir="back", label="read\nqueue"]
-	GitHub -> Hook [label="events"]
-	Mungegithub -> Deck [label="read\nbatch\njobs"]
+	"GitHub\nthrough\nghproxy" -> Gubernator [label="PR events", dir="both"]
+	"GitHub\nthrough\nghproxy" -> Hook [label="events"]
 	GCS -> Gubernator [dir="back"]
-	Job -> GCS [label="publish\nstarted.json, finished.json,\nbuild-log.txt, artifacts/"]
+	Gubernator -> "Testgrid (closed)" [dir="back"]
+	Job -> GCS [label="publish\nstarted.json, finished.json,\nbuild-log.txt, artifacts/", dir="both"]
 
-	Plank -> GitHub [label="update PR status\ncomment failures"]
+	Plank -> "GitHub\nthrough\nghproxy" [label="update PR status\ncomment failures", ltail="cluster_Prow"]
 
 	subgraph cluster_Prow {
 		Plank -> ApiServer
-		Plank -> Tot
 		Splice -> ApiServer
 		Deck -> ApiServer [label="read"]
 		Hook -> ApiServer [label="create ProwJob"]
@@ -70,10 +75,24 @@ digraph G {
 	}
 
 	GCS -> PubSub
-	Kettle -> GCS [label="read"]
-	Kettle -> PubSub [label="read"]
+	PubSub -> Kettle [label="read"]
 	Kettle -> BigQuery [label="write"]
-	BigQuery -> Triage [dir="back"]
-	GCS -> Testgrid [dir="back"]
-
+    BigQuery -> Triage
+    BigQuery -> Metrics
+	GCS -> Triage [dir="back"]
+	GCS -> "Testgrid (closed)"
+    GCS -> Spyglass
+    Spyglass -> GKE [dir="both"]
+    Metrics -> InfluxDB
+    Prometheus -> InfluxDB
+    InfluxDB -> Velodrome
+    Plank -> Prometheus [ltail="cluster_Prow"]
+    Boskos -> Prometheus
+    Boskos -> ProwJobs [dir="both"]
+    Boskos -> GCE [dir="both"]
+    Boskos -> GKE [dir="both"]
+    ProwJobs -> AWS [dir="both"]
+    ProwJobs -> GKE [dir="both"]
+    ProwJobs -> GCE [dir="both"]
+    ProwJobs -> Greenhouse [dir="both"]
 }

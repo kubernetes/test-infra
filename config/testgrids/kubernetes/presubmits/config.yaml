@@ -77,13 +77,13 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd
     test_group_name: pull-kubernetes-e2e-gce-ubuntu-containerd
     base_options: width=10
+  - name: pull-kubernetes-verify-govet-levee
+    test_group_name: pull-kubernetes-verify-govet-levee
+    base_options: width=10
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-rbe
-    test_group_name: pull-kubernetes-e2e-gce-rbe
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-canary
     test_group_name: pull-kubernetes-e2e-gce-canary
@@ -103,8 +103,17 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
     test_group_name: pull-kubernetes-e2e-kind-ipvs-dual-canary
     base_options: width=10
-  - name: pull-kubernetes-e2e-aks-engine-azure
-    test_group_name: pull-kubernetes-e2e-aks-engine-azure
+  - name: pull-kubernetes-e2e-aks-engine-conformance
+    test_group_name: pull-kubernetes-e2e-aks-engine-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
+    base_options: width=10
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
+    base_options: width=10
+  - name: pull-kubernetes-e2e-aks-engine-azure-file
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure-file
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-alpha-features
     test_group_name: pull-kubernetes-e2e-gce-alpha-features
@@ -114,9 +123,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-snapshot
     test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-storage-slow-rbe
-    test_group_name: pull-kubernetes-e2e-gce-storage-slow-rbe
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-csi-serial
     test_group_name: pull-kubernetes-e2e-gce-csi-serial
@@ -129,9 +135,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
-    base_options: width=10
-  - name: pull-canaries
-    test_group_name: pull-kubernetes-dependencies-canary
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-iscsi
     test_group_name: pull-kubernetes-e2e-gce-iscsi
@@ -147,9 +150,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-files-remake
     test_group_name: pull-kubernetes-files-remake
-    base_options: width=10
-  - name: pull-kubernetes-verify-govet-levee
-    test_group_name: pull-kubernetes-verify-govet-levee
     base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:

@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,7 +48,7 @@ type fakeReporter struct {
 	err              error
 }
 
-func (f *fakeReporter) Report(_ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
+func (f *fakeReporter) Report(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
 	f.reported = append(f.reported, pj.Spec.Job)
 	return []*prowv1.ProwJob{pj}, f.res, f.err
 }
@@ -56,7 +57,7 @@ func (f *fakeReporter) GetName() string {
 	return reporterName
 }
 
-func (f *fakeReporter) ShouldReport(_ *logrus.Entry, pj *prowv1.ProwJob) bool {
+func (f *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowv1.ProwJob) bool {
 	return f.shouldReportFunc(pj)
 }
 
@@ -258,7 +259,7 @@ func TestReconcile(t *testing.T) {
 				err: test.reportErr,
 			}
 
-			var prowjobs []ctrlruntimeclient.Object
+			var prowjobs []runtime.Object
 			if test.job != nil {
 				prowjobs = append(prowjobs, test.job)
 				test.job.Name = toReconcile

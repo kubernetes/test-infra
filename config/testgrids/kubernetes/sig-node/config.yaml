@@ -15,6 +15,7 @@ dashboard_groups:
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
+    - sig-node-cos
 
 dashboards:
 - name: sig-node-containerd-io
@@ -128,6 +129,8 @@ dashboards:
   - name: push-image
     test_group_name: post-security-profiles-operator-push-image
     base_options: width=10
+
+- name: sig-node-cos
 
 test_groups:
 - name: ci-kubernetes-node-kubelet-alpha

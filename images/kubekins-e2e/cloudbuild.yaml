@@ -15,6 +15,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
     - build
+    - --ldflags="-X=main.gitTag=$_GIT_TAG"
     - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
@@ -23,6 +24,7 @@ steps:
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+    - --build-arg=KIND_VERSION=$_KIND_VERSION
     - -f
     - images/kubekins-e2e/Dockerfile
     - .
@@ -42,6 +44,7 @@ substitutions:
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
   _UPGRADE_DOCKER: 'false'
+  _KIND_VERSION: ''
 options:
   substitution_option: ALLOW_LOOSE
 images:

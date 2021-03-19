@@ -14,7 +14,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -30,5 +30,5 @@ postsubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: postsubmit-capi-e2e-full
+      testgrid-tab-name: capz-postsubmit-capi-e2e-full-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io

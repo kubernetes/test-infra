@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     skip_branches:
       - release-\d+.\d+ # per-release job
-    optional: true
+    optional: false
     skip_report: false
     path_alias: k8s.io/kubernetes
     annotations:
@@ -16,8 +16,8 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        imagePullPolicy: IfNotPresent
         command:
         - make
         args:

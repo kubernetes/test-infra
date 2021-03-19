@@ -4,7 +4,6 @@ reviewers:
 - baludontu
 - divyenpatel
 - imkin
-- kerneltime
 - frapposelli
 - dougm
 - figo
@@ -14,7 +13,6 @@ approvers:
 - baludontu
 - divyenpatel
 - imkin
-- kerneltime
 - frapposelli
 - dougm
 - figo
@@ -22,6 +20,7 @@ approvers:
 - yastij
 emeritus_approvers:
 - abrarshivani
+- kerneltime
 labels:
 - sig/cloud-provider
 - area/provider/vmware

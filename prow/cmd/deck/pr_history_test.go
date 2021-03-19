@@ -435,16 +435,17 @@ func TestGetGCSDirsForPR(t *testing.T) {
 			config: &config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "krusty-krab",
-									PathStrategy: "legacy",
-									DefaultOrg:   "kubernetes",
-									DefaultRepo:  "kubernetes",
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowapi.DecorationConfig{
+								"*": {
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "krusty-krab",
+										PathStrategy: "legacy",
+										DefaultOrg:   "kubernetes",
+										DefaultRepo:  "kubernetes",
+									},
 								},
-							},
-						},
+							}),
 					},
 				},
 				JobConfig: config.JobConfig{
@@ -478,10 +479,9 @@ func TestGetGCSDirsForPR(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
-		gitHubClient := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				123: {Number: 123},
-			},
+		gitHubClient := fakegithub.NewFakeClient()
+		gitHubClient.PullRequests = map[int]*github.PullRequest{
+			123: {Number: 123},
 		}
 		toSearch, err := getStorageDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
@@ -533,15 +533,16 @@ func Test_getPRHistory(t *testing.T) {
 		},
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
-				DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-					"*": {
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "gs://kubernetes-jenkins",
-							PathStrategy: prowapi.PathStrategyLegacy,
-							DefaultOrg:   "kubernetes",
+				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+					map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "gs://kubernetes-jenkins",
+								PathStrategy: prowapi.PathStrategyLegacy,
+								DefaultOrg:   "kubernetes",
+							},
 						},
-					},
-				},
+					}),
 			},
 			Deck: config.Deck{
 				AllKnownStorageBuckets: sets.NewString("kubernetes-jenkins"),

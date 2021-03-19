@@ -73,6 +73,11 @@ type TideMergeCommitTemplate struct {
 	Body  *template.Template `json:"-"`
 }
 
+// TidePriority contains a list of labels used to prioritize PRs in the merge pool
+type TidePriority struct {
+	Labels []string `json:"labels,omitempty"`
+}
+
 // Tide is config for the tide pool.
 type Tide struct {
 	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
@@ -146,6 +151,11 @@ type Tide struct {
 	//  0 => unlimited batch size
 	// -1 => batch merging disabled :(
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+
+	// Priority is an ordered list of sets of labels that would be prioritized before other PRs
+	// PRs should match all labels contained in a set to be prioritized. The first entry has
+	// the highest priority.
+	Priority []TidePriority `json:"priority,omitempty"`
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
@@ -213,38 +223,80 @@ type TideQuery struct {
 	ReviewApprovedRequired bool `json:"reviewApprovedRequired,omitempty"`
 }
 
-// Query returns the corresponding github search string for the tide query.
-func (tq *TideQuery) Query() string {
-	toks := []string{"is:pr", "state:open", "archived:false"}
+// constructQuery returns a map[org][]orgSpecificQueryParts (org, repo, -repo), remainingQueryString
+func (tq *TideQuery) constructQuery() (map[string][]string, string) {
+	// map org->repo directives (if any)
+	orgScopedIdentifiers := map[string][]string{}
 	for _, o := range tq.Orgs {
-		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
+		if _, ok := orgScopedIdentifiers[o]; !ok {
+			orgScopedIdentifiers[o] = []string{fmt.Sprintf(`org:"%s"`, o)}
+		}
 	}
 	for _, r := range tq.Repos {
-		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+		if org, _, ok := splitOrgRepoString(r); ok {
+			orgScopedIdentifiers[org] = append(orgScopedIdentifiers[org], fmt.Sprintf("repo:\"%s\"", r))
+		}
 	}
+
 	for _, r := range tq.ExcludedRepos {
-		toks = append(toks, fmt.Sprintf("-repo:\"%s\"", r))
+		if org, _, ok := splitOrgRepoString(r); ok {
+			orgScopedIdentifiers[org] = append(orgScopedIdentifiers[org], fmt.Sprintf("-repo:\"%s\"", r))
+		}
 	}
+
+	queryString := []string{"is:pr", "state:open", "archived:false"}
 	if tq.Author != "" {
-		toks = append(toks, fmt.Sprintf("author:\"%s\"", tq.Author))
+		queryString = append(queryString, fmt.Sprintf("author:\"%s\"", tq.Author))
 	}
 	for _, b := range tq.ExcludedBranches {
-		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
+		queryString = append(queryString, fmt.Sprintf("-base:\"%s\"", b))
 	}
 	for _, b := range tq.IncludedBranches {
-		toks = append(toks, fmt.Sprintf("base:\"%s\"", b))
+		queryString = append(queryString, fmt.Sprintf("base:\"%s\"", b))
 	}
 	for _, l := range tq.Labels {
-		toks = append(toks, fmt.Sprintf("label:\"%s\"", l))
+		queryString = append(queryString, fmt.Sprintf("label:\"%s\"", l))
 	}
 	for _, l := range tq.MissingLabels {
-		toks = append(toks, fmt.Sprintf("-label:\"%s\"", l))
+		queryString = append(queryString, fmt.Sprintf("-label:\"%s\"", l))
 	}
 	if tq.Milestone != "" {
-		toks = append(toks, fmt.Sprintf("milestone:\"%s\"", tq.Milestone))
+		queryString = append(queryString, fmt.Sprintf("milestone:\"%s\"", tq.Milestone))
 	}
 	if tq.ReviewApprovedRequired {
-		toks = append(toks, "review:approved")
+		queryString = append(queryString, "review:approved")
+	}
+
+	return orgScopedIdentifiers, strings.Join(queryString, " ")
+}
+
+func splitOrgRepoString(orgRepo string) (string, string, bool) {
+	split := strings.Split(orgRepo, "/")
+	if len(split) != 2 {
+		// Just do it like the github search itself and ignore invalid orgRepo identifiers
+		return "", "", false
+	}
+	return split[0], split[1], true
+}
+
+// OrgQueries returns the GitHub search string for the query, sharded
+// by org.
+func (tq *TideQuery) OrgQueries() map[string]string {
+	orgRepoIdentifiers, queryString := tq.constructQuery()
+	result := map[string]string{}
+	for org, repoIdentifiers := range orgRepoIdentifiers {
+		result[org] = queryString + " " + strings.Join(repoIdentifiers, " ")
+	}
+
+	return result
+}
+
+// Query returns the corresponding github search string for the tide query.
+func (tq *TideQuery) Query() string {
+	orgRepoIdentifiers, queryString := tq.constructQuery()
+	toks := []string{queryString}
+	for _, repoIdentifiers := range orgRepoIdentifiers {
+		toks = append(toks, repoIdentifiers...)
 	}
 	return strings.Join(toks, " ")
 }

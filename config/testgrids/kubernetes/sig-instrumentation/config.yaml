@@ -4,6 +4,8 @@ dashboard_groups:
   - sig-instrumentation-tests
   - sig-instrumentation-image-pushes
   - sig-instrumentation-metrics-server
+  - sig-instrumentation-custom-metrics-apiserver
+  - sig-instrumentation-prometheus-adapter
 
 dashboards:
 - name: sig-instrumentation-tests
@@ -22,3 +24,5 @@ dashboards:
       description: sig-instrumentation gce elasticsearch logging e2e tests for master branch
 - name: sig-instrumentation-image-pushes
 - name: sig-instrumentation-metrics-server
+- name: sig-instrumentation-custom-metrics-apiserver
+- name: sig-instrumentation-prometheus-adapter

@@ -15,4 +15,16 @@ default:
     - name: dead-label
       description: Delete Me :)
       deleteAfter: 2017-01-01T13:00:00Z
+orgs:
+  org:
+    labels:
+      - color: green
+        name: sgtm
+        description: Sounds Good To Me
+repos:
+  org/repo:
+    labels:
+      - color: blue
+        name: tgtm
+        description: Tastes Good To Me
 ...

@@ -14,6 +14,16 @@ presets:
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
 - labels:
+    preset-windows-repo-list-master: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-master
+- labels:
+    preset-windows-repo-list-pr: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-pr
+- labels:
     preset-windows-repo-list-2004: "true"
   env:
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
@@ -34,12 +44,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - kubetest
@@ -66,16 +76,16 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pr-aks-engine-azure-windows
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-aks-engine-windows-contianerd
+  - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
     decorate: true
@@ -88,12 +98,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - kubetest
@@ -120,13 +130,68 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption|\[sig-network\].EndpointSlice.should.create.and.delete.Endpoints.and.EndpointSlices.for.a.Service.with.a.selector.specified|\[sig-network\].EndpointSlice.should.create.Endpoints.and.EndpointSlices.for.Pods.matching.a.Service|\[sig-network\].EndpointSlice.should.have.Endpoints.and.EndpointSlices.pointing.to.API.Server --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pr-aks-engine-azure-windows-containerd
+      description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) using containerd
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-aks-engine-windows-containerd-test-images
+    always_run: false
+    optional: true
+    decorate: true
+    run_if_changed: '^test\/utils\/image\/manifest.go$'
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list-pr: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+        - --ginkgo-parallel=4
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pr-aks-engine-azure-windows-containerd-test-images
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) using containerd
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-azure-disk-windows
@@ -143,7 +208,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -153,7 +218,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - kubetest
@@ -189,7 +254,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
     annotations:
-      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit
       testgrid-tab-name: pr-k8s-azure-disk-e2e-master-windows
       description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
   - name: pull-kubernetes-e2e-azure-file-windows
@@ -206,7 +271,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -216,7 +281,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - kubetest
@@ -252,7 +317,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "true"
     annotations:
-      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit
       testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
   - name: pull-kubernetes-e2e-aks-engine-windows-gpu
@@ -268,12 +333,12 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list: "true"
+      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         command:
         - runner.sh
         - kubetest
@@ -306,10 +371,134 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-windows-presubmit, provider-azure-windows, provider-azure-upstream, provider-azure-presubmit
+      testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pr-aks-engine-windows-gpu
       description: Presubmit job for Windows tests on k8s clusters with assignable GPUs provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-azure-disk-windows-containerd
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list-master: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: azuredisk-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/azuredisk-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test-azure-disk-csi-driver
+        securityContext:
+          privileged: true
+        env:
+        - name: AZURE_STORAGE_DRIVER
+          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        - name: TEST_WINDOWS
+          value: "true"
+    annotations:
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit
+      testgrid-tab-name: pr-k8s-azure-disk-e2e-master-windows-containerd
+      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster with containerd runtime.
+  - name: pull-kubernetes-e2e-azure-file-windows-containerd
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
+      preset-windows-repo-list-master: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: azurefile-csi-driver
+      base_ref: master
+      path_alias: sigs.k8s.io/azurefile-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=quick
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --deployment=aksengine
+        - --provider=skeleton
+        - --aksengine-admin-username=azureuser
+        - --aksengine-admin-password=AdminPassw0rd
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+        - --aksengine-winZipBuildScript=$(WIN_BUILD)
+        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
+        - --aksengine-win-binaries
+        - --aksengine-deploy-custom-k8s
+        - --aksengine-agentpoolcount=2
+        # Specific test args
+        - --test-azure-file-csi-driver
+        securityContext:
+          privileged: true
+        env:
+        - name: AZURE_STORAGE_DRIVER
+          value: kubernetes.io/azure-file # In-tree Azure file storage class
+        - name: TEST_WINDOWS
+          value: "true"
+    annotations:
+      testgrid-dashboards: sig-windows-azure, sig-windows-presubmit
+      testgrid-tab-name: pr-k8s-azure-file-e2e-master-windows-containerd
+      description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime.
 periodics:
 - interval: 8h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
@@ -320,7 +509,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -330,7 +519,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -356,12 +545,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
-      - --ginkgo-parallel=8
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-staging
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -374,7 +563,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -384,7 +573,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -415,11 +604,11 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-staging-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 24h
+- interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd
   decorate: true
   decoration_config:
@@ -428,7 +617,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -438,7 +627,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -464,12 +653,13 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
-      - --ginkgo-parallel=8
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    fork-per-release: "true"
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, sig-release-master-informing, sig-windows-signal
     testgrid-tab-name: aks-engine-azure-windows-master-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -482,7 +672,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -492,7 +682,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -523,7 +713,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -536,7 +726,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -546,7 +736,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -572,12 +762,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=3
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-hyperv
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd with HyperV isolation provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -590,7 +780,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -600,7 +790,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -631,7 +821,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-master-containerd-hyperv-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd with HyperV isolation provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -644,7 +834,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -658,7 +848,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -694,7 +884,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
@@ -707,7 +897,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -721,7 +911,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -755,7 +945,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-azure-disk-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.
@@ -768,7 +958,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -782,7 +972,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -818,7 +1008,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
@@ -831,7 +1021,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -845,7 +1035,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       - kubetest
@@ -879,7 +1069,7 @@ periodics:
       - name: TEST_WINDOWS
         value: "true"
   annotations:
-    testgrid-dashboards: sig-windows-azure, provider-azure-periodic, provider-azure-windows
+    testgrid-dashboards: sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-azure-file-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.

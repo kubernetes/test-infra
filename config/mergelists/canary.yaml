@@ -1,0 +1,4 @@
+target: "gs://k8s-testgrid-canary/config"
+sources:
+- name: ""
+  location: "gs://k8s-testgrid-canary/configs/k8s/config"

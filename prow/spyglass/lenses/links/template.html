@@ -1,0 +1,16 @@
+{{define "header"}}
+<link rel="stylesheet" href="links.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    <tbody>
+        {{range $ix, $link := .Links}}
+        <tr>
+            <td class="name">{{$link.Name}}</td><td><button class="copy" data-link="{{$link.URL}}">Copy</button><div class="link">{{$link.URL}}</div></td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}

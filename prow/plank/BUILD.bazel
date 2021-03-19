@@ -10,6 +10,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "controller_test.go",
+        "error_test.go",
         "reconciler_test.go",
     ],
     embed = [":go_default_library"],
@@ -25,6 +26,7 @@ go_test(
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/api/meta:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
         "@io_k8s_apimachinery//pkg/types:go_default_library",
         "@io_k8s_apimachinery//pkg/util/clock:go_default_library",
@@ -48,6 +50,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
+        "error.go",
         "reconciler.go",
     ],
     importpath = "k8s.io/test-infra/prow/plank",
@@ -58,6 +61,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
+        "//prow/version:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",

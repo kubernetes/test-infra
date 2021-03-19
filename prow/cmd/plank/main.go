@@ -39,10 +39,11 @@ import (
 type options struct {
 	totURL string
 
-	configPath           string
-	jobConfigPath        string
-	selector             string
-	deprecatedSkipReport bool
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
+	jobConfigPath              string
+	selector                   string
+	deprecatedSkipReport       bool
 
 	dryRun                 bool
 	kubernetes             prowflagutil.KubernetesOptions
@@ -55,6 +56,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	fs.BoolVar(&o.deprecatedSkipReport, "skip-report", false, "No-Op flag kept for compatibility. Will be removed in September 2020.")
 
@@ -101,7 +103,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config

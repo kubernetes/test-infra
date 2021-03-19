@@ -296,24 +296,23 @@ func TestSkipStatus(t *testing.T) {
 			t.Fatalf("%s: could not set presubmit regexes: %v", test.name, err)
 		}
 
-		fghc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-			PullRequests: map[int]*github.PullRequest{
-				test.event.Number: {
-					Head: github.PullRequestBranch{
-						SHA: test.sha,
-					},
+		fghc := fakegithub.NewFakeClient()
+		fghc.IssueComments = make(map[int][]github.IssueComment)
+		fghc.PullRequests = map[int]*github.PullRequest{
+			test.event.Number: {
+				Head: github.PullRequestBranch{
+					SHA: test.sha,
 				},
 			},
-			PullRequestChanges: test.prChanges,
-			CreatedStatuses: map[string][]github.Status{
-				test.sha: test.existing,
-			},
-			CombinedStatuses: map[string]*github.CombinedStatus{
-				test.sha: {
-					State:    test.combinedStatus,
-					Statuses: test.existing,
-				},
+		}
+		fghc.PullRequestChanges = test.prChanges
+		fghc.CreatedStatuses = map[string][]github.Status{
+			test.sha: test.existing,
+		}
+		fghc.CombinedStatuses = map[string]*github.CombinedStatus{
+			test.sha: {
+				State:    test.combinedStatus,
+				Statuses: test.existing,
 			},
 		}
 		l := logrus.WithField("plugin", pluginName)

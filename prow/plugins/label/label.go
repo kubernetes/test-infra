@@ -225,7 +225,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 
 	if len(noSuchLabelsInRepo) > 0 {
 		log.Infof("Labels missing in repo: %v", noSuchLabelsInRepo)
-		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them", strings.Join(noSuchLabelsInRepo, ", "))
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them.", strings.Join(noSuchLabelsInRepo, ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 

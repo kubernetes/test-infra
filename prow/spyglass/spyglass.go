@@ -372,10 +372,11 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 			// per job would probably be a bad idea (indeed, not even the tests try to do this).
 			// This decision should probably be revisited if we ever want other information from it.
 			// TODO (droslean): we should get the default decoration config depending on the org/repo.
-			if sg.config().Plank.DefaultDecorationConfigs["*"] == nil || sg.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration == nil {
+			ddc := sg.config().Plank.GuessDefaultDecorationConfig("", "")
+			if ddc == nil || ddc.GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
 			}
-			c := sg.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration
+			c := ddc.GCSConfiguration
 			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
 			// what the actual path configuration is.
 			switch len(split) {

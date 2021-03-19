@@ -21,7 +21,7 @@ To enable spyglass, just pass the `--spyglass` flag to your `deck` instance. Onc
 it will expose itself under `/view/` on your `deck` instance.
 
 In order to make Spyglass useful, you may want to set your job URLs to point at it. You can do so by
-setting `plank.job_url_prefix_config['*']` to `https://your.deck/view/gcs/`, and possibly `plank.job_url_template`
+setting `plank.job_url_prefix_config['*']` to `https://your.deck/view/gs/`, and possibly `plank.job_url_template`
 to reference something similar depending on your setup.
 
 If you are not using the images we provide, you may also need to provide `--spyglass-files-location`,

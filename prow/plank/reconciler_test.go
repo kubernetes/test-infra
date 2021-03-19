@@ -237,9 +237,7 @@ func TestAdd(t *testing.T) {
 
 func mgrFromFakeInformer(gvk schema.GroupVersionKind, fi *controllertest.FakeInformer, ready chan struct{}) (manager.Manager, error) {
 	opts := manager.Options{
-		NewClient: func(_ cache.Cache, _ *rest.Config, _ ctrlruntimeclient.Options) (ctrlruntimeclient.Client, error) {
-			return nil, nil
-		},
+		ClientBuilder: &fakeClientBuilder{},
 		NewCache: func(_ *rest.Config, opts cache.Options) (cache.Cache, error) {
 			return &informertest.FakeInformers{
 				InformersByGVK: map[schema.GroupVersionKind]toolscache.SharedIndexInformer{gvk: &eventHandlerSignalingInformer{SharedIndexInformer: fi, signal: ready}},
@@ -252,6 +250,17 @@ func mgrFromFakeInformer(gvk schema.GroupVersionKind, fi *controllertest.FakeInf
 		MetricsBindAddress: "0",
 	}
 	return manager.New(&rest.Config{}, opts)
+}
+
+type fakeClientBuilder struct {
+}
+
+func (f *fakeClientBuilder) WithUncached(_ ...ctrlruntimeclient.Object) manager.ClientBuilder {
+	return f
+}
+
+func (f *fakeClientBuilder) Build(_ cache.Cache, _ *rest.Config, _ ctrlruntimeclient.Options) (ctrlruntimeclient.Client, error) {
+	return nil, nil
 }
 
 type eventHandlerSignalingInformer struct {

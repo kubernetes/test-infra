@@ -13,7 +13,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -38,7 +38,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -80,15 +80,16 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.19.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest-1.19
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
+        - --kops-args=--container-runtime=docker
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -123,21 +124,60 @@ presubmits:
         - runner.sh
         args:
         - make
-        - test-e2e
+        - test-e2e-aws-simple-1-20
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
+          limits:
+            memory: "3Gi"
           requests:
-            memory: "6Gi"
+            cpu: "2"
+            memory: "3Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
       testgrid-tab-name: e2e-kubetest2
-  - name: pull-kops-e2e-k8s-containerd
-    skip_report: false
-    run_if_changed: '^(nodeup\/pkg|upup\/pkg\/fi\/cloudup)\/'
+  - name: pull-kops-e2e-kubernetes-do-kubetest2
     branches:
     - master
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-do-credential: "true"
+      preset-do-spaces-credential: "true"
+      preset-do-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-e2e-do-simple-1-20
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "3Gi"
+          requests:
+            cpu: "2"
+            memory: "3Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
+      testgrid-tab-name: e2e-do-kubetest2
+  - name: pull-kops-e2e-k8s-containerd
+    branches:
+    - master
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -164,16 +204,16 @@ presubmits:
         - --cluster=
         - --kops-ssh-user=ubuntu
         - --env=KUBE_SSH_USER=ubuntu
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/latest-1.19.txt
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
         - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
         - --env=KOPS_RUN_TOO_NEW_VERSION=1
-        - --extract=release/latest-1.19
+        - --extract=release/stable-1.20
         - --ginkgo-parallel
         - --kops-build
         - --kops-args=--container-runtime=containerd --networking=calico
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -298,7 +338,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -328,6 +368,55 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-1-19
+  - name: pull-kops-e2e-kubernetes-aws-1-20
+    branches:
+    - release-1.20
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.20
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --kops-ssh-user=ubuntu
+        - --env=KUBE_SSH_USER=ubuntu
+        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt
+        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
+        - --extract=release/stable-1.20
+        - --ginkgo-parallel
+        - --kops-build
+        - --kops-args=--container-runtime=containerd --networking=calico
+        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-1-20
   - name: pull-kops-verify-bazel
     branches:
     - master
@@ -340,7 +429,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -362,7 +451,7 @@ presubmits:
     - release-1.16
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -383,7 +472,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -392,6 +481,48 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gomod
+  - name: pull-kops-verify-gomod-1-20
+    branches:
+    - release-1.20
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.20
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gomod"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gomod-1.20
+  - name: pull-kops-verify-gomod-1-19
+    branches:
+    - release-1.19
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gomod"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gomod-1.19
   - name: pull-kops-verify-boilerplate
     always_run: true
     labels:
@@ -402,7 +533,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -423,7 +554,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -445,7 +576,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -466,7 +597,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -489,7 +620,7 @@ presubmits:
     - release-1.16
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -513,7 +644,7 @@ presubmits:
     - release-1.16
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -539,7 +670,7 @@ presubmits:
     - release-1.18
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:
@@ -566,7 +697,7 @@ postsubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
         command:
         - runner.sh
         args:

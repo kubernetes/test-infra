@@ -5,6 +5,7 @@ presubmits:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
         preset-cluster-api-provider-vsphere-e2e-config: "true"
+        preset-cloud-provider-vsphere-e2e-config: "true"
       always_run: false
       optional: true
       decorate: true
@@ -12,7 +13,7 @@ presubmits:
       max_concurrency: 5
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
             args:
               - runner.sh
               - "./images/capi/packer/ova/scripts/ci-ova.sh"

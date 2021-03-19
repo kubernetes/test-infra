@@ -16,7 +16,7 @@ spec:
         resources:
           requests:
             storage: 100Gi
-  retention: "180d"
+  retention: "90d" # TODO(chaodaiG): change back to 180d once figure out how to properly increase the volume.
   serviceAccountName: prometheus-prow
   alerting:
     alertmanagers:
@@ -33,7 +33,7 @@ spec:
     - key: app
       operator: Exists
   version: v2.7.1
-  baseImage: docker.io/prom/prometheus
+  image: docker.io/prom/prometheus
   externalLabels: {}
   listenLocal: false
   nodeSelector: {}

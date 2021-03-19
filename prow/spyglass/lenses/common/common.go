@@ -132,16 +132,16 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 			}{
 				opts.LensTitle,
 				request.ResourceRoot,
-				template.HTML(lens.Header(artifacts, opts.LensResourcesDir, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)),
-				template.HTML(lens.Body(artifacts, opts.LensResourcesDir, "", opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)),
+				template.HTML(lens.Header(artifacts, opts.LensResourcesDir, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)),
+				template.HTML(lens.Body(artifacts, opts.LensResourcesDir, "", opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)),
 			})
 
 		case api.RequestActionRerender:
 			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			w.Write([]byte(lens.Body(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)))
+			w.Write([]byte(lens.Body(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)))
 
 		case api.RequestActionCallBack:
-			w.Write([]byte(lens.Callback(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)))
+			w.Write([]byte(lens.Callback(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)))
 
 		default:
 			w.WriteHeader(http.StatusBadRequest)
@@ -253,7 +253,7 @@ func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (st
 	}
 
 	url := job.Status.URL
-	prefix := config().Plank.GetJobURLPrefix(job.Spec.Refs)
+	prefix := config().Plank.GetJobURLPrefix(&job)
 	if !strings.HasPrefix(url, prefix) {
 		return "", "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}

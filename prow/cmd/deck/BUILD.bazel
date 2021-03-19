@@ -42,6 +42,21 @@ container_image(
     ],
 )
 
+sh_test(
+    name = "validate-static-files",
+    srcs = [
+        "validate-static-files.sh",
+    ],
+    args = [
+        "$(locations :templates)",
+        "$(locations //prow/cmd/deck/static)",
+    ],
+    data = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
+)
+
 go_binary(
     name = NAME,
     data = [
@@ -143,6 +158,7 @@ go_library(
         "//prow/spyglass/lenses/common:go_default_library",
         "//prow/spyglass/lenses/coverage:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
+        "//prow/spyglass/lenses/links:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/spyglass/lenses/podinfo:go_default_library",
         "//prow/spyglass/lenses/restcoverage:go_default_library",

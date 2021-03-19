@@ -3,6 +3,14 @@
 ## New features
 
 New features added to each component:
+  - *March 3, 2021* `plank.default_decoration_configs` can optionally be replaced with
+    `plank.default_decoration_config_entries` which supports a new format
+    that is a slice of filters with associated decoration configs rather than a
+    map. Currently entries can filter by repo and/or cluster. The old field is still
+    supported and will not be deprecated.
+  - *February 23, 2021* New format introduced in `plugins.yaml`. Repos can be excluded from plugin definition
+    at org level using `excluded_repos` notation. The previous format will be deprecated in *July 2021*, see
+    https://github.com/kubernetes/test-infra/issues/20631.
   - *November 2, 2020* Tide is now able to respect checkruns.
   - *September 15, 2020* Added validation to Deck that will restrict artifact requests based on storage buckets.
     Opt-out by setting `deck.skip_storage_path_validation` in your Prow config.
@@ -127,7 +135,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *January 1, 2021* Support for `whitelist` and `branch_whitelist` fields in Slack merge warning configuration is discontinued. You can use `exempt_users` and `exempt_branches` fields instead. 
+ - *January 24th, 2021* Planks Pod pending and Pod scheduling timeout defaults where changed from 24h each to the more reasonable 10 minutes/5 minutes, respectively.
+ - *January 1, 2021* Support for `whitelist` and `branch_whitelist` fields in Slack merge warning configuration is discontinued. You can use `exempt_users` and `exempt_branches` fields instead.
  - *November 24, 2020* The `requiresig` plugin has been removed in favor of the `require-matching-label` plugin
     which provides equivalent functionality ([example plugin config](https://github.com/kubernetes/test-infra/blob/e42b0745404017bc71c668da0342ef6857d87fa9/config/prow/plugins.yaml#L494-L498))
  - *November 14, 2020* The `whitelist` and `branch_whitelist` fields in Slack merge warning were deprecated on *August 22, 2020* in favor of the new `exempt_users` and `exempt_branches` fields. The support for these fields shall be stopped in *January 2021*.

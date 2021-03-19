@@ -37,6 +37,7 @@ import (
 
 var (
 	defaultNamespace = "default"
+	defaultBranch    = localgit.DefaultBranch("")
 )
 
 func TestRun(t *testing.T) {
@@ -62,13 +63,14 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("openshift", "release"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout("openshift", "release", "master"); err != nil {
+	if err := lg.Checkout("openshift", "release", defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 
 	if err := lg.AddCommit("openshift", "release", map[string][]byte{
 		"config/foo.yaml": []byte(`#foo.yaml`),
 		"config/bar.yaml": []byte(`#bar.yaml`),
+		"VERSION":         []byte("some-git-sha"),
 	}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
@@ -76,7 +78,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("openshift", "other"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout("openshift", "other", "master"); err != nil {
+	if err := lg.Checkout("openshift", "other", defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 
@@ -131,6 +133,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -179,6 +182,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":  "some-git-sha",
 						"foo.yaml": "#foo.yaml",
 						"bar.yaml": "#bar.yaml",
 					},
@@ -189,6 +193,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":        "some-git-sha",
 						"other-foo.yaml": "#other-foo.yaml",
 					},
 				},
@@ -198,6 +203,7 @@ func testRun(clients localgit.Clients, t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
+						"VERSION":        "some-git-sha",
 						"other-bar.yaml": "#other-bar.yaml",
 					},
 				},

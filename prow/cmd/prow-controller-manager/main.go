@@ -46,12 +46,13 @@ var allControllers = sets.NewString(plank.ControllerName)
 type options struct {
 	totURL string
 
-	configPath              string
-	jobConfigPath           string
-	buildCluster            string
-	selector                string
-	leaderElectionNamespace string
-	enabledControllers      prowflagutil.Strings
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	buildCluster               string
+	selector                   string
+	leaderElectionNamespace    string
+	enabledControllers         prowflagutil.Strings
 
 	dryRun                 bool
 	useV2                  bool
@@ -67,6 +68,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", allControllers.List()))
 
@@ -119,7 +121,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
 	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -162,6 +164,15 @@ func main() {
 		if err := mgr.Add(buildManager); err != nil {
 			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
 		}
+	}
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)

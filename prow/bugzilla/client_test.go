@@ -1171,3 +1171,37 @@ func TestGetRootForClone(t *testing.T) {
 		})
 	}
 }
+
+func TestClone(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		original *Bug
+		expected Bug
+	}{
+		{
+			name:     "Simple",
+			original: &Bug{ID: 1},
+			expected: Bug{DependsOn: []int{1}},
+		},
+		{
+			name:     "Copy blocks field",
+			original: &Bug{ID: 1, Blocks: []int{0}},
+			expected: Bug{DependsOn: []int{1}, Blocks: []int{0}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &Fake{Bugs: map[int]Bug{0: {}}, BugComments: map[int][]Comment{1: {{}}}}
+			newID, err := clone(client, tc.original)
+			if err != nil {
+				t.Fatalf("cloning failed: %v", err)
+			}
+			tc.expected.ID = newID
+			if diff := cmp.Diff(tc.expected, client.Bugs[newID]); diff != "" {
+				t.Errorf("expected clone differs from actual clone: %s", diff)
+			}
+		})
+	}
+}

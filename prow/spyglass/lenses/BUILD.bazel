@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "ts_library")
 
 filegroup(
     name = "templates",
@@ -9,6 +9,7 @@ filegroup(
         "//prow/spyglass/lenses/buildlog:template",
         "//prow/spyglass/lenses/coverage:template",
         "//prow/spyglass/lenses/junit:template",
+        "//prow/spyglass/lenses/links:template",
         "//prow/spyglass/lenses/metadata:template",
         "//prow/spyglass/lenses/podinfo:template",
         "//prow/spyglass/lenses/restcoverage:template",
@@ -21,6 +22,7 @@ filegroup(
         "//prow/spyglass/lenses/buildlog:resources",
         "//prow/spyglass/lenses/coverage:resources",
         "//prow/spyglass/lenses/junit:resources",
+        "//prow/spyglass/lenses/links:resources",
         "//prow/spyglass/lenses/metadata:resources",
         "//prow/spyglass/lenses/podinfo:resources",
         "//prow/spyglass/lenses/restcoverage:resources",
@@ -38,6 +40,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/spyglass/api:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
     ],
@@ -58,6 +61,7 @@ filegroup(
         "//prow/spyglass/lenses/common:all-srcs",
         "//prow/spyglass/lenses/coverage:all-srcs",
         "//prow/spyglass/lenses/junit:all-srcs",
+        "//prow/spyglass/lenses/links:all-srcs",
         "//prow/spyglass/lenses/metadata:all-srcs",
         "//prow/spyglass/lenses/podinfo:all-srcs",
         "//prow/spyglass/lenses/restcoverage:all-srcs",
@@ -71,6 +75,7 @@ go_test(
     srcs = ["lenses_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/spyglass/api:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
     ],

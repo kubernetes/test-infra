@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/test-infra/prow/config"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/entrypoint"
 	"sigs.k8s.io/yaml"
@@ -59,7 +60,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the content of <head> from template.html.
-func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	t, err := loadTemplate(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -72,12 +73,12 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
 // Body renders the <body>
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	if len(artifacts) == 0 {
 		logrus.Error("podinfo Body() called with no artifacts, which should never happen.")
 		return "Why am I here? There is no podinfo file."

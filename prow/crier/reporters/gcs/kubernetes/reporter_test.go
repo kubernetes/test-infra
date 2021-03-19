@@ -17,6 +17,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -112,7 +113,7 @@ func TestShouldReport(t *testing.T) {
 			}
 
 			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
-			shouldReport := kgr.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), pj)
+			shouldReport := kgr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if shouldReport != tc.shouldReport {
 				t.Errorf("Expected ShouldReport() to return %v, but got %v", tc.shouldReport, shouldReport)
 			}
@@ -129,7 +130,7 @@ type testResourceGetter struct {
 	patchType types.PatchType
 }
 
-func (rg testResourceGetter) GetPod(cluster, namespace, name string) (*v1.Pod, error) {
+func (rg testResourceGetter) GetPod(_ context.Context, cluster, namespace, name string) (*v1.Pod, error) {
 	if rg.cluster != cluster {
 		return nil, fmt.Errorf("expected cluster %q but got cluster %q", rg.cluster, cluster)
 	}
@@ -161,8 +162,8 @@ func (rg testResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) (
 	return rg.events, nil
 }
 
-func (rg testResourceGetter) PatchPod(cluster, namespace, name string, pt types.PatchType, data []byte) error {
-	if _, err := rg.GetPod(cluster, namespace, name); err != nil {
+func (rg testResourceGetter) PatchPod(ctx context.Context, cluster, namespace, name string, pt types.PatchType, data []byte) error {
+	if _, err := rg.GetPod(ctx, cluster, namespace, name); err != nil {
 		return err
 	}
 	if rg.patchType != pt {
@@ -352,15 +353,16 @@ func TestReportPodInfo(t *testing.T) {
 			fca := testutil.Fca{C: config.Config{ProwConfig: config.ProwConfig{
 				PodNamespace: "test-pods",
 				Plank: config.Plank{
-					DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-						GCSConfiguration: &prowv1.GCSConfiguration{
-							Bucket:       "kubernetes-jenkins",
-							PathPrefix:   "some-prefix",
-							PathStrategy: prowv1.PathStrategyLegacy,
-							DefaultOrg:   "kubernetes",
-							DefaultRepo:  "kubernetes",
-						},
-					}},
+					DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+						map[string]*prowv1.DecorationConfig{"*": {
+							GCSConfiguration: &prowv1.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								PathPrefix:   "some-prefix",
+								PathStrategy: prowv1.PathStrategyLegacy,
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+							},
+						}}),
 				},
 			}}}
 
@@ -374,7 +376,7 @@ func TestReportPodInfo(t *testing.T) {
 			}
 			author := &testutil.TestAuthor{}
 			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
-			reconcileResult, err := reporter.report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			reconcileResult, err := reporter.report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 
 			if tc.expectErr {
 				if err == nil {

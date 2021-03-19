@@ -34,6 +34,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/api"
@@ -64,7 +65,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the <head> from template.html.
-func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -77,12 +78,12 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
 // Body creates a view for prow job metadata.
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		StartTime    time.Time
@@ -188,8 +189,8 @@ func hintFromPodInfo(buf []byte) string {
 	}
 	// Check if we have any images that didn't pull
 	for _, s := range append(report.Pod.Status.InitContainerStatuses, report.Pod.Status.ContainerStatuses...) {
-		if s.State.Waiting != nil && s.State.Waiting.Reason == "ImagePullBackOff" {
-			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images.", s.Name, s.Image)
+		if s.State.Waiting != nil && (s.State.Waiting.Reason == "ImagePullBackOff" || s.State.Waiting.Reason == "ErrImagePull") {
+			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images. Full message: %q", s.Name, s.Image, s.State.Waiting.Message)
 		}
 	}
 	// Check if we're trying to mount a volume
@@ -234,8 +235,26 @@ func hintFromPodInfo(buf []byte) string {
 		}
 	}
 
-	// We've got nothing.
-	return ""
+	// There are cases where initContainers failed to start
+	var msgs []string
+	for _, ic := range report.Pod.Status.InitContainerStatuses {
+		if ic.Ready {
+			continue
+		}
+		var msg string
+		// Init container not ready by the time this job failed
+		// The 3 different states should be mutually exclusive, if it happens
+		// that there are more than one, use the most severe one
+		if state := ic.State.Terminated; state != nil {
+			msg = fmt.Sprintf("state: terminated, reason: %q, message: %q", state.Reason, state.Message)
+		} else if state := ic.State.Waiting; state != nil {
+			msg = fmt.Sprintf("state: waiting, reason: %q, message: %q", state.Reason, state.Message)
+		} else if state := ic.State.Running; state != nil { // This shouldn't happen at all, just in case.
+			logrus.WithField("pod", report.Pod.Name).WithField("container", ic.Name).Warning("Init container is running but not ready")
+		}
+		msgs = append(msgs, fmt.Sprintf("Init container %s not ready: (%s)", ic.Name, msg))
+	}
+	return strings.Join(msgs, "\n")
 }
 
 func hintFromProwJob(buf []byte) (string, bool) {

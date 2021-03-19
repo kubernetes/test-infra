@@ -1,0 +1,59 @@
+periodics:
+- interval: 1h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-kind-e2e-json-logging
+  annotations:
+    testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind
+    testgrid-tab-name: kind-json-logging
+    description: Smoke tests Kubelet with JSON logging enabled using sigs.k8s.io/kind
+    # TODO: anyone else?
+    testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com
+    testgrid-num-columns-recent: '6'
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 1h 2h 6h 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # this is the key configuration
+      - name: KUBELET_LOG_FORMAT
+        value: json
+      # TODO: This is a fairly arbitrary test that actually schedules some pod(s).
+      # We mostly just want cluster up/down and something that ensures the cluster is in fact up fully.
+      - name: FOCUS
+        value: Job.should.run.a.job.to.completion.when.tasks.sometimes.fail.and.are.locally.restarted
+      # TODO(bentheelder): reduce the skip list further
+      # NOTE: this skip list is from the standard periodic kind job, just to ensure
+      # we don't accidentally select any of these
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7

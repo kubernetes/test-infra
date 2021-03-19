@@ -27,12 +27,14 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	janitorPath   string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	janitorPath                string
 }
 
 var (
@@ -53,7 +55,6 @@ var (
 		"k8s-jkns-pr-kubemark",
 		"k8s-jkns-pr-node-e2e",
 		"k8s-jkns-pr-gce-gpus",
-		"k8s-gke-gpu-pr",
 		"k8s-presubmit-scale",
 	}
 )
@@ -78,6 +79,7 @@ func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	flag.StringVar(&o.janitorPath, "janitor-path", "", "Path to gcp_janitor.py.")
 	flag.Parse()
 	return o
@@ -137,7 +139,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	conf, err := config.Load(o.configPath, o.jobConfigPath)
+	conf, err := config.Load(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings())
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}

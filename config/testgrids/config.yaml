@@ -41,13 +41,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-features-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-2
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cos-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e
   test_name_config:
@@ -156,6 +149,17 @@ dashboards:
       options:
       - key: title
         value: 'ci-ovf-import-e2e-tests-daily issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: ci-ovf-export-e2e-tests-daily
+    test_group_name: ci-ovf-export-e2e-tests-daily
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+      options:
+      - key: title
+        value: 'ci-ovf-export-e2e-tests-daily issue: <test-name>'
       - key: body
         value: <test-url>
   - name: ci-windows-upgrade-e2e-tests

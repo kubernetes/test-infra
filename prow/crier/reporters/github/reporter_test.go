@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"testing"
@@ -96,7 +97,7 @@ func TestShouldReport(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := NewReporter(nil, nil, tc.reportAgent)
-			if r := c.ShouldReport(logrus.NewEntry(logrus.StandardLogger()), &tc.pj); r == tc.report {
+			if r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), &tc.pj); r == tc.report {
 				return
 			}
 			if tc.report {
@@ -114,7 +115,7 @@ func TestShouldReport(t *testing.T) {
 // threadsafe.
 func TestPresumitReportingLocks(t *testing.T) {
 	reporter := NewReporter(
-		&fakegithub.FakeClient{},
+		fakegithub.NewFakeClient(),
 		func() *config.Config {
 			return &config.Config{
 				ProwConfig: config.ProwConfig{
@@ -146,13 +147,13 @@ func TestPresumitReportingLocks(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
-		if _, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
+		if _, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
 	}()
 	go func() {
-		if _, _, err := reporter.Report(logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
+		if _, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 			t.Errorf("error reporting: %v", err)
 		}
 		wg.Done()
@@ -200,8 +201,10 @@ func TestReport(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			fghc := fakegithub.NewFakeClient()
+			fghc.Error = tc.githubError
 			c := Client{
-				gc: &fakegithub.FakeClient{Error: tc.githubError},
+				gc: fghc,
 				config: func() *config.Config {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{
@@ -224,7 +227,7 @@ func TestReport(t *testing.T) {
 			}
 
 			errMsg := ""
-			_, _, err := c.Report(logrus.NewEntry(logrus.StandardLogger()), pj)
+			_, _, err := c.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				errMsg = err.Error()
 			}

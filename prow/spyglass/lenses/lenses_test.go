@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -92,11 +93,11 @@ func (dumpLens) Config() LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -109,7 +110,7 @@ func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, 
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
@@ -166,7 +167,7 @@ crazy`,
 		if tc.err == nil && lens == nil {
 			t.Fatalf("Expected lens %s but got nil.", tc.lensName)
 		}
-		if lens != nil && lens.Body(tc.artifacts, "", tc.raw, nil) != tc.expected {
+		if lens != nil && lens.Body(tc.artifacts, "", tc.raw, nil, config.Spyglass{}) != tc.expected {
 			t.Errorf("%s expected view to be %s but got %s", tc.name, tc.expected, lens)
 		}
 	}

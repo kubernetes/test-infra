@@ -26,6 +26,19 @@ local config = {
     ],
   },
 
+  ciAbsents: {
+    components: [
+      comps.crier,
+      comps.deck,
+      comps.ghproxy,
+      comps.hook,
+      comps.horologium,
+      comps.prowControllerManager,
+      comps.sinker,
+      comps.tide,
+    ],
+  },
+
   // Heartbeat jobs
   heartbeatJobs: [
     {name: 'ci-test-infra-prow-checkconfig', interval: '5m', alertInterval: '20m'},
@@ -50,24 +63,25 @@ local config = {
 
   // Boskos endpoints to be monitored
   boskosResourcetypes: [
-    {instance: "104.197.27.114:9090", type: "aws-account", friendly: "AWS account"},
-    {instance: "104.197.27.114:9090", type: "gce-project", friendly: "GCE project"},
-    {instance: "35.225.208.117:9090", type: "gce-project", friendly: "GCE project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", type: "gke-project", friendly: "GKE project"},
-    {instance: "104.197.27.114:9090", type: "gpu-project", friendly: "GPU project"},
-    {instance: "35.225.208.117:9090", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", type: "ingress-project", friendly: "Ingress project"},
-    {instance: "104.197.27.114:9090", type: "node-e2e-project", friendly: "Node e2e project"},
-    {instance: "104.197.27.114:9090", type: "scalability-project", friendly: "Scalability project"},
-    {instance: "35.225.208.117:9090", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
+    # TODO(chaodaiG after 05/18/2021): drop instance. https://github.com/kubernetes/test-infra/pull/20888
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "aws-account", friendly: "AWS account"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gce-project", friendly: "GCE project"},
+    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gke-project", friendly: "GKE project"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gpu-project", friendly: "GPU project"},
+    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "ingress-project", friendly: "Ingress project"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "node-e2e-project", friendly: "Node e2e project"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "scalability-project", friendly: "Scalability project"},
+    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
+    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
   ],
 
   // How long we go during work hours without seeing a webhook before alerting.
   webhookMissingAlertInterval: '10m',
 
   // How many days prow hasn't been bumped.
-  prowImageStaleByDays: 7,
+  prowImageStaleByDays: {daysStale: 7, eventDuration: '24h'},
 };
 
 // Generate the real config by adding in constant fields and defaulting where needed.

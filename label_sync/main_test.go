@@ -18,10 +18,12 @@ package main
 
 import (
 	"encoding/json"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 // Tests for getting data from GitHub are not needed:
@@ -81,6 +83,36 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			expectedError: false,
+		},
+		{
+			name: "Required label defined in default and org",
+			config: Configuration{
+				Default: RepoConfig{Labels: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				}},
+				Orgs: map[string]RepoConfig{
+					"org": {Labels: []Label{
+						{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					}},
+				},
+			},
+			expectedError: true,
+		},
+		{
+			name: "Required label defined in org and repo",
+			config: Configuration{
+				Orgs: map[string]RepoConfig{
+					"org": {Labels: []Label{
+						{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					}},
+				},
+				Repos: map[string]RepoConfig{
+					"org/repo1": {Labels: []Label{
+						{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					}},
+				},
+			},
+			expectedError: true,
 		},
 	}
 	// Do tests
@@ -160,6 +192,32 @@ func TestSyncLabels(t *testing.T) {
 			expectedUpdates: RepoUpdates{
 				"repo1": {
 					{repo: "repo1", Why: "missing", Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}}},
+			},
+		},
+		{
+			name: "Required label defined on org-level - update required on one repo",
+			config: Configuration{
+				Default: RepoConfig{Labels: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				}},
+				Orgs: map[string]RepoConfig{
+					"org": {Labels: []Label{
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					}},
+				},
+			},
+			current: RepoLabels{
+				"repo1": {
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+				},
+				"repo2": {
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				},
+			},
+			expectedUpdates: RepoUpdates{
+				"repo2": {
+					{repo: "repo2", Why: "missing", Wanted: &Label{Name: "lab2", Description: "Test Label 2", Color: "deadbe"}}},
 			},
 		},
 		{
@@ -423,11 +481,15 @@ func TestLoadYAML(t *testing.T) {
 	}{
 		{
 			path: "labels_example.yaml",
-			expected: Configuration{Default: RepoConfig{Labels: []Label{
-				{Name: "lgtm", Description: "LGTM", Color: "green"},
-				{Name: "priority/P0", Description: "P0 Priority", Color: "red", Previously: []Label{{Name: "P0", Description: "P0 Priority", Color: "blue"}}},
-				{Name: "dead-label", Description: "Delete Me :)", DeleteAfter: &d},
-			}}},
+			expected: Configuration{
+				Default: RepoConfig{Labels: []Label{
+					{Name: "lgtm", Description: "LGTM", Color: "green"},
+					{Name: "priority/P0", Description: "P0 Priority", Color: "red", Previously: []Label{{Name: "P0", Description: "P0 Priority", Color: "blue"}}},
+					{Name: "dead-label", Description: "Delete Me :)", DeleteAfter: &d},
+				}},
+				Orgs:  map[string]RepoConfig{"org": {Labels: []Label{{Name: "sgtm", Description: "Sounds Good To Me", Color: "green"}}}},
+				Repos: map[string]RepoConfig{"org/repo": {Labels: []Label{{Name: "tgtm", Description: "Tastes Good To Me", Color: "blue"}}}},
+			},
 			ok: true,
 		},
 		{
@@ -452,8 +514,8 @@ func TestLoadYAML(t *testing.T) {
 		if !errNil && !strings.Contains(err.Error(), tc.errMsg) {
 			t.Errorf("TestLoadYAML: test case number %d, expected error '%v' to contain '%v'", i+1, err.Error(), tc.errMsg)
 		}
-		if errNil && !reflect.DeepEqual(*actual, tc.expected) {
-			t.Errorf("TestLoadYAML: test case number %d, expected labels %v, got %v", i+1, tc.expected, actual)
+		if diff := cmp.Diff(actual, &tc.expected, cmpopts.IgnoreUnexported(Label{})); errNil && diff != "" {
+			t.Errorf("TestLoadYAML: test case number %d, labels differ:%s", i+1, diff)
 		}
 	}
 }

@@ -172,7 +172,7 @@ func run(deploy deployer, o options) error {
 		} else if o.nodeTests {
 			nodeArgs := strings.Fields(o.nodeArgs)
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
-				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone, o.runtimeConfig)
 			}))
 		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 			errs = util.AppendError(errs, err)
@@ -553,7 +553,7 @@ func chartsTest() error {
 	return control.FinishRunning(exec.Command(cmdline))
 }
 
-func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) error {
+func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeConfig string) error {
 	// Run node e2e tests.
 	// TODO(krzyzacy): remove once nodeTest is stable
 	if wd, err := os.Getwd(); err == nil {
@@ -599,6 +599,10 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
 		fmt.Sprintf("--test-timeout=%s", timeout.String()),
+	}
+
+	if runtimeConfig != "" {
+		runner = append(runner, fmt.Sprintf("--runtime-config=%s", runtimeConfig))
 	}
 
 	runner = append(runner, nodeArgs...)
@@ -792,8 +796,9 @@ func (t *GinkgoScriptTester) Run(control *process.Control, testArgs []string) er
 // toBuildTesterOptions builds the BuildTesterOptions data structure for passing to BuildTester
 func toBuildTesterOptions(o *options) *e2e.BuildTesterOptions {
 	return &e2e.BuildTesterOptions{
-		FocusRegex:  o.focusRegex,
-		SkipRegex:   o.skipRegex,
-		Parallelism: o.ginkgoParallel.Get(),
+		FocusRegex:            o.focusRegex,
+		SkipRegex:             o.skipRegex,
+		Parallelism:           o.ginkgoParallel.Get(),
+		StorageTestDriverPath: o.storageTestDriverPath,
 	}
 }

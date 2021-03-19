@@ -14,7 +14,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       command:
       - runner.sh
       args:
@@ -23,7 +23,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-aws-ebs-csi-driver
+    testgrid-dashboards: provider-aws-ebs-csi-driver
     testgrid-tab-name: migration-test-latest
     description: aws ebs csi driver migration test on latest kubernetes
     testgrid-num-columns-recent: '30'

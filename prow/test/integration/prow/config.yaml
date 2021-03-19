@@ -1,0 +1,9 @@
+sinker:
+  resync_period: 5s
+  max_prowjob_age: 48h
+  max_pod_age: 48h
+  terminated_pod_ttl: 30m
+
+prowjob_namespace: default
+pod_namespace: test-pods
+log_level: debug

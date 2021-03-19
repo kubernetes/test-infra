@@ -75,6 +75,23 @@ type Options struct {
 	// longer than the `entrypoint` grace period for the test process and the time
 	// taken by `sidecar` to upload all relevant artifacts.
 	IgnoreInterrupts bool `json:"ignore_interrupts,omitempty"`
+
+	// SecretDirectories are paths to directories containing secret data. The contents
+	// of these secret data files will be censored from the logs and artifacts uploaded
+	// to the cloud.
+	SecretDirectories []string `json:"secret_directories,omitempty"`
+	// CensoringConcurrency is the maximum number of goroutines that should be censoring
+	// artifacts and logs at any time. If unset, defaults to 10.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is the size in bytes of the buffer allocated for every file
+	// being censored. We want to keep as little of the file in memory as possible in
+	// order for censoring to be reasonably performant in space. However, to guarantee
+	// that we censor every instance of every secret, our buffer size must be at least
+	// two times larger than the largest secret we are about to censor. While that size
+	// is the smallest possible buffer we could use, if the secrets being censored are
+	// small, censoring will not be performant as the number of I/O actions per file
+	// would increase. If unset, defaults to 10MiB.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {

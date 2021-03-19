@@ -52,7 +52,7 @@ presets:
     value: "5G"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
@@ -93,6 +93,8 @@ presets:
     value: 50
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
     value: true
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -132,7 +134,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
@@ -226,17 +228,20 @@ presets:
     value: 50
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
     value: true
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
+  # Deprecated. Should be removed after 1.20 branch will be removed from testing
 - labels:
     preset-e2e-scalability-containerd: "true"
   env:
   - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
-    value: "10m"
+    value: "15m"
   - name: KUBE_CONTAINER_RUNTIME
-    value: "containerd"
-  - name: LOG_DUMP_SAVE_SERVICES
     value: "containerd"
 
 ###### Scalability Envs
@@ -262,7 +267,7 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Broadwell"
+    value: "Intel Skylake"
   # Turn on profiling for various components and
   # increase throughput in master components and Kubelet.
   - name: ETCD_EXTRA_ARGS
@@ -290,6 +295,8 @@ presets:
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
+  - name: DUMP_TO_GCS_ONLY
+    value: true
 
 - labels:
     preset-e2e-scalability-presubmits: "true"

@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "prow_push", "tags")
+load("//def:image.bzl", image_tags = "tags")
 
 prow_push(
     name = "release-push",
@@ -20,6 +21,7 @@ prow_push(
             "exporter",
             "gerrit",
             "crier",
+            "generic-autobumper",
             "grandmatriarch",
             "gcsupload",
             "hook",
@@ -56,6 +58,19 @@ prow_push(
     ),
 )
 
+prow_push(
+    name = "testimage-push",
+    bundle_name = "testimage",
+    images = image_tags(
+        targets = {
+            # Local registry as documented: https://kind.sigs.k8s.io/docs/user/local-registry/
+            "localhost:5000/sinker": "//prow/cmd/sinker:image",
+            "localhost:5000/crier": "//prow/cmd/crier:image",
+            "localhost:5000/fakeghserver": "//prow/test/integration/fakeghserver:image",
+        },
+    ),
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -85,6 +100,7 @@ filegroup(
         "//prow/cmd/entrypoint:all-srcs",
         "//prow/cmd/exporter:all-srcs",
         "//prow/cmd/gcsupload:all-srcs",
+        "//prow/cmd/generic-autobumper:all-srcs",
         "//prow/cmd/gerrit:all-srcs",
         "//prow/cmd/grandmatriarch:all-srcs",
         "//prow/cmd/hmac:all-srcs",
@@ -155,12 +171,14 @@ filegroup(
         "//prow/prstatus:all-srcs",
         "//prow/pubsub/subscriber:all-srcs",
         "//prow/repoowners:all-srcs",
+        "//prow/secretutil:all-srcs",
         "//prow/sidecar:all-srcs",
         "//prow/simplifypath:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/spyglass:all-srcs",
         "//prow/statusreconciler:all-srcs",
         "//prow/test:all-srcs",
+        "//prow/testutil:all-srcs",
         "//prow/tide:all-srcs",
         "//prow/version:all-srcs",
     ],

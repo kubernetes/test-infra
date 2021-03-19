@@ -100,6 +100,32 @@ gs://<bucket path>: #bucket url
 
 A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L203-L210) runs that pushes Kettle on changes.
 
+# PubSub
+
+Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes within the `kubernetes-jenkins` bucket. These events are tied to the `gcs-changes` Topic in the `kubernetes-jenkins` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
+
+[Topic Creation] can be performed by running `gsutil notification create -t gcs-chances -f json gs://kubernetes-jenkins`
+
+[Subscriptions] are in Kuberenetes Jenkins Build - PubSub.
+- kettle
+- kettle-staging
+
+They are split so that the staging instance does not consume events aimed at production.
+
+These can be created via:
+```
+gcloud pubsub subscriptions create <subscription name> --topic=gcs-changes --topic-project="kubernetes-jenkins" --message-filter='attributes.eventType = "OBJECT_FINALIZE"'
+```
+
+### Auth
+For kettle to have permission, kettle's user needs access. When updating or changing a [Subscription] make sure to add `kettle@k8s-gubernator.iam.gserviceaccount.com` as a `PubSub Editor`.
+```
+gcloud pubsub subscriptions add-iam-policy-binding \
+  projects/kubernetes-jenkins/subscriptions/kettle-staging \
+  --member=serviceAccount:kettle@k8s-gubernator.iam.gserviceaccount.com \
+  --role=roles/pubsub.editor
+```
+
 # Known Issues
 
 - Occasionally data from Kettle stops updating, we suspect this is due to a transient hang when contacting GCS ([#8800](https://github.com/kubernetes/test-infra/issues/8800)). If this happens, [restart kettle](#restarting)
@@ -107,3 +133,6 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 [Big Query Tables]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
 [Big Query All]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=all&d=build&p=k8s-gubernator
 [Big Query Staging]: https://console.cloud.google.com/bigquery?project=k8s-gubernator&page=table&t=staging&d=build&p=k8s-gubernator
+[PubSub]: https://cloud.google.com/pubsub/docs
+[Subscriptions]: https://console.cloud.google.com/cloudpubsub/subscription/list?project=kubernetes-jenkins
+[Topic Creation]: https://cloud.google.com/storage/docs/reporting-changes#enabling

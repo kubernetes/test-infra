@@ -9,7 +9,7 @@ postsubmits:
     # one).
     max_concurrency: 1
     branches:
-    - ^master$
+    - ^main$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
@@ -40,7 +40,7 @@ periodics:
   # into /home/prow/go/src/github.com/kubernetes/k8s.io.
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   spec:
     # The k8s-artifacts-prod name was chosen in
     # https://github.com/kubernetes/k8s.io/pull/695.
@@ -68,7 +68,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
@@ -83,44 +83,6 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-release-releng-blocking
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-
-- name: ci-release-vulndash-update
-  interval: 2h
-  cluster: k8s-infra-prow-build-trusted
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 6h
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-  spec:
-    serviceAccountName: k8s-infra-gcr-vuln-dashboard
-    containers:
-    # TODO(releng): Point to promoted image once this job is fixed
-    - image: gcr.io/k8s-staging-artifact-promoter/vulndash-amd64:latest
-      command:
-      - /vulndash
-      args:
-        - --project=k8s-artifacts-prod
-        - --bucket=k8s-artifacts-prod-vuln-dashboard
-        - --dashboard-file-path=/home/prow/go/src/github.com/kubernetes/release/cmd/vulndash/
-        - --log-level=debug
-      resources:
-        requests:
-          cpu: 2
-          memory: "8Gi"
-        limits:
-          cpu: 2
-          memory: "8Gi"
-  annotations:
-    testgrid-dashboards: sig-release-releng-informing, wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:

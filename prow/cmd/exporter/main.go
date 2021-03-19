@@ -34,15 +34,17 @@ import (
 )
 
 type options struct {
-	configPath             string
-	kubernetes             prowflagutil.KubernetesOptions
-	instrumentationOptions prowflagutil.InstrumentationOptions
+	configPath                 string
+	kubernetes                 prowflagutil.KubernetesOptions
+	supplementalProwConfigDirs prowflagutil.Strings
+	instrumentationOptions     prowflagutil.InstrumentationOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
@@ -81,7 +83,7 @@ func main() {
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -93,11 +95,10 @@ func main() {
 	informerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(pjClientset, 0, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 	pjLister := informerFactory.Prow().V1().ProwJobs().Lister()
 
-	prometheus.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
-
 	go informerFactory.Start(interrupts.Context().Done())
 
 	registry := mustRegister("exporter", pjLister)
+	registry.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
 
 	// Expose prometheus metrics
 	metrics.ExposeMetricsWithRegistry("exporter", cfg().PushGateway, o.instrumentationOptions.MetricsPort, registry, nil)

@@ -6,17 +6,28 @@
     "moment": "^2.22.2",
     "pako": "^1.0.10"
   },
+  "bazel-update-info": {
+      "WORKSPACE": "NB: set frozen_lockfile = False"
+  },
   "devDependencies": {
-    "@bazel/bazel": "0.27.0",
-    "@bazel/jasmine": "0.36.0",
-    "@bazel/typescript": "0.36.0",
+    "@bazel/bazelisk": "^1.5.0",
+    "@bazel/jasmine": "3.1.0",
+    "@bazel/rollup": "^3.1.0",
+    "@bazel/terser": "^3.1.0",
+    "@bazel/typescript": "^3.1.0",
+    "@rollup/plugin-commonjs": "14.0.0",
+    "@rollup/plugin-json": "4.1.0",
+    "@rollup/plugin-node-resolve": "8.4.0",
     "@types/color": "^3.0.0",
     "@types/google.visualization": "^0.0.43",
     "@types/gtag.js": "^0.0.0",
     "@types/jasmine": "~3.3.13",
     "@types/pako": "^1.0.1",
     "jasmine": "~3.4.0",
+    "rollup": "2.3.4",
+    "rollup-plugin-amd": "4.0.0",
+    "terser": "4.4.0",
     "tslint": "^5.12.1",
-    "typescript": ">=2.8 <2.9"
+    "typescript": "^3.7.5"
   }
 }

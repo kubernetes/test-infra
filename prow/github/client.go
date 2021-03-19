@@ -123,6 +123,7 @@ type PullRequestClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
 	GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error)
 	ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error)
+	CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error
 	ListReviews(org, repo string, number int) ([]Review, error)
 	ClosePR(org, repo string, number int) error
 	ReopenPR(org, repo string, number int) error
@@ -144,6 +145,7 @@ type CommitClient interface {
 	ListCheckRuns(org, repo, ref string) (*CheckRunList, error)
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
+	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
 }
 
 // RepositoryClient interface for repository related API actions
@@ -159,11 +161,14 @@ type RepositoryClient interface {
 	DeleteRepoLabel(org, repo, label string) error
 	GetRepoLabels(org, repo string) ([]Label, error)
 	AddLabel(org, repo string, number int, label string) error
+	AddLabels(org, repo string, number int, labels ...string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
+	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) (string, error)
+	EnsureFork(forkingUser, org, repo string) (string, error)
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
@@ -878,12 +883,21 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 						resp.Body.Close()
 						break
 					}
-				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
+				} else {
+					acceptedScopes := resp.Header.Get("X-Accepted-OAuth-Scopes")
 					authorizedScopes := resp.Header.Get("X-OAuth-Scopes")
 					if authorizedScopes == "" {
 						authorizedScopes = "no"
 					}
-					err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, oauthScopes)
+
+					want := sets.NewString(strings.Split(acceptedScopes, ",")...)
+					got := strings.Split(authorizedScopes, ",")
+					if !want.HasAny(got...) {
+						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
+					} else {
+						body, _ := ioutil.ReadAll(resp.Body)
+						err = fmt.Errorf("the GitHub API request returns a 403 error: %s", string(body))
+					}
 					resp.Body.Close()
 					break
 				}
@@ -928,7 +942,7 @@ func (c *client) doRequest(method, path, accept, org string, body interface{}) (
 	}
 	req, err := http.NewRequest(method, path, buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
 	if header := c.authHeader(); len(header) > 0 {
 		req.Header.Set("Authorization", header)
@@ -1918,7 +1932,7 @@ func (c *client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		exitCodes:   []int{201},
 	}, &resp)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create pull request against %s/%s#%s from head %s: %v", org, repo, base, head, err)
 	}
 	return resp.Num, nil
 }
@@ -2060,7 +2074,6 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
-
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),
@@ -2229,7 +2242,7 @@ func (c *client) GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error
 //
 // See https://developer.github.com/v3/repos/branches/#list-branches
 func (c *client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, error) {
-	durationLogger := c.log("GetBranches", org, repo)
+	durationLogger := c.log("GetBranches", org, repo, onlyProtected)
 	defer durationLogger()
 
 	var branches []Branch
@@ -2461,14 +2474,21 @@ func (c *client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
 //
 // See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *client) AddLabel(org, repo string, number int, label string) error {
-	durationLogger := c.log("AddLabel", org, repo, number, label)
+	return c.AddLabels(org, repo, number, label)
+}
+
+// AddLabels adds one or more labels to org/repo#number, returning an error on a bad response code.
+//
+// See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
+func (c *client) AddLabels(org, repo string, number int, labels ...string) error {
+	durationLogger := c.log("AddLabels", org, repo, number, labels)
 	defer durationLogger()
 
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 		org:         org,
-		requestBody: []string{label},
+		requestBody: labels,
 		exitCodes:   []int{200},
 	}, nil)
 	return err
@@ -2959,6 +2979,35 @@ func (c *client) DeleteRef(org, repo, ref string) error {
 	return err
 }
 
+// ListFileCommits returns the commits for this file path.
+//
+// See https://developer.github.com/v3/repos/#list-commits
+func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit, error) {
+	durationLogger := c.log("ListFileCommits", org, repo, filePath)
+	defer durationLogger()
+
+	var commits []RepositoryCommit
+	err := c.readPaginatedResultsWithValues(
+		fmt.Sprintf("/repos/%s/%s/commits", org, repo),
+		url.Values{
+			"path":     []string{filePath},
+			"per_page": []string{"100"},
+		},
+		acceptNone,
+		org,
+		func() interface{} { // newObj
+			return &[]RepositoryCommit{}
+		},
+		func(obj interface{}) {
+			commits = append(commits, *(obj.(*[]RepositoryCommit))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return commits, nil
+}
+
 // FindIssues uses the GitHub search API to find issues which match a particular query.
 //
 // Input query the same way you would into the website.
@@ -2997,22 +3046,22 @@ func (e *FileNotFound) Error() string {
 
 // GetFile uses GitHub repo contents API to retrieve the content of a file with commit SHA.
 // If commit is empty, it will grab content from repo's default branch, usually master.
-// TODO(krzyzacy): Support retrieve a directory
+// Use GetDirectory() method to retrieve a directory.
 //
 // See https://developer.github.com/v3/repos/contents/#get-contents
 func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	durationLogger := c.log("GetFile", org, repo, filepath, commit)
 	defer durationLogger()
 
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
 	if commit != "" {
-		url = fmt.Sprintf("%s?ref=%s", url, commit)
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
 	}
 
 	var res Content
 	code, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      url,
+		path:      path,
 		org:       org,
 		exitCodes: []int{200, 404},
 	}, &res)
@@ -3561,6 +3610,72 @@ func (c *client) CreateFork(owner, repo string) (string, error) {
 	return resp.Name, err
 }
 
+// EnsureFork checks to see that there is a fork of org/repo in the forkedUsers repositories.
+// If there is not, it makes one, and waits for the fork to be created before returning.
+// The return value is the name of the repo that was created
+// (This may be different then the one that is forked due to naming conflict)
+func (c *client) EnsureFork(forkingUser, org, repo string) (string, error) {
+	// Fork repo if it doesn't exist.
+	fork := forkingUser + "/" + repo
+	repos, err := c.GetRepos(forkingUser, true)
+	if err != nil {
+		return repo, fmt.Errorf("could not fetch all existing repos: %v", err)
+	}
+	// if the repo does not exist, or it does, but is not a fork of the repo we want
+	if forkedRepo := getFork(fork, repos); forkedRepo == nil || forkedRepo.Parent.FullName != fmt.Sprintf("%s/%s", org, repo) {
+		if name, err := c.CreateFork(org, repo); err != nil {
+			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+		} else {
+			// we got a fork but it may be named differently
+			repo = name
+		}
+		if err := c.waitForRepo(forkingUser, repo); err != nil {
+			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
+		}
+	}
+	return repo, nil
+
+}
+
+func (c *client) waitForRepo(owner, name string) error {
+	// Wait for at most 5 minutes for the fork to appear on GitHub.
+	// The documentation instructs us to contact support if this
+	// takes longer than five minutes.
+	after := time.After(6 * time.Minute)
+	tick := time.Tick(30 * time.Second)
+
+	var ghErr string
+	for {
+		select {
+		case <-tick:
+			repo, err := c.GetRepo(owner, name)
+			if err != nil {
+				ghErr = fmt.Sprintf(": %v", err)
+				logrus.WithError(err).Warn("Error getting bot repository.")
+				continue
+			}
+			ghErr = ""
+			if forkedRepo := getFork(owner+"/"+name, []Repo{repo.Repo}); forkedRepo != nil {
+				return nil
+			}
+		case <-after:
+			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
+		}
+	}
+}
+
+func getFork(repo string, repos []Repo) *Repo {
+	for _, r := range repos {
+		if !r.Fork {
+			continue
+		}
+		if r.FullName == repo {
+			return &r
+		}
+	}
+	return nil
+}
+
 // ListRepoTeams gets a list of all the teams with access to a repository
 // See https://developer.github.com/v3/repos/#list-teams
 func (c *client) ListRepoTeams(org, repo string) ([]Team, error) {
@@ -4034,6 +4149,7 @@ func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 
 	var checkRunList CheckRunList
 	_, err := c.request(&request{
+		accept:    "application/vnd.github.antiope-preview+json",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
 		org:       org,
@@ -4054,11 +4170,17 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 	defer durationLogger()
 
 	var ais []AppInstallation
-	if _, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      "/app/installations",
-		exitCodes: []int{200},
-	}, &ais); err != nil {
+	if err := c.readPaginatedResults(
+		"/app/installations",
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]AppInstallation{}
+		},
+		func(obj interface{}) {
+			ais = append(ais, *(obj.(*[]AppInstallation))...)
+		},
+	); err != nil {
 		return nil, err
 	}
 	return ais, nil
@@ -4095,4 +4217,66 @@ func (c *client) GetApp() (*App, error) {
 	}
 
 	return &app, nil
+}
+
+// GetDirectory uses GitHub repo contents API to retrieve the content of a directory with commit SHA.
+// If commit is empty, it will grab content from repo's default branch, usually master.
+//
+// See https://developer.github.com/v3/repos/contents/#get-contents
+func (c *client) GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error) {
+	durationLogger := c.log("GetDirectory", org, repo, dirpath, commit)
+	defer durationLogger()
+
+	path := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, dirpath)
+	if commit != "" {
+		path = fmt.Sprintf("%s?ref=%s", path, url.QueryEscape(commit))
+	}
+
+	var res []DirectoryContent
+	code, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      path,
+		org:       org,
+		exitCodes: []int{200, 404},
+	}, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if code == 404 {
+		return nil, &FileNotFound{
+			org:    org,
+			repo:   repo,
+			path:   dirpath,
+			commit: commit,
+		}
+	}
+
+	return res, nil
+}
+
+// CreatePullRequestReviewComment creates a review comment on a PR.
+//
+// See also: https://docs.github.com/en/rest/reference/pulls#create-a-review-comment-for-a-pull-request
+func (c *client) CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error {
+	c.log("CreatePullRequestReviewComment", org, repo, number, rc)
+
+	// TODO: remove custom Accept headers when their respective API fully launches.
+	acceptHeaders := []string{
+		// https://developer.github.com/changes/2016-05-12-reactions-api-preview/
+		"application/vnd.github.squirrel-girl-preview",
+		// https://developer.github.com/changes/2019-10-03-multi-line-comments/
+		"application/vnd.github.comfort-fade-preview+json",
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		accept:      strings.Join(acceptHeaders, ", "),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", org, repo, number),
+		org:         org,
+		requestBody: &rc,
+		exitCodes:   []int{201},
+	}, nil)
+	return err
 }

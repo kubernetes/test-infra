@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func makeStamp(t time.Time) gerrit.Timestamp {
@@ -344,6 +345,7 @@ func TestProcessChange(t *testing.T) {
 		pjRef            string
 		shouldError      bool
 		shouldSkipReport bool
+		expectedLabels   map[string]string
 	}{
 		{
 			name: "no revisions errors out",
@@ -382,6 +384,34 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 2,
 			pjRef: "refs/changes/00/1/1",
+		},
+		{
+			name: "jobs should trigger with correct labels",
+			change: client.ChangeInfo{
+				CurrentRevision: "rev42",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"rev42": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+						Number:  42,
+					},
+				},
+			},
+			numPJ: 2,
+			pjRef: "refs/changes/00/1/1",
+			expectedLabels: map[string]string{
+				client.GerritRevision:    "rev42",
+				client.GerritPatchset:    "42",
+				client.GerritReportLabel: client.CodeReview,
+				kube.CreatedByProw:       "true",
+				kube.ProwJobTypeLabel:    "presubmit",
+				kube.ProwJobAnnotation:   "always-runs-all-branches",
+				kube.OrgLabel:            "gerrit",
+				kube.RepoLabel:           "test-infra",
+				kube.PullLabel:           "0",
+			},
 		},
 		{
 			name: "multiple revisions",
@@ -955,11 +985,90 @@ func TestProcessChange(t *testing.T) {
 				if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
 					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
 				}
+				if tc.expectedLabels != nil {
+					if !equality.Semantic.DeepEqual(tc.expectedLabels, prowjobs[0].Labels) {
+						t.Errorf("diff between expected and actual labels:%s", diff.ObjectReflectDiff(tc.expectedLabels, prowjobs[0].Labels))
+					}
+				}
 			}
 			if tc.shouldSkipReport {
 				if gc.reviews > 0 {
 					t.Errorf("expected no comments, got: %d", gc.reviews)
 				}
+			}
+		})
+	}
+}
+
+func TestDeckLinkForPR(t *testing.T) {
+	tcs := []struct {
+		name         string
+		deckURL      string
+		refs         prowapi.Refs
+		changeStatus string
+		expected     string
+	}{
+		{
+			name:         "No deck_url specified",
+			changeStatus: client.New,
+			expected:     "",
+		},
+		{
+			name:    "deck_url specified, repo without slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest-infra",
+		},
+		{
+			name:    "deck_url specified, repo with slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test/infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest%2Finfra",
+		},
+		{
+			name:    "deck_url specified, change is merged (triggering postsubmits)",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.Merged,
+			expected:     "",
+		},
+	}
+
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := deckLinkForPR(tc.deckURL, tc.refs, tc.changeStatus)
+			if err != nil {
+				t.Errorf("unexpected error generating Deck link: %w", err)
+			}
+			if result != tc.expected {
+				t.Errorf("expected deck link %s, but got %s", tc.expected, result)
 			}
 		})
 	}

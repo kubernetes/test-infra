@@ -81,6 +81,7 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/coverage"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/links"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/podinfo"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/restcoverage"
@@ -99,31 +100,32 @@ const (
 )
 
 type options struct {
-	configPath            string
-	jobConfigPath         string
-	instrumentation       prowflagutil.InstrumentationOptions
-	kubernetes            prowflagutil.KubernetesOptions
-	github                prowflagutil.GitHubOptions
-	tideURL               string
-	hookURL               string
-	oauthURL              string
-	githubOAuthConfigFile string
-	cookieSecretFile      string
-	redirectHTTPTo        string
-	hiddenOnly            bool
-	pregeneratedData      string
-	staticFilesLocation   string
-	templateFilesLocation string
-	showHidden            bool
-	spyglass              bool
-	spyglassFilesLocation string
-	storage               prowflagutil.StorageClientOptions
-	gcsNoAuth             bool
-	gcsCookieAuth         bool
-	rerunCreatesJob       bool
-	allowInsecure         bool
-	dryRun                bool
-	pluginConfig          string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	instrumentation            prowflagutil.InstrumentationOptions
+	kubernetes                 prowflagutil.KubernetesOptions
+	github                     prowflagutil.GitHubOptions
+	tideURL                    string
+	hookURL                    string
+	oauthURL                   string
+	githubOAuthConfigFile      string
+	cookieSecretFile           string
+	redirectHTTPTo             string
+	hiddenOnly                 bool
+	pregeneratedData           string
+	staticFilesLocation        string
+	templateFilesLocation      string
+	showHidden                 bool
+	spyglass                   bool
+	spyglassFilesLocation      string
+	storage                    prowflagutil.StorageClientOptions
+	gcsNoAuth                  bool
+	gcsCookieAuth              bool
+	rerunCreatesJob            bool
+	allowInsecure              bool
+	dryRun                     bool
+	pluginConfig               string
 }
 
 func (o *options) Validate() error {
@@ -174,6 +176,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
 	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
@@ -284,7 +287,7 @@ func main() {
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, spglassConfigDefaulting); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings(), spglassConfigDefaulting); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -373,6 +376,15 @@ func main() {
 		defer mgrSyncCtxCancel()
 		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 			logrus.Fatal("Timed out waiting for cachesync")
+		}
+
+		// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+		// to make the kubelet restart us.
+		if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+			logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+			interrupts.Terminate()
+		}); err != nil {
+			logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 		}
 
 		pjListingClient = &pjListingClientWrapper{mgr.GetClient()}
@@ -789,6 +801,7 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 
 		if set := sets.NewString(strings.Split(omit, ",")...); set.Len() > 0 {
 			for i := range jobs {
+				jobs[i].ManagedFields = nil
 				if set.Has(Annotations) {
 					jobs[i].Annotations = nil
 				}
@@ -1377,6 +1390,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 			}
 			return
 		}
+		pj.ManagedFields = nil
 		handleSerialize(w, "prowjob", pj, l)
 	}
 }

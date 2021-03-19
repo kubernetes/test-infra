@@ -7,6 +7,7 @@ aliases:
   - e-blackwelder
   - fejta
   - michelle192837
+  - mpherman2
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
@@ -84,9 +85,10 @@ aliases:
     - derekwaynecarr
   sig-release-leads:
     - alejandrox1
+    - hasheddan
+    - jeremyrickard
     - justaugustus
     - saschagrunert
-    - tpepper
   sig-scalability-leads:
     - mm4tt
     - shyamjvs

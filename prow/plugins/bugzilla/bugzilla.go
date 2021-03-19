@@ -677,27 +677,30 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			}
 			response += "</details>"
 
-			// if bug is valid and qa command was used, identify qa contact via email
-			if e.assign || e.cc {
-				if bug.QAContactDetail == nil {
+			// identify qa contact via email if possible
+			explicitQARequest := e.assign || e.cc
+			if bug.QAContactDetail == nil {
+				if explicitQARequest {
 					response += fmt.Sprintf(bugLink+" does not have a QA contact, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else if bug.QAContactDetail.Email == "" {
+				}
+			} else if bug.QAContactDetail.Email == "" {
+				if explicitQARequest {
 					response += fmt.Sprintf("QA contact for "+bugLink+" does not have a listed email, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else {
-					query := &emailToLoginQuery{}
-					email := bug.QAContactDetail.Email
-					queryVars := map[string]interface{}{
-						"email": githubql.String(email),
-					}
-					err := gc.Query(context.Background(), query, queryVars)
-					if err != nil {
-						log.WithError(err).Error("Failed to run graphql github query")
-						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
-					}
-					response += fmt.Sprint("\n\n", processQuery(query, email, log))
-					if e.assign {
-						response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
-					}
+				}
+			} else {
+				query := &emailToLoginQuery{}
+				email := bug.QAContactDetail.Email
+				queryVars := map[string]interface{}{
+					"email": githubql.String(email),
+				}
+				err := gc.Query(context.Background(), query, queryVars)
+				if err != nil {
+					log.WithError(err).Error("Failed to run graphql github query")
+					return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
+				}
+				response += fmt.Sprint("\n\n", processQuery(query, email, log))
+				if e.assign {
+					response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
 				}
 			}
 		} else {
@@ -1143,9 +1146,9 @@ func formatError(action, endpoint string, bugId int, err error) string {
 	knownErrors := map[string]string{
 		"There was an error reported for a GitHub REST call": "The Bugzilla server failed to load data from GitHub when creating the bug. This is usually caused by rate-limiting, please try again later.",
 	}
-	applicable := []string{}
+	var applicable []string
 	for key, value := range knownErrors {
-		if strings.Contains(key, err.Error()) {
+		if strings.Contains(err.Error(), key) {
 			applicable = append(applicable, value)
 
 		}
@@ -1157,7 +1160,7 @@ func formatError(action, endpoint string, bugId int, err error) string {
 			digest = fmt.Sprintf("%s- %s\n", digest, item)
 		}
 	}
-	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s 
+	return fmt.Sprintf(`An error was encountered %s for bug %d on the Bugzilla server at %s. %s
 
 <details><summary>Full error message.</summary>
 

@@ -20,13 +20,12 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -37,7 +36,7 @@ presubmits:
         - "--timeout=90"
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
@@ -52,3 +51,5 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true

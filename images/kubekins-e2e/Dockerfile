@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20201217-27f76e20d2
+FROM gcr.io/k8s-testimages/bootstrap:v20210226-def39e5
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -89,6 +89,13 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     apt-get install -y --no-install-recommends docker-ce && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
+
+# install kind if a version is provided
+ARG KIND_VERSION
+RUN if [ -n "${KIND_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+    chmod +x /usr/local/bin/kind; \
+    fi
 
 # configure dockerd to use mirror.gcr.io
 # per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images

@@ -22,7 +22,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
         command:
         - runner.sh
         - kubetest
@@ -81,7 +81,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
         command:
         - runner.sh
         - kubetest
@@ -138,7 +138,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
       command:
       - runner.sh
       - kubetest
@@ -164,12 +164,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, sig-release-1.19-informing, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-releases, sig-windows-azure, sig-release-1.19-informing
     testgrid-tab-name: aks-engine-azure-1-19-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.19 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -192,7 +192,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
       command:
       - runner.sh
       - kubetest
@@ -223,7 +223,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-releases, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-1-19-windows-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release serial tests on K8s 1.19 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -246,7 +246,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
       command:
       - runner.sh
       - kubetest
@@ -272,12 +272,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
-      - --ginkgo-parallel=8
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
+      - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-1-19-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -300,7 +300,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
       command:
       - runner.sh
       - kubetest
@@ -331,7 +331,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-containerd, sig-windows-azure, provider-azure-windows, provider-azure-periodic
+    testgrid-dashboards: sig-windows-containerd, sig-windows-azure
     testgrid-tab-name: aks-engine-azure-windows-1-19-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

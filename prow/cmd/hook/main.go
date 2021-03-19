@@ -42,6 +42,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/jira"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -49,9 +50,10 @@ import (
 type options struct {
 	port int
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs prowflagutil.Strings
+	pluginConfig               string
 
 	dryRun                 bool
 	gracePeriod            time.Duration
@@ -83,6 +85,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
@@ -105,7 +108,7 @@ func main() {
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -149,7 +152,7 @@ func main() {
 	}
 
 	var bugzillaClient bugzilla.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
 		client, err := o.bugzilla.BugzillaClient(secretAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
@@ -162,7 +165,7 @@ func main() {
 	}
 
 	var jiraClient jiraclient.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
 		client, err := o.jira.Client(secretAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to construct Jira Client")
@@ -204,7 +207,10 @@ func main() {
 	ownersDirBlacklist := func() config.OwnersDirBlacklist {
 		return configAgent.Config().OwnersDirBlacklist
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
+	resolver := func(org, repo string) ownersconfig.Filenames {
+		return pluginAgent.Config().OwnersFilenames(org, repo)
+	}
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,

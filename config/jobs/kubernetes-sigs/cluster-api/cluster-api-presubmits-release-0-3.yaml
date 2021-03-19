@@ -11,14 +11,14 @@ presubmits:
     - ^release-0.3$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         command:
         - runner.sh
         - ./scripts/ci-build.sh
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-build-release-0-3
-  - name: pull-cluster-api-make
+  - name: pull-cluster-api-make-release-0-3
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -36,12 +36,12 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         resources:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-make-release-0-3
   - name: pull-cluster-api-apidiff-release-0-3
     decorate: true
@@ -58,9 +58,9 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-apidiff-release-0-3
   - name: pull-cluster-api-verify-release-0-3
     decorate: true
@@ -73,7 +73,7 @@ presubmits:
     - ^release-0.3$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         command:
         - "runner.sh"
         - "make"
@@ -82,7 +82,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-verify-release-0-3
   - name: pull-cluster-api-test-release-0-3
     decorate: true
@@ -95,7 +95,7 @@ presubmits:
     - ^release-0.3$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -103,7 +103,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-test-release-0-3
   - name: pull-cluster-api-e2e-release-0-3
     labels:
@@ -117,7 +117,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -131,7 +131,7 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-e2e-release-0-3
   - name: pull-cluster-api-e2e-full-release-0-3
     labels:
@@ -146,7 +146,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20201225-59e70a3-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -157,5 +157,5 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-e2e-full-release-0-3

@@ -31,12 +31,14 @@ interface RepoOptions {
     pulls: {[key: string]: boolean};
     batches: {[key: string]: boolean};
     states: {[key: string]: boolean};
+    clusters: {[key: string]: boolean};
 }
 
 function optionsForRepo(repository: string): RepoOptions {
     const opts: RepoOptions = {
         authors: {},
         batches: {},
+        clusters: {},
         jobs: {},
         pulls: {},
         repos: {},
@@ -47,6 +49,7 @@ function optionsForRepo(repository: string): RepoOptions {
     for (const build of allBuilds.items) {
         const {
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 refs: {
@@ -59,6 +62,7 @@ function optionsForRepo(repository: string): RepoOptions {
         } = build;
 
         opts.types[type] = true;
+        opts.clusters[cluster] = true;
         const repoKey = `${org}/${repo}`;
         if (repoKey) {
             opts.repos[repoKey] = true;
@@ -102,6 +106,8 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     }
     const ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
+    const cs = Object.keys(opts.clusters).sort();
+    addOptions(cs, "cluster");
 }
 
 function adjustScroll(el: Element): void {
@@ -428,7 +434,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
-    window.onclick = (event) => {
+    window.onclick = (event: any) => {
         if (event.target === modal) {
             modal.style.display = "none";
         }
@@ -479,6 +485,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const authorSel = getSelection("author");
     const jobSel = getSelectionFuzzySearch("job", "job-input");
     const stateSel = getSelection("state");
+    const clusterSel = getSelection("cluster");
 
     if (pushState && window.history && window.history.pushState !== undefined) {
         if (args.length > 0) {
@@ -506,14 +513,25 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
                 name: prowJobName = "",
             },
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 agent = "",
-                refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+                refs: {repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
                 pod_spec,
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
         } = build;
+
+        let org = "";
+        let repo = "";
+        if (build.spec.refs !== undefined) {
+            org = build.spec.refs.org;
+            repo = build.spec.refs.repo;
+        } else if (build.spec.extra_refs !== undefined && build.spec.extra_refs.length > 0 ) {
+            org = build.spec.extra_refs[0].org;
+            repo = build.spec.extra_refs[0].repo;
+        }
 
         if (!equalSelected(typeSel, type)) {
             continue;
@@ -522,6 +540,9 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
             continue;
         }
         if (!equalSelected(stateSel, state)) {
+            continue;
+        }
+        if (!equalSelected(clusterSel, cluster)) {
             continue;
         }
         if (!jobSel.test(job)) {

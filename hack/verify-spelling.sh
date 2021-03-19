@@ -63,3 +63,5 @@ find -L . -type f -not \( \
     -o -path '*/localdata/*' \
     \) -prune \
     \) -exec "$@" '{}' '+'
+
+echo 'PASS: No spelling issues detected'

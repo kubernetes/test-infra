@@ -179,7 +179,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
+		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -408,11 +408,15 @@ func (r *Repo) Am(path string) error {
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
 func (r *Repo) Push(branch string, force bool) error {
+	return r.PushToNamedFork(r.user, branch, force)
+}
+
+func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, r.repo)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, forkName)
 	var co *exec.Cmd
 	if !force {
 		co = r.gitCommand("push", remote, branch)

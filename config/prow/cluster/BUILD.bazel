@@ -47,6 +47,7 @@ release(
     component("hook", "service", "deployment", "rbac"),
     component("horologium", "deployment", "rbac", "service"),
     component("ing", "ingress"),
+    component("kube-state-metrics", "deployment", "rbac", "service"),
     component(
         "mem-limit-range",
         "limitrange",

@@ -53,6 +53,7 @@ var (
 		"gardener",
 		"jetstack",
 		"kyma",
+		"kubevirt",
 	}
 	orgs = []string{
 		"conformance",
@@ -96,7 +97,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	prowConfig, err = prow_config.Load(*prowPath, *jobPath)
+	prowConfig, err = prow_config.Load(*prowPath, *jobPath, nil)
 	if err != nil {
 		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
@@ -365,7 +366,6 @@ func TestConfig(t *testing.T) {
 var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
-	"kubeflow/pipelines",
 	"kubernetes-sigs/cluster-capacity",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",

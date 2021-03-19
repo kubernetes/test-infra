@@ -45,15 +45,17 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/version"
 )
 
 type options struct {
-	runOnce                bool
-	configPath             string
-	jobConfigPath          string
-	dryRun                 flagutil.Bool
-	kubernetes             flagutil.KubernetesOptions
-	instrumentationOptions flagutil.InstrumentationOptions
+	runOnce                    bool
+	configPath                 string
+	jobConfigPath              string
+	supplementalProwConfigDirs flagutil.Strings
+	dryRun                     flagutil.Bool
+	kubernetes                 flagutil.KubernetesOptions
+	instrumentationOptions     flagutil.InstrumentationOptions
 }
 
 const (
@@ -70,6 +72,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
 	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
@@ -110,7 +113,7 @@ func main() {
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -463,6 +466,7 @@ func (c *controller) clean() {
 	for k, v := range metrics.prowJobsCleaningErrors {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
+	version.GatherProwVersion(c.logger)
 	c.logger.Info("Sinker reconciliation complete.")
 }
 

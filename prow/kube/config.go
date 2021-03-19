@@ -23,11 +23,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-)
 
-func localConfig() (*rest.Config, error) {
-	return rest.InClusterConfig()
-}
+	"k8s.io/test-infra/prow/version"
+)
 
 func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 	// Attempt to load external clusters too
@@ -52,6 +50,7 @@ func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 		if err != nil {
 			return nil, "", fmt.Errorf("create %s client: %v", context, err)
 		}
+		contextCfg.UserAgent = version.UserAgent()
 		configs[context] = *contextCfg
 		logrus.Infof("Parsed kubeconfig context: %s", context)
 	}
@@ -83,13 +82,20 @@ func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentCon
 // .kube/config file. The configs are returned in a mapping of context --> config. The default
 // context is included in this mapping and specified as a return vaule. Errors are returned if
 // .kube/config is specified and invalid or if no valid contexts are found.
-func LoadClusterConfigs(kubeconfig string) (map[string]rest.Config, error) {
+func LoadClusterConfigs(kubeconfig, projectedTokenFile string) (map[string]rest.Config, error) {
 
 	logrus.Infof("Loading cluster contexts...")
 	// This will work if we are running inside kubernetes
-	localCfg, err := localConfig()
+	localCfg, err := rest.InClusterConfig()
 	if err != nil {
 		logrus.WithError(err).Warn("Could not create in-cluster config (expected when running outside the cluster).")
+	} else {
+		localCfg.UserAgent = version.UserAgent()
+	}
+	if localCfg != nil && projectedTokenFile != "" {
+		localCfg.BearerToken = ""
+		localCfg.BearerTokenFile = projectedTokenFile
+		logrus.WithField("tokenfile", projectedTokenFile).Info("Using projected token file")
 	}
 
 	kubeCfgs, currentContext, err := kubeConfigs(kubeconfig)

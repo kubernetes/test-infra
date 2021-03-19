@@ -25,6 +25,7 @@ DAYS_OLD = 1.9
 DAY = 1
 WEEK = 7
 MONTH = 30
+SUB_PATH = os.environ.get('SUBSCRIPTION_PATH')
 
 def print_dump(file):
     if os.path.exists(file):
@@ -44,6 +45,8 @@ def call(cmd):
 
 
 def main():
+    if SUB_PATH is None:
+        raise Exception('Env var "SUBSCRIPTION_PATH" must be set, see deployment*.yaml')
     call(f'time python3 make_db.py --buckets buckets.yaml --junit --threads {THREADS}')
 
     bq_cmd = f'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS}'
@@ -69,13 +72,14 @@ def main():
         call(f'{mj_cmd} --days {MONTH} | pv | gzip > build_all.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.all build_all.json.gz schema.json')
 
-        call(f'python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
-            '--dataset k8s-gubernator:build --tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
+        call(f'python3 stream.py --poll {SUB_PATH} ' \
+             f'--dataset k8s-gubernator:build ' \
+             f'--tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
         call(f'{bq_cmd} k8s-gubernator:build.staging build_staging.json.gz schema.json')
-        call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle ' \
-            '--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
+        call(f'python3 stream.py --poll {SUB_PATH} ' \
+             f'--dataset k8s-gubernator:build --tables staging:0 --stop_at=1')
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))

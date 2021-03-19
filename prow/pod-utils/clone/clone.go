@@ -195,13 +195,23 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
 	}
 
-	if refs.CloneDepth > 0 {
-		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune", "--depth", strconv.Itoa(refs.CloneDepth)))
-		commands = append(commands, g.gitFetch("--depth", strconv.Itoa(refs.CloneDepth), g.repositoryURI, refs.BaseRef))
-	} else {
-		commands = append(commands, g.gitFetch(g.repositoryURI, "--tags", "--prune"))
-		commands = append(commands, g.gitFetch(g.repositoryURI, refs.BaseRef))
+	var depthArgs []string
+	if d := refs.CloneDepth; d > 0 {
+		depthArgs = append(depthArgs, "--depth", strconv.Itoa(d))
 	}
+
+	if !refs.SkipFetchHead {
+		fetchArgs := []string{g.repositoryURI, "--tags", "--prune"}
+		fetchArgs = append(fetchArgs, depthArgs...)
+		commands = append(commands, g.gitFetch(fetchArgs...))
+	}
+
+	{
+		fetchArgs := append([]string{}, depthArgs...)
+		fetchArgs = append(fetchArgs, g.repositoryURI, refs.BaseRef)
+		commands = append(commands, g.gitFetch(fetchArgs...))
+	}
+
 	var target string
 	if refs.BaseSHA != "" {
 		target = refs.BaseSHA
