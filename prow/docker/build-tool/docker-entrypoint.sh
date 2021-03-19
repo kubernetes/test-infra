@@ -17,18 +17,18 @@
 set -x
 
 # enale experimental feature of docker manifest 
-jq -n --arg enable enabled '{"experimental":$enable}' > ${HOME}/.docker/config.json
-
-# fix the MTU settings for DinD daemon
-ARCH=$(uname -m)
-if [ ${ARCH} == "ppc64le" ] ; then
-  docker_mtu=8940
-  if [ ! -f /etc/docker/daemon.json ]; then
-    mkdir -p /etc/docker
-    touch /etc/docker/daemon.json
-    echo "MTU for docker daemon is ${docker_mtu}"
-    jq -n --arg mtu ${docker_mtu} '{"mtu":$mtu|tonumber}' > /etc/docker/daemon.json
-  fi
+if [ ! -f /etc/docker/daemon.json ]; then
+  mkdir -p /etc/docker
+  touch /etc/docker/daemon.json
+  echo "Enable experimental mode for docker "
+  ARCH=$(uname -m)
+  # fix the MTU settings for DinD daemon
+  if [ ${ARCH} == "ppc64le" ] ; then
+    docker_mtu=8940
+    jq -n --arg mtu ${docker_mtu} --arg enable true '{"mtu":$mtu|tonumber,"experimental":$enable| test("true")}' > /etc/docker/daemon.json
+  else
+    jq -n --arg enable true '{"experimental":$enable| test("true")}' > /etc/docker/daemon.json
+  if
 fi
 
 # Start docker daemon and wait for dockerd to start
