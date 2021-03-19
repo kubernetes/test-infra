@@ -165,7 +165,7 @@ func TestHandle(t *testing.T) {
 			isPR:          true,
 		},
 		{
-			name:          "requested remove hold label with no seperating hyphen",
+			name:          "requested remove hold label with no separating hyphen",
 			body:          "/removehold",
 			hasLabel:      false,
 			shouldLabel:   false,

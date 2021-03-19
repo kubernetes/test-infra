@@ -541,7 +541,7 @@ func isApprovalCommand(isBot func(string) bool, lgtmActsAsApprove bool, c *comme
 
 	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 		cmd := strings.ToUpper(match[1])
-		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
+		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand || cmd == removeApproveCommand {
 			return true
 		}
 	}
@@ -613,11 +613,11 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			name := strings.ToUpper(match[1])
-			if name != approveCommand && name != lgtmCommand {
-				continue
-			}
 			if name == removeApproveCommand {
 				approversHandler.RemoveApprover(c.Author)
+				continue
+			}
+			if name != approveCommand && name != lgtmCommand {
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))

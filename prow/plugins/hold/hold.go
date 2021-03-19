@@ -40,7 +40,7 @@ const (
 
 var (
 	labelRe       = regexp.MustCompile(`(?mi)^/hold(\s.*)?$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/(remove-hold)|(hold\s+cancel|unhold)\s*$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/(remove-hold|hold\s+cancel|unhold)\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
