@@ -16,8 +16,11 @@
 # NOTE: we attempt to avoid unnecessary tools and image layers while
 # supporting kubernetes builds, kind installation, etc.
 
+FROM debian:buster
+
 # arg that specifies the image name (for debugging)
 ARG IMAGE_ARG
+
 # arg that specifies the go version to install
 ARG GO_VERSION
 
