@@ -34,7 +34,7 @@ ENV KRTE_IMAGE=${IMAGE_ARG} \
     CONTAINER=docker
 
 # copy in image utility scripts
-COPY "wrapper.sh", "/usr/local/bin/"
+COPY wrapper.sh /usr/local/bin/
 
 # Install tools needed to:
 # - install docker
@@ -59,7 +59,6 @@ RUN echo "Installing Packages ..." \
             kmod \
             lsb-release \
             mercurial \
-            openssh-client \
             pkg-config \
             procps \
             python \
@@ -85,8 +84,6 @@ RUN echo "Installing Packages ..." \
             --path-update=false \
             --usage-reporting=false \
         && gcloud components install kubectl \
-        && gcloud components install alpha \
-        && gcloud components install beta \
     && echo "Installing Docker ..." \
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
         && add-apt-repository \
