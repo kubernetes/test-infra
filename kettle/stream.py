@@ -48,7 +48,7 @@ MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2
 
 def should_exclude(objectID, bucketID, buckets):
    # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
-    job_name = objectID.rsplit('/')[-3] # See tests for refernce
+    job_name = objectID.rsplit('/')[-3] # See tests for reference
     return job_name in buckets[bucketID].get('exclude_jobs', [])
 
 
