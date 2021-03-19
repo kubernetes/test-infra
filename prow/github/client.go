@@ -85,6 +85,10 @@ type HookClient interface {
 	CreateRepoHook(org, repo string, req HookRequest) (int, error)
 	DeleteOrgHook(org string, id int, req HookRequest) error
 	DeleteRepoHook(org, repo string, id int, req HookRequest) error
+	ListCurrentUserRepoInvitations() ([]UserRepoInvitation, error)
+	AcceptUserRepoInvitation(invitationID int) error
+	ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error)
+	AcceptUserOrgInvitation(org string) error
 }
 
 // CommentClient interface for comment related API actions
@@ -1354,6 +1358,101 @@ func (c *client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+// ListCurrentUserRepoInvitations lists pending invitations for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/repos#list-repository-invitations-for-the-authenticated-user
+func (c *client) ListCurrentUserRepoInvitations() ([]UserRepoInvitation, error) {
+	c.log("ListCurrentUserRepoInvitations")
+	if c.fake {
+		return nil, nil
+	}
+	path := "/user/repository_invitations"
+	var ret []UserRepoInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]UserRepoInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]UserRepoInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// AcceptUserRepoInvitation accepts invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/repos#accept-a-repository-invitation
+func (c *client) AcceptUserRepoInvitation(invitationID int) error {
+	c.log("AcceptUserRepoInvitation", invitationID)
+
+	_, err := c.request(&request{
+		method:    http.MethodPatch,
+		path:      fmt.Sprintf("/user/repository_invitations/%d", invitationID),
+		org:       "",
+		exitCodes: []int{204},
+	}, nil)
+
+	return err
+}
+
+// ListCurrentUserOrgInvitations lists org invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/orgs#get-organization-membership-for-a-user
+func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
+	c.log("ListCurrentUserOrgInvitations")
+	if c.fake {
+		return nil, nil
+	}
+	path := "/user/memberships/orgs"
+	var ret []UserOrgInvitation
+	err := c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"state":    []string{"pending"},
+		},
+		acceptNone,
+		"",
+		func() interface{} {
+			return &[]UserOrgInvitation{}
+		},
+		func(obj interface{}) {
+			for _, uoi := range *(obj.(*[]UserOrgInvitation)) {
+				if uoi.State == "pending" {
+					ret = append(ret, *(obj.(*[]UserOrgInvitation))...)
+				}
+			}
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// AcceptUserOrgInvitation accepts org invitation for the authenticated user.
+//
+// https://docs.github.com/en/rest/reference/orgs#update-an-organization-membership-for-the-authenticated-user
+func (c *client) AcceptUserOrgInvitation(org string) error {
+	c.log("AcceptUserOrgInvitation", org)
+
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/user/memberships/orgs/%s", org),
+		org:         org,
+		requestBody: &struct{ state string }{state: "active"},
+		exitCodes:   []int{204},
+	}, nil)
+
+	return err
 }
 
 // ListOrgMembers list all users who are members of an organization. If the authenticated

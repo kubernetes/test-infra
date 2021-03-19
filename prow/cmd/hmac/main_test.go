@@ -19,9 +19,11 @@ package main
 import (
 	"flag"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/cmd/hmac/fakeghhook"
@@ -649,6 +651,164 @@ func TestBatchOnboardNewTokenForRepos(t *testing.T) {
 			}
 			if !reflect.DeepEqual(fakeclient.RepoHooks, tc.expectedRepoHooks) {
 				t.Errorf("repo hooks %#v != expected %#v", fakeclient.RepoHooks, tc.expectedRepoHooks)
+			}
+		})
+	}
+}
+
+func TestHandleInvitation(t *testing.T) {
+	tests := []struct {
+		name          string
+		urivs         []github.UserRepoInvitation
+		uoivs         []github.UserOrgInvitation
+		newHMACConfig config.ManagedWebhooks
+		wantUrivs     []github.UserRepoInvitation
+		wantUoivs     []github.UserOrgInvitation
+		wantErr       error
+	}{
+		{
+			name: "accept repo invitation",
+			urivs: []github.UserRepoInvitation{
+				{
+					Repository: &github.Repo{
+						FullName: "org1/repo1",
+					},
+					Permission: "admin",
+				},
+			},
+			newHMACConfig: config.ManagedWebhooks{
+				AutoAcceptInvitation: true,
+				OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+					"org1/repo1": {},
+				},
+			},
+			wantUrivs: []github.UserRepoInvitation{},
+		},
+		{
+			name: "accept org invitation",
+			uoivs: []github.UserOrgInvitation{
+				{
+					Org: github.UserOrganization{
+						Login: "org1",
+					},
+					Role: "admin",
+				},
+			},
+			newHMACConfig: config.ManagedWebhooks{
+				AutoAcceptInvitation: true,
+				OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+					"org1": {},
+				},
+			},
+			wantUoivs: []github.UserOrgInvitation{},
+		},
+		{
+			name: "accept org invitation with single repo webhook",
+			uoivs: []github.UserOrgInvitation{
+				{
+					Org: github.UserOrganization{
+						Login: "org1",
+					},
+					Role: "admin",
+				},
+			},
+			newHMACConfig: config.ManagedWebhooks{
+				AutoAcceptInvitation: true,
+				OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+					"org1/repo1": {},
+				},
+			},
+			wantUoivs: []github.UserOrgInvitation{},
+		},
+		{
+			name: "dont accept repo invitation with org webhook",
+			urivs: []github.UserRepoInvitation{
+				{
+					Repository: &github.Repo{
+						FullName: "org1/repo1",
+					},
+					Permission: "admin",
+				},
+			},
+			newHMACConfig: config.ManagedWebhooks{
+				AutoAcceptInvitation: true,
+				OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+					"org1": {},
+				},
+			},
+			wantUrivs: []github.UserRepoInvitation{
+				{
+					Repository: &github.Repo{
+						FullName: "org1/repo1",
+					},
+					Permission: "admin",
+				},
+			},
+		},
+		{
+			name: "dont accept invitation when opt out",
+			urivs: []github.UserRepoInvitation{
+				{
+					Repository: &github.Repo{
+						FullName: "org1/repo1",
+					},
+					Permission: "admin",
+				},
+			},
+			uoivs: []github.UserOrgInvitation{
+				{
+					Org: github.UserOrganization{
+						Login: "org2",
+					},
+					Role: "admin",
+				},
+			},
+			newHMACConfig: config.ManagedWebhooks{
+				AutoAcceptInvitation: false,
+				OrgRepoConfig: map[string]config.ManagedWebhookInfo{
+					"org2":       {},
+					"org1/repo1": {},
+				},
+			},
+			wantUrivs: []github.UserRepoInvitation{
+				{
+					Repository: &github.Repo{
+						FullName: "org1/repo1",
+					},
+					Permission: "admin",
+				},
+			},
+			wantUoivs: []github.UserOrgInvitation{
+				{
+					Org: github.UserOrganization{
+						Login: "org2",
+					},
+					Role: "admin",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fgc := fakeghhook.FakeClient{
+				UserRepoInvitations: tc.urivs,
+				UserOrgInvitations:  tc.uoivs,
+			}
+			c := client{
+				newHMACConfig:    tc.newHMACConfig,
+				githubHookClient: &fgc,
+			}
+
+			if wantErr, gotErr := tc.wantErr, c.handleInvitation(); (wantErr == nil && gotErr != nil) || (wantErr != nil && gotErr == nil) ||
+				(wantErr != nil && gotErr != nil && !strings.Contains(gotErr.Error(), wantErr.Error())) {
+				t.Fatalf("Error mismatch. Want: %v, got: %v", wantErr, gotErr)
+			}
+			if diff := cmp.Diff(tc.wantUrivs, fgc.UserRepoInvitations); diff != "" {
+				t.Fatalf("User repo invitation mismatch. Want(-), got(+): %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantUoivs, fgc.UserOrgInvitations); diff != "" {
+				t.Fatalf("User org invitation mismatch. Want(-), got(+): %s", diff)
 			}
 		})
 	}

@@ -1030,8 +1030,13 @@ type ManagedWebhookInfo struct {
 
 // ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
 type ManagedWebhooks struct {
-	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
-	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
+	RespectLegacyGlobalToken bool `json:"respect_legacy_global_token"`
+	// Controls whether org/repo invitation for prow bot should be automatically
+	// accepted or not. Only admin level invitations related to orgs and repos
+	// in the managed_webhooks config will be accepted and all other invitations
+	// will be left pending.
+	AutoAcceptInvitation bool                          `json:"auto_accept_invitation"`
+	OrgRepoConfig        map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
