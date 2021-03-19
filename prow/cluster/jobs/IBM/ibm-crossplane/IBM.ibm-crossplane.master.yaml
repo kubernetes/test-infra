@@ -1,0 +1,123 @@
+presubmits:
+  IBM/ibm-crossplane:
+  - name: build_ibm-crossplane
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-crossplane
+    rerun_command: /test build ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build.all
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_ibm-crossplane
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-crossplane
+    rerun_command: /test check ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - make
+        - reviewable
+        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_ibm-crossplane
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-crossplane
+    rerun_command: /test test ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/ibm-crossplane:
+  - name: check_ibm-crossplane_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - make
+        - reviewable
+        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_ibm-crossplane_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_ibm-crossplane_postsubmit
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    path_alias: github.com/IBM/ibm-crossplane
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build.all
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_ibm-crossplane_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/ibm-crossplane
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
