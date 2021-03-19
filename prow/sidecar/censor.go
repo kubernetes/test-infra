@@ -419,8 +419,17 @@ func loadSecrets(paths []string) ([][]byte, error) {
 				return err
 			}
 			secrets = append(secrets, raw)
+			// In many cases, a secret file contains much more than just the sensitive data. For instance,
+			// container registry credentials files are JSON formatted, so there are only a couple of fields
+			// that are truly secret, the rest is formatting and whitespace. The implication here is that
+			// a censoring approach that only looks at the full, uninterrupted secret value will not be able
+			// to censor anything if that value is reformatted, truncated, etc. When the secrets we are asked
+			// to censor are container registry credentials, we can know the format of these files and extract
+			// the subsets of data that are sensitive, allowing us not only to censor the full file's contents
+			// but also any individual fields that exist in the output, whether they're there due to a user
+			// extracting the fields or output being truncated, etc.
 			var parser = func(bytes []byte) ([]string, error) {
-				return []string{}, nil
+				return nil, nil
 			}
 			if info.Name() == ".dockercfg" {
 				parser = loadDockercfgAuths

@@ -105,6 +105,13 @@ func copyTestData(t *testing.T) string {
 			}
 			return os.Symlink(link, dest)
 		}
+		if info.Name() == "link" {
+			link, err := ioutil.ReadFile(path)
+			if err != nil {
+				t.Fatalf("failed to read input link: %v", err)
+			}
+			return os.Symlink(string(link), dest)
+		}
 		out, err := os.Create(dest)
 		if err != nil {
 			return err
