@@ -153,7 +153,8 @@ type Tide struct {
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
 
 	// Priority is an ordered list of sets of labels that would be prioritized before other PRs
-	// PRs should match all labels contained in a set to be prioritized
+	// PRs should match all labels contained in a set to be prioritized. The first entry has
+	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
 }
 
