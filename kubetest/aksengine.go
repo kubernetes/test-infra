@@ -318,7 +318,7 @@ func checkParams() error {
 		return fmt.Errorf("no credentials file path specified")
 	}
 	if *aksResourceName == "" {
-		*aksResourceName = "kubetest-" + randString(8)
+		*aksResourceName = "kubetest-" + strings.ToLower(randString(8))
 	}
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
