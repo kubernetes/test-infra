@@ -91,7 +91,7 @@ func (o Options) censor() error {
 			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
 			}
-			logger := logrus.WithField("path", item)
+			logger := logrus.WithField("path", absPath)
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
