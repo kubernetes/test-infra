@@ -12,6 +12,18 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: build
+  - name: pull-publishing-bot-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/publishing-bot
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - make test
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: test
   kubernetes/kubernetes:
   - name: pull-publishing-bot-validate
     always_run: false
