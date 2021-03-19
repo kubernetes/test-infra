@@ -54,19 +54,19 @@ presubmits:
     decoration_config:
       timeout: 5h
     extra_refs:
-      - org: kubernetes-sigs
-        repo: image-builder
-        base_ref: master
-        path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
           command:
-            - "runner.sh"
-            - "./scripts/ci-e2e.sh"
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -94,24 +94,24 @@ presubmits:
     decoration_config:
       timeout: 5h
     extra_refs:
-      - org: kubernetes-sigs
-        repo: image-builder
-        base_ref: master
-        path_alias: "sigs.k8s.io/image-builder"
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
           env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
           command:
-            - "runner.sh"
-            - "./scripts/ci-conformance.sh"
-            - "--use-ci-artifacts"
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+          - "--use-ci-artifacts"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
