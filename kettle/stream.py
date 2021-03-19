@@ -27,6 +27,7 @@ import traceback
 import time
 
 import multiprocessing.pool
+import ruamel.yaml as yaml
 
 try:
     from google.api_core import exceptions as api_exceptions
@@ -41,23 +42,31 @@ import model
 import make_db
 import make_json
 
+
 MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2855
 
-def process_changes(results):
+
+def should_exclude(objectID, bucketID, buckets):
+   # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
+    job_name = objectID.rsplit('/')[-3] # See tests for reference
+    return job_name in buckets[bucketID].get('exclude_jobs', [])
+
+
+def process_changes(results, buckets):
     """Split GCS change events into trivial ack_ids and builds to further process."""
     ack_ids = []  # pubsub rec_message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
     # process results, find finished builds to process
     for rec_message in results:
-        if rec_message.message.attributes['eventType'] != 'OBJECT_FINALIZE':
+        eventType = rec_message.message.attributes['eventType']
+        objectID = rec_message.message.attributes['objectId']
+        bucketID = rec_message.message.attributes['bucketId']
+        exclude = should_exclude(objectID, bucketID, buckets)
+        if eventType != 'OBJECT_FINALIZE' or not objectID.endswith('/finished.json') or exclude:
             ack_ids.append(rec_message.ack_id)
             continue
-        obj = rec_message.message.attributes['objectId']
-        if not obj.endswith('/finished.json'):
-            ack_ids.append(rec_message.ack_id)
-            continue
-        job, build = obj[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (rec_message.message.attributes['bucketId'], job)
+        job, build = objectID[:-len('/finished.json')].rsplit('/', 1)
+        job = 'gs://%s/%s' % (bucketID, job)
         todo.append((rec_message.ack_id, job, build))
     return ack_ids, todo
 
@@ -153,6 +162,7 @@ def main(
         subscription_path,
         bq_client,
         tables,
+        buckets,
         client_class=make_db.GCSClient,
         stop=None,
     ):
@@ -183,7 +193,7 @@ def main(
 
         print('PULLED', len(results))
 
-        ack_ids, todo = process_changes(results)
+        ack_ids, todo = process_changes(results, buckets)
 
         if ack_ids:
             print('ACK irrelevant', len(ack_ids))
@@ -291,6 +301,14 @@ class StopWhen:
         return now != last and now == self.target
 
 
+def _make_bucket_map(path):
+    bucket_map = yaml.safe_load(open(path))
+    bucket_to_attrs = dict()
+    for k, v in bucket_map.items():
+        bucket = k.rsplit('/')[2] # of form gs://<bucket>/...
+        bucket_to_attrs[bucket] = v
+    return bucket_to_attrs
+
 def get_options(argv):
     """Process command line arguments."""
     parser = argparse.ArgumentParser()
@@ -314,6 +332,12 @@ def get_options(argv):
         type=int,
         help='Terminate when this hour (0-23) rolls around (in local time).'
     )
+    parser.add_argument(
+        '--buckets',
+        type=str,
+        default='buckets.yaml',
+        help='Path to bucket configuration.'
+    )
     return parser.parse_args(argv)
 
 
@@ -322,4 +346,5 @@ if __name__ == '__main__':
     main(model.Database(),
          *load_sub(OPTIONS.poll),
          *load_tables(OPTIONS.dataset, OPTIONS.tables),
+         _make_bucket_map(OPTIONS.buckets),
          stop=StopWhen(OPTIONS.stop_at))
