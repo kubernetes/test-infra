@@ -251,7 +251,8 @@ def load_schema(schemafield):
 
     Only used for new tables."""
     basedir = os.path.dirname(__file__)
-    schema_json = json.load(open(os.path.join(basedir, 'schema.json')))
+    with open(os.path.join(basedir, 'schema.json')) as json_file:
+        schema_json = json.load(json_file)
     def make_field(spec):
         spec['field_type'] = spec.pop('type')
         if 'fields' in spec:
