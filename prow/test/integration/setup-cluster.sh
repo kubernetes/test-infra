@@ -30,7 +30,7 @@ readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
 readonly DEFAULT_REGISTRY_PORT="5000"
-readonly PROW_COMPONENTS="sinker crier fakeghserver"
+readonly PROW_COMPONENTS="sinker crier hook fakeghserver"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
@@ -97,7 +97,7 @@ data:
 EOF
 
   echo "Install nginx on kind cluster"
-  # Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020.
+  # Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020
   do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
 }
 
@@ -112,6 +112,7 @@ function deploy_prow() {
   # An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
   do-kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
   do-kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run -oyaml | kubectl apply -f -
+  do-kubectl create configmap plugins --from-file=plugins.yaml=${CONFIG_ROOT_DIR}/plugins.yaml --dry-run -oyaml | kubectl apply -f -
   do-kubectl apply -f ${CONFIG_ROOT_DIR}/cluster
 
   echo "Wait until nginx is ready"

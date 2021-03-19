@@ -68,7 +68,12 @@ func main() {
 	// 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
 	// 	CreateComment(org, repo string, number int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number),
 	// 	DeleteComment(org, repo string, ID int) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
-	// 	EditComment(org, repo string, ID int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
+	//  EditComment(org, repo string, ID int, comment string) error # fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, number),
+	//  GetRepoLabels(org, repo string) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+	//  GetIssueLabels(org, repo string, number int) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+	//  AddLabels(org, repo string, number int, labels ...string) error # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
+	//  AddLabel(org, repo string, number int, label string) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+	//  AddRepoLabel(org, repo, label, description, color string) error # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
 	r.Path("/").Handler(response(defaultHandler()))
 	r.Path("/user").Handler(response(userHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/statuses/{sha}").Handler(response(statusHandler(ghClient)))
@@ -76,6 +81,8 @@ func main() {
 	r.Path("/repos/{org}/{repo}/issues").Handler(response(issueHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/issues/{issue_id}/comments").Handler(response(issueCommentHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/issues/comments/${comment_id}").Handler(response(issueCommentHandler(ghClient)))
+	r.Path("/repos/{org}/{repo}/labels").Handler(response(labelHandler(ghClient)))
+	r.Path("/repos/{org}/{repo}/issues/{issue_id}/labels").Handler(response(labelHandler(ghClient)))
 
 	health := pjutil.NewHealth()
 	health.ServeReady()
@@ -97,7 +104,7 @@ func unmarshal(r *http.Request, data interface{}) error {
 	return nil
 }
 
-func response(f func(*http.Request) (string, int, error)) http.Handler {
+func response(f func(*http.Request) (interface{}, int, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		msg, statusCode, err := f(r)
 		logrus.Infof("request: %s - %s. responses: %s, %d, %v", r.URL.Path, r.Method, msg, statusCode, err)
@@ -116,16 +123,16 @@ func response(f func(*http.Request) (string, int, error)) http.Handler {
 	})
 }
 
-func defaultHandler() func(*http.Request) (string, int, error) {
-	return func(r *http.Request) (string, int, error) {
+func defaultHandler() func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Not supported: %s, %s", r.URL.Path, r.Method)
 		return "", http.StatusNotFound,
 			fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 	}
 }
 
-func userHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
-	return func(r *http.Request) (string, int, error) {
+func userHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		userData, err := ghc.BotUser()
 		if err != nil {
@@ -137,8 +144,8 @@ func userHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, e
 	}
 }
 
-func statusHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
-	return func(r *http.Request) (string, int, error) {
+func statusHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		vars := mux.Vars(r)
 		org, repo, SHA := vars["org"], vars["repo"], vars["sha"]
@@ -164,8 +171,8 @@ func statusHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int,
 	}
 }
 
-func issueHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
-	return func(r *http.Request) (string, int, error) {
+func issueHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		vars := mux.Vars(r)
 		org, repo := vars["org"], vars["repo"]
@@ -174,19 +181,19 @@ func issueHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, 
 			return "", http.StatusInternalServerError, err
 		}
 		id, err := ghc.CreateIssue(org, repo, data.Title, data.Body, data.Milestone.Number, nil, nil)
-		return fmt.Sprintf("Issue %d created", id), http.StatusCreated, err
+		return fmt.Sprintf(`{"number": %d}`, id), http.StatusCreated, err
 	}
 }
 
-func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string, int, error) {
-	return func(r *http.Request) (string, int, error) {
+func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		vars := mux.Vars(r)
 		org, repo := vars["org"], vars["repo"]
 		if issueID, exist := vars["issue_id"]; exist {
 			id, err := strconv.Atoi(issueID)
 			if err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			if r.Method == http.MethodGet { // List
 				var issues []prowgh.IssueComment
@@ -201,7 +208,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string
 			if r.Method == http.MethodPost { // Create
 				data := prowgh.IssueComment{}
 				if err = unmarshal(r, &data); err != nil {
-					return "", http.StatusInternalServerError, err
+					return "", http.StatusUnprocessableEntity, err
 				}
 				return "", http.StatusCreated, ghc.CreateComment(org, repo, id, data.Body)
 			}
@@ -210,7 +217,7 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string
 			var id int
 			id, err := strconv.Atoi(commentID)
 			if err != nil {
-				return "", http.StatusInternalServerError, err
+				return "", http.StatusUnprocessableEntity, err
 			}
 			if r.Method == http.MethodDelete { // Delete
 				return "", http.StatusOK, ghc.DeleteComment(org, repo, id)
@@ -218,10 +225,61 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (string
 			if r.Method == http.MethodPatch { // Edit
 				content := &prowgh.IssueComment{}
 				if err := unmarshal(r, content); err != nil {
-					return "", http.StatusInternalServerError, err
+					return "", http.StatusUnprocessableEntity, err
 				}
 				return "", http.StatusOK, ghc.EditComment(org, repo, id, content.Body)
 			}
+		}
+		return "", http.StatusInternalServerError, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
+	}
+}
+
+//  GetRepoLabels(org, repo string) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+//  GetIssueLabels(org, repo string, number int) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+//  AddLabel(org, repo string, number int, label string) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+//  AddRepoLabel(org, repo, label, description, color string) error # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		vars := mux.Vars(r)
+		org, repo := vars["org"], vars["repo"]
+		if issueID, exist := vars["issue_id"]; exist { // Issue label
+			id, err := strconv.Atoi(issueID)
+			if err != nil {
+				return "", http.StatusUnprocessableEntity, err
+			}
+			if r.Method == http.MethodGet { // List
+				var labels []prowgh.Label
+				labels, err = ghc.GetIssueLabels(org, repo, id)
+				if err != nil {
+					return "", http.StatusInternalServerError, err
+				}
+				var content []byte
+				content, err = json.Marshal(labels)
+				return string(content), http.StatusOK, err
+			}
+			if r.Method == http.MethodPost { // Create
+				var labels []string
+				if err = unmarshal(r, &labels); err != nil {
+					return "", http.StatusUnprocessableEntity, err
+				}
+				return "", http.StatusCreated, ghc.AddLabels(org, repo, id, labels...)
+			}
+		} else if r.Method == http.MethodGet { // List repo labels
+			var labels []prowgh.Label
+			labels, err := ghc.GetRepoLabels(org, repo)
+			if err != nil {
+				return "", http.StatusInternalServerError, err
+			}
+			var content []byte
+			content, err = json.Marshal(labels)
+			return string(content), http.StatusOK, err
+		} else if r.Method == http.MethodPost { // Create repo label
+			data := prowgh.Label{}
+			if err := unmarshal(r, &data); err != nil {
+				return "", http.StatusUnprocessableEntity, err
+			}
+			return "", http.StatusCreated, ghc.AddRepoLabel(org, repo, data.Name, data.Description, data.Color)
 		}
 		return "", http.StatusInternalServerError, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
 	}

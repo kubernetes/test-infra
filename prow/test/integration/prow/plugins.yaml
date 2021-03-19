@@ -1,0 +1,4 @@
+plugins:
+  fake-org-hook:
+    plugins:
+    - label
