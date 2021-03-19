@@ -1,0 +1,74 @@
+postsubmits:
+  kubernetes-sigs/cluster-api-provider-aws:
+    - name: postsubmit-cluster-api-provider-aws-e2e-full-release-0-6
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      max_concurrency: 1
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+      branches:
+      - ^release-0.6$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
+            command:
+              - "runner.sh"
+              - "./scripts/ci-e2e.sh"
+            env:
+              - name: BOSKOS_HOST
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: AWS_REGION
+                value: "us-west-2"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 1
+                memory: "4Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+        testgrid-tab-name: capa-postsubmit-e2e-full-release-0-6
+        testgrid-num-columns-recent: '20'
+        testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    - name: postsubmit-cluster-api-provider-aws-conformance-release-0-6
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      max_concurrency: 1
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+      branches:
+      - ^release-0.6$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.19
+            command:
+              - "runner.sh"
+              - "./scripts/ci-conformance.sh"
+            env:
+              - name: BOSKOS_HOST
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: AWS_REGION
+                value: "us-west-2"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 1
+                memory: "4Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+        testgrid-tab-name:  capa-postsubmit-conformance-release-0-6
+        testgrid-num-columns-recent: '20'
+        testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
