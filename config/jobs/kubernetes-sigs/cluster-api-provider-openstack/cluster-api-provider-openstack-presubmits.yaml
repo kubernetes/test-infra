@@ -52,7 +52,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     extra_refs:
       - org: kubernetes-sigs
         repo: image-builder
@@ -80,8 +80,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-test
-  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-openstack
-  - name: pull-cluster-api-provider-openstack-make-conformance
+  - name: pull-cluster-api-provider-openstack-conformance-test
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -93,7 +92,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     extra_refs:
       - org: kubernetes-sigs
         repo: image-builder
@@ -125,4 +124,4 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      testgrid-tab-name: pr-conformance
+      testgrid-tab-name: pr-conformance-test
