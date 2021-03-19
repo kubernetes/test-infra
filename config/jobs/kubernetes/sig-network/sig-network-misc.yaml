@@ -463,7 +463,8 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      # skip ESIPP should work from pods #97081
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|ESIPP.*should.work.from.pods --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
   annotations:
