@@ -164,13 +164,13 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure, sig-release-1.20-informing
-    testgrid-tab-name: aks-engine-azure-1-20-windows
+    testgrid-dashboards: sig-release-1.20-informing, sig-windows-1.20-release
+    testgrid-tab-name: aks-engine-windows-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.20 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
@@ -218,12 +218,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
+      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-releases, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-1-20-windows-serial-slow
+    testgrid-dashboards: sig-windows-1.20-release
+    testgrid-tab-name: aks-engine-windows-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release serial tests on K8s 1.20 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

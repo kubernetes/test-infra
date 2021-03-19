@@ -541,7 +541,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-releases, sig-release-1.19-informing
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-1.19-informing, sig-windows-1.19-release
     testgrid-tab-name: gce-windows-2019-1.19
   decorate: true
   extra_refs:
@@ -583,7 +583,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-releases, sig-windows-sac, sig-release-1.19-informing
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-1.19-informing, sig-windows-1.19-release
     testgrid-tab-name: gce-windows-1909-1.19
   decorate: true
   extra_refs:

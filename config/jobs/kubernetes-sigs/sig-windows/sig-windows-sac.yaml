@@ -46,13 +46,13 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-windows-2004-master
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: aks-engine-windows-2004-dockershim
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
@@ -102,13 +102,13 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-windows-2004-master-containerd
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: aks-engine-windows-2004-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 48h
@@ -156,13 +156,13 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-windows-master-2004-containerd-serial-slow
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: aks-engine-windows-2004-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
@@ -212,13 +212,13 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --aksengine-agentpoolcount=2
       # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice  --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL)  --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-windows-20h2-master-containerd
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: aks-engine-windows-20h2-containerd
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 48h
@@ -266,12 +266,12 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows-sac, sig-windows-containerd, sig-windows-azure
-    testgrid-tab-name: aks-engine-azure-windows-master-20h2-containerd-serial-slow
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: aks-engine-windows-20h2-containerd-serial-slow
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

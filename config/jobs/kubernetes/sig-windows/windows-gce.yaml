@@ -141,7 +141,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing, sig-windows-signal
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-signal, sig-windows-master-release
     testgrid-tab-name: gce-windows-20h2-master
     description: Runs tests on a Kubernetes cluster with Windows 20H2 nodes on GCE
 
@@ -189,7 +189,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-master-release
     testgrid-tab-name: gce-windows-2004-master
     description: Runs tests on a Kubernetes cluster with Windows 2004 nodes on GCE
 
@@ -324,7 +324,7 @@ periodics:
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
@@ -374,7 +374,7 @@ periodics:
       name: ""
       resources: {}
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-1.20
 
 - name: ci-kubernetes-e2e-windows-node-throughput
