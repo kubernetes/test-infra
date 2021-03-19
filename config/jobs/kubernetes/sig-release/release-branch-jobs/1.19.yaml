@@ -662,7 +662,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.19
+      image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-1.19
       name: ""
       resources:
         limits:
@@ -715,7 +715,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.19
+      image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-1.19
       name: ""
       resources:
         limits:
@@ -1458,7 +1458,7 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.19
+        image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-1.19
         name: ""
         resources:
           limits:
