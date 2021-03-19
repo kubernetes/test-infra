@@ -1,5 +1,0 @@
-default_dashboard_tab:
-  open_test_template:
-    url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
-  results_url_template:
-    url: https://prow.apps.ovirt.org/job-history/<gcs_prefix>

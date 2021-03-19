@@ -53,6 +53,7 @@ filegroup(
         "//config/prow-staging:all-srcs",
         "//config/tests/jobs:all-srcs",
         "//config/tests/lint:all-srcs",
+        "//config/tests/mergelists:all-srcs",
         "//config/tests/testgrids:all-srcs",
     ],
     tags = ["automanaged"],
