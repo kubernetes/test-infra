@@ -26,6 +26,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,9 +102,10 @@ func (unreachableCluster) Patch(_ context.Context, _ ctrlruntimeclient.Object, _
 }
 
 func TestClean(t *testing.T) {
+	t.Parallel()
 
-	pods := []runtime.Object{
-		&corev1api.Pod{
+	pods := corev1api.PodList{Items: []corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-running-pod-failed",
 				Namespace: "ns",
@@ -117,7 +119,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-running-pod-succeeded",
 				Namespace: "ns",
@@ -131,7 +133,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-failed",
 				Namespace: "ns",
@@ -145,7 +147,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-succeeded",
 				Namespace: "ns",
@@ -159,7 +161,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete-pod-pending",
 				Namespace: "ns",
@@ -173,7 +175,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-unknown-pod-pending",
 				Namespace: "ns",
@@ -187,7 +189,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-unknown-pod-failed",
 				Namespace: "ns",
@@ -201,7 +203,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-unknown-pod-succeeded",
 				Namespace: "ns",
@@ -215,7 +217,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
 				Namespace: "ns",
@@ -228,7 +230,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-succeeded",
 				Namespace: "ns",
@@ -241,7 +243,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-just-complete",
 				Namespace: "ns",
@@ -254,7 +256,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-pending",
 				Namespace: "ns",
@@ -267,7 +269,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-pending-abort",
 				Namespace: "ns",
@@ -280,7 +282,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "new-failed",
 				Namespace: "ns",
@@ -293,7 +295,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-10 * time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "new-running-no-pj",
 				Namespace: "ns",
@@ -306,7 +308,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-10 * time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-running",
 				Namespace: "ns",
@@ -319,7 +321,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "unrelated-failed",
 				Namespace: "ns",
@@ -332,7 +334,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "unrelated-complete",
 				Namespace: "ns",
@@ -342,7 +344,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ttl-expired",
 				Namespace: "ns",
@@ -364,7 +366,7 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ttl-not-expired",
 				Namespace: "ns",
@@ -393,7 +395,7 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
 				Namespace: "ns",
@@ -415,7 +417,7 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:       "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
 				Namespace:  "ns",
@@ -429,7 +431,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:       "completed-pod-without-prowjob-that-still-has-finalizer",
 				Namespace:  "ns",
@@ -443,7 +445,7 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "very-young-orphaned-pod-is-kept-to-account-for-cache-staleness",
 				Namespace: "ns",
@@ -453,7 +455,7 @@ func TestClean(t *testing.T) {
 				CreationTimestamp: metav1.Now(),
 			},
 		},
-		&corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				// The corresponding prowjob will only show up in a GET and not in a list requests. We do this to make
 				// sure that the orphan check does another get on the prowjob before declaring a pod orphaned rather
@@ -465,7 +467,7 @@ func TestClean(t *testing.T) {
 				},
 			},
 		},
-	}
+	}}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
 		"job-complete-pod-pending",
@@ -487,8 +489,8 @@ func TestClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []runtime.Object{
-		&prowv1.ProwJob{
+	prowJobs := &prowv1.ProwJobList{Items: []prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-complete",
 				Namespace: "ns",
@@ -498,7 +500,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-running",
 				Namespace: "ns",
@@ -507,7 +509,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
 				Namespace: "ns",
@@ -517,7 +519,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-succeeded",
 				Namespace: "ns",
@@ -527,7 +529,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-just-complete",
 				Namespace: "ns",
@@ -536,7 +538,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-complete",
 				Namespace: "ns",
@@ -546,7 +548,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-incomplete",
 				Namespace: "ns",
@@ -555,7 +557,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-pending",
 				Namespace: "ns",
@@ -564,7 +566,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-pending-abort",
 				Namespace: "ns",
@@ -574,7 +576,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "new",
 				Namespace: "ns",
@@ -583,7 +585,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-time.Second)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "newer-periodic",
 				Namespace: "ns",
@@ -597,7 +599,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "new-failed",
 				Namespace: "ns",
@@ -606,7 +608,7 @@ func TestClean(t *testing.T) {
 				StartTime: metav1.NewTime(time.Now().Add(-time.Minute)),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "older-periodic",
 				Namespace: "ns",
@@ -620,7 +622,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Minute),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "oldest-periodic",
 				Namespace: "ns",
@@ -634,7 +636,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Hour),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed-trusted",
 				Namespace: "ns",
@@ -644,7 +646,7 @@ func TestClean(t *testing.T) {
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ttl-expired",
 				Namespace: "ns",
@@ -652,9 +654,10 @@ func TestClean(t *testing.T) {
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
 				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+				State:          prowv1.AbortedState,
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ttl-not-expired",
 				Namespace: "ns",
@@ -662,19 +665,36 @@ func TestClean(t *testing.T) {
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
 				CompletionTime: setComplete(-time.Second),
+				State:          prowv1.ErrorState,
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Name:              "completed-prowjob-ttl-expired-while-pod-still-pending",
+				Namespace:         "ns",
+				CreationTimestamp: metav1.Now(),
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+				State:          prowv1.SuccessState,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				// The underlying tracker sorts these by name it appears, in order to test
+				// that we sort the newest regardless of order of objects we get from client,
+				// we must use the a-prefixed name.
+				Name:      "a-duplicate-job",
 				Namespace: "ns",
 			},
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
 				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+				State:          prowv1.SuccessState,
 			},
 		},
-		&prowv1.ProwJob{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "completed-and-reported-prowjob-pod-still-has-kubernetes-finalizer",
 			},
@@ -684,7 +704,7 @@ func TestClean(t *testing.T) {
 				PrevReportStates: map[string]prowv1.ProwJobState{"gcsk8sreporter": prowv1.AbortedState},
 			},
 		},
-	}
+	}}
 
 	deletedProwJobs := sets.NewString(
 		"job-complete",
@@ -696,8 +716,10 @@ func TestClean(t *testing.T) {
 		"oldest-periodic",
 		"old-failed-trusted",
 	)
-	podsTrusted := []runtime.Object{
-		&corev1api.Pod{
+
+	deletedProwJobsWithDuplicateCleaning := sets.NewString(deletedProwJobs.List()...).Insert("a-duplicate-job")
+	podsTrusted := corev1api.PodList{Items: []corev1api.Pod{
+		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed-trusted",
 				Namespace: "ns",
@@ -710,44 +732,70 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-	}
+	}}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
 
-	fpjc := &clientWrapper{
-		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
-		getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+	testcases := []struct {
+		name             string
+		controller       func(c *controller)
+		expectDeletedPJs sets.String
+	}{
+		{
+			name:             "without clean dupliates",
+			expectDeletedPJs: deletedProwJobs,
+		},
+		{
+			name:             "with clean dupliates",
+			controller:       func(c *controller) { c.cleanDuplicates = true },
+			expectDeletedPJs: deletedProwJobsWithDuplicateCleaning,
+		},
 	}
-	fkc := []*podClientWrapper{
-		{t: t, Client: fakectrlruntimeclient.NewFakeClient(pods...)},
-		{t: t, Client: fakectrlruntimeclient.NewFakeClient(podsTrusted...)},
-	}
-	fpc := map[string]ctrlruntimeclient.Client{"unreachable": unreachableCluster{}}
-	for idx, fakeClient := range fkc {
-		fpc[strconv.Itoa(idx)] = &podClientWrapper{t: t, Client: fakeClient}
-	}
-	// Run
-	c := controller{
-		logger:        logrus.WithField("component", "sinker"),
-		prowJobClient: fpjc,
-		podClients:    fpc,
-		config:        newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config,
-	}
-	c.clean()
-	assertSetsEqual(deletedPods, fkc[0].deletedPods, t, "did not delete correct Pods")
-	assertSetsEqual(deletedPodsTrusted, fkc[1].deletedPods, t, "did not delete correct trusted Pods")
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			fpjc := &clientWrapper{
+				Client:          fakectrlruntimeclient.NewFakeClient(prowJobs.DeepCopy()),
+				getOnlyProwJobs: map[string]*prowv1.ProwJob{"ns/get-only-prowjob": {}},
+			}
+			fkc := []*podClientWrapper{
+				{t: t, Client: fakectrlruntimeclient.NewFakeClient(pods.DeepCopy())},
+				{t: t, Client: fakectrlruntimeclient.NewFakeClient(podsTrusted.DeepCopy())},
+			}
+			fpc := map[string]ctrlruntimeclient.Client{"unreachable": unreachableCluster{}}
+			for idx, fakeClient := range fkc {
+				fpc[strconv.Itoa(idx)] = &podClientWrapper{t: t, Client: fakeClient}
+			}
 
-	remainingProwJobs := &prowv1.ProwJobList{}
-	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
-		t.Fatalf("failed to get remaining prowjobs: %v", err)
+			controller := controller{
+				logger:        logrus.WithField("component", "sinker"),
+				prowJobClient: fpjc,
+				podClients:    fpc,
+				config:        newFakeConfigAgent(newDefaultFakeSinkerConfig()).Config,
+			}
+			if tc.controller != nil {
+				tc.controller(&controller)
+			}
+			controller.clean()
+
+			assertSetsEqual(deletedPods, fkc[0].deletedPods, t, "did not delete correct Pods")
+			assertSetsEqual(deletedPodsTrusted, fkc[1].deletedPods, t, "did not delete correct trusted Pods")
+
+			remainingProwJobs := &prowv1.ProwJobList{}
+			if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
+				t.Fatalf("failed to get remaining prowjobs: %v", err)
+			}
+			actuallyDeletedProwJobs := sets.String{}
+			for _, initalProwJob := range prowJobs.Items {
+				actuallyDeletedProwJobs.Insert(initalProwJob.Name)
+			}
+			for _, remainingProwJob := range remainingProwJobs.Items {
+				actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
+			}
+			assertSetsEqual(tc.expectDeletedPJs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
+
+		})
 	}
-	actuallyDeletedProwJobs := sets.String{}
-	for _, initalProwJob := range prowJobs {
-		actuallyDeletedProwJobs.Insert(initalProwJob.(metav1.Object).GetName())
-	}
-	for _, remainingProwJob := range remainingProwJobs.Items {
-		actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
-	}
-	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
 }
 
 func TestNotClean(t *testing.T) {
@@ -1027,4 +1075,76 @@ func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey
 		return nil
 	}
 	return c.Client.Get(ctx, key, obj)
+}
+
+func TestGetDuplicates(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		in       []prowv1.ProwJob
+		expected []string
+	}{
+		{
+			name: "Almost identical but one is a periodic, no results",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PeriodicJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+			},
+		},
+		{
+			name: "Almost identical but one is incomplete, no results",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{}},
+			},
+		},
+		{
+			name: "Different job",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob, Job: "snowflake"}, Status: prowv1.ProwJobStatus{}},
+			},
+		},
+		{
+			name: "Different refs",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob, Refs: &prowv1.Refs{Org: "org", Repo: "repo", BaseSHA: "a"}}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob, Refs: &prowv1.Refs{Org: "org", Repo: "repo", BaseSHA: "b"}}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+			},
+		},
+		{
+			name: "Different extraRefs",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob, ExtraRefs: []prowv1.Refs{{Org: "org", Repo: "repo", BaseSHA: "a"}}}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob, ExtraRefs: []prowv1.Refs{{Org: "org", Repo: "repo", BaseSHA: "b"}}}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}}},
+			},
+		},
+		{
+			name: "Different state",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}, State: prowv1.FailureState}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}, State: prowv1.SuccessState}},
+			},
+		},
+		{
+			name: "Duplicate is found",
+			in: []prowv1.ProwJob{
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}, State: prowv1.SuccessState}},
+				{Spec: prowv1.ProwJobSpec{Type: prowv1.PresubmitJob}, Status: prowv1.ProwJobStatus{CompletionTime: &metav1.Time{}, State: prowv1.SuccessState}},
+			},
+			expected: []string{""},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := getDuplicates(logrus.WithField("tc", tc.name), &prowv1.ProwJobList{Items: tc.in})
+			if err != nil {
+				t.Fatalf("get duplicates failed: %v", err)
+			}
+			if diff := cmp.Diff(tc.expected, result); diff != "" {
+				t.Errorf("expected differs from actual: %s", diff)
+			}
+		})
+	}
 }

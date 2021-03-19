@@ -18,9 +18,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -50,6 +53,7 @@ import (
 
 type options struct {
 	runOnce                    bool
+	cleanDuplicates            bool
 	configPath                 string
 	jobConfigPath              string
 	supplementalProwConfigDirs flagutil.Strings
@@ -64,12 +68,14 @@ const (
 	reasonPodTTLed    = "ttled"
 
 	reasonProwJobAged         = "aged"
+	reasonDuplicate           = "duplicate"
 	reasonProwJobAgedPeriodic = "aged-periodic"
 )
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	fs.BoolVar(&o.cleanDuplicates, "clean-duplicate-prowjobs", false, "If sinker should instantly clean up duplicate prowjobs. Jobs that are not a periodic, did complete and have the same name, refs, extra refs and state are considered duplicates.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
@@ -191,6 +197,12 @@ type controller struct {
 	podClients    map[string]ctrlruntimeclient.Client
 	config        config.Getter
 	runOnce       bool
+	// cleanDuplicates makes sinker delete all duplicate jobs
+	// that are completed and not a periodic. Jobs are deemed
+	// a duplicate if their .spec.job, .spec.refs, .spec.extra_refs
+	// and .status.state fields are identical. Keeping these
+	// doesn't provide any value.
+	cleanDuplicates bool
 }
 
 func (c *controller) Start(ctx context.Context) error {
@@ -313,8 +325,17 @@ func (c *controller) clean() {
 	metrics.prowJobsCreated = len(prowJobs.Items)
 
 	// Only delete pod if its prowjob is marked as finished
-	pjMap := map[string]*prowapi.ProwJob{}
+	pjMap := make(map[string]*prowapi.ProwJob, len(prowJobs.Items))
 	isFinished := sets.NewString()
+
+	// Sort by creationTimestamp so we always keep the youngest if we deduplicate jobs.
+	// We must sort before we construct the pjMap, otherwise the pjMap will be wrong
+	// if the sorting swapped anything. This is because its values are pointers pointing
+	// to elements in prowjob.Items which is a slice of values and those values are
+	// changed when swapping.
+	sort.Slice(prowJobs.Items, func(i, j int) bool {
+		return prowJobs.Items[i].CreationTimestamp.After(prowJobs.Items[j].CreationTimestamp.Time)
+	})
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
 	for i, prowJob := range prowJobs.Items {
@@ -336,6 +357,23 @@ func (c *controller) clean() {
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
+		}
+	}
+
+	if c.cleanDuplicates {
+		duplicates, err := getDuplicates(c.logger, prowJobs)
+		if err != nil {
+			c.logger.WithError(err).Error("Failed to get duplicates")
+		} else {
+			for _, duplicateName := range duplicates {
+				if err := c.prowJobClient.Delete(c.ctx, pjMap[duplicateName]); err == nil {
+					c.logger.WithFields(pjutil.ProwJobFields(pjMap[duplicateName])).Info("Deleted duplicate prowjob.")
+					metrics.prowJobsCleaned[reasonDuplicate]++
+				} else {
+					c.logger.WithFields(pjutil.ProwJobFields(pjMap[duplicateName])).WithError(err).Error("Error deleting duplicate prowjob.")
+					metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
+				}
+			}
 		}
 	}
 
@@ -531,4 +569,81 @@ func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, 
 	}
 
 	return false
+}
+
+func getDuplicates(l *logrus.Entry, pjs *prowapi.ProwJobList) (result []string, err error) {
+	start := time.Now()
+	defer func() {
+		l.WithField("num_duplicates_found", len(result)).WithField("getDuplicates duration", time.Since(start)).Debug("getDuplicates finished")
+	}()
+	type duplicationKey struct {
+		job string
+		// pointer types are only equal
+		// when they point to the same
+		// address, so we have to serialize
+		// the value of these fields
+		refs      string
+		extraRefs string
+		state     prowapi.ProwJobState
+	}
+	duplicates := map[duplicationKey][]string{}
+
+	var key duplicationKey
+	for _, pj := range pjs.Items {
+		if pj.Spec.Type == prowapi.PeriodicJob || !pj.Complete() {
+			continue
+		}
+
+		key.job = pj.Spec.Job
+		key.refs, err = comparableRefsString(pj.Spec.Refs)
+		if err != nil {
+			return nil, err
+		}
+		key.extraRefs, err = comparableExtraRefsString(pj.Spec.ExtraRefs)
+		if err != nil {
+			return nil, err
+		}
+		key.state = pj.Status.State
+
+		duplicates[key] = append(duplicates[key], pj.Name)
+	}
+
+	for _, duplicateSlice := range duplicates {
+		if len(duplicateSlice) == 1 {
+			continue
+		}
+		result = append(result, duplicateSlice[1:]...)
+	}
+
+	return result, nil
+}
+
+func comparableExtraRefsString(extra []prowapi.Refs) (string, error) {
+	if len(extra) == 0 {
+		return "", nil
+	}
+	if len(extra) == 1 {
+		return comparableRefsString(&extra[0])
+	}
+	b := &strings.Builder{}
+	for _, ref := range extra {
+		res, err := comparableRefsString(&ref)
+		if err != nil {
+			return "", err
+		}
+		b.WriteString(res)
+	}
+
+	return b.String(), nil
+}
+
+func comparableRefsString(r *prowapi.Refs) (string, error) {
+	if r == nil {
+		return "", nil
+	}
+	result, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+	return string(result), err
 }
