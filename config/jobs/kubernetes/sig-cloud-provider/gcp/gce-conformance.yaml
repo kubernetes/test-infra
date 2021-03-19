@@ -58,7 +58,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
       securityContext:
         privileged: true
       resources:
@@ -69,7 +69,7 @@ periodics:
           cpu: 4
           memory: 14Gi
       command:
-      - wrapper.sh
+      - runner.sh
       args:
       - "/bin/bash"
       - "-c"

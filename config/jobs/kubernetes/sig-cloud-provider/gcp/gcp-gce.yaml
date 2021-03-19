@@ -105,7 +105,12 @@ presubmits:
             cpu: 4
             memory: 14Gi
   - name: pull-kubernetes-e2e-gce-kubetest2
+    # explicitly needs /test pull-kubernetes-e2e-gce to run
     always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
     decorate: true
     decoration_config:
       timeout: 80m # hard cap, based on original pre-kubetest2 job but moved to a prow-level timeout
@@ -117,7 +122,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20201028-8000225-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
         resources:
           requests:
             cpu: 4
@@ -128,7 +133,7 @@ presubmits:
         securityContext:
           privileged: true
         command:
-        - wrapper.sh
+        - runner.sh
         args:
         - "/bin/bash"
         - "-c"
