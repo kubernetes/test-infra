@@ -28,7 +28,7 @@ if [ ! -f /etc/docker/daemon.json ]; then
     jq -n --arg mtu ${docker_mtu} --arg enable true '{"mtu":$mtu|tonumber,"experimental":$enable| test("true")}' > /etc/docker/daemon.json
   else
     jq -n --arg enable true '{"experimental":$enable| test("true")}' > /etc/docker/daemon.json
-  if
+  fi
 fi
 
 # Start docker daemon and wait for dockerd to start
