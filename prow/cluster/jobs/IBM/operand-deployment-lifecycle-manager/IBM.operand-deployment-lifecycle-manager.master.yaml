@@ -37,6 +37,25 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: kind-e2e-test-operand-deployment-lifecycle-manager-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
+    rerun_command: /test e2e-test-kind-operand-deployment-lifecycle-manager-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - e2e-test-kind
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?e2e-test-kind(?:.*?)?$'
 postsubmits:
   IBM/operand-deployment-lifecycle-manager:
   - name: coverage-operand-deployment-lifecycle-manager-postsubmit
