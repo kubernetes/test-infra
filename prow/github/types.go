@@ -346,6 +346,13 @@ type Repo struct {
 	Parent      ParentRepo      `json:"parent"`
 }
 
+// RepoName is a limited use version of Repo that holds only `name`
+// it is used in the v4 query to collect only names, this is faster than v3
+// See also https://docs.github.com/en/graphql/reference/objects#repository
+type RepoName struct {
+	Name string `json:"name"`
+}
+
 // ParentRepo contains a small subsection of general repository information: it
 // just includes the information needed to confirm that a parent repo exists
 // and what the name of that repo is.

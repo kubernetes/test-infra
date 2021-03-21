@@ -2315,6 +2315,104 @@ func (c *client) GetRepos(org string, isUser bool) ([]Repo, error) {
 	return repos, nil
 }
 
+// Repoer is an interface for GraphQL repo queries
+type Repoer interface {
+	Repos() Repositories
+}
+
+// Repositories represents a sub element of the GraphQL query for repos
+type Repositories struct {
+	Edges []struct {
+		Node RepoName
+	}
+	PageInfo struct {
+		EndCursor   githubv4.String
+		HasNextPage githubv4.Boolean
+	}
+}
+
+// OrgRepo represnets a query for repos under an organization
+type OrgRepo struct {
+	Organization struct {
+		Repositories `graphql:"repositories(first: $first, after: $cursor)"`
+	} `graphql:"organization(login: $login)"`
+	RateLimit Rates
+}
+
+// UserRepo represnets a query for repos under a user
+type UserRepo struct {
+	User struct {
+		Repositories `graphql:"repositories(first: $first, after: $cursor)"`
+	} `graphql:"user(login: $login)"`
+	RateLimit Rates
+}
+
+// Repositories collects the subelement from a OrgRepo query
+func (o *OrgRepo) Repositories() Repositories {
+	return o.Organization.Repositories
+}
+
+// Repositories collects the subelement from a UserRepo query
+func (o *UserRepo) Repositories() Repositories {
+	return o.User.Repositories
+}
+
+// GetRepoNamesForOrg returns names of all repos in an org.
+//
+// This call uses multiple API tokens when results are paginated.
+//
+// See https://docs.github.com/en/graphql/reference/objects#repository
+func (c *client) GetRepoNamesForOrg(org string) ([]Repo, error) {
+	repoNames, err := getPaginatedRepoNames(org, &OrgRepo{})
+	if err != nil {
+		return nil, err
+	}
+
+	return repoNames, nil
+}
+
+// GetRepoNamesForUser returns names of all repos under a user.
+//
+// This call uses multiple API tokens when results are paginated.
+//
+// See https://docs.github.com/en/graphql/reference/objects#repository
+func (c *client) GetRepoNamesForUser(org string) ([]Repo, error) {
+	repoNames, err := getPaginatedRepoNames(org, &UserRepo{})
+	if err != nil {
+		return nil, err
+	}
+
+	return repoNames, nil
+}
+
+// getPaginatedRepoNames users a Repoer to aggrigate all repo names under an org
+func (c *client) getPaginatedRepoNames(org string, r Repoer) ([]RepoName, error) {
+	repoNames := []RepoName
+
+	if c.fake {
+		return repoNames, nil
+	}
+
+	variables := map[string]interface{}{
+		"login":  graphql.String(org),
+		"first":  graphql.Int(100),
+		"cursor": (*graphql.String)(nil),
+	}
+
+	for ok := githubv4.Boolean(true); ok == githubv4.Boolean(true); ok = r.Repos().PageInfo.HasNextPage {
+		err := client.Query(context.Background(), r, variables)
+		if err != nil {
+			return nil, err
+		}
+		for _, repo := range q.Repos().Edges {
+			repos = append(repos, repo.Node)
+		}
+		variables["cursor"] = githubv4.String(r.Repos().PageInfo.EndCursor)
+	}
+
+	return repoNames, nil
+}
+
 // GetSingleCommit returns a single commit.
 //
 // See https://developer.github.com/v3/repos/#get
