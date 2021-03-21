@@ -51,7 +51,7 @@ presubmits:
         - entrypoint
         - make
         - e2e-test-kind
-        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        image: quay.io/multicloudlab/build-tool:v20210321-386f77ad4
         name: ""
         securityContext:
           privileged: true
