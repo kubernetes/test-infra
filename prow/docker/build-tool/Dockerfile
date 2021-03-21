@@ -8,14 +8,15 @@ FROM golang:1.15.7 as binary_tools_context
 ARG ARCH=amd64
 
 # Pinned versions of stuff
-ENV CONTROLLER_GEN_VERSION=v0.3.0
+ENV CONTROLLER_GEN_VERSION=v0.4.0
 ENV GOIMPORTS_VERSION=379209517ffe
 ENV GOLANGCI_LINT_VERSION=v1.23.1
 ENV HELM_VERSION=v3.4.1
 ENV KUBECTL_VERSION=v1.16.0
 ENV KUBEBUILDER_VERSION=2.3.1
-ENV KUSTOMIZE_VERSION=v3.5.4
-ENV OPERATOR_SDK_VERSION=v0.19.2
+ENV KUSTOMIZE_VERSION=v4.0.5
+ENV OPERATOR_SDK_VERSION=v1.3.0
+ENV KIND_VERSION=v0.10.0
 
 ENV GO111MODULE=on
 ENV GOPROXY=https://proxy.golang.org
@@ -42,7 +43,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN go get -ldflags="-s -w" sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
 RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
 RUN go get -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
-RUN go get -ldflags="-s -w" sigs.k8s.io/kustomize/kustomize/v3@${KUSTOMIZE_VERSION}
+RUN go get -ldflags="-s -w" sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION}
+RUN go get -ldflags="-s -w" sigs.k8s.io/kind@${KIND_VERSION}
 
 # operator-sdk
 RUN OPERATOR_SDK_ARCH=$(echo ${ARCH}| sed 's/amd64/x86_64/g'); \
