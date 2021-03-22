@@ -4,7 +4,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "amazonvpc"}
 - name: e2e-kops-aws-cni-amazon-vpc
-  cron: '15 */8 * * *'
+  cron: '15 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -69,7 +69,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-cni-calico
-  cron: '16 */8 * * *'
+  cron: '16 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -134,7 +134,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "canal"}
 - name: e2e-kops-aws-cni-canal
-  cron: '44 */8 * * *'
+  cron: '44 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -199,7 +199,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium
-  cron: '58 */8 * * *'
+  cron: '58 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -264,7 +264,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "flannel"}
 - name: e2e-kops-aws-cni-flannel
-  cron: '13 */8 * * *'
+  cron: '13 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -329,7 +329,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kopeio"}
 - name: e2e-kops-aws-cni-kopeio
-  cron: '13 */8 * * *'
+  cron: '13 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -394,7 +394,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kube-router"}
 - name: e2e-kops-aws-cni-kuberouter
-  cron: '31 */8 * * *'
+  cron: '31 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -459,7 +459,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "weave"}
 - name: e2e-kops-aws-cni-weave
-  cron: '46 */8 * * *'
+  cron: '46 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

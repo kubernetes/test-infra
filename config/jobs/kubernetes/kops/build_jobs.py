@@ -121,7 +121,8 @@ def build_cron(key, runs_per_day):
 
     if runs_per_day > 0:
         hour_denominator = 24 / runs_per_day
-        return "%d */%d * * *" % (minute, hour_denominator), (runs_per_day * 7)
+        hour_offset = simple_hash("hours:" + key) % hour_denominator
+        return "%d %d-23/%d * * *" % (minute, hour_offset, hour_denominator), (runs_per_day * 7)
 
     # run Ubuntu 20.04 (Focal) jobs more frequently
     if "u2004" in key:

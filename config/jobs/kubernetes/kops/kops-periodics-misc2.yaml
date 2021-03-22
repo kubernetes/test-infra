@@ -268,7 +268,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-ha-euwest1
-  cron: '24 */1 * * *'
+  cron: '24 0-23/1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -333,7 +333,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-release
-  cron: '54 */8 * * *'
+  cron: '54 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -398,7 +398,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-ci
-  cron: '30 */8 * * *'
+  cron: '30 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -465,7 +465,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-conformance
-  cron: '31 */8 * * *'
+  cron: '31 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -533,7 +533,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=c5.large --master-size=c5.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-aws-misc-amd64-conformance
-  cron: '24 */8 * * *'
+  cron: '24 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -601,7 +601,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=c5.large --master-size=c5.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-updown
-  cron: '16 */1 * * *'
+  cron: '16 0-23/1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -668,7 +668,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-scenario-cilium10-arm64
-  cron: '25 */24 * * *'
+  cron: '25 13-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -733,7 +733,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --override=cluster.spec.networking.cilium.version=v1.10.0-rc0", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-scenario-cilium10-amd64
-  cron: '39 */24 * * *'
+  cron: '39 19-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
