@@ -1220,9 +1220,11 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.3-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.3-e2e-aws-sdn-multitenant
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-console-aws
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.3-console-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips
+- days_of_results: 8
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-serial

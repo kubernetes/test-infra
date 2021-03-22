@@ -1953,9 +1953,11 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
   name: periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-console-aws
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.5-console-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips-serial
@@ -1965,7 +1967,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
+- days_of_results: 50
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips

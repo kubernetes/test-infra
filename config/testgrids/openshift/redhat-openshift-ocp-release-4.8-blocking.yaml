@@ -164,15 +164,19 @@ dashboards:
     test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.8
   name: redhat-openshift-ocp-release-4.8-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-serial
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-gcp
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-ovn-ipv6
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.8
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.8
   name: release-openshift-ocp-installer-e2e-aws-4.8
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.8
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.8
   name: release-openshift-ocp-installer-e2e-aws-serial-4.8
