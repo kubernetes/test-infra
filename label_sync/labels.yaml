@@ -1554,6 +1554,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: f6c5d8
+        description: Issues or PRs that need to be closed before the next CAPI release
+        name: release-blocking
+        target: both
+        prowPlugin: label
+        addedBy: approvers
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
