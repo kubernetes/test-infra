@@ -33,7 +33,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
