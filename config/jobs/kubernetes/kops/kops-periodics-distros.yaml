@@ -4,7 +4,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb9", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagedebian9
-  cron: '2 */8 * * *'
+  cron: '2 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -68,7 +68,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagedebian10
-  cron: '30 */8 * * *'
+  cron: '30 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -132,7 +132,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u1804", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageubuntu1804
-  cron: '11 */8 * * *'
+  cron: '11 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -196,7 +196,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageubuntu2004
-  cron: '53 */8 * * *'
+  cron: '53 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -260,7 +260,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "centos7", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagecentos7
-  cron: '50 */8 * * *'
+  cron: '50 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -324,7 +324,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "centos8", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagecentos8
-  cron: '55 */8 * * *'
+  cron: '55 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -388,7 +388,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageamazonlinux2
-  cron: '55 */8 * * *'
+  cron: '55 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -452,7 +452,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel7", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagerhel7
-  cron: '24 */8 * * *'
+  cron: '24 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -516,7 +516,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagerhel8
-  cron: '49 */8 * * *'
+  cron: '49 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -580,7 +580,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageflatcar
-  cron: '36 */8 * * *'
+  cron: '36 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
