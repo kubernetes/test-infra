@@ -37,7 +37,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.18"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -79,7 +79,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -129,7 +129,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -171,7 +171,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -221,7 +221,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -263,7 +263,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -313,7 +313,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS

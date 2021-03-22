@@ -33,7 +33,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -82,7 +82,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
