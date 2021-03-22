@@ -158,7 +158,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 				resultChan <- result
 				return
 			}
-			var suites junit.Suites
+			var suites *junit.Suites
 			suites, result.err = junit.Parse(contents)
 			if result.err != nil {
 				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Info("Error parsing junit file.")

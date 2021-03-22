@@ -198,7 +198,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
 
 	// Read Data Sources: Default, YAML configs, Prow Annotations
-	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML)
+	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML, false)
 	if err != nil {
 		return fmt.Errorf("could not read testgrid config: %v", err)
 	}
