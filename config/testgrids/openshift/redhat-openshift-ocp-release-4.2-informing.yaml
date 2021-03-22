@@ -845,7 +845,8 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.2-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.2-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-console-aws
+- days_of_results: 50
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.2-console-aws
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips
