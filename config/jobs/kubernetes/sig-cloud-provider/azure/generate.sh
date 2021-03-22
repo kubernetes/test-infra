@@ -445,5 +445,223 @@ periodics:
     testgrid-tab-name: aks-engine-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: capz-azure-file-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azurefile-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-${release}
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-master
+      command:
+      - wrapper.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-file # In-tree Azure file storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-azure-file
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: capz-azure-file-machinepool-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azurefile-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-${release}
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-master
+      command:
+      - wrapper.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        kubectl apply -f templates/addons/azurefile-role.yaml &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: EXP_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-file # In-tree Azure file storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-azure-file-machinepool
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: capz-azure-disk-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-${release}
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-master
+      command:
+      - wrapper.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-azure-disk
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+- interval: 24h
+  name: capz-azure-disk-machinepool-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-${release}
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/krte:v20210319-e46e31c-master
+      command:
+      - wrapper.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        make e2e-test
+      env:
+      - name: SKIP_UPSTREAM_E2E_TESTS
+        value: "true"
+      - name: USE_CI_ARTIFACTS
+        value: "true"
+      - name: EXP_MACHINE_POOL
+        value: "true"
+      - name: AZURE_STORAGE_DRIVER
+        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-azure-disk-machinepool
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
 EOF
 done
