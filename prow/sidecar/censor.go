@@ -20,6 +20,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -418,10 +419,88 @@ func loadSecrets(paths []string) ([][]byte, error) {
 				return err
 			}
 			secrets = append(secrets, raw)
+			// In many cases, a secret file contains much more than just the sensitive data. For instance,
+			// container registry credentials files are JSON formatted, so there are only a couple of fields
+			// that are truly secret, the rest is formatting and whitespace. The implication here is that
+			// a censoring approach that only looks at the full, uninterrupted secret value will not be able
+			// to censor anything if that value is reformatted, truncated, etc. When the secrets we are asked
+			// to censor are container registry credentials, we can know the format of these files and extract
+			// the subsets of data that are sensitive, allowing us not only to censor the full file's contents
+			// but also any individual fields that exist in the output, whether they're there due to a user
+			// extracting the fields or output being truncated, etc.
+			var parser = func(bytes []byte) ([]string, error) {
+				return nil, nil
+			}
+			if info.Name() == ".dockercfg" {
+				parser = loadDockercfgAuths
+			}
+			if info.Name() == ".dockerconfigjson" {
+				parser = loadDockerconfigJsonAuths
+			}
+			extra, parseErr := parser(raw)
+			if parseErr != nil {
+				return fmt.Errorf("could not read %s as a docker secret: %v", path, parseErr)
+			}
+			// It is important that these are added to the list of secrets *after* their parent data
+			// as we will censor in order and this will give a reasonable guarantee that the parent
+			// data (a superset of any of these fields) will be censored in its entirety, first. It
+			// remains possible that the sliding window used to censor pulls in only part of the
+			// superset and some small part of it is censored first, making the larger superset no
+			// longer match the file being censored.
+			for _, item := range extra {
+				secrets = append(secrets, []byte(item))
+			}
 			return nil
 		}); err != nil {
 			return nil, err
 		}
 	}
 	return secrets, nil
+}
+
+// loadDockercfgAuths parses auth values from a kubernetes.io/dockercfg secret
+func loadDockercfgAuths(content []byte) ([]string, error) {
+	var data map[string]authEntry
+	if err := json.Unmarshal(content, &data); err != nil {
+		return nil, err
+	}
+	var entries []authEntry
+	for _, entry := range data {
+		entries = append(entries, entry)
+	}
+	return collectSecretsFrom(entries), nil
+}
+
+// loadDockerconfigJsonAuths parses auth values from a kubernetes.io/dockercfgjson secret
+func loadDockerconfigJsonAuths(content []byte) ([]string, error) {
+	var data = struct {
+		Auths map[string]authEntry `json:"auths"`
+	}{}
+	if err := json.Unmarshal(content, &data); err != nil {
+		return nil, err
+	}
+	var entries []authEntry
+	for _, entry := range data.Auths {
+		entries = append(entries, entry)
+	}
+	return collectSecretsFrom(entries), nil
+}
+
+// authEntry holds credentials for authentication to registries
+type authEntry struct {
+	Password string `json:"password"`
+	Auth     string `json:"auth"`
+}
+
+func collectSecretsFrom(entries []authEntry) []string {
+	var auths []string
+	for _, entry := range entries {
+		if entry.Auth != "" {
+			auths = append(auths, entry.Auth)
+		}
+		if entry.Password != "" {
+			auths = append(auths, entry.Password)
+		}
+	}
+	return auths
 }

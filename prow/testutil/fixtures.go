@@ -29,19 +29,19 @@ import (
 
 // CompareWithFixtureDir will compare all files in a directory with a corresponding test fixture directory.
 func CompareWithFixtureDir(t *testing.T, golden, output string) {
-	if walkErr := filepath.Walk(golden, func(path string, info os.FileInfo, err error) error {
+	if walkErr := filepath.Walk(output, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
+		if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 			return nil
 		}
-		relPath, err := filepath.Rel(golden, path)
+		relPath, err := filepath.Rel(output, path)
 		if err != nil {
 			// this should not happen
 			t.Errorf("bug: could not compute relative path in fixture dir: %v", err)
 		}
-		CompareWithFixture(t, path, filepath.Join(output, relPath))
+		CompareWithFixture(t, filepath.Join(golden, relPath), path)
 		return nil
 	}); walkErr != nil {
 		t.Errorf("failed to walk fixture tree for comparison: %v", walkErr)
