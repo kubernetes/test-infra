@@ -202,7 +202,7 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
@@ -257,7 +257,7 @@ periodics:
       - --aksengine-admin-username=azureuser
       - --aksengine-admin-password=AdminPassw0rd
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
