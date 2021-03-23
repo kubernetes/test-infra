@@ -804,11 +804,13 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions:        &gcsOptions,
-		Entries:           wrappers,
-		EntryError:        requirePassingEntries,
-		IgnoreInterrupts:  ignoreInterrupts,
-		SecretDirectories: secretVolumePaths,
+		GcsOptions:       &gcsOptions,
+		Entries:          wrappers,
+		EntryError:       requirePassingEntries,
+		IgnoreInterrupts: ignoreInterrupts,
+		CensoringOptions: &sidecar.CensoringOptions{
+			SecretDirectories: secretVolumePaths,
+		},
 	})
 	if err != nil {
 		return nil, err

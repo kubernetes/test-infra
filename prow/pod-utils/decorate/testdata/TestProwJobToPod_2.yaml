@@ -73,7 +73,7 @@ spec:
     - name: JOB_SPEC
       value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"decoration_config":{"timeout":"2h0m0s","grace_period":"10s","utility_images":{"clonerefs":"clonerefs:tag","initupload":"initupload:tag","entrypoint":"entrypoint:tag","sidecar":"sidecar:tag"},"gcs_configuration":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes"},"gcs_credentials_secret":"secret-name","cookiefile_secret":"yummy"}}'
     - name: SIDECAR_OPTIONS
-      value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}'
+      value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}],"censoring_options":{}}'
     image: sidecar:tag
     name: sidecar
     resources: {}

@@ -4,7 +4,7 @@ env:
 - name: JOB_SPEC
   value: spec
 - name: SIDECAR_OPTIONS
-  value: '{"gcs_options":{"items":["first","second","/logs/artifacts"],"bucket":"bucket","dry_run":false},"entries":[{"args":["yes"],"process_log":"","marker_file":"","metadata_file":""}],"entry_error":true,"ignore_interrupts":true}'
+  value: '{"gcs_options":{"items":["first","second","/logs/artifacts"],"bucket":"bucket","dry_run":false},"entries":[{"args":["yes"],"process_log":"","marker_file":"","metadata_file":""}],"entry_error":true,"ignore_interrupts":true,"censoring_options":{}}'
 image: sidecar-image
 name: sidecar
 resources: {}
