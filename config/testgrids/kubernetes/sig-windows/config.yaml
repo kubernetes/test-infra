@@ -8,6 +8,8 @@ dashboard_groups:
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
+    - sig-windows-sac
+    - sig-windows-containerd-hyperv
     - sig-windows-networking
 
 dashboards:
@@ -18,6 +20,8 @@ dashboards:
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce
+- name: sig-windows-sac
+- name: sig-windows-containerd-hyperv
 - name: sig-windows-networking
   dashboard_tab:
   - name: flannel-l2bridge-windows-master

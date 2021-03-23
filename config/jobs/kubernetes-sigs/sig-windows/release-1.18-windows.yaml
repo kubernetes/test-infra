@@ -170,7 +170,7 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-release-1.18-informing, sig-windows-1.18-release
-    testgrid-tab-name: aks-engine-windows-dockershim
+    testgrid-tab-name: aks-engine-windows-dockershim-1.18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.18 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
@@ -224,6 +224,6 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-windows-1.18-release
-    testgrid-tab-name: aks-engine-windows-dockershim-serial-slow
+    testgrid-tab-name: aks-engine-windows-dockershim-serial-slow-1.18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release serial tests on K8s 1.18 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
