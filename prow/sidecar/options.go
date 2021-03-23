@@ -76,6 +76,18 @@ type Options struct {
 	// taken by `sidecar` to upload all relevant artifacts.
 	IgnoreInterrupts bool `json:"ignore_interrupts,omitempty"`
 
+	// CensoringOptions are options that pertain to censoring output before upload.
+	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
+
+	// SecretDirectories is deprecated, use censoring_options.secret_directories instead.
+	SecretDirectories []string `json:"secret_directories,omitempty"`
+	// CensoringConcurrency is deprecated, use censoring_options.censoring_concurrency instead.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is deprecated, use censoring_options.censoring_buffer_size instead.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+}
+
+type CensoringOptions struct {
 	// SecretDirectories are paths to directories containing secret data. The contents
 	// of these secret data files will be censored from the logs and artifacts uploaded
 	// to the cloud.
@@ -105,6 +117,18 @@ func (o Options) entries() []wrapper.Options {
 // Validate ensures that the set of options are
 // self-consistent and valid
 func (o *Options) Validate() error {
+	opts := CensoringOptions{
+		SecretDirectories:    o.SecretDirectories,
+		CensoringConcurrency: o.CensoringConcurrency,
+		CensoringBufferSize:  o.CensoringBufferSize,
+	}
+	if o.SecretDirectories != nil || o.CensoringConcurrency != nil || o.CensoringBufferSize != nil {
+		if o.CensoringOptions != nil {
+			return errors.New("cannot use deprecated options (secret_directories, censoring_{concurrency,buffer_size}) and new options (censoring_options) at the same time")
+		}
+		o.CensoringOptions = &opts
+	}
+
 	ents := o.entries()
 	if len(ents) == 0 {
 		return errors.New("no wrapper.Option entries")

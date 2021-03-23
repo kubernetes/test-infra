@@ -42,10 +42,10 @@ const defaultBufferSize = 10 * 1024 * 1024
 
 func (o Options) censor() error {
 	var concurrency int64
-	if o.CensoringConcurrency == nil {
+	if o.CensoringOptions.CensoringConcurrency == nil {
 		concurrency = int64(10)
 	} else {
-		concurrency = *o.CensoringConcurrency
+		concurrency = *o.CensoringOptions.CensoringConcurrency
 	}
 	logrus.WithField("concurrency", concurrency).Debug("Censoring artifacts.")
 	sem := semaphore.NewWeighted(concurrency)
@@ -61,7 +61,7 @@ func (o Options) censor() error {
 		errLock.Unlock()
 	}()
 
-	secrets, err := loadSecrets(o.SecretDirectories)
+	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories)
 	if err != nil {
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
@@ -70,8 +70,8 @@ func (o Options) censor() error {
 	censorer.RefreshBytes(secrets...)
 
 	bufferSize := defaultBufferSize
-	if o.CensoringBufferSize != nil {
-		bufferSize = *o.CensoringBufferSize
+	if o.CensoringOptions.CensoringBufferSize != nil {
+		bufferSize = *o.CensoringOptions.CensoringBufferSize
 	}
 	if largest := censorer.LargestSecret(); 2*largest > bufferSize {
 		bufferSize = 2 * largest

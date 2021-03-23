@@ -161,9 +161,11 @@ func TestCensorIntegration(t *testing.T) {
 			{ProcessLog: filepath.Join(tempDir, "logs/one.log")},
 			{ProcessLog: filepath.Join(tempDir, "logs/two.log")},
 		},
-		SecretDirectories: []string{"testdata/secrets"},
-		// this will be smaller than the size of a secret, so this tests our buffer calculation
-		CensoringBufferSize: &bufferSize,
+		CensoringOptions: &CensoringOptions{
+			SecretDirectories: []string{"testdata/secrets"},
+			// this will be smaller than the size of a secret, so this tests our buffer calculation
+			CensoringBufferSize: &bufferSize,
+		},
 	}
 	if err := options.censor(); err != nil {
 		t.Fatalf("got an error from censoring: %v", err)

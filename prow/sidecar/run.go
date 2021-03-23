@@ -115,7 +115,7 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	if len(o.SecretDirectories) > 0 {
+	if o.CensoringOptions != nil {
 		if err := o.censor(); err != nil {
 			logrus.Warnf("Failed to censor data: %v", err)
 		}
