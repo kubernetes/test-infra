@@ -72,7 +72,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/kubernetes.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]
         - --ginkgo-parallel=30
@@ -119,7 +119,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -168,7 +168,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -222,7 +222,7 @@ presubmits:
         - --aksengine-location=westus2
         - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-file-csi-driver
         securityContext:
@@ -270,7 +270,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/kubernetes.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       # Specific test args
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]
       - --ginkgo-parallel=30
@@ -321,7 +321,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       securityContext:
@@ -374,7 +374,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       # Specific test args
       - --test-azure-disk-csi-driver
       securityContext:
@@ -432,7 +432,7 @@ periodics:
       - --aksengine-location=westus2
       - --aksengine-public-key=\$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/in-tree.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       # Specific test args
       - --test-azure-file-csi-driver
       securityContext:
