@@ -109,6 +109,17 @@ type CensoringOptions struct {
 	// small, censoring will not be performant as the number of I/O actions per file
 	// would increase. If unset, defaults to 10MiB.
 	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+
+	// IncludeDirectories are directories which should have their content censored. If
+	// present, only content in these directories will be censored. Entries in this list
+	// are parsed with the go-zglob library, allowing for globbed matches.
+	IncludeDirectories []string `json:"include_directories,omitempty"`
+
+	// ExcludeDirectories are directories which should not have their content censored. If
+	// present, content in these directories will not be censored unless the directory also
+	// matches a glob in IncludeDirectories. Entries in this list are parsed with the go-
+	// zglob library, allowing for globbed matches.
+	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {
