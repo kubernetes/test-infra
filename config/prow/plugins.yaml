@@ -87,6 +87,7 @@ approve:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
   - kubernetes-sigs/zeitgeist
   - kubernetes/community
@@ -135,6 +136,7 @@ lgtm:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/zeitgeist
   - kubernetes/k8s.io
   - kubernetes/kops
@@ -992,6 +994,9 @@ plugins:
 
   kubernetes-sigs/security-profiles-operator:
     plugins:
+    - mergecommitblocker
+    - milestone
+    - override
     - release-note
 
   kubernetes-sigs/k8s-container-image-promoter:
