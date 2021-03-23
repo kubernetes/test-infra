@@ -62,7 +62,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     path_alias: sigs.k8s.io/kind
     decoration_config:
-      timeout: 40m
+      timeout: 60m
       grace_period: 15m
     spec:
       containers:
