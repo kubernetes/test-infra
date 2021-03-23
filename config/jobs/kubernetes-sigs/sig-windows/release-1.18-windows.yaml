@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-azure-disk-windows
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim
     decorate: true
     always_run: false
     optional: true
@@ -59,7 +59,7 @@ presubmits:
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
-  - name: pull-kubernetes-e2e-azure-file-windows
+  - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
     decorate: true
     always_run: false
     optional: true

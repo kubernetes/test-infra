@@ -108,7 +108,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-aks-engine-windows-containerd
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) using containerd
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-azure-disk-windows
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim
     decorate: true
     decoration_config:
       timeout: 2h
@@ -169,9 +169,9 @@ presubmits:
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-azure-disk-windows
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim
       description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster.
-  - name: pull-kubernetes-e2e-azure-file-windows
+  - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
     decorate: true
     decoration_config:
       timeout: 2h
@@ -232,9 +232,9 @@ presubmits:
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-azure-file-windows
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster.
-  - name: pull-kubernetes-e2e-aks-engine-windows-dockershim-gpu
+  - name: pull-kubernetes-e2e-aks-engine-gpu-windows-dockershim
     always_run: false
     optional: true
     decorate: true
@@ -286,10 +286,10 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-windows-dockershim-gpu
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-gpu-windows-dockershim
       description: Presubmit job for Windows tests on k8s clusters with assignable GPUs provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-azure-disk-windows-containerd
+  - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd
     decorate: true
     decoration_config:
       timeout: 2h
@@ -349,9 +349,9 @@ presubmits:
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-azure-disk-windows-containerd
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd
       description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster with containerd runtime.
-  - name: pull-kubernetes-e2e-azure-file-windows-containerd
+  - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-containerd
     decorate: true
     decoration_config:
       timeout: 2h
@@ -411,7 +411,7 @@ presubmits:
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-azure-file-windows-containerd
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-containerd
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime.w
 periodics:
 - interval: 8h
