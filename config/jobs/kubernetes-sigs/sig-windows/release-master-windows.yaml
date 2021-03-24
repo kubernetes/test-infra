@@ -16,6 +16,7 @@ presubmits:
       preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-windows-private-registry-cred: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
@@ -45,7 +46,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+        - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -70,6 +71,7 @@ presubmits:
       preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-windows-private-registry-cred: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
@@ -99,7 +101,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+        - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -122,7 +124,6 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -185,7 +186,6 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -250,6 +250,7 @@ presubmits:
       preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-windows-private-registry-cred: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
@@ -280,7 +281,7 @@ presubmits:
         - --aksengine-agentpoolcount=2
         # Specific test args
         # Only run device assignment tests for this job because GPU nodes are expensive!
-        - --test_args=--node-os-distro=windows --ginkgo.focus=device.plugin.for.Windows
+        - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=device.plugin.for.Windows
         - --ginkgo-parallel=1
         securityContext:
           privileged: true
@@ -302,7 +303,6 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -364,7 +364,6 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     extra_refs:
@@ -426,6 +425,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -459,7 +459,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
@@ -480,6 +480,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -513,7 +514,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip==$(GINKGO_SKIP_SERIAL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip==$(GINKGO_SKIP_SERIAL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -534,6 +535,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -567,7 +569,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
@@ -589,6 +591,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -622,7 +625,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -640,7 +643,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -703,7 +705,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -764,7 +765,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -827,7 +827,6 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
