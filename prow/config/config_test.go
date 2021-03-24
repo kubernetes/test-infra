@@ -40,6 +40,7 @@ import (
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
+	fuzz "github.com/google/gofuzz"
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -6040,6 +6041,143 @@ plank:
 			}
 			if diff := cmp.Diff(tc.expectedProwConfig, string(serialized)); diff != "" {
 				t.Errorf("expected prow config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestContextDescriptionWithBaseShaRoundTripping(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name        string
+		shaIn       string
+		expectedSha string
+	}{
+		{
+			name:        "Valid SHA is returned",
+			shaIn:       "8d287a3aeae90fd0aef4a70009c715712ff302cd",
+			expectedSha: "8d287a3aeae90fd0aef4a70009c715712ff302cd",
+		},
+		{
+			name:        "Invalid sha is not returned",
+			shaIn:       "abc",
+			expectedSha: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for i := 0; i < 100; i++ {
+				var humanReadable string
+				fuzz.New().Fuzz(&humanReadable)
+				contextDescription := ContextDescriptionWithBaseSha(humanReadable, tc.shaIn)
+				if l := len(contextDescription); l > contextDescriptionMaxLen {
+					t.Errorf("Context description %q generated from humanReadable %q and baseSHa %q is longer than %d (%d)", contextDescription, humanReadable, tc.shaIn, contextDescriptionMaxLen, l)
+				}
+
+				if expected, actual := tc.expectedSha, BaseSHAFromContextDescription(contextDescription); expected != actual {
+					t.Errorf("expected to get sha %q back, got %q", expected, actual)
+				}
+			}
+		})
+	}
+}
+
+func shout(i int) string {
+	if i == 0 {
+		return "start"
+	}
+	return fmt.Sprintf("%s part%d", shout(i-1), i)
+}
+
+func TestTruncate(t *testing.T) {
+	if el := len(elide) * 2; contextDescriptionMaxLen < el {
+		t.Fatalf("maxLen must be at least %d (twice %s), got %d", el, elide, contextDescriptionMaxLen)
+	}
+	if s := shout(contextDescriptionMaxLen); len(s) <= contextDescriptionMaxLen {
+		t.Fatalf("%s should be at least %d, got %d", s, contextDescriptionMaxLen, len(s))
+	}
+	big := shout(contextDescriptionMaxLen)
+	outLen := contextDescriptionMaxLen
+	if (contextDescriptionMaxLen-len(elide))%2 == 1 {
+		outLen--
+	}
+	cases := []struct {
+		name   string
+		in     string
+		out    string
+		outLen int
+		front  string
+		back   string
+		middle string
+	}{
+		{
+			name: "do not change short strings",
+			in:   "foo",
+			out:  "foo",
+		},
+		{
+			name: "do not change at boundary",
+			in:   big[:contextDescriptionMaxLen],
+			out:  big[:contextDescriptionMaxLen],
+		},
+		{
+			name: "do not change boundary-1",
+			in:   big[:contextDescriptionMaxLen-1],
+			out:  big[:contextDescriptionMaxLen-1],
+		},
+		{
+			name:   "truncated messages have the right length",
+			in:     big,
+			outLen: outLen,
+		},
+		{
+			name:  "truncated message include beginning",
+			in:    big,
+			front: big[:contextDescriptionMaxLen/4], // include a lot of the start
+		},
+		{
+			name: "truncated messages include ending",
+			in:   big,
+			back: big[len(big)-contextDescriptionMaxLen/4:],
+		},
+		{
+			name:   "truncated messages include a ...",
+			in:     big,
+			middle: elide,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := truncate(tc.in, contextDescriptionMaxLen)
+			exact := true
+			if tc.front != "" {
+				exact = false
+				if !strings.HasPrefix(out, tc.front) {
+					t.Errorf("%s does not start with %s", out, tc.front)
+				}
+			}
+			if tc.middle != "" {
+				exact = false
+				if !strings.Contains(out, tc.middle) {
+					t.Errorf("%s does not contain %s", out, tc.middle)
+				}
+			}
+			if tc.back != "" {
+				exact = false
+				if !strings.HasSuffix(out, tc.back) {
+					t.Errorf("%s does not end with %s", out, tc.back)
+				}
+			}
+			if tc.outLen > 0 {
+				exact = false
+				if len(out) != tc.outLen {
+					t.Errorf("%s len %d != expected %d", out, len(out), tc.outLen)
+				}
+			}
+			if exact && out != tc.out {
+				t.Errorf("%s != expected %s", out, tc.out)
 			}
 		})
 	}

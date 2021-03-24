@@ -932,12 +932,54 @@ func (c *Controller) accumulateBatch(sp subpool) (successBatch []PullRequest, pe
 	return successBatch, pendingBatch
 }
 
+// prowJobsFromContexts constructs ProwJob objects from all successful presubmit contexts that include a baseSHA.
+// This is needed because otherwise we would always need retesting for results that are older than sinkers
+// max_prowjob_age.
+func prowJobsFromContexts(l *logrus.Entry, ghc githubClient, pr *PullRequest, baseSHA string) ([]prowapi.ProwJob, error) {
+	headContexts, err := headContexts(l, ghc, pr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get head contexts: %w", err)
+	}
+	var passingCurrentContexts []string
+	for _, headContext := range headContexts {
+		if headContext.State != githubql.StatusStateSuccess {
+			continue
+		}
+		if baseSHAForContext := config.BaseSHAFromContextDescription(string(headContext.Description)); baseSHAForContext != "" && baseSHAForContext == baseSHA {
+			passingCurrentContexts = append(passingCurrentContexts, string((headContext.Context)))
+		}
+	}
+
+	var prowjobsFromContexts []prowapi.ProwJob
+	for _, passingCurrentContext := range passingCurrentContexts {
+		prowjobsFromContexts = append(prowjobsFromContexts, prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Context: passingCurrentContext,
+				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{Number: int(pr.Number), SHA: string(pr.HeadRefOID)}}},
+				Type:    prowapi.PresubmitJob,
+			},
+			Status: prowapi.ProwJobStatus{
+				State: prowapi.SuccessState,
+			},
+		})
+	}
+
+	return prowjobsFromContexts, nil
+}
+
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry) (successes, pendings, missings []PullRequest, missingTests map[int][]config.Presubmit) {
+func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry, baseSHA string, ghc githubClient) (successes, pendings, missings []PullRequest, missingTests map[int][]config.Presubmit) {
 
 	missingTests = map[int][]config.Presubmit{}
 	for _, pr := range prs {
+
+		if prowjobsFromContexts, err := prowJobsFromContexts(log, ghc, &pr, baseSHA); err != nil {
+			log.WithError(err).Error("failed to get prowjobs from contexts")
+		} else {
+			pjs = append(pjs, prowjobsFromContexts...)
+		}
+
 		// Accumulate the best result for each job (Passing > Pending > Failing/Unknown)
 		// We can ignore the baseSHA here because the subPool only contains ProwJobs with the correct baseSHA
 		psStates := make(map[string]simpleState)
@@ -1520,7 +1562,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, missings, missingSerialTests := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	successes, pendings, missings, missingSerialTests := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log, sp.sha, c.ghc)
 	batchMerge, batchPending := c.accumulateBatch(sp)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
@@ -1725,13 +1767,19 @@ type PullRequest struct {
 	UpdatedAt githubql.DateTime
 }
 
+type CommitNode struct {
+	Commit Commit
+}
+
 // Commit holds graphql data about commits and which contexts they have
 type Commit struct {
-	Status struct {
-		Contexts []Context
-	}
+	Status            CommitStatus
 	OID               githubql.String `graphql:"oid"`
 	StatusCheckRollup StatusCheckRollup
+}
+
+type CommitStatus struct {
+	Contexts []Context
 }
 
 type StatusCheckRollup struct {
