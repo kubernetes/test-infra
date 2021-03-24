@@ -41,6 +41,37 @@ volumes that the Prow Job may require.
 * `--use-local-gcloud-credentials` controls whether to use the same gcloud credentials as local or not
 * `--use-local-kubeconfig` controls whether to use the same kubeconfig as local or not
 
+#### Common options usage scenarios
+
+Phaino is smart at prompting for where repo is located, volume mounts etc., if
+it's desired to save the prompts, use the following tricks instead:
+
+- If the repo needs to be cloned under GOPATH, use:
+  ```
+  --gopath=/whatever/go/src # Controls where source code is cloned in container
+  --extra-volume-mounts=/whatever/go/src/k8s.io/test-infra=/Users/xyz/k8s-test-infra
+  ```
+- If job requires mounting kubeconfig, assume the mount is named `kubeconfig`,use:
+  ```
+  --use-local-kubeconfig
+  --skip-volume-mounts=kubeconfig
+  ```
+- If job requires mounting gcloud default credentials, assume the mount is named `service-account`,use:
+  ```
+  --use-local-gcloud-credentials
+  --skip-volume-mounts=service-account
+  ```
+- If job requires mounting something else like `name:foo; mountPath: /bar`,use:
+  ```
+  --extra-volume-mounts=/bar=/Users/xyz/local/bar
+  --skip-volume-mounts=foo
+  ```
+- If job requires env vars,use:
+  ```
+  --extra-envs=env1=val1,env2=val2
+  ```
+
+
 See `bazel run //prow/cmd/phaino -- --help` for full option list.
 
 ### Usage examples
