@@ -39,6 +39,9 @@ periodics:
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

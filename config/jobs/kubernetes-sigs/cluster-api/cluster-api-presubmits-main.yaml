@@ -154,6 +154,12 @@ presubmits:
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
+        env:
+          # Since the PR-Blocking tests are run as part of the cluster-api-test-main job
+          # and the upgrade tests are being run as part of the periodic upgrade jobs.
+          # This jobs ends up running all the other tests in the E2E suite
+          - name: GINKGO_SKIP
+            value: "\\[PR-Blocking\\] \\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -199,7 +205,7 @@ presubmits:
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "1.7.0"
           - name: GINKGO_FOCUS
-            value: "\\[Periodic-K8SVersion\\]"
+            value: "\\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
