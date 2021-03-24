@@ -122,8 +122,8 @@ periodics:
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha3
   decorate: true
   decoration_config:
-    timeout: 3h
-  interval: 4h
+    timeout: 5h
+  interval: 12h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -160,7 +160,7 @@ periodics:
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha2
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 5h
   interval: 48h
   labels:
     preset-dind-enabled: "true"
@@ -207,7 +207,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 5h
   interval: 48h
   extra_refs:
   - org: kubernetes-sigs
@@ -263,8 +263,8 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 3h
-  interval: 4h
+    timeout: 5h
+  interval: 12h
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
