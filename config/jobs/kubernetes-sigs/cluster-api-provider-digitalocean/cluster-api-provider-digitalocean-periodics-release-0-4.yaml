@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-digitalocean-conformance
+- name: periodic-cluster-api-provider-digitalocean-conformance-release-0-4
   decorate: true
   decoration_config:
     timeout: 4h
@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-digitalocean
-      base_ref: master
+      base_ref: release-0.4
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -27,5 +27,5 @@ periodics:
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-    testgrid-tab-name: capdo-periodic-conformance
+    testgrid-tab-name: capdo-periodic-conformance-release-0-4
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com

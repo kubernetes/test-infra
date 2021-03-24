@@ -1,12 +1,10 @@
 periodics:
-- name: periodic-cluster-api-provider-digitalocean-conformance
+- name: periodic-cluster-api-provider-digitalocean-janitor
   decorate: true
   decoration_config:
-    timeout: 4h
-  interval: 24h
+    timeout: 1h
+  interval: 12h
   labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
     preset-do-credential: "true"
   extra_refs:
     - org: kubernetes-sigs
@@ -15,17 +13,15 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-1.18
       command:
         - "runner.sh"
-        - "./scripts/ci-conformance.sh"
-      securityContext:
-        privileged: true
+        - "./scripts/ci-janitor.sh"
       resources:
         requests:
-          cpu: 2
-          memory: "9Gi"
+          cpu: 1
+          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-    testgrid-tab-name: capdo-periodic-conformance
+    testgrid-tab-name: capdo-periodic-janitor
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
