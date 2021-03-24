@@ -77,7 +77,7 @@ func (si *secretInfo) gsmSecretName() string {
 	return fmt.Sprintf("%s__%s__%s", si.cluster, si.clusterSecret.Namespace, si.clusterSecret.Name)
 }
 
-// parseFlags parses the command-line flags.
+// gatherOptions parses the command-line flags.
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.StringVar(&o.project, "project", "", "GCP project used for backing up secrets")

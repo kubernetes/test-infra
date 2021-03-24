@@ -25,12 +25,14 @@ import (
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 )
 
+// Client is a wrapper of secretmanager client
 type Client struct {
 	// ProjectID is GCP project in which to store secrets in Secret Manager.
 	ProjectID string
 	client    *secretmanager.Client
 }
 
+// ClientInterface is the interface for manipulating secretmanager
 type ClientInterface interface {
 	CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error)
 	AddSecretVersion(ctx context.Context, secretName string, payload []byte) error
@@ -39,6 +41,7 @@ type ClientInterface interface {
 	GetSecretValue(ctx context.Context, secretName, versionName string) ([]byte, error)
 }
 
+// NewClient creates a client for secretmanager, it would fail if not authenticated
 func NewClient(projectID string) (*Client, error) {
 	// Create the client.
 	ctx := context.Background()
@@ -49,6 +52,7 @@ func NewClient(projectID string) (*Client, error) {
 	return &Client{ProjectID: projectID, client: client}, nil
 }
 
+// CreateSecret creates a secret
 func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error) {
 	// Create the request to create the secret.
 	createSecretReq := &secretmanagerpb.CreateSecretRequest{
@@ -66,6 +70,7 @@ func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmana
 	return c.client.CreateSecret(ctx, createSecretReq)
 }
 
+// AddSecretVersion adds a secret version, aka update the value of a secret
 func (c *Client) AddSecretVersion(ctx context.Context, secretName string, payload []byte) error {
 	// Build the request.
 	addSecretVersionReq := &secretmanagerpb.AddSecretVersionRequest{
@@ -80,6 +85,7 @@ func (c *Client) AddSecretVersion(ctx context.Context, secretName string, payloa
 	return err
 }
 
+// ListSecrets lists all secrets under current project
 func (c *Client) ListSecrets(ctx context.Context) ([]*secretmanagerpb.Secret, error) {
 	var res []*secretmanagerpb.Secret
 	// Build the request.
@@ -102,6 +108,7 @@ func (c *Client) ListSecrets(ctx context.Context) ([]*secretmanagerpb.Secret, er
 	return res, nil
 }
 
+// GetSecret gets secret by name
 func (c *Client) GetSecret(ctx context.Context, secretName string) (*secretmanagerpb.Secret, error) {
 	// Build the request.
 	accessRequest := &secretmanagerpb.GetSecretRequest{
@@ -112,6 +119,7 @@ func (c *Client) GetSecret(ctx context.Context, secretName string) (*secretmanag
 	return c.client.GetSecret(ctx, accessRequest)
 }
 
+// GetSecretValue gets secret value by its version
 func (c *Client) GetSecretValue(ctx context.Context, secretName, versionName string) ([]byte, error) {
 	// Build the request.
 	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{
