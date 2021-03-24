@@ -282,6 +282,15 @@ slack:
             - saschagrunert # subproject owner / Release Manager
             - justaugustus # subproject owner / Release Manager
             - xmudrii # Release Manager
+        release-1.21:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
