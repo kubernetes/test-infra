@@ -1,7 +1,7 @@
 # Prow Secrets Management
 
-Secrets in prow service/build clusters are managed with Kubernetes External
-Secrets, which is responsible for one-way syncing secret values from major
+Secrets in prow service/build clusters are managed with [Kubernetes External
+Secrets](https://github.com/external-secrets/kubernetes-external-secrets), which is responsible for one-way syncing secret values from major
 secret manager providers such as GCP, Azure, and AWS secret managers into
 kubernetes clusters, based on `ExternalSecret` custom resource defined in
 cluster (As shown in example below).
@@ -14,7 +14,7 @@ https://github.com/external-secrets/kubernetes-external-secrets#backends_
 
 This is performed by prow service/build clusters maintainer.
 
-1. Create a GKE cluster and enable workload identity by
+1. In the cluster that the secrets are synced to, enable workload identity by
    following [`workload-identity`](/workload-identity/README.md).
 1. Deploy `kubernetes-external-secrets_crd.yaml`,
    `kubernetes-external-secrets_deployment.yaml`,
@@ -23,15 +23,23 @@ This is performed by prow service/build clusters maintainer.
    [`config/prow/cluster`](/config/prow/cluster). The deployment file assumes
    using the same service account name as used in step #1
 
+TODO(chaodaiG): recommend use of postsubmit deploy job for managing the
+deployment once this PR is merged.
+
 ## Usage (Prow clients)
 
 This is performed by prow serving/build cluster clients.
 
 1. In the GCP project that stores secrets with google secret manager, grant the
    `roles/secretmanager.viewer` and `roles/secretmanager.secretAccessor`
-   permission to the GCP service account used above
-1. Create secret in google secret manager, assume it's named `my-precious-secret`
-1. Create kubernetes external secrets custom resource by:
+   permission to the GCP service account used above, by running:
+   ```
+   gcloud beta secrets add-iam-policy-binding <my-gsm-secret-name> --member="serviceAccount:<same-service-account-for-workload-identity>" --role=<role> --project=<my-gsm-secret-project>
+   ```
+   The above command ensures that the service account used by prow can only
+   access the secret name `<my-gsm-secret-name>` in the GCP project owned by clients.
+2. Create secret in google secret manager
+3. Create kubernetes external secrets custom resource by:
    ```
    apiVersion: kubernetes-client.io/v1
    kind: ExternalSecret
@@ -50,7 +58,7 @@ This is performed by prow serving/build cluster clients.
        property: value
    ```
 
-Within 10 seconds, a secret will be created automatically:
+Within 10 seconds (determined by `POLLER_INTERVAL_MILLISECONDS` envvar on deployment), a secret will be created automatically:
 ```
 apiVersion: v1
 kind: Secret
@@ -60,3 +68,8 @@ metadata:
 data:
   <my-kubernetes-secret-name>: <value_read_from_gsm>
 ```
+
+The `Secret` will be updated automatically when the secret value in gsm changed
+or the `ExternalSecret` is changed. The secret will not be deleted by kubernetes
+external secret, even in the case of `ExternalSecret` CR is deleted from the
+cluster. Deletion of `Secret` will need to be handled separately if desired.
