@@ -19,7 +19,7 @@ aliases:
   wg-k8s-infra-oncall:
   - BenTheElder
   # kubernetes.io org admins
-  - cblecker
+  - ameukam
   - dims
   - spiffxp
   - thockin
@@ -136,7 +136,7 @@ aliases:
     - cindyxing
     - dejanb
   wg-k8s-infra-leads:
-    - bartsmykla
+    - ameukam
     - dims
     - spiffxp
   wg-lts-leads:
