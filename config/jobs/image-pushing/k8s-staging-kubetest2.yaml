@@ -1,0 +1,27 @@
+postsubmits:
+  kubernetes-sigs/kubetest2:
+  - name: post-kubetest2-push-binaries
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-testing-kubetest2
+      testgrid-alert-email: kubernetes-engprod+alerts@google.com
+      testgrid-num-columns-recent: '3'
+    decorate: true
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+      - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+        command:
+        - /run.sh
+        args:
+        - --project=k8s-staging-kubetest2
+        - --scratch-bucket=gs://k8s-staging-kubetest2-gcb
+        - --env-passthrough=PULL_BASE_SHA
+        - --build-dir=.
+        - hack/ci/push-binaries/
+        env:
+        - name: LOG_TO_STDOUT
+          value: "y"
+    rerun_auth_config:
+      github_team_ids:
+      - 3925239 # https://github.com/orgs/kubernetes-sigs/teams/kubetest2-maintainers
