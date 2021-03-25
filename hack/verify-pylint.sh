@@ -31,10 +31,10 @@ else
   )
   exit 0
 fi
-
+    
 export PYLINTHOME=$TEST_TMPDIR
 
 shopt -s extglob globstar
 
 # TODO(clarketm): remove `boskos` exclusion after upgrading to PY3.
-"$DIR/pylint_bin" !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py
+"$DIR/pylint_bin" $( ls !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py | grep -v analyze-memory-profiles )

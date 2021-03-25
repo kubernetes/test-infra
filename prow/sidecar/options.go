@@ -76,6 +76,11 @@ type Options struct {
 	// taken by `sidecar` to upload all relevant artifacts.
 	IgnoreInterrupts bool `json:"ignore_interrupts,omitempty"`
 
+	// WriteMemoryProfile makes the program write a memory profile periodically while
+	// it runs. Use the k8s.io/test-infra/hack/analyze-memory-profiles.py script to
+	// load the data into time series and plot it for analysis.
+	WriteMemoryProfile bool `json:"write_memory_profile,omitempty"`
+
 	// CensoringOptions are options that pertain to censoring output before upload.
 	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
 

@@ -25,6 +25,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/pprof"
 	"strings"
 	"syscall"
 	"time"
@@ -72,6 +74,35 @@ func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 // and then post the status of that process and any artifacts
 // to cloud storage.
 func (o Options) Run(ctx context.Context) (int, error) {
+	if o.WriteMemoryProfile {
+		go func() {
+			logrus.Info("Writing memory profiles.")
+			profileDir, err := ioutil.TempDir("", "heap-profiles-")
+			if err != nil {
+				logrus.WithError(err).Warn("Could not create a directory to store memory profiles.")
+				return
+			}
+			for {
+				select {
+				case <-time.Tick(30 * time.Second):
+					profile, err := ioutil.TempFile(profileDir, "heap-profile-")
+					if err != nil {
+						logrus.WithError(err).Warn("Could not create a file to store a memory profile.")
+						continue
+					}
+					logrus.Info("Writing a memory profile.")
+					runtime.GC() // ensure we have up-to-date data
+					if err := pprof.WriteHeapProfile(profile); err != nil {
+						logrus.WithError(err).Warn("Could not write memory profile.")
+					}
+					logrus.Infof("Wrote memory profile to %s.", profile.Name())
+					if err := profile.Close(); err != nil {
+						logrus.WithError(err).Warn("Could not close file storing memory profile.")
+					}
+				}
+			}
+		}()
+	}
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
 		return 0, fmt.Errorf("could not resolve job spec: %v", err)
