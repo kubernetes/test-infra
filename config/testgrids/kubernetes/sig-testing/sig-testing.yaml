@@ -15,6 +15,7 @@ dashboard_groups:
   - sig-testing-e2e-framework
   - sig-testing-fejtabot
   - sig-testing-kind
+  - sig-testing-kubetest2
   - sig-testing-maintenance
   - sig-testing-prow
   - sig-testing-images
@@ -32,6 +33,7 @@ dashboards:
 - name: sig-testing-e2e-framework
 - name: sig-testing-fejtabot
 - name: sig-testing-kind
+- name: sig-testing-kubetest2
 - name: sig-testing-maintenance
 - name: sig-testing-prow
 - name: sig-testing-images
