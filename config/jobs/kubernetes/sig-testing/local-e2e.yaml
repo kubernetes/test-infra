@@ -65,7 +65,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel=1
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial
       - --timeout=120m
       # docker-in-docker needs privileged mode
       securityContext:
