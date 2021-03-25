@@ -74,8 +74,12 @@ func ImageTooBig(url string) (bool, error) {
 func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 	if permissions.Admin {
 		return Admin
+	} else if permissions.Maintain {
+		return Maintain
 	} else if permissions.Push {
 		return Write
+	} else if permissions.Triage {
+		return Triage
 	} else if permissions.Pull {
 		return Read
 	} else {
@@ -88,10 +92,14 @@ func PermissionsFromTeamPermission(permission TeamPermission) RepoPermissions {
 	switch permission {
 	case RepoPull:
 		return RepoPermissions{Pull: true}
+	case RepoTriage:
+		return RepoPermissions{Pull: true, Triage: true}
 	case RepoPush:
-		return RepoPermissions{Pull: true, Push: true}
+		return RepoPermissions{Pull: true, Triage: true, Push: true}
+	case RepoMaintain:
+		return RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}
 	case RepoAdmin:
-		return RepoPermissions{Pull: true, Push: true, Admin: true}
+		return RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}
 	default:
 		// Should never happen unless the type gets new value
 		return RepoPermissions{}
