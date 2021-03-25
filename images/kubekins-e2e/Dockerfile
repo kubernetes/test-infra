@@ -97,6 +97,14 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
     chmod +x /usr/local/bin/kind; \
     fi
 
+# install kubetest2 binaries if a version is provided
+ARG KUBETEST2_VERSION
+RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
+    tar -xzf /usr/local/bin/kubetest2.tgz \
+    rm -f /usr/local/bin/kubetest2.tgz
+    fi
+
 # configure dockerd to use mirror.gcr.io
 # per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
 ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
