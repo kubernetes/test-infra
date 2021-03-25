@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	fuzz "github.com/google/gofuzz"
@@ -1225,19 +1226,25 @@ func TestUnprotectedBranches(t *testing.T) {
 // Branchprotection is equal to the one we merged from.
 func TestBranchProtectionMergeMergesAnythingWithoutAnError(t *testing.T) {
 	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	var i int
+	fuzzer := fuzz.NewWithSeed(seed).Funcs(func(p *Policy, c fuzz.Continue) {
+		// Make sure we always have a good sample of non-nil but empty Policies so
+		// we check that they get copied over. Today, the meaning of an empty and
+		// an unset Policy is identical because all the fields are pointers that
+		// will get ignored if unset. However, this might change in the future and
+		// caused flakes when we didn't copy over map entries with an empty Policy,
+		// as an entry with no value and no entry are different things for cmp.Diff.
+		if i%2 == 0 {
+			c.Fuzz(p)
+		}
+		i++
+	})
 	for i := 0; i < 100; i++ {
 		fuzzedBP := &BranchProtection{}
-		fuzz.New().Funcs(func(p *Policy, c fuzz.Continue) {
-			// Make sure we always have a good sample of non-nil but empty Policies so
-			// we check that they get copied over. Today, the meaning of an empty and
-			// an unset Policy is identical because all the fields are pointers that
-			// will get ignored if unset. However, this might change in the future and
-			// caused flakes when we didn't copy over map entries with an empty Policy,
-			// as an entry with no value and no entry are different things for cmp.Diff.
-			if i%2 == 0 {
-				c.Fuzz(p)
-			}
-		}).Fuzz(fuzzedBP)
+		fuzzer.Fuzz(fuzzedBP)
 
 		mergedBP := &BranchProtection{}
 		if err := mergedBP.merge(fuzzedBP); err != nil {
@@ -1254,9 +1261,13 @@ func TestBranchProtectionMergeMergesAnythingWithoutAnError(t *testing.T) {
 // into itself errors.
 func TestBranchprotectionMergeErrorsOnConflicts(t *testing.T) {
 	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
 	for i := 0; i < 100; i++ {
 		fuzzedBP := &BranchProtection{}
-		fuzz.New().Fuzz(fuzzedBP)
+		fuzzer.Fuzz(fuzzedBP)
 
 		if err := fuzzedBP.merge(fuzzedBP); err == nil && !apiequality.Semantic.DeepEqual(fuzzedBP, &BranchProtection{}) {
 			serialized, serializeErr := yaml.Marshal(fuzzedBP)
@@ -1274,9 +1285,13 @@ func TestBranchprotectionMergeErrorsOnConflicts(t *testing.T) {
 // in changes to the latter.
 func TestBranchprotectionMergeRemainsUnchangedWhenMergingEmptyIn(t *testing.T) {
 	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
 	for i := 0; i < 100; i++ {
 		fuzzedBP := &BranchProtection{}
-		fuzz.New().Fuzz(fuzzedBP)
+		fuzzer.Fuzz(fuzzedBP)
 
 		fuzzedBPDeepCopy := deepcopy.Copy(fuzzedBP)
 		if err := fuzzedBP.merge(&BranchProtection{}); err != nil {
