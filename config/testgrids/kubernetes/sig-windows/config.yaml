@@ -2,22 +2,26 @@ dashboard_groups:
 - name: sig-windows
   dashboard_names:
     - sig-windows-signal
-    - sig-windows-releases
-    - sig-windows-sac
-    - sig-windows-containerd
+    - sig-windows-1.18-release
+    - sig-windows-1.19-release
+    - sig-windows-1.20-release
+    - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
-    - sig-windows-azure
+    - sig-windows-sac
+    - sig-windows-containerd-hyperv
     - sig-windows-networking
 
 dashboards:
 - name: sig-windows-signal
-- name: sig-windows-releases
-- name: sig-windows-sac
-- name: sig-windows-containerd
+- name: sig-windows-1.18-release
+- name: sig-windows-1.19-release
+- name: sig-windows-1.20-release
+- name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce
-- name: sig-windows-azure
+- name: sig-windows-sac
+- name: sig-windows-containerd-hyperv
 - name: sig-windows-networking
   dashboard_tab:
   - name: ltsc2019-docker-flannel-winbridge-dsr-disabled-master

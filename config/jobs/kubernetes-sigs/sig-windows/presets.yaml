@@ -1,0 +1,33 @@
+presets:
+- labels:
+    preset-azure-windows: "true"
+  env:
+  - name: WIN_BUILD
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
+  - name: K8S_SSH_PUBLIC_KEY_PATH
+    value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+  - name: K8S_SSH_PRIVATE_KEY_PATH
+    value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
+  - name: GINKGO_FOCUS_PARALLEL
+    value: \[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice
+  - name: GINKGO_SKIP_PARALLEL
+    value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+  - name: GINKGO_FOCUS_SERIAL
+    value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])
+  - name: GINKGO_SKIP_SERIAL
+    value: \[LinuxOnly\]|device.plugin.for.Windows
+- labels:
+    preset-windows-repo-list: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
+- labels:
+    preset-windows-repo-list-master: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-master
+- labels:
+    preset-windows-repo-list-2004: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-2004
