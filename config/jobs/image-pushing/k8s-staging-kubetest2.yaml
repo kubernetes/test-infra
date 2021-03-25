@@ -4,7 +4,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-testing-kubetest2
-      testgrid-alert-email: kubernetes-engprod+alerts@google.com
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
       testgrid-num-columns-recent: '3'
     decorate: true
     spec:
