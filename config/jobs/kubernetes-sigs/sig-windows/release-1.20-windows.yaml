@@ -164,7 +164,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
@@ -218,7 +218,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
+      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
