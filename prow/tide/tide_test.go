@@ -3952,10 +3952,14 @@ func TestCheckRunNodesToContexts(t *testing.T) {
 }
 
 func TestDeduplicateContestsDoesntLoseData(t *testing.T) {
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
 	for i := 0; i < 100; i++ {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			context := Context{}
-			fuzz.New().Fuzz(&context)
+			fuzzer.Fuzz(&context)
 			res := deduplicateContexts([]Context{context})
 			if diff := cmp.Diff(context, res[0]); diff != "" {
 				t.Errorf("deduplicateContexts lost data, new object differs: %s", diff)
