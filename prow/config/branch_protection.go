@@ -221,7 +221,7 @@ func (bp *BranchProtection) merge(additional *BranchProtection) error {
 		}
 		if isPolicySet(bp.Orgs[org].Policy) && isPolicySet(additional.Orgs[org].Policy) {
 			errs = append(errs, fmt.Errorf("both branchprotection configs define a policy for org %s", org))
-		} else if isPolicySet(additional.Orgs[org].Policy) {
+		} else if _, ok := additional.Orgs[org]; ok && !isPolicySet(bp.Orgs[org].Policy) {
 			orgSettings := bp.Orgs[org]
 			orgSettings.Policy = additional.Orgs[org].Policy
 			bp.Orgs[org] = orgSettings
@@ -235,7 +235,7 @@ func (bp *BranchProtection) merge(additional *BranchProtection) error {
 			}
 			if isPolicySet(bp.Orgs[org].Repos[repo].Policy) && isPolicySet(additional.Orgs[org].Repos[repo].Policy) {
 				errs = append(errs, fmt.Errorf("both branchprotection configs define a policy for repo %s/%s", org, repo))
-			} else if isPolicySet(additional.Orgs[org].Repos[repo].Policy) {
+			} else if _, ok := additional.Orgs[org].Repos[repo]; ok && !isPolicySet(bp.Orgs[org].Repos[repo].Policy) {
 				repoSettings := bp.Orgs[org].Repos[repo]
 				repoSettings.Policy = additional.Orgs[org].Repos[repo].Policy
 				bp.Orgs[org].Repos[repo] = repoSettings
@@ -250,7 +250,7 @@ func (bp *BranchProtection) merge(additional *BranchProtection) error {
 
 				if isPolicySet(bp.Orgs[org].Repos[repo].Branches[branch].Policy) && isPolicySet(additional.Orgs[org].Repos[repo].Branches[branch].Policy) {
 					errs = append(errs, fmt.Errorf("both branchprotection configs define a policy for branch %s in repo %s/%s", branch, org, repo))
-				} else if isPolicySet(additional.Orgs[org].Repos[repo].Branches[branch].Policy) {
+				} else if _, ok := additional.Orgs[org].Repos[repo].Branches[branch]; ok && !isPolicySet(bp.Orgs[org].Repos[repo].Branches[branch].Policy) {
 					branchSettings := bp.Orgs[org].Repos[repo].Branches[branch]
 					branchSettings.Policy = additional.Orgs[org].Repos[repo].Branches[branch].Policy
 					bp.Orgs[org].Repos[repo].Branches[branch] = branchSettings
