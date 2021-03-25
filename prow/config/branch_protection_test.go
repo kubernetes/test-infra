@@ -1227,7 +1227,17 @@ func TestBranchProtectionMergeMergesAnythingWithoutAnError(t *testing.T) {
 	t.Parallel()
 	for i := 0; i < 100; i++ {
 		fuzzedBP := &BranchProtection{}
-		fuzz.New().Fuzz(fuzzedBP)
+		fuzz.New().Funcs(func(p *Policy, c fuzz.Continue) {
+			// Make sure we always have a good sample of non-nil but empty Policies so
+			// we check that they get copied over. Today, the meaning of an empty and
+			// an unset Policy is identical because all the fields are pointers that
+			// will get ignored if unset. However, this might change in the future and
+			// caused flakes when we didn't copy over map entries with an empty Policy,
+			// as an entry with no value and no entry are different things for cmp.Diff.
+			if i%2 == 0 {
+				c.Fuzz(p)
+			}
+		}).Fuzz(fuzzedBP)
 
 		mergedBP := &BranchProtection{}
 		if err := mergedBP.merge(fuzzedBP); err != nil {
