@@ -7,7 +7,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-2004: "true"
+    preset-windows-repo-list-master: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
@@ -63,7 +63,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-2004: "true"
+    preset-windows-repo-list-master: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
@@ -120,9 +120,10 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-2004: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -156,7 +157,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -173,7 +174,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-2004: "true"
+    preset-windows-repo-list-master: "true"
     preset-azure-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
@@ -230,9 +231,10 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-2004: "true"
+    preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -266,7 +268,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip=$(GINKGO_SKIP_SERIAL)
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
