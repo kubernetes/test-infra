@@ -20,7 +20,8 @@ presubmits:
       containers:
       - image: golang:1.16
         command:
-        - make test
+        - make
+        - test
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: test
