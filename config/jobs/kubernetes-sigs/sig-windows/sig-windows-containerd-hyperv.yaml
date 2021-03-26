@@ -11,6 +11,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -44,7 +45,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_PARALLEL) --ginkgo.skip=$(GINKGO_SKIP_PARALLEL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=3
       securityContext:
         privileged: true
@@ -65,6 +66,7 @@ periodics:
     preset-windows-repo-list-master: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -98,7 +100,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=$(GINKGO_FOCUS_SERIAL) --ginkgo.skip==$(GINKGO_SKIP_SERIAL)
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip==\[LinuxOnly\]|device.plugin.for.Windows
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
