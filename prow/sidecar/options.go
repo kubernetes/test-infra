@@ -116,7 +116,7 @@ type CensoringOptions struct {
 	IncludeDirectories []string `json:"include_directories,omitempty"`
 
 	// ExcludeDirectories are directories which should not have their content censored. If
-	// present, content in these directories will not be censored unless the directory also
+	// present, content in these directories will not be censored even if the directory also
 	// matches a glob in IncludeDirectories. Entries in this list are parsed with the go-
 	// zglob library, allowing for globbed matches.
 	ExcludeDirectories []string `json:"exclude_directories,omitempty"`

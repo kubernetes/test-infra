@@ -131,22 +131,22 @@ func (o Options) censor() error {
 }
 
 func shouldCensor(options CensoringOptions, path string) (bool, error) {
-	for _, glob := range options.IncludeDirectories {
-		found, err := zglob.Match(glob, path)
-		if err != nil {
-			return false, err
-		}
-		if found {
-			return true, nil // when explicitly included, censor always
-		}
-	}
 	for _, glob := range options.ExcludeDirectories {
 		found, err := zglob.Match(glob, path)
 		if err != nil {
 			return false, err
 		}
 		if found {
-			return false, nil // when explicitly excluded and not included, censor
+			return false, nil // when explicitly excluded, do not censor
+		}
+	}
+	for _, glob := range options.IncludeDirectories {
+		found, err := zglob.Match(glob, path)
+		if err != nil {
+			return false, err
+		}
+		if found {
+			return true, nil // when explicitly included, censor
 		}
 	}
 	return len(options.IncludeDirectories) == 0, nil // censor if no explicit includes exist

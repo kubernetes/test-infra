@@ -333,13 +333,13 @@ func TestShouldCensor(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "matching include and exclude censors",
+			name: "matching include and exclude does not censor",
 			options: CensoringOptions{
 				IncludeDirectories: []string{"/usr/**/*"},
 				ExcludeDirectories: []string{"/usr/bin/**/*"},
 			},
 			path:     "/usr/bin/bash",
-			expected: true,
+			expected: false,
 		},
 		{
 			name: "matching exclude does not censor",
