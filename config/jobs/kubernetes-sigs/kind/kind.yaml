@@ -5,7 +5,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: kind
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/kind
   always_run: true
   labels:
