@@ -803,15 +803,23 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 		secretVolumePaths = append(secretVolumePaths, volumeMount.MountPath)
 	}
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
+	censoringOptions := &sidecar.CensoringOptions{
+		SecretDirectories: secretVolumePaths,
+	}
+	if config.CensoringOptions != nil {
+		censoringOptions.CensoringConcurrency = config.CensoringOptions.CensoringConcurrency
+		censoringOptions.CensoringBufferSize = config.CensoringOptions.CensoringBufferSize
+		censoringOptions.IncludeDirectories = config.CensoringOptions.IncludeDirectories
+		censoringOptions.ExcludeDirectories = config.CensoringOptions.ExcludeDirectories
+	}
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions:       &gcsOptions,
 		Entries:          wrappers,
 		EntryError:       requirePassingEntries,
 		IgnoreInterrupts: ignoreInterrupts,
-		CensoringOptions: &sidecar.CensoringOptions{
-			SecretDirectories: secretVolumePaths,
-		},
+		CensoringOptions: censoringOptions,
 	})
+
 	if err != nil {
 		return nil, err
 	}

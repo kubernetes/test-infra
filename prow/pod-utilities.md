@@ -125,3 +125,55 @@ the `exta_refs` field. If the cloned path of this repo must be used as a default
 
 Jobs using the deprecated [bootstrap.py](/jenkins/bootstrap.py) should switch to the Pod Utilities at
 their earliest convenience. @dims has created a handy [migration guide](https://gist.github.com/dims/c1296f8ed42238baea0a5fcae45f4cf4).
+
+## Automatic Censoring of Secret Data
+
+Many jobs exist that must touch third-party systems in order to be productive. Whether the job provisions
+resources in a cloud IaaS like GCP, reports results to an aggregation service like coveralls.io, or simply
+clones private repositories, jobs require sensitive credentials to achieve their goals. Even with the best
+intentions, it is possible for end-user code running in a test `Pod` for a `ProwJob` to accidentally leak
+the content of those credentials. If Prow is configured to push job logs and artifacts to a public cloud
+storage bucket, that leak is immediately immortalized in plain text for the world to read. The `sidecar`
+utility can infer what secrets a job has access to and censor those secrets from the output. The following
+job turns on censoring:
+
+```yaml
+- name: censored-job
+  decorate: true
+  decoration_config:
+    censor_secrets: true
+```
+
+### Censoring Process
+
+The automatic censoring process is written to be as useful as possible while having a bounded impact on the
+execution cost in resources and time for the job. In order to censor every possible leak, all keys in all 
+`Secrets` that are mounted into the test `Pod` are treated as sensitive data. For each of these keys, the
+value of the key as well as the base-64 encoded value are censored from the job's log as well as any
+artifacts the job produces. If any archives (e.g. `.tar.gz`) are found in the output artifacts for a job,
+they are unarchived in order to censor their contents on the fly before being re-archived and pushed up to
+cloud storage.
+
+In order to bound the impact in runtime and resource cost for censoring on the job, both the concurrency
+and buffer size of the censoring algorithm are tunable. The overall steady-state memory footprint of the
+censoring algorithm is simply the buffer size times the maximum concurrency. The buffer must be as large
+as twice the length of the largest secret to be censored, but may be tuned to very small values in order
+to decrease the memory footprint. Keep mind that this will increase overall disk I/O and therefore increase
+the runtime of censoring. Therefore, in order to decrease censoring runtime the buffer should be increased.
+
+### Configuring Censoring
+
+A number of aspects of the censoring algorithm are tunable with configuration option at the per-job level
+or for entire repositories or organizations. Under the `decoration_config` stanza, the following options
+are available to tune censoring:
+
+```yaml
+decoration_config:
+  censoring_options:
+    censoring_concurrency: 0 # the number of files to censor concurrently; each allocates a buffer
+    censoring_buffer_size: 0 # the size of the censoring buffer, in bytes
+    include_directories:
+    - path/**/to/*something.txt # globs relative to $ARTIFACTS that should be censored; everything censored if unset
+    exclude_directories:
+    - path/**/to/*other.txt # globs relative to $ARTIFACTS that should not be censored
+```

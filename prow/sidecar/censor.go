@@ -96,7 +96,7 @@ func (o Options) censor() error {
 			logger := logrus.WithField("path", absPath)
 			relpath, shouldNotErr := filepath.Rel(item, absPath)
 			if shouldNotErr != nil {
-				logrus.WithError(shouldNotErr).Warn("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", item, absPath)
+				logrus.WithError(shouldNotErr).Warnf("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", item, absPath)
 			}
 			should, err := shouldCensor(*o.CensoringOptions, relpath)
 			if err != nil {
@@ -324,7 +324,7 @@ func archive(srcDir, destArchive string) error {
 		// the header won't get nested paths right
 		relpath, shouldNotErr := filepath.Rel(srcDir, absPath)
 		if shouldNotErr != nil {
-			logrus.WithError(shouldNotErr).Warn("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", srcDir, absPath)
+			logrus.WithError(shouldNotErr).Warnf("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", srcDir, absPath)
 		}
 		header.Name = relpath
 		if err := tarWriter.WriteHeader(header); err != nil {

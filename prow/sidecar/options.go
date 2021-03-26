@@ -110,15 +110,17 @@ type CensoringOptions struct {
 	// would increase. If unset, defaults to 10MiB.
 	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
 
-	// IncludeDirectories are directories which should have their content censored. If
+	// IncludeDirectories are directories which should have their content censored, provided
+	// as relative path globs from the base of the artifact directory for the test. If
 	// present, only content in these directories will be censored. Entries in this list
 	// are parsed with the go-zglob library, allowing for globbed matches.
 	IncludeDirectories []string `json:"include_directories,omitempty"`
 
-	// ExcludeDirectories are directories which should not have their content censored. If
-	// present, content in these directories will not be censored even if the directory also
-	// matches a glob in IncludeDirectories. Entries in this list are parsed with the go-
-	// zglob library, allowing for globbed matches.
+	// ExcludeDirectories are directories which should not have their content censored,
+	// provided as relative path globs from the base of the artifact directory for the
+	// test. If present, content in these directories will not be censored even if the
+	// directory also matches a glob in IncludeDirectories. Entries in this list are
+	// parsed with the go-zglob library, allowing for globbed matches.
 	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
 }
 
