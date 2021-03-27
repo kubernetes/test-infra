@@ -544,6 +544,7 @@ tide:
     milestone: v1.21
     includedBranches:
     - master
+    - release-1.21
     labels:
     - lgtm
     - approved
