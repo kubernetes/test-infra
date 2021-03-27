@@ -53,7 +53,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -112,7 +112,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-test-infra
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-test-infra
         command:
         - runner.sh
         args:
