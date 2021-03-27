@@ -4,6 +4,11 @@ presubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     rerun_command: /test build ibm-monitoring-grafana-operator
@@ -22,6 +27,11 @@ presubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     rerun_command: /test check ibm-monitoring-grafana-operator
@@ -39,6 +49,11 @@ presubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     rerun_command: /test test ibm-monitoring-grafana-operator
@@ -60,6 +75,11 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
@@ -74,6 +94,11 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
@@ -89,6 +114,11 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
@@ -109,6 +139,11 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    labels:
+      preset-private-repo: "true"
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     spec:
       containers:
@@ -124,6 +159,9 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     labels:
       preset-service-account: "true"
