@@ -210,7 +210,7 @@ presubmits:
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY
-          value: DualStack
+          value: dual
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
