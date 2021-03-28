@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -35,10 +35,13 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -60,7 +63,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
       command:
       - "runner.sh"
       - "make"

@@ -41,11 +41,12 @@ import (
 type options struct {
 	port int
 
-	configPath             string
-	dryRun                 bool
-	github                 prowflagutil.GitHubOptions
-	instrumentationOptions prowflagutil.InstrumentationOptions
-	prowURL                string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
+	dryRun                     bool
+	github                     prowflagutil.GitHubOptions
+	instrumentationOptions     prowflagutil.InstrumentationOptions
+	prowURL                    string
 
 	webhookSecretFile string
 }
@@ -69,6 +70,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.prowURL, "prow-url", "", "Prow frontend URL.")
@@ -89,7 +91,7 @@ func main() {
 	log := logrus.StandardLogger().WithField("plugin", "refresh")
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
 		log.WithError(err).Fatal("Error starting config agent.")
 	}
 

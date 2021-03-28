@@ -1063,6 +1063,58 @@ type OrgInvitation struct {
 	Inviter TeamMember `json:"inviter"`
 }
 
+// UserRepoInvitation is returned by repo invitation obtained by user.
+type UserRepoInvitation struct {
+	InvitationID int                 `json:"id"`
+	Repository   *Repo               `json:"repository,omitempty"`
+	Permission   RepoPermissionLevel `json:"permissions"`
+}
+
+// OrgPermissionLevel is admin, and member
+//
+// See https://docs.github.com/en/rest/reference/orgs#set-organization-membership-for-a-user
+type OrgPermissionLevel string
+
+const (
+	// OrgMember is the member
+	OrgMember OrgPermissionLevel = "member"
+	// OrgAdmin manages the org
+	OrgAdmin OrgPermissionLevel = "admin"
+)
+
+var orgPermissionLevels = map[OrgPermissionLevel]bool{
+	OrgMember: true,
+	OrgAdmin:  true,
+}
+
+// MarshalText returns the byte representation of the permission
+func (l OrgPermissionLevel) MarshalText() ([]byte, error) {
+	return []byte(l), nil
+}
+
+// UnmarshalText validates the text is a valid string
+func (l *OrgPermissionLevel) UnmarshalText(text []byte) error {
+	v := OrgPermissionLevel(text)
+	if _, ok := orgPermissionLevels[v]; !ok {
+		return fmt.Errorf("bad repo permission: %s not in %v", v, orgPermissionLevels)
+	}
+	*l = v
+	return nil
+}
+
+// UserOrganization contains info consumed by UserOrgInvitation.
+type UserOrganization struct {
+	// Login is the name of org
+	Login string `json:"login"`
+}
+
+// UserOrgInvitation is returned by org invitation obtained by user.
+type UserOrgInvitation struct {
+	State string             `json:"state"`
+	Role  OrgPermissionLevel `json:"role"`
+	Org   UserOrganization   `json:"organization"`
+}
+
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.
 type GenericCommentEventAction string
 

@@ -22,7 +22,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -71,7 +71,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -82,7 +82,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -97,6 +97,52 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-
-# TODO once https://github.com/kubernetes-csi/csi-driver-host-path/pull/248 is merged:
-# enable periodic testing
+periodics:
+- interval: 6h
+  name: ci-kubernetes-csi-distributed-on-kubernetes-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes-csi
+    repo: csi-driver-host-path
+    base_ref: master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-storage-csi-ci
+    testgrid-tab-name: distributed-on-master
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+    description: periodic Kubernetes-CSI job for distributed provisioning on Kubernetes master, with CSIStorageCapacity
+  spec:
+    containers:
+    # We need this image because it has Docker in Docker and go.
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      command:
+      - runner.sh
+      args:
+      - ./.prow.sh
+      env:
+      - name: CSI_PROW_KUBERNETES_VERSION
+        value: "latest"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
+      - name: CSI_PROW_BUILD_JOB
+        value: "false"
+      - name: CSI_PROW_TESTS
+        value: "sanity serial parallel serial-alpha parallel-alpha"
+      - name: CSI_PROW_SANITY_POD
+        value: csi-hostpath-socat-0
+      - name: CSI_PROW_SANITY_CONTAINER
+        value: socat
+      - name: CSI_PROW_DEPLOYMENT
+        value: "kubernetes-distributed"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+        resources:
+          requests:
+            cpu: 2000m

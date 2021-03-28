@@ -77,7 +77,7 @@ k8s_object(
 )
 
 k8s_object(
-    name = "prometheus_crd_bundle",
+    name = "prometheus_crd_thanosrulers",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
     template = "@com_github_prometheus_operator//:example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml",
@@ -102,6 +102,7 @@ k8s_objects(
         "prometheus_crd_prometheuses",
         "prometheus_crd_prometheusrules",
         "prometheus_crd_servicemonitors",
+        "prometheus_crd_thanosrulers",
         "//config/prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
         "//config/prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos-http",

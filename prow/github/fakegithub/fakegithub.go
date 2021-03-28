@@ -466,6 +466,15 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	return la, nil
 }
 
+// AddRepoLabel adds a defined label given org/repo
+func (f *FakeClient) AddRepoLabel(org, repo, label, description, color string) error {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+
+	f.RepoLabelsExisting = append(f.RepoLabelsExisting, label)
+	return nil
+}
+
 // GetIssueLabels gets labels on an issue
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
 	f.lock.RLock()

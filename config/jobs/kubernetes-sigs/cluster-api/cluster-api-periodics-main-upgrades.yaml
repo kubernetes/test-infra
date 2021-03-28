@@ -1,0 +1,162 @@
+periodics:
+- name: periodic-cluster-api-e2e-workload-upgrade-1-17-1-18-main
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.17"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.18"
+        - name: ETCD_VERSION_UPGRADE_TO
+          value: "3.4.3-0"
+        - name: COREDNS_VERSION_UPGRADE_TO
+          value: "1.6.7"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-main-1-17-1-18
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-main
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.18"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.19"
+        - name: ETCD_VERSION_UPGRADE_TO
+          value: "3.4.13-0"
+        - name: COREDNS_VERSION_UPGRADE_TO
+          value: "1.7.0"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-main-1-18-1-19
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-main
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.19"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.20"
+        - name: ETCD_VERSION_UPGRADE_TO
+          value: "3.4.13-0"
+        - name: COREDNS_VERSION_UPGRADE_TO
+          value: "1.7.0"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-main-1-19-1-20
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-20-latest-main
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: BUILD_NODE_IMAGE_TAG
+          value: "ci/latest"
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.20"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "ci/latest"
+        - name: ETCD_VERSION_UPGRADE_TO
+          value: "3.4.13-0"
+        - name: COREDNS_VERSION_UPGRADE_TO
+          value: "1.8.0"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-main-1-20-latest
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"

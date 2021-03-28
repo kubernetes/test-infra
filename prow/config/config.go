@@ -37,6 +37,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"gopkg.in/robfig/cron.v2"
@@ -485,11 +486,29 @@ type Plank struct {
 	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
 	// stuck in an unscheduled state. Defaults to one day.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
+
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
-	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
-	// if extraRefs[0] exists.
-	// Use `org/repo`, `org` or `*` as a key.
-	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
+	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
+	// match against jobs and a corresponding DecorationConfig. All entries that
+	// match a job are used. Later matching entries override the fields of earlier
+	// matching entries.
+	// This field is populated either directly from DefaultDecorationConfigEntries,
+	// or by converting DefaultDecorationConfigsMap, depending on which is specified.
+	// Alternatively this field may be type `map[string]*prowapi.DecorationConfig`
+	// Use `org/repo`, `org` or `*` as a key to match against jobs.
+	DefaultDecorationConfigs []*DefaultDecorationConfigEntry `json:"-"`
+	// DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
+	// to the default decoration config to use for that key. The '*' key matches all jobs.
+	// (Periodics use extra_refs[0] for matching if present.)
+	// This field is mutually exclusive with the DefaultDecorationConfigEntries field.
+	DefaultDecorationConfigsMap map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
+	// DefaultDecorationConfigEntries holds the default decoration config for specific values.
+	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
+	// match against jobs and a corresponding DecorationConfig. All entries that
+	// match a job are used. Later matching entries override the fields of earlier
+	// matching entries.
+	// This field is mutually exclusive with the DefaultDecorationConfigsMap field.
+	DefaultDecorationConfigEntries []*DefaultDecorationConfigEntry `json:"default_decoration_config_entries,omitempty"`
 
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
@@ -500,16 +519,120 @@ type Plank struct {
 	JobURLPrefixDisableAppendStorageProvider bool `json:"jobURLPrefixDisableAppendStorageProvider,omitempty"`
 }
 
-func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfig {
-	def := p.DefaultDecorationConfigs["*"]
-	if dcByRepo, ok := p.DefaultDecorationConfigs[repo]; ok {
-		return dcByRepo.ApplyDefault(def)
+// DefaultDecorationConfigEntry contains a DecorationConfig and a set of
+// filters to use to determine if the config should be used as a default for a
+// given ProwJob. When multiple of these entries match a ProwJob, they are all
+// merged with later entries overriding values from earlier entries.
+type DefaultDecorationConfigEntry struct {
+	// Matching/filtering fields. All filters must match for an entry to match.
+
+	// OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+	// is associated with. If the job is a periodic, extra_refs[0] is used. If the
+	// job is a periodic without extra_refs, the empty string will be used.
+	// If this field is omitted all jobs will match.
+	OrgRepo string `json:"repo,omitempty"`
+	// Cluster matches against the cluster alias of the build cluster that the
+	// ProwJob is configured to run on. Recall that ProwJobs default to running on
+	// the "default" build cluster if they omit the "cluster" field in config.
+	Cluster string `json:"cluster,omitempty"`
+
+	// Config is the DecorationConfig to apply if the filter fields all match the
+	// ProwJob. Note that when multiple entries match a ProwJob they are all used
+	// by sequentially merging with later entries overriding fields from earlier
+	// entries.
+	Config *prowapi.DecorationConfig `json:"config,omitempty"`
+}
+
+// matches returns true iff all the filters for the entry match a job.
+func (d *DefaultDecorationConfigEntry) matches(repo, cluster string) bool {
+	repoMatch := d.OrgRepo == "" || d.OrgRepo == "*" || d.OrgRepo == repo || d.OrgRepo == strings.Split(repo, "/")[0]
+	clusterMatch := d.Cluster == "" || d.Cluster == "*" || d.Cluster == cluster
+	return repoMatch && clusterMatch
+}
+
+// mergeDefaultDecorationConfig finds all matching DefaultDecorationConfigEntry
+// for a job and merges them sequentially before merging into the job's own
+// DecorationConfig. Configs merged later override values from earlier configs.
+func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+	var merged *prowapi.DecorationConfig
+	for _, entry := range p.DefaultDecorationConfigs {
+		if entry.matches(repo, cluster) {
+			merged = entry.Config.ApplyDefault(merged)
+		}
 	}
-	org := strings.Split(repo, "/")[0]
-	if dcByOrg, ok := p.DefaultDecorationConfigs[org]; ok {
-		return dcByOrg.ApplyDefault(def)
+	merged = jobDC.ApplyDefault(merged)
+	if merged == nil {
+		merged = &prowapi.DecorationConfig{}
 	}
-	return def
+	return merged
+}
+
+// GuessDefaultDecorationConfig attempts to find the resolved default decoration
+// config for a given repo and cluster. It is primarily used for best effort
+// guesses about GCS configuration for undecorated jobs.
+func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.DecorationConfig {
+	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
+}
+
+// defaultDecorationMapToSlice converts the old DefaultDecorationConfigs format:
+// map[string]*prowapi.DecorationConfig) to the new format: []*DefaultDecorationConfigEntry
+func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
+	var entries []*DefaultDecorationConfigEntry
+	add := func(repo string, dc *prowapi.DecorationConfig) {
+		entries = append(entries, &DefaultDecorationConfigEntry{
+			OrgRepo: repo,
+			Cluster: "",
+			Config:  dc,
+		})
+	}
+	// Ensure "*" comes first...
+	if dc, exists := m["*"]; exists {
+		add("*", dc)
+	}
+	// then orgs...
+	for key, dc := range m {
+		if key == "*" || strings.Contains(key, "/") {
+			continue
+		}
+		add(key, dc)
+	}
+	// then repos.
+	for key, dc := range m {
+		if key == "*" || !strings.Contains(key, "/") {
+			continue
+		}
+		add(key, dc)
+	}
+	return entries
+}
+
+// DefaultDecorationMapToSliceTesting is a convenience function that is exposed
+// to allow unit tests to convert the old map format to the new slice format.
+// It should only be used in testing.
+func DefaultDecorationMapToSliceTesting(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
+	return defaultDecorationMapToSlice(m)
+}
+
+// FinalizeDefaultDecorationConfigs prepares the entries of
+// Plank.DefaultDecorationConfigs for use finalizing job config.
+// It parses the value of p.DefaultDecorationConfigsRaw into either the old map
+// format or the new slice format:
+// Old format: map[string]*prowapi.DecorationConfig where the key is org,
+//             org/repo, or "*".
+// New format: []*DefaultDecorationConfigEntry
+// If the old format is parsed it is converted to the new format, then all
+// filter regexp are compiled.
+func (p *Plank) FinalizeDefaultDecorationConfigs() error {
+	mapped, sliced := len(p.DefaultDecorationConfigsMap) > 0, len(p.DefaultDecorationConfigEntries) > 0
+	if mapped && sliced {
+		return fmt.Errorf("plank.default_decoration_configs and plank.default_decoration_config_entries are mutually exclusive, please use one or the other")
+	}
+	if mapped {
+		p.DefaultDecorationConfigs = defaultDecorationMapToSlice(p.DefaultDecorationConfigsMap)
+	} else {
+		p.DefaultDecorationConfigs = p.DefaultDecorationConfigEntries
+	}
+	return nil
 }
 
 // GetJobURLPrefix gets the job url prefix from the config
@@ -558,6 +681,9 @@ type Gerrit struct {
 	// RateLimit defines how many changes to query per gerrit API call
 	// default is 5
 	RateLimit int `json:"ratelimit,omitempty"`
+	// DeckURL is the root URL of Deck. This is used to construct links to
+	// job runs for a given CL.
+	DeckURL string `json:"deck_url,omitempty"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -803,8 +929,8 @@ func (d *Deck) ShouldValidateStorageBuckets() bool {
 func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
-		if dc.GCSConfiguration != nil {
-			knownBuckets.Insert(dc.GCSConfiguration.Bucket)
+		if dc.Config != nil && dc.Config.GCSConfiguration != nil && dc.Config.GCSConfiguration.Bucket != "" {
+			knownBuckets.Insert(dc.Config.GCSConfiguration.Bucket)
 		}
 	}
 	for _, j := range c.Periodics {
@@ -904,8 +1030,13 @@ type ManagedWebhookInfo struct {
 
 // ManagedWebhooks contains information about all the repos/orgs which are onboarded with auto-generated tokens.
 type ManagedWebhooks struct {
-	RespectLegacyGlobalToken bool                          `json:"respect_legacy_global_token"`
-	OrgRepoConfig            map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
+	RespectLegacyGlobalToken bool `json:"respect_legacy_global_token"`
+	// Controls whether org/repo invitation for prow bot should be automatically
+	// accepted or not. Only admin level invitations related to orgs and repos
+	// in the managed_webhooks config will be accepted and all other invitations
+	// will be left pending.
+	AutoAcceptInvitation bool                          `json:"auto_accept_invitation"`
+	OrgRepoConfig        map[string]ManagedWebhookInfo `json:"org_repo_config,omitempty"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
@@ -960,14 +1091,14 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string, additionals ...func(*Config) error) (c *Config, err error) {
+func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
 			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
-	c, err = loadConfig(prowConfig, jobConfig)
+	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs)
 	if err != nil {
 		return nil, err
 	}
@@ -1056,7 +1187,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 }
 
 // loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string) (*Config, error) {
+func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -1069,6 +1200,46 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	var nc Config
 	if err := yamlToConfig(prowConfig, &nc); err != nil {
 		return nil, err
+	}
+	for _, additionalProwConfigDir := range additionalProwConfigDirs {
+		var errs []error
+		errs = append(errs, filepath.Walk(additionalProwConfigDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				// Finish walking and handle all errors in bulk at the end, otherwise this is annoying as a user
+				errs = append(errs, err)
+				return nil
+			}
+			// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+			// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+			// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+			// get duplicate data.
+			if strings.HasPrefix(info.Name(), "..") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
+			if info.IsDir() || (filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml") {
+				return nil
+			}
+
+			var cfg ProwConfig
+			if err := yamlToConfig(path, &cfg); err != nil {
+				errs = append(errs, err)
+				return nil
+			}
+
+			if err := nc.ProwConfig.mergeFrom(&cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
+			}
+
+			return nil
+		}))
+
+		if err := utilerrors.NewAggregate(errs); err != nil {
+			return nil, err
+		}
 	}
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
@@ -1117,7 +1288,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	return &nc, nil
 }
 
-// yamlToConfig converts a yaml file into a Config object
+// yamlToConfig converts a yaml file into a Config object.
 func yamlToConfig(path string, nc interface{}) error {
 	b, err := ReadFileMaybeGZIP(path)
 	if err != nil {
@@ -1132,7 +1303,11 @@ func yamlToConfig(path string, nc interface{}) error {
 		jc = v
 	case *Config:
 		jc = &v.JobConfig
+	default:
+		// No job config, skip inserting filepaths into the jobs
+		return nil
 	}
+
 	for rep := range jc.PresubmitsStatic {
 		fix := func(job *Presubmit) {
 			job.SourcePath = path
@@ -1244,41 +1419,42 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
-func ShouldDecorate(c *JobConfig, util UtilityConfig) bool {
+func shouldDecorate(c *JobConfig, util *UtilityConfig) bool {
 	if util.Decorate != nil {
 		return *util.Decorate
+	} else {
+		b := c.DecorateAllJobs
+		util.Decorate = &b
 	}
 	return c.DecorateAllJobs
 }
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		def := c.Plank.GetDefaultDecorationConfigs(repo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		def := c.Plank.GetDefaultDecorationConfigs(repo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
-	if ShouldDecorate(&c.JobConfig, ps.JobBase.UtilityConfig) {
-		var orgRepo string
+	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
+		var repo string
 		if len(ps.UtilityConfig.ExtraRefs) > 0 {
-			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
+			repo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
 		}
 
-		def := c.Plank.GetDefaultDecorationConfigs(orgRepo)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 // defaultPresubmits defaults the presubmits for one repo
 func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	c.defaultPresubmitFields(presubmits)
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
@@ -1286,7 +1462,6 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 			errs = append(errs, err)
 		}
 	}
-	c.defaultPresubmitFields(presubmits)
 	if err := SetPresubmitRegexes(presubmits); err != nil {
 		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
@@ -1296,6 +1471,7 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 
 // defaultPostsubmits defaults the postsubmits for one repo
 func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	c.defaultPostsubmitFields(postsubmits)
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
@@ -1303,19 +1479,19 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 			errs = append(errs, err)
 		}
 	}
-	c.defaultPostsubmitFields(postsubmits)
 	if err := SetPostsubmitRegexes(postsubmits); err != nil {
 		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
 	return utilerrors.NewAggregate(errs)
 }
 
-// defaultPeriodics defaults periodics
-func defaultPeriodics(periodics []Periodic, c *Config) error {
+// defaultPeriodics defaults c.Periodics
+func defaultPeriodics(c *Config) error {
+	c.defaultPeriodicFields(c.Periodics)
 	var errs []error
-	c.defaultPeriodicFields(periodics)
-	for _, periodic := range periodics {
-		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
+	for i := range c.Periodics {
+		setPeriodicDecorationDefaults(c, &c.Periodics[i])
+		if err := resolvePresets(c.Periodics[i].Name, c.Periodics[i].Labels, c.Periodics[i].Spec, c.Presets); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1324,22 +1500,8 @@ func defaultPeriodics(periodics []Periodic, c *Config) error {
 
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
-	if c.decorationRequested() {
-
-		def, ok := c.Plank.DefaultDecorationConfigs["*"]
-		if !ok {
-			return errors.New("default_decoration_configs['*'] is missing")
-		}
-
-		for key, valCfg := range c.Plank.DefaultDecorationConfigs {
-			if err := valCfg.ApplyDefault(def).Validate(); err != nil {
-				return fmt.Errorf("default_decoration_configs[%q]: validation error: %v", key, err)
-			}
-		}
-
-		for i := range c.Periodics {
-			setPeriodicDecorationDefaults(c, &c.Periodics[i])
-		}
+	if err := c.Plank.FinalizeDefaultDecorationConfigs(); err != nil {
+		return err
 	}
 
 	for repo, jobs := range c.PresubmitsStatic {
@@ -1356,7 +1518,7 @@ func (c *Config) finalizeJobConfig() error {
 		c.AllRepos.Insert(repo)
 	}
 
-	if err := defaultPeriodics(c.Periodics, c); err != nil {
+	if err := defaultPeriodics(c); err != nil {
 		return err
 	}
 
@@ -1378,9 +1540,13 @@ func (c *Config) validateComponentConfig() error {
 			}, ""))
 		}
 	}
+	if c.Gerrit.DeckURL != "" {
+		if _, err := url.Parse(c.Gerrit.DeckURL); err != nil {
+			return fmt.Errorf(`Invalid value for gerrit.deck_url: %v`, err)
+		}
+	}
 
 	var validationErrs []error
-
 	if c.ManagedWebhooks.OrgRepoConfig != nil {
 		for repoName, repoValue := range c.ManagedWebhooks.OrgRepoConfig {
 			if repoValue.TokenCreatedAfter.After(time.Now()) {
@@ -1894,32 +2060,6 @@ func parseProwConfig(c *Config) error {
 	return nil
 }
 
-func (c *JobConfig) decorationRequested() bool {
-	for _, vs := range c.PresubmitsStatic {
-		for i := range vs {
-			if ShouldDecorate(c, vs[i].JobBase.UtilityConfig) {
-				return true
-			}
-		}
-	}
-
-	for _, js := range c.PostsubmitsStatic {
-		for i := range js {
-			if ShouldDecorate(c, js[i].JobBase.UtilityConfig) {
-				return true
-			}
-		}
-	}
-
-	for i := range c.Periodics {
-		if ShouldDecorate(c, c.Periodics[i].JobBase.UtilityConfig) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func validateLabels(labels map[string]string) error {
 	for label, value := range labels {
 		for _, prowLabel := range decorate.Labels() {
@@ -2385,4 +2525,14 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 		vsm[i] = *NewOrgRepo(v)
 	}
 	return vsm
+}
+
+// mergeFrom merges two prow configs. It must be called _before_ doing any
+// defaulting.
+func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
+	emptyReference := &ProwConfig{BranchProtection: additional.BranchProtection}
+	if diff := cmp.Diff(additional, emptyReference); diff != "" {
+		return fmt.Errorf("only 'branch-protection' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff)
+	}
+	return pc.BranchProtection.merge(&additional.BranchProtection)
 }

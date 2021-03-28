@@ -21,12 +21,12 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       command:
       - "runner.sh"
       - "./kubeadm/hack/ci-e2e.sh"
   annotations:
-    testgrid-dashboards: sig-windows-gce, sig-windows-releases
+    testgrid-dashboards: sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: kubeadm-windows-gcp-k8s-stable
     description: Periodic job that runs conformance tests on a Linux/Windows cluster created with kubeadm (stable k8s version)"
     testgrid-num-columns-recent: '30'

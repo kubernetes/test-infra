@@ -76,13 +76,13 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=120" # Minutes
+        - "--timeout=180" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"

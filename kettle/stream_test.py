@@ -14,13 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring, line-too-long
 
 import unittest
 
 import stream
 import make_db_test
 import model
+
+from parameterized import parameterized
 
 class FakePullResponse:
     def __init__(self, messages):
@@ -70,6 +72,106 @@ class FakeSchemaField:
 
 
 class StreamTest(unittest.TestCase):
+
+    fake_buckets = {'kubernetes-jenkins':
+                        {'contact': 'fejta',
+                         'prefix': '',
+                         'sequential': False,
+                         'exclude_jobs': ['ci-test-infra-benchmark-demo',
+                                          'ci-kubernetes-coverage-unit']
+                        }
+                    }
+
+    @parameterized.expand([
+        (
+            "No retsults",
+            [],
+            ([], []),
+        ),
+        (
+            "Base results",
+            [
+                FakeReceivedMessage(
+                    'a', FakePubSubMessage(
+                        'no_data', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json',
+                            'bucketId': 'kubernetes-jenkins'})),
+                FakeReceivedMessage(
+                    'b', FakePubSubMessage(
+                        'no_data2', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
+                            'bucketId': 'kubernetes-jenkins'}))
+            ],
+            ([], [
+                ('a', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164A"),
+                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
+            ])
+        ),
+        (
+            "Non-Final object",
+            [
+                FakeReceivedMessage(
+                    'a', FakePubSubMessage(
+                        'no_data', {
+                            'eventType': 'OBJECT_DELETE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json',
+                            'bucketId': 'kubernetes-jenkins'})),
+                FakeReceivedMessage(
+                    'b', FakePubSubMessage(
+                        'no_data2', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
+                            'bucketId': 'kubernetes-jenkins'}))
+            ],
+            (['a'], [
+                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
+            ])
+        ),
+        (
+            "Object not finsihed",
+            [
+                FakeReceivedMessage(
+                    'a', FakePubSubMessage(
+                        'no_data', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/started.json',
+                            'bucketId': 'kubernetes-jenkins'})),
+                FakeReceivedMessage(
+                    'b', FakePubSubMessage(
+                        'no_data2', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
+                            'bucketId': 'kubernetes-jenkins'}))
+            ],
+            (['a'], [
+                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
+            ])
+        ),
+        (
+            "Excluded Job",
+            [
+                FakeReceivedMessage(
+                    'a', FakePubSubMessage(
+                        'no_data', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/ci-test-infra-benchmark-demo/136941941204137164A/started.json',
+                            'bucketId': 'kubernetes-jenkins'})),
+                FakeReceivedMessage(
+                    'b', FakePubSubMessage(
+                        'no_data2', {
+                            'eventType': 'OBJECT_FINALIZE',
+                            'objectId': 'pr-logs/pull/100038/ci-test-infra-benchmark-demo/136941941204137164B/finished.json',
+                            'bucketId': 'kubernetes-jenkins'}))
+            ],
+            (['a', 'b'], [])
+        ),
+    ])
+    def test_process_changes(self, _, results, expected):
+        result = stream.process_changes(results, self.fake_buckets)
+        self.assertEqual(result, expected)
+
     def test_main(self):
         # It's easier to run a full integration test with stubbed-out
         # external interfaces and validate the trace than it is to test
@@ -84,7 +186,9 @@ class StreamTest(unittest.TestCase):
                         'a',
                         FakePubSubMessage(
                             'no_data',
-                            {'eventType': 'OBJECT_DELETE'})
+                            {'eventType': 'OBJECT_DELETE',
+                             'objectId': 'logs/fake/123/finished.json',
+                             'bucketId': 'kubernetes-jenkins'})
                     )]
                 ),
                 FakePullResponse(
@@ -113,7 +217,8 @@ class StreamTest(unittest.TestCase):
                         'd',
                         FakePubSubMessage('no_data', {
                             'eventType': 'OBJECT_FINALIZE',
-                            'objectId': 'logs/fake/124/started.json'})
+                            'objectId': 'logs/fake/124/started.json',
+                            'bucketId': 'kubernetes-jenkins'})
                     )]
                 ),
                 FakePullResponse([]),
@@ -126,7 +231,7 @@ class StreamTest(unittest.TestCase):
         stream.main(
             db,
             fake_sub, fake_sub_path,
-            fake_client, tables,
+            fake_client, tables, self.fake_buckets,
             make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
         # uncomment if the trace changes

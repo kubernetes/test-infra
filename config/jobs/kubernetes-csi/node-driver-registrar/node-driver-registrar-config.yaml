@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -37,7 +37,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.18"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -68,7 +68,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -79,7 +79,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -111,7 +111,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -129,7 +129,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.19"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -160,7 +160,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -171,7 +171,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -188,7 +188,7 @@ presubmits:
           cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-1-20-on-kubernetes-1-20
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     skip_report: false
     skip_branches: ["^(release-1.0)$"]
@@ -203,7 +203,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -221,7 +221,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -229,13 +229,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-1-20-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
@@ -256,7 +252,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -267,7 +263,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
         - name: CSI_PROW_TESTS
@@ -299,7 +295,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -317,7 +313,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.20"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.5.0"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -325,13 +321,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-unit
     always_run: true
     decorate: true
@@ -349,7 +341,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:

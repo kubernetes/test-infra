@@ -2,6 +2,8 @@ presubmits:
   kubernetes-sigs/node-feature-discovery-operator:
   - name: pull-node-feature-discovery-operator-verify
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -14,6 +16,8 @@ presubmits:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-operator-build-image
     always_run: true
+    skip_branches:
+    - gh-pages
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -24,7 +28,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         securityContext:
           privileged: true
         command:

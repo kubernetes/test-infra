@@ -226,6 +226,7 @@ type Flag struct {
 type BugUpdate struct {
 	// DependsOn specifies the bugs that this bug depends on
 	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Blocks     *IDUpdate `json:"blocks,omitempty"`
 	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`

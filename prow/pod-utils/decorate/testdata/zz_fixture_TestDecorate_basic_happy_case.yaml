@@ -27,7 +27,7 @@ containers:
   env:
   - name: JOB_SPEC
   - name: SIDECAR_OPTIONS
-    value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"bucket","path_strategy":"single","default_org":"org","default_repo":"repo","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/ls","-l","-a"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}'
+    value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"bucket","path_strategy":"single","default_org":"org","default_repo":"repo","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/ls","-l","-a"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}],"censoring_options":{}}'
   image: sidecarimage
   name: sidecar
   resources:

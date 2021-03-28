@@ -6,12 +6,25 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.16
         command:
         - make
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: build
+  - name: pull-publishing-bot-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/publishing-bot
+    spec:
+      containers:
+      - image: golang:1.16
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: test
   kubernetes/kubernetes:
   - name: pull-publishing-bot-validate
     always_run: false
@@ -27,7 +40,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.16
         command:
         - go
         args:

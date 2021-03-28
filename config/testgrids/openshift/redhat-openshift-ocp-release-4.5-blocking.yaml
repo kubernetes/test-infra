@@ -110,11 +110,15 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-gcp-serial-4.5
   name: redhat-openshift-ocp-release-4.5-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws
+- days_of_results: 50
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.5
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.5
   name: release-openshift-ocp-installer-e2e-aws-serial-4.5
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.5
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.5
   name: release-openshift-origin-installer-e2e-gcp-serial-4.5

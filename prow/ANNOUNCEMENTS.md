@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *March 3, 2021* `plank.default_decoration_configs` can optionally be replaced with
+    `plank.default_decoration_config_entries` which supports a new format
+    that is a slice of filters with associated decoration configs rather than a
+    map. Currently entries can filter by repo and/or cluster. The old field is still
+    supported and will not be deprecated.
   - *February 23, 2021* New format introduced in `plugins.yaml`. Repos can be excluded from plugin definition
     at org level using `excluded_repos` notation. The previous format will be deprecated in *July 2021*, see
     https://github.com/kubernetes/test-infra/issues/20631.

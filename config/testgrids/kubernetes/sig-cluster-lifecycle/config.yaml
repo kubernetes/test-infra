@@ -42,9 +42,6 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
-  dashboard_tab:
-    - name: capo-conformance-stable-k8s-master
-      test_group_name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
 - name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
 - name: sig-cluster-lifecycle-cluster-api-provider-docker
 - name: sig-cluster-lifecycle-kops
@@ -55,8 +52,6 @@ dashboards:
 - name: sig-cluster-lifecycle-image-builder
 
 test_groups:
-- name: ci-cluster-api-provider-openstack-make-conformance-stable-k8s-ci-artifacts
-  gcs_prefix: k8s-conform-capi-openstack/periodic-logs/ci-cluster-api-provider-openstack-stable-acceptance-test-master
 - name: periodic-cluster-api-provider-azure-coverage
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-azure-coverage
   short_text_metric: coverage

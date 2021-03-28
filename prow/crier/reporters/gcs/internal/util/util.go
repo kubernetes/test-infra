@@ -101,20 +101,23 @@ func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir strin
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
 	// The TestGrid configurator uses the same assumption.
-	repo := "*"
+	repo := ""
 	if pj.Spec.Refs != nil {
 		repo = pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		repo = fmt.Sprintf("%s/%s", pj.Spec.ExtraRefs[0].Org, pj.Spec.ExtraRefs[0].Repo)
 	}
-
-	ddc := cfg().Plank.GetDefaultDecorationConfigs(repo)
 
 	var gcsConfig *prowv1.GCSConfiguration
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
 		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
-	} else if ddc != nil && ddc.GCSConfiguration != nil {
-		gcsConfig = ddc.GCSConfiguration
 	} else {
-		return "", "", fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
+		ddc := cfg().Plank.GuessDefaultDecorationConfig(repo, pj.Spec.Cluster)
+		if ddc != nil && ddc.GCSConfiguration != nil {
+			gcsConfig = ddc.GCSConfiguration
+		} else {
+			return "", "", fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
+		}
 	}
 
 	ps := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)

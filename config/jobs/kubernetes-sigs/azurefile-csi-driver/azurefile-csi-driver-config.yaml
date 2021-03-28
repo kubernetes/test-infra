@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -19,7 +19,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-verify
       description: "Run code verification tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-unit
       description: "Run unit tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -66,7 +66,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-sanity
       description: "Run sanity tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -90,7 +90,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-integration
       description: "Run integration tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -137,7 +137,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
       description: "Run E2E tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -159,7 +159,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -184,7 +184,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-vmss
       description: "Run E2E tests on a VMSS-based cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -208,7 +208,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -238,7 +238,7 @@ presubmits:
           - name: TEST_WINDOWS
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-windows
       description: "Run E2E tests on a Windows cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -260,7 +260,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -290,7 +290,7 @@ presubmits:
           - name: TEST_MIGRATION
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration
       description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Linux nodes."
       testgrid-num-columns-recent: '30'
@@ -304,14 +304,14 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
         - make
         - azurefile-windows
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-windows-build
       description: "Run make azurefile-windows for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -335,7 +335,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -365,7 +365,7 @@ presubmits:
           - name: TEST_WINDOWS
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-windows-containerd
       description: "Run E2E tests on a Windows containerd cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
@@ -388,7 +388,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -420,7 +420,7 @@ presubmits:
           - name: TEST_WINDOWS
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-azurefile-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration-windows
       description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'

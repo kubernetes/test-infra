@@ -15,8 +15,7 @@ includedConfigPaths:
 extraFiles:
   - "config/jobs/image-pushing/k8s-staging-e2e-test-images.sh"
   - "config/jobs/image-pushing/k8s-staging-sig-storage.sh"
-  - "config/jobs/kubernetes/kops/build_grid.py"
-  - "config/jobs/kubernetes/kops/build_pipeline.py"
+  - "config/jobs/kubernetes/kops/build_jobs.py"
   - "releng/generate_tests.py"
   - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"

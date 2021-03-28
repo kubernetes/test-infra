@@ -48,7 +48,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -73,12 +73,15 @@ presubmits:
     spec:
       hostNetwork: true
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         securityContext:
           privileged: true  # for dind
         resources:
           requests:
             memory: 9000Mi
+            cpu: 7500m
+          limits:
+            memory: 10000Mi
             cpu: 7500m
         command:
         - runner.sh

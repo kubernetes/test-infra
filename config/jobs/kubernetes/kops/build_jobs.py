@@ -81,7 +81,7 @@ job_template = """
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -121,7 +121,8 @@ def build_cron(key, runs_per_day):
 
     if runs_per_day > 0:
         hour_denominator = 24 / runs_per_day
-        return "%d */%d * * *" % (minute, hour_denominator), (runs_per_day * 7)
+        hour_offset = simple_hash("hours:" + key) % hour_denominator
+        return "%d %d-23/%d * * *" % (minute, hour_offset, hour_denominator), (runs_per_day * 7)
 
     # run Ubuntu 20.04 (Focal) jobs more frequently
     if "u2004" in key:
@@ -446,7 +447,7 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-arm64",
                    cloud="aws",
                    distro="u2004",
-                   extra_flags=["--zones=us-east-2b",
+                   extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
@@ -490,7 +491,7 @@ def generate_misc():
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
-                   extra_flags=["--zones=eu-west-1a",
+                   extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
@@ -502,7 +503,7 @@ def generate_misc():
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
-                   extra_flags=["--zones=eu-west-1a",
+                   extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
@@ -550,18 +551,29 @@ def generate_misc():
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-grid-scenario-cilium-arm64",
+        build_test(name_override="kops-grid-scenario-cilium10-arm64",
                    cloud="aws",
                    networking="cilium",
                    distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=1,
-                   extra_flags=["--zones=us-east-2b",
+                   extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
                                 f"--image={u2004_arm}"],
                    extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-grid-scenario-cilium10-amd64",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=["--zones=eu-central-1a",
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0"],
+                   extra_dashboards=['kops-misc']),
+
     ]
     return results
 

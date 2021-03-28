@@ -29,5 +29,6 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-okd-4.5-e2e-aws
   name: redhat-openshift-okd-release-4.5-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.5-e2e-aws
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.5-e2e-aws
   name: periodic-ci-openshift-release-master-okd-4.5-e2e-aws

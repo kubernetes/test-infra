@@ -1,0 +1,56 @@
+# Derived from external-provisioner-config.yaml, modified and maintained manually.
+
+presubmits:
+  kubernetes-csi/external-provisioner:
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-master
+    # Explicitly needs to be started with /test.
+    # This cannot be enabled by default because there's always the risk
+    # that something changes in master which breaks the pre-merge check.
+    always_run: false
+    optional: true
+    decorate: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-external-provisioner
+      testgrid-tab-name: distributed-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo external-provisioner for distributed provisioning, with CSIStorageCapacity
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.6.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        - name: CSI_PROW_TESTS
+          value: "sanity serial parallel serial-alpha parallel-alpha"
+        - name: CSI_PROW_SANITY_POD
+          value: csi-hostpath-socat-0
+        - name: CSI_PROW_SANITY_CONTAINER
+          value: socat
+        - name: CSI_PROW_DEPLOYMENT
+          value: "kubernetes-distributed"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

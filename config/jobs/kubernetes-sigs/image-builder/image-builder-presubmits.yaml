@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -33,7 +33,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -55,7 +55,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
           args:
             - runner.sh
             - "./images/capi/hack/ci-json-sort.sh"
@@ -65,3 +65,34 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-json-sort-check
+  - name: packer-validate
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 20m
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+          command:
+          - make
+          args:
+          - -C
+          - ./images/capi
+          - validate-all
+          env:
+          - name: AZURE_LOCATION
+            value: "fake"
+          - name: RESOURCE_GROUP_NAME
+            value: "fake"
+          - name: STORAGE_ACCOUNT_NAME
+            value: "fake"
+          - name: DIGITALOCEAN_ACCESS_TOKEN
+            value: "fake"
+          - name: GCP_PROJECT_ID
+            value: "fake"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-packer-validate

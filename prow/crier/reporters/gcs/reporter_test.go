@@ -74,15 +74,16 @@ func TestReportJobFinished(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -152,15 +153,16 @@ func TestReportJobStarted(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -214,15 +216,16 @@ func TestReportProwJob(t *testing.T) {
 	cfg := testutil.Fca{C: config.Config{
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
-				DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-					GCSConfiguration: &prowv1.GCSConfiguration{
-						Bucket:       "kubernetes-jenkins",
-						PathPrefix:   "some-prefix",
-						PathStrategy: prowv1.PathStrategyLegacy,
-						DefaultOrg:   "kubernetes",
-						DefaultRepo:  "kubernetes",
-					},
-				}},
+				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+					map[string]*prowv1.DecorationConfig{"*": {
+						GCSConfiguration: &prowv1.GCSConfiguration{
+							Bucket:       "kubernetes-jenkins",
+							PathPrefix:   "some-prefix",
+							PathStrategy: prowv1.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+					}}),
 			},
 		},
 	}}.Config

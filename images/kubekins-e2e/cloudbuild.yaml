@@ -4,6 +4,7 @@ steps:
     - go
     - build
     - -o=/workspace/images/kubekins-e2e/kubetest
+    - -ldflags="-X=main.gitTag=$_GIT_TAG"
     - ./kubetest/
     env:
     - CGO_ENABLED=0
@@ -15,7 +16,6 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
     - build
-    - --ldflags="-X=main.gitTag=$_GIT_TAG"
     - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION

@@ -87,6 +87,7 @@ approve:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
   - kubernetes-sigs/zeitgeist
   - kubernetes/community
@@ -135,6 +136,7 @@ lgtm:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/zeitgeist
   - kubernetes/k8s.io
   - kubernetes/kops
@@ -280,6 +282,15 @@ slack:
             - saschagrunert # subproject owner / Release Manager
             - justaugustus # subproject owner / Release Manager
             - xmudrii # Release Manager
+        release-1.21:
+            - cpanato # Release Manager
+            - feiskyer # Release Manager
+            - hasheddan # subproject owner / Release Manager
+            - idealhack # Release Manager
+            - puerco # Release Manager
+            - saschagrunert # subproject owner / Release Manager
+            - justaugustus # subproject owner / Release Manager
+            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -326,6 +337,7 @@ milestone_applier:
     master: v1.21
   kubernetes/kubernetes:
     master: v1.21
+    release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
@@ -346,17 +358,27 @@ milestone_applier:
     release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
-  kubernetes-sigs/cluster-api-provider-azure:
-    master: v0.5.0
-    release-0.4: v0.4.12
-  kubernetes-sigs/cluster-api-provider-digitalocean:
+  kubernetes-sigs/cluster-api:
     master: v0.4
     release-0.4: v0.4
+    operator-0.4: v0.4 # Remove this when it gets merged back.
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-azure:
+    master: v0.5.0
+    release-0.4: v0.4.14
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    master: v0.5.0
+    release-0.4: v0.4.3
   kubernetes-sigs/cluster-api-provider-gcp:
     master: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/controller-runtime:
+    master: v0.9.x
+    release-0.8: v0.8.x
+    release-0.7: v0.7.x
+    release-0.6: v0.6.x
+    release-0.5: v0.5.x
   kubernetes/website:
     dev-1.21: 1.21
 
@@ -982,6 +1004,9 @@ plugins:
 
   kubernetes-sigs/security-profiles-operator:
     plugins:
+    - mergecommitblocker
+    - milestone
+    - override
     - release-note
 
   kubernetes-sigs/k8s-container-image-promoter:

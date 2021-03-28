@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         command:
         - wrapper.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-experimental
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-experimental
         command:
         - wrapper.sh
         - make
@@ -62,11 +62,11 @@ presubmits:
       path_alias: k8s.io/kubernetes
     path_alias: sigs.k8s.io/kind
     decoration_config:
-      timeout: 40m
+      timeout: 60m
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         command:
         - wrapper.sh
         - bash
@@ -109,7 +109,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -151,7 +151,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -198,7 +198,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-master
         command:
         - wrapper.sh
         - bash
@@ -210,7 +210,7 @@ presubmits:
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY
-          value: DualStack
+          value: dual
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
@@ -255,7 +255,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.20
+        image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-1.20
         name: ""
         resources:
           limits:
@@ -296,7 +296,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|Conntrack|udp|UDP|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.19
+        image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-1.19
         name: ""
         resources:
           limits:
@@ -325,7 +325,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210312-67f589a-1.18
+      - image: gcr.io/k8s-testimages/krte:v20210327-170ffe2-1.18
         command:
         - wrapper.sh
         - bash

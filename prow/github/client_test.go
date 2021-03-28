@@ -2802,6 +2802,12 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		// They fetch the user, which doesn't exist in case of github app.
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
+		// Bound to user, not org specific
+		"ListCurrentUserRepoInvitations",
+		// Bound to user, not org specific
+		"AcceptUserRepoInvitation",
+		// Bound to user, not org specific
+		"ListCurrentUserOrgInvitations",
 	)
 
 	for i := 0; i < clientType.NumMethod(); i++ {

@@ -20,6 +20,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,11 +42,12 @@ const defaultBufferSize = 10 * 1024 * 1024
 
 func (o Options) censor() error {
 	var concurrency int64
-	if o.CensoringConcurrency == nil {
+	if o.CensoringOptions.CensoringConcurrency == nil {
 		concurrency = int64(10)
 	} else {
-		concurrency = *o.CensoringConcurrency
+		concurrency = *o.CensoringOptions.CensoringConcurrency
 	}
+	logrus.WithField("concurrency", concurrency).Debug("Censoring artifacts.")
 	sem := semaphore.NewWeighted(concurrency)
 	wg := &sync.WaitGroup{}
 	errors := make(chan error)
@@ -59,20 +61,22 @@ func (o Options) censor() error {
 		errLock.Unlock()
 	}()
 
-	secrets, err := loadSecrets(o.SecretDirectories)
+	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories)
 	if err != nil {
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
+	logrus.WithField("secrets", len(secrets)).Debug("Loaded secrets to censor.")
 	censorer := secretutil.NewCensorer()
 	censorer.RefreshBytes(secrets...)
 
 	bufferSize := defaultBufferSize
-	if o.CensoringBufferSize != nil {
-		bufferSize = *o.CensoringBufferSize
+	if o.CensoringOptions.CensoringBufferSize != nil {
+		bufferSize = *o.CensoringOptions.CensoringBufferSize
 	}
 	if largest := censorer.LargestSecret(); 2*largest > bufferSize {
 		bufferSize = 2 * largest
 	}
+	logrus.WithField("buffer_size", bufferSize).Debug("Determined censoring buffer size.")
 	censorFile := fileCensorer(sem, errors, censorer, bufferSize)
 	censor := func(file string) {
 		censorFile(wg, file)
@@ -85,9 +89,10 @@ func (o Options) censor() error {
 
 	for _, item := range o.GcsOptions.Items {
 		if err := filepath.Walk(item, func(absPath string, info os.FileInfo, err error) error {
-			if info.IsDir() {
+			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
 			}
+			logger := logrus.WithField("path", absPath)
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
@@ -96,10 +101,12 @@ func (o Options) censor() error {
 
 			switch contentType {
 			case "application/x-gzip", "application/zip":
+				logger.Debug("Censoring archive.")
 				if err := handleArchive(absPath, censorFile); err != nil {
 					return fmt.Errorf("could not censor archive %s: %w", absPath, err)
 				}
 			default:
+				logger.Debug("Censoring file.")
 				censor(absPath)
 			}
 			return nil
@@ -254,7 +261,9 @@ func validRelPath(p string) bool {
 
 // archive re-packs the dir into the destination
 func archive(srcDir, destArchive string) error {
-	output, err := ioutil.TempFile("", "tmp-archive")
+	// we want the temporary file we use for output to be in the same directory as the real destination, so
+	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
+	output, err := ioutil.TempFile(filepath.Dir(destArchive), "tmp-archive")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file for archive: %w", err)
 	}
@@ -321,7 +330,9 @@ func handleFile(path string, censorer secretutil.Censorer, bufferSize int) error
 		return fmt.Errorf("could not open file for censoring: %w", err)
 	}
 
-	output, err := ioutil.TempFile("", "tmp-censor")
+	// we want the temporary file we use for output to be in the same directory as the real destination, so
+	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
+	output, err := ioutil.TempFile(filepath.Dir(path), "tmp-censor")
 	if err != nil {
 		return fmt.Errorf("could not create temporary file for censoring: %w", err)
 	}
@@ -408,10 +419,88 @@ func loadSecrets(paths []string) ([][]byte, error) {
 				return err
 			}
 			secrets = append(secrets, raw)
+			// In many cases, a secret file contains much more than just the sensitive data. For instance,
+			// container registry credentials files are JSON formatted, so there are only a couple of fields
+			// that are truly secret, the rest is formatting and whitespace. The implication here is that
+			// a censoring approach that only looks at the full, uninterrupted secret value will not be able
+			// to censor anything if that value is reformatted, truncated, etc. When the secrets we are asked
+			// to censor are container registry credentials, we can know the format of these files and extract
+			// the subsets of data that are sensitive, allowing us not only to censor the full file's contents
+			// but also any individual fields that exist in the output, whether they're there due to a user
+			// extracting the fields or output being truncated, etc.
+			var parser = func(bytes []byte) ([]string, error) {
+				return nil, nil
+			}
+			if info.Name() == ".dockercfg" {
+				parser = loadDockercfgAuths
+			}
+			if info.Name() == ".dockerconfigjson" {
+				parser = loadDockerconfigJsonAuths
+			}
+			extra, parseErr := parser(raw)
+			if parseErr != nil {
+				return fmt.Errorf("could not read %s as a docker secret: %v", path, parseErr)
+			}
+			// It is important that these are added to the list of secrets *after* their parent data
+			// as we will censor in order and this will give a reasonable guarantee that the parent
+			// data (a superset of any of these fields) will be censored in its entirety, first. It
+			// remains possible that the sliding window used to censor pulls in only part of the
+			// superset and some small part of it is censored first, making the larger superset no
+			// longer match the file being censored.
+			for _, item := range extra {
+				secrets = append(secrets, []byte(item))
+			}
 			return nil
 		}); err != nil {
 			return nil, err
 		}
 	}
 	return secrets, nil
+}
+
+// loadDockercfgAuths parses auth values from a kubernetes.io/dockercfg secret
+func loadDockercfgAuths(content []byte) ([]string, error) {
+	var data map[string]authEntry
+	if err := json.Unmarshal(content, &data); err != nil {
+		return nil, err
+	}
+	var entries []authEntry
+	for _, entry := range data {
+		entries = append(entries, entry)
+	}
+	return collectSecretsFrom(entries), nil
+}
+
+// loadDockerconfigJsonAuths parses auth values from a kubernetes.io/dockercfgjson secret
+func loadDockerconfigJsonAuths(content []byte) ([]string, error) {
+	var data = struct {
+		Auths map[string]authEntry `json:"auths"`
+	}{}
+	if err := json.Unmarshal(content, &data); err != nil {
+		return nil, err
+	}
+	var entries []authEntry
+	for _, entry := range data.Auths {
+		entries = append(entries, entry)
+	}
+	return collectSecretsFrom(entries), nil
+}
+
+// authEntry holds credentials for authentication to registries
+type authEntry struct {
+	Password string `json:"password"`
+	Auth     string `json:"auth"`
+}
+
+func collectSecretsFrom(entries []authEntry) []string {
+	var auths []string
+	for _, entry := range entries {
+		if entry.Auth != "" {
+			auths = append(auths, entry.Auth)
+		}
+		if entry.Password != "" {
+			auths = append(auths, entry.Password)
+		}
+	}
+	return auths
 }

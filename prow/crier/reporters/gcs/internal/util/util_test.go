@@ -196,7 +196,7 @@ func TestGetJobDestination(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: decorationConfigs,
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(decorationConfigs),
 					},
 				},
 			}}.Config

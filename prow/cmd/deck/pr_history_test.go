@@ -435,16 +435,17 @@ func TestGetGCSDirsForPR(t *testing.T) {
 			config: &config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									Bucket:       "krusty-krab",
-									PathStrategy: "legacy",
-									DefaultOrg:   "kubernetes",
-									DefaultRepo:  "kubernetes",
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowapi.DecorationConfig{
+								"*": {
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										Bucket:       "krusty-krab",
+										PathStrategy: "legacy",
+										DefaultOrg:   "kubernetes",
+										DefaultRepo:  "kubernetes",
+									},
 								},
-							},
-						},
+							}),
 					},
 				},
 				JobConfig: config.JobConfig{
@@ -532,15 +533,16 @@ func Test_getPRHistory(t *testing.T) {
 		},
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
-				DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-					"*": {
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "gs://kubernetes-jenkins",
-							PathStrategy: prowapi.PathStrategyLegacy,
-							DefaultOrg:   "kubernetes",
+				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+					map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "gs://kubernetes-jenkins",
+								PathStrategy: prowapi.PathStrategyLegacy,
+								DefaultOrg:   "kubernetes",
+							},
 						},
-					},
-				},
+					}),
 			},
 			Deck: config.Deck{
 				AllKnownStorageBuckets: sets.NewString("kubernetes-jenkins"),

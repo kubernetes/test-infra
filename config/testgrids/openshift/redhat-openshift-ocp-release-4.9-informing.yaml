@@ -110,7 +110,8 @@ dashboards:
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.9-s390x
   name: redhat-openshift-ocp-release-4.9-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-gcp-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-gcp-upgrade
 - days_of_results: 17
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.9

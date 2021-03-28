@@ -1,0 +1,156 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - name: pull-cluster-api-provider-digitalocean-test-release-0-4
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+        - "./scripts/ci-test.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-test-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-build-release-0-4
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+        - "./scripts/ci-build.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-build-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-verify-release-0-4
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+        - make
+        args:
+        - verify
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-verify-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-lint-release-0-4
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: golangci/golangci-lint:v1.21.0
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-lint-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-e2e-release-0-4
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-e2e-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-capi-e2e-release-0-4
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "Cluster API E2E tests"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-capi-e2e-release-0-4
+  - name: pull-cluster-api-provider-digitalocean-conformance-release-0-4
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.18
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-conformance-release-0-4

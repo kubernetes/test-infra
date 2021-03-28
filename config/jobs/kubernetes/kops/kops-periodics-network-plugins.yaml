@@ -4,7 +4,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "amazonvpc"}
 - name: e2e-kops-aws-cni-amazon-vpc
-  cron: '15 */8 * * *'
+  cron: '15 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -46,7 +46,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -69,7 +69,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-cni-calico
-  cron: '16 */8 * * *'
+  cron: '16 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -111,7 +111,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -134,7 +134,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "canal"}
 - name: e2e-kops-aws-cni-canal
-  cron: '44 */8 * * *'
+  cron: '44 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -161,7 +161,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -176,7 +176,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -199,7 +199,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium
-  cron: '58 */8 * * *'
+  cron: '58 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -226,7 +226,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -241,7 +241,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -264,7 +264,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "flannel"}
 - name: e2e-kops-aws-cni-flannel
-  cron: '13 */8 * * *'
+  cron: '13 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -291,7 +291,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -306,7 +306,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -329,7 +329,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kopeio"}
 - name: e2e-kops-aws-cni-kopeio
-  cron: '13 */8 * * *'
+  cron: '13 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -356,7 +356,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=kopeio --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kopeio --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -371,7 +371,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -394,7 +394,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kube-router"}
 - name: e2e-kops-aws-cni-kuberouter
-  cron: '31 */8 * * *'
+  cron: '31 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -421,7 +421,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -436,7 +436,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -459,7 +459,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=t3.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "weave"}
 - name: e2e-kops-aws-cni-weave
-  cron: '46 */8 * * *'
+  cron: '46 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -486,7 +486,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -501,7 +501,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       imagePullPolicy: Always
       resources:
         limits:

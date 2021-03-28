@@ -18,6 +18,8 @@ presets:
   env:
   - name: DO_SSH_PUBLIC_KEY_FILE
     value: /etc/do-ssh/public-ssh-key
+  - name: DO_SSH_PRIVATE_KEY_FILE
+    value: /etc/do-ssh/private-ssh-key
   volumes:
   - name: do-ssh
     secret:

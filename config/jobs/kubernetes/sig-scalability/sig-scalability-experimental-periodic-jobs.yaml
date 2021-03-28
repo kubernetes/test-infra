@@ -27,7 +27,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -38,7 +38,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --provider=gce
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -79,7 +78,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -101,7 +100,6 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -145,7 +143,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -159,7 +157,6 @@ periodics:
           - --gcp-zone=us-east1-b
           - --provider=gce
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
-          - --env=DUMP_TO_GCS_ONLY=true
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
           - --test-cmd-args=cluster-loader2

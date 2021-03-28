@@ -7,7 +7,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.8
+      - image: golang:1.16.1
         command:
         - make
         args:
@@ -18,7 +18,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.8
+      - image: golang:1.16.1
         command:
         - make
         args:
@@ -29,7 +29,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.8
+      - image: golang:1.16.1
         command:
         - make
         args:
@@ -50,7 +50,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -81,7 +81,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -112,7 +112,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

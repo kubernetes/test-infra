@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -19,7 +19,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-verify
       description: "Run code verification tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-unit
       description: "Run unit tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -66,7 +66,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-sanity
       description: "Run sanity tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         args:
@@ -90,7 +90,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-integration
       description: "Run integration tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -139,7 +139,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-e2e
       description: "Run E2E tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -161,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -186,7 +186,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-e2e-vmss
       description: "Run E2E tests on a VMSS-based cluster for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
@@ -208,7 +208,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
         command:
         - runner.sh
         - kubetest
@@ -238,7 +238,7 @@ presubmits:
           - name: ENABLE_BLOBFUSE_PROXY
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-blobfuse-csi-driver, provider-azure-presubmit
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pull-blob-csi-driver-e2e-proxy
       description: "Run E2E tests for Azure Blob Storage CSI driver based on blobfuse-proxy"
       testgrid-num-columns-recent: '30'

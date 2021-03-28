@@ -5,6 +5,7 @@ dashboard_groups:
   - googleoss-esp-v2-presubmit
   - googleoss-esp-v2-periodic
   - googleoss-grpc-transcoder
+  - googleoss-http-pattern-matcher
   name: googleoss
 - dashboard_names:
   - googleoss-kubeflow-pipelines
@@ -620,6 +621,26 @@ dashboards:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: grpc-transcoder-presubmit
   name: googleoss-grpc-transcoder
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/google/http_pattern_matcher/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit tests on the master branch continuously.
+    name: periodic
+    open_bug_template:
+      url: https://github.com/google/http_pattern_matcher/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: http-pattern-matcher-periodic
+  - code_search_url_template:
+      url: https://github.com/google/http_pattern_matcher/compare/<start-custom-0>...<end-custom-0>
+    description: Runs all unit tests per PR.
+    name: presubmit
+    open_bug_template:
+      url: https://github.com/google/http_pattern_matcher/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: http-pattern-matcher-presubmit
+  name: googleoss-http-pattern-matcher
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -665,6 +686,8 @@ test_groups:
   name: ci-oss-test-infra-heartbeat
 - gcs_prefix: oss-prow/logs/grpc-transcoder-periodic
   name: grpc-transcoder-periodic
+- gcs_prefix: oss-prow/logs/http-pattern-matcher-periodic
+  name: http-pattern-matcher-periodic
 - gcs_prefix: oss-prow/logs/kubeflow-pipelines-periodic-functional-test
   name: kubeflow-pipelines-periodic-functional-test
   num_failures_to_alert: 5
@@ -776,6 +799,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
   name: osconfig-presubmit-gotest
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/http-pattern-matcher-presubmit
+  name: http-pattern-matcher-presubmit
   num_columns_recent: 20
 - gcs_prefix: oss-prow/pr-logs/directory/grpc-transcoder-presubmit
   name: grpc-transcoder-presubmit

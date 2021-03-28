@@ -84,7 +84,7 @@ periodics:
     testgrid-tab-name: golang-tip-k8s-1-18
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -102,7 +102,6 @@ periodics:
       - --provider=gce
       - --kubemark
       - --kubemark-nodes=2500
-      - --env=DUMP_TO_GCS_ONLY=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/golang/run-e2e.sh
       - --test-cmd-args=cluster-loader2

@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -97,6 +98,20 @@ func copyTestData(t *testing.T) string {
 		if info.IsDir() {
 			return os.MkdirAll(dest, info.Mode())
 		}
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			link, err := os.Readlink(path)
+			if err != nil {
+				t.Fatalf("failed to read input link: %v", err)
+			}
+			return os.Symlink(link, dest)
+		}
+		if info.Name() == "link" {
+			link, err := ioutil.ReadFile(path)
+			if err != nil {
+				t.Fatalf("failed to read input link: %v", err)
+			}
+			return os.Symlink(string(link), dest)
+		}
 		out, err := os.Create(dest)
 		if err != nil {
 			return err
@@ -146,9 +161,11 @@ func TestCensorIntegration(t *testing.T) {
 			{ProcessLog: filepath.Join(tempDir, "logs/one.log")},
 			{ProcessLog: filepath.Join(tempDir, "logs/two.log")},
 		},
-		SecretDirectories: []string{"testdata/secrets"},
-		// this will be smaller than the size of a secret, so this tests our buffer calculation
-		CensoringBufferSize: &bufferSize,
+		CensoringOptions: &CensoringOptions{
+			SecretDirectories: []string{"testdata/secrets"},
+			// this will be smaller than the size of a secret, so this tests our buffer calculation
+			CensoringBufferSize: &bufferSize,
+		},
 	}
 	if err := options.censor(); err != nil {
 		t.Fatalf("got an error from censoring: %v", err)
@@ -156,6 +173,9 @@ func TestCensorIntegration(t *testing.T) {
 
 	if err := unarchive(archiveFile, archiveDir); err != nil {
 		t.Fatalf("failed to unarchive input: %v", err)
+	}
+	if err := os.Remove(archiveFile); err != nil {
+		t.Fatalf("failed to removce archive: %v", err)
 	}
 
 	testutil.CompareWithFixtureDir(t, "testdata/output", tempDir)
@@ -216,4 +236,68 @@ func TestRoundTrip(t *testing.T) {
 		t.Fatalf("failed to unarchive input: %v", err)
 	}
 	testutil.CompareWithFixtureDir(t, archiveInputs, unarchiveOutput)
+}
+
+func TestLoadDockerCredentials(t *testing.T) {
+	expected := []string{"a", "b", "c", "d", "e", "f"}
+	dockercfgraw := []byte(`{
+	"registry": {
+		"password": "a",
+		"auth": "b"
+	},
+	"other": {
+		"password": "c",
+		"auth": "d"
+	},
+	"third": {
+		"auth": "e"
+	},
+	"fourth": {
+		"password": "f"
+	}
+}`)
+	dockerconfigjsonraw := []byte(`{
+	"auths": {
+		"registry": {
+			"password": "a",
+			"auth": "b"
+		},
+		"other": {
+			"password": "c",
+			"auth": "d"
+		},
+		"third": {
+			"auth": "e"
+		},
+		"fourth": {
+			"password": "f"
+		}
+	}
+}`)
+	malformed := []byte(`notreallyjson`)
+
+	if _, err := loadDockercfgAuths(malformed); err == nil {
+		t.Error("dockercfg: expected loading malformed data to error, but it did not")
+	}
+	if _, err := loadDockerconfigJsonAuths(malformed); err == nil {
+		t.Error("dockerconfigjson: expected loading malformed data to error, but it did not")
+	}
+
+	actual, err := loadDockercfgAuths(dockercfgraw)
+	if err != nil {
+		t.Errorf("dockercfg: expected loading data not to error, but it did: %v", err)
+	}
+	sort.Strings(actual)
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Errorf("dockercfg: got incorrect values: %s", err)
+	}
+
+	actual, err = loadDockerconfigJsonAuths(dockerconfigjsonraw)
+	if err != nil {
+		t.Errorf("dockerconfigjson: expected loading data not to error, but it did: %v", err)
+	}
+	sort.Strings(actual)
+	if diff := cmp.Diff(actual, expected); diff != "" {
+		t.Errorf("dockerconfigjson: got incorrect values: %s", err)
+	}
 }

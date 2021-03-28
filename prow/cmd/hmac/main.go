@@ -45,7 +45,8 @@ import (
 )
 
 type options struct {
-	configPath string
+	configPath                 string
+	supplementalProwConfigDirs prowflagutil.Strings
 
 	dryRun        bool
 	github        prowflagutil.GitHubOptions
@@ -92,6 +93,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster and namespace in the kubeconfig.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	fs.StringVar(&o.hookUrl, "hook-url", "", "Prow hook external webhook URL (e.g. https://prow.k8s.io/hook).")
@@ -134,7 +136,7 @@ func main() {
 	}
 
 	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	newHMACConfig := configAgent.Config().ManagedWebhooks
@@ -176,9 +178,70 @@ func main() {
 		hmacMapForRecovery:    map[string]github.HMACsForRepo{},
 	}
 
+	if err := c.handleInvitation(); err != nil {
+		logrus.WithError(err).Fatal("Error accepting invitations.")
+	}
+
 	if err := c.handleConfigUpdate(); err != nil {
 		logrus.WithError(err).Fatal("Error handling hmac config update.")
 	}
+}
+
+func (c *client) handleInvitation() error {
+	if !c.newHMACConfig.AutoAcceptInvitation {
+		logrus.Debug("Skip accepting github invitations as not configured.")
+		return nil
+	}
+	// Accept repos invitations first
+	repoIvs, err := c.githubHookClient.ListCurrentUserRepoInvitations()
+	if err != nil {
+		return err
+	}
+	for _, iv := range repoIvs {
+		if iv.Permission != github.Admin {
+			logrus.Errorf("invalid invitation from %s is not accepted. Permission want: %v, got: %s",
+				iv.Repository.FullName, github.Admin, iv.Permission)
+			continue
+		}
+		for repoName := range c.newHMACConfig.OrgRepoConfig {
+			// Only consider strict matching for repo level invitation,
+			// reasons for not considering org matching:
+			// 1. The FullName is org/repo
+			// 2. If an org is defined as managed webhook but only invite
+			// bot as admin on repo level, the webhook setup will fail
+			// 3. Also we are not ready to receive spamming webhook from the
+			// org if it only configured a repo in hmac
+			if iv.Repository.FullName == repoName {
+				if err := c.githubHookClient.AcceptUserRepoInvitation(iv.InvitationID); err != nil {
+					return fmt.Errorf("failed accepting repo invitation: %w", err)
+				}
+				logrus.Infof("Successfully accepted invitation from %s", iv.Repository.FullName)
+			}
+		}
+	}
+	// Accept org invitation
+	orgIvs, err := c.githubHookClient.ListCurrentUserOrgInvitations()
+	if err != nil {
+		return err
+	}
+	for _, iv := range orgIvs {
+		if iv.Role != github.OrgAdmin {
+			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
+				iv.Org.Login, github.Admin, iv.Role)
+			continue
+		}
+		for repoName := range c.newHMACConfig.OrgRepoConfig {
+			// Accept org invitation even if only single repo want hmac
+			if repoName == iv.Org.Login || strings.HasPrefix(repoName, iv.Org.Login+"/") {
+				if err := c.githubHookClient.AcceptUserOrgInvitation(iv.Org.Login); err != nil {
+					return fmt.Errorf("failed accepting org invitation: %w", err)
+				}
+				logrus.Infof("Successfully accepted invitation from %s", iv.Org.Login)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *client) handleConfigUpdate() error {

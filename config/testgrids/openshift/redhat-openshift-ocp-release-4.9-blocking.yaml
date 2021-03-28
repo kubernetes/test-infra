@@ -29,5 +29,6 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-ci-4.9-e2e-gcp
   name: redhat-openshift-ocp-release-4.9-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-gcp
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-gcp

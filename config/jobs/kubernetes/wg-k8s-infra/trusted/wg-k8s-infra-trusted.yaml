@@ -22,6 +22,29 @@ periodics:
       args:
       - -c
       - "cd groups && make run -- --confirm"
+- name: ci-k8sio-groups-head
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio, sig-testing-canaries
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: HEAD
+  spec:
+    serviceAccountName: gsuite-groups-manager
+    containers:
+    - name: groups
+      image: golang:1.13
+      command:
+      - bash
+      args:
+      - -c
+      - "cd groups && make run -- --confirm"
 - name: ci-k8sio-audit
   interval: 6h
   cluster: k8s-infra-prow-build-trusted
