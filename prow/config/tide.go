@@ -145,8 +145,7 @@ type Tide struct {
 	ContextOptions TideContextPolicyOptions `json:"context_options,omitempty"`
 
 	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
-	// integer batch size limit as the value. The empty string key can be used as
-	// a global default.
+	// integer batch size limit as the value. Use "*" as key to set a global default.
 	// Special values:
 	//  0 => unlimited batch size
 	// -1 => batch merging disabled :(
@@ -156,6 +155,28 @@ type Tide struct {
 	// PRs should match all labels contained in a set to be prioritized. The first entry has
 	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
+
+	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
+	// testing pre-existing batches instead of immediately including new PRs as they become
+	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
+	// starting a new one requires to start new instances of all tests.
+	// Use '*' as key to set this globally. Defaults to true.
+	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+}
+
+func (t *Tide) PrioritizeExistingBatches(repo OrgRepo) bool {
+	if val, set := t.PrioritizeExistingBatchesMap[repo.String()]; set {
+		return val
+	}
+	if val, set := t.PrioritizeExistingBatchesMap[repo.Org]; set {
+		return val
+	}
+
+	if val, set := t.PrioritizeExistingBatchesMap["*"]; set {
+		return val
+	}
+
+	return true
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
