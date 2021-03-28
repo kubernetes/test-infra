@@ -26,6 +26,10 @@ FORK_GH_REPO="${FORK_GH_REPO:-${GH_REPO}}"
 # Args for use with Gerrit
 GERRIT_HOST_REPO="${GERRIT_HOST_REPO:-}"
 
+# The title prefix of the PR created by autobump.
+# Omit this if you don't want to add a prefix.
+AUTOBUMP_TITLE_PREFIX="${AUTOBUMP_TITLE_PREFIX:+"${AUTOBUMP_TITLE_PREFIX} "}"
+
 # Set this to something more specific if the repo hosts multiple Prow instances.
 # Must be a valid to use as part of a git branch name. (e.g. no spaces)
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-prow}"
@@ -59,7 +63,7 @@ main() {
 		return 0
 	fi
 	git add -u
-	title="Bump ${PROW_INSTANCE_NAME} from ${old_version} to ${version}"
+	title="${AUTOBUMP_TITLE_PREFIX}Bump ${PROW_INSTANCE_NAME} from ${old_version} to ${version}"
 	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
 	body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}"
 
@@ -89,7 +93,7 @@ ensure-git-config() {
 
 check-args() {
 	if [[ -z "${PROW_CONTROLLER_MANAGER_FILE}" ]]; then
-		echo "ERROR: $PROW_CONTROLLER_MANAGER_FILE must be specified." >&2
+		echo "ERROR: PROW_CONTROLLER_MANAGER_FILE must be specified." >&2
 		return 1
 	fi
 	if [[ -z "${GERRIT_HOST_REPO}" ]]; then
