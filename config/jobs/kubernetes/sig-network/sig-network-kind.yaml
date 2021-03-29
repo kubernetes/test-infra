@@ -19,7 +19,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: BUILD_TYPE
           value: docker
@@ -32,7 +32,7 @@ presubmits:
           value: "true"
         # tell kind CI script to use DualStack
         - name: "IP_FAMILY"
-          value: "DualStack"
+          value: "dual"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -68,7 +68,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: BUILD_TYPE
           value: docker
@@ -81,7 +81,7 @@ presubmits:
           value: "true"
         # tell kind CI script to use DualStack
         - name: "IP_FAMILY"
-          value: "DualStack"
+          value: "dual"
         - name: KUBE_PROXY_MODE
           value: "ipvs"
         # we need privileged mode in order to do docker in docker
@@ -224,7 +224,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: BUILD_TYPE
         value: docker
@@ -233,7 +233,7 @@ periodics:
         value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
-        value: "DualStack"
+        value: "dual"
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
@@ -383,7 +383,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://github.com/aojea/kind/releases/download/dualstack/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: BUILD_TYPE
         value: docker
@@ -392,7 +392,7 @@ periodics:
         value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
-        value: "DualStack"
+        value: "dual"
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
