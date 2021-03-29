@@ -9,6 +9,6 @@ steps:
     dir: images/gcb-docker-gcloud/
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.13.5
+  _GO_VERSION: 1.16.2
 images:
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
