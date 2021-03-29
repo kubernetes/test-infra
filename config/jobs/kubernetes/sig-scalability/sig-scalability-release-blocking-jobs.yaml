@@ -68,7 +68,7 @@ periodics:
     preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
-    timeout: 360m
+    timeout: 450m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -122,7 +122,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=330m
+      - --timeout=420m
       - --use-logexporter
       - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
