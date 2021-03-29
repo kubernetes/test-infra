@@ -18,17 +18,19 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // Enable all auth provider plugins
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
 	"k8s.io/test-infra/gencred/pkg/util"
 
@@ -48,11 +50,11 @@ func (af *arrayFlags) Set(value string) error {
 
 // options are the available command-line flags.
 type options struct {
-	project    string
-	cluster    string
-	namespaces arrayFlags
-	update     bool
-	dryRun     bool
+	project        string
+	clusterContext string
+	namespaces     arrayFlags
+	update         bool
+	dryRun         bool
 }
 
 type client struct {
@@ -62,26 +64,19 @@ type client struct {
 	options
 }
 
-type secretInfo struct {
-	// Project is where the secret is backed up at
-	project       string
-	cluster       string
-	clusterSecret *corev1.Secret
-}
-
-func (si *secretInfo) gsmSecretName() string {
+func (c *client) gsmSecretName(clusterSecret *corev1.Secret) string {
 	// Use cluster name, namespace and secret name is almost unique identifier.
 	// However, if consider GCP allow creating clusters with the same name under
 	// different zones, probably will need to add zones to this. Will address if
 	// ever needed.
-	return fmt.Sprintf("%s__%s__%s", si.cluster, si.clusterSecret.Namespace, si.clusterSecret.Name)
+	return fmt.Sprintf("%s__%s__%s", c.clusterContext, clusterSecret.Namespace, clusterSecret.Name)
 }
 
 // gatherOptions parses the command-line flags.
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.StringVar(&o.project, "project", "", "GCP project used for backing up secrets")
-	fs.StringVar(&o.cluster, "cluster", "", "cluster context name used for backing up secrets")
+	fs.StringVar(&o.clusterContext, "cluster-context", "", "cluster context name used for backing up secrets, must be full form such as <PROVIDER>_<PROJECT>_<ZONE>_<CLUSTER>")
 	fs.Var(&o.namespaces, "namespace", "namespace to backup, can be passed in repeatedly")
 	fs.BoolVar(&o.update, "update", false, "Controls whether update existing secret or not, if false then secret will only be created")
 	fs.BoolVar(&o.dryRun, "dryrun", false, "Controls whether this is dry run or not")
@@ -95,8 +90,8 @@ func (o *options) validateFlags() error {
 	if len(o.project) == 0 {
 		return errors.New("--project must be provided")
 	}
-	if len(o.cluster) == 0 {
-		return errors.New("--cluster must be provided")
+	if len(o.clusterContext) == 0 {
+		return errors.New("--cluster-context must be provided")
 	}
 	return nil
 }
@@ -107,7 +102,7 @@ func newClient(o options) (*client, error) {
 		return nil, fmt.Errorf("failed creating secret manager client: %w", err)
 	}
 
-	kubeClient, err := newKubeClients("", o.cluster)
+	kubeClient, err := newKubeClients(o.clusterContext)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating kube client: %w", err)
 	}
@@ -118,63 +113,37 @@ func newClient(o options) (*client, error) {
 	}, nil
 }
 
-func newKubeClients(configPath, clusterName string) (ctrlruntimeclient.Client, error) {
+func newKubeClients(clusterContext string) (ctrlruntimeclient.Client, error) {
 	var loader clientcmd.ClientConfigLoader
-	if configPath != "" {
-		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath}
-	} else {
-		loader = clientcmd.NewDefaultClientConfigLoadingRules()
-	}
-
-	overrides := clientcmd.ConfigOverrides{}
-	// Override the cluster name if provided.
-	if clusterName != "" {
-		overrides.Context.Cluster = clusterName
-		overrides.CurrentContext = clusterName
-	}
+	loader = clientcmd.NewDefaultClientConfigLoadingRules()
 
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		loader, &overrides).ClientConfig()
+		loader, &clientcmd.ConfigOverrides{
+			// Enforcing clusterContext in the full form of cluster context,
+			// instead of short names for kubectl.
+			Context:        api.Context{Cluster: clusterContext},
+			CurrentContext: clusterContext,
+		}).ClientConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed create rest config: %v", err)
+		return nil, fmt.Errorf("failed create rest config: %v ------ Did you supply the full form of cluster context name instead of short hand?", err)
 	}
 	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }
 
-func backupSecret(ctx context.Context, secretmanagerClient secretmanager.ClientInterface, secretID string, payload []byte) error {
-	ss, err := secretmanagerClient.ListSecrets(ctx)
-	if err != nil {
-		return err
-	}
-	var found bool
-	for _, s := range ss {
-		if strings.HasSuffix(s.Name, fmt.Sprintf("/%s", secretID)) {
-			found = true
-		}
-	}
-	if !found {
-		if _, err = secretmanagerClient.CreateSecret(ctx, secretID); err != nil {
-			return err
-		}
-	}
-	return secretmanagerClient.AddSecretVersion(ctx, secretID, payload)
-}
-
 // process merges secret into a new secret for write.
-func (c *client) updateSingleSecret(ctx context.Context, si *secretInfo) error {
-	secretID := si.gsmSecretName()
-	payload, err := yaml.Marshal(si.clusterSecret)
+func (c *client) updateSingleSecret(ctx context.Context, clusterSecret *corev1.Secret, currentTime string) error {
+	secretID := c.gsmSecretName(clusterSecret)
+	payload, err := json.Marshal(clusterSecret.Data)
 	if err != nil {
-		return fmt.Errorf("failed marshal secret %s: %w", si.clusterSecret.Name, err)
+		return fmt.Errorf("failed marshal secret %s: %w", clusterSecret.Name, err)
 	}
 	log := logrus.WithFields(logrus.Fields{
-		"cluster":     si.cluster,
-		"namespace":   si.clusterSecret.Namespace,
-		"secret-name": si.clusterSecret.Name,
-		"gsm-secret":  si.gsmSecretName(),
+		"cluster":     c.clusterContext,
+		"namespace":   clusterSecret.Namespace,
+		"secret-name": clusterSecret.Name,
+		"gsm-secret":  secretID,
 	})
-	log.Info("Processing secret")
-	if sat := "kubernetes.io/service-account-token"; string(si.clusterSecret.Type) == sat {
+	if sat := "kubernetes.io/service-account-token"; string(clusterSecret.Type) == sat {
 		log.Infof("Skipping: the secret type is %s", sat)
 		return nil
 	}
@@ -205,17 +174,16 @@ func (c *client) updateSingleSecret(ctx context.Context, si *secretInfo) error {
 		}
 	}
 	log.Info("Create secret version in GSM")
-	return c.secretmanagerClient.AddSecretVersion(ctx, secretID, payload)
+	if err := c.secretmanagerClient.AddSecretVersion(ctx, secretID, payload); err != nil {
+		return err
+	}
+	return c.secretmanagerClient.AddSecretLabel(ctx, secretID, "update_time", currentTime)
 }
 
 func (c *client) updateAllSecrets(ctx context.Context) error {
+	currentTime := time.Now().Format("2006-01-02-15-04-05")
 	for _, secret := range c.allSi.Items {
-		si := &secretInfo{
-			project:       c.project,
-			cluster:       c.cluster,
-			clusterSecret: &secret,
-		}
-		if err := c.updateSingleSecret(ctx, si); err != nil {
+		if err := c.updateSingleSecret(ctx, &secret, currentTime); err != nil {
 			return err
 		}
 	}

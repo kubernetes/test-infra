@@ -23,6 +23,7 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"google.golang.org/api/iterator"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
+	"google.golang.org/genproto/protobuf/field_mask"
 )
 
 // Client is a wrapper of secretmanager client
@@ -35,6 +36,7 @@ type Client struct {
 // ClientInterface is the interface for manipulating secretmanager
 type ClientInterface interface {
 	CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error)
+	AddSecretLabel(ctx context.Context, secretID, key, val string) error
 	AddSecretVersion(ctx context.Context, secretName string, payload []byte) error
 	ListSecrets(ctx context.Context) ([]*secretmanagerpb.Secret, error)
 	GetSecret(ctx context.Context, secretName string) (*secretmanagerpb.Secret, error)
@@ -68,6 +70,28 @@ func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmana
 	}
 
 	return c.client.CreateSecret(ctx, createSecretReq)
+}
+
+// AddSecretLabel adds a label to a secret
+func (c *Client) AddSecretLabel(ctx context.Context, secretID, key, val string) error {
+	secret, err := c.GetSecret(ctx, secretID)
+	if err != nil {
+		return err
+	}
+	labels := secret.Labels
+	labels[key] = val
+	updateSecretReq := &secretmanagerpb.UpdateSecretRequest{
+		Secret: &secretmanagerpb.Secret{
+			Name:   fmt.Sprintf("projects/%s/secrets/%s", c.ProjectID, secretID),
+			Labels: labels,
+		},
+		UpdateMask: &field_mask.FieldMask{
+			Paths: []string{"labels"},
+		},
+	}
+
+	_, err = c.client.UpdateSecret(ctx, updateSecretReq)
+	return err
 }
 
 // AddSecretVersion adds a secret version, aka update the value of a secret
