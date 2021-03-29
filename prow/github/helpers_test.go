@@ -34,8 +34,16 @@ func TestRepoPermissionLevel(t *testing.T) {
 			get(Admin),
 		},
 		{
+			"maintain",
+			get(Maintain),
+		},
+		{
 			"write",
 			get(Write),
+		},
+		{
+			"triage",
+			get(Triage),
 		},
 		{
 			"read",
@@ -82,11 +90,19 @@ func TestLevelFromPermissions(t *testing.T) {
 			level:       Read,
 		},
 		{
-			permissions: RepoPermissions{Pull: true, Push: true},
+			permissions: RepoPermissions{Pull: true, Triage: true},
+			level:       Triage,
+		},
+		{
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true},
 			level:       Write,
 		},
 		{
-			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true},
+			level:       Maintain,
+		},
+		{
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true},
 			level:       Admin,
 		},
 	}
@@ -112,12 +128,20 @@ func TestPermissionsFromTeamPermission(t *testing.T) {
 			permissions: RepoPermissions{Pull: true},
 		},
 		{
+			level:       RepoTriage,
+			permissions: RepoPermissions{Pull: true, Triage: true},
+		},
+		{
 			level:       RepoPush,
-			permissions: RepoPermissions{Pull: true, Push: true},
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true},
+		},
+		{
+			level:       RepoMaintain,
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true},
 		},
 		{
 			level:       RepoAdmin,
-			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true},
 		},
 	}
 

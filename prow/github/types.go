@@ -461,10 +461,12 @@ func (r RepoUpdateRequest) Defined() bool {
 // repo. At most one of the booleans here should be true.
 type RepoPermissions struct {
 	// Pull is equivalent to "Read" permissions in the web UI
-	Pull bool `json:"pull"`
+	Pull   bool `json:"pull"`
+	Triage bool `json:"triage"`
 	// Push is equivalent to "Edit" permissions in the web UI
-	Push  bool `json:"push"`
-	Admin bool `json:"admin"`
+	Push     bool `json:"push"`
+	Maintain bool `json:"maintain"`
+	Admin    bool `json:"admin"`
 }
 
 // RepoPermissionLevel is admin, write, read or none.
@@ -472,11 +474,20 @@ type RepoPermissions struct {
 // See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
 type RepoPermissionLevel string
 
+// For more information on access levels, see:
+// https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization
 const (
 	// Read allows pull but not push
 	Read RepoPermissionLevel = "read"
+	// Triage allows Read and managing issues
+	// pull requests but not push
+	Triage RepoPermissionLevel = "triage"
 	// Write allows Read plus push
 	Write RepoPermissionLevel = "write"
+	// Maintain allows Write along with managing
+	// repository without access to sensitive or
+	// destructive instructions.
+	Maintain RepoPermissionLevel = "maintain"
 	// Admin allows Write plus change others' rights.
 	Admin RepoPermissionLevel = "admin"
 	// None disallows everything
@@ -484,10 +495,12 @@ const (
 )
 
 var repoPermissionLevels = map[RepoPermissionLevel]bool{
-	Read:  true,
-	Write: true,
-	Admin: true,
-	None:  true,
+	Read:     true,
+	Triage:   true,
+	Write:    true,
+	Maintain: true,
+	Admin:    true,
+	None:     true,
 }
 
 // MarshalText returns the byte representation of the permission
@@ -508,9 +521,11 @@ func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
 type TeamPermission string
 
 const (
-	RepoPull  TeamPermission = "pull"
-	RepoPush  TeamPermission = "push"
-	RepoAdmin TeamPermission = "admin"
+	RepoPull     TeamPermission = "pull"
+	RepoTriage   TeamPermission = "triage"
+	RepoMaintain TeamPermission = "maintain"
+	RepoPush     TeamPermission = "push"
+	RepoAdmin    TeamPermission = "admin"
 )
 
 // Branch contains general branch information.
