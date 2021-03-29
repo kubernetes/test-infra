@@ -558,10 +558,7 @@ func configureMembers(have, want memberships, invitees sets.String, adder func(u
 		}
 	}
 
-	if n := len(errs); n > 0 {
-		return fmt.Errorf("%d errors: %v", n, errs)
-	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // findTeam returns teams[n] for the first n in [name, previousNames, ...] that is in teams.
@@ -1280,7 +1277,9 @@ func configureTeamMembers(client teamMembersClient, orgName string, gt github.Te
 		}
 		tm, err := client.UpdateTeamMembership(orgName, gt.ID, user, super)
 		if err != nil {
-			logrus.WithError(err).Warnf("UpdateTeamMembership(%d(%s), %s, %t) failed", gt.ID, gt.Name, user, super)
+			// Augment the error with the operation we attempted so that the error makes sense after return
+			err = fmt.Errorf("UpdateTeamMembership(%d(%s), %s, %t) failed: %v", gt.ID, gt.Name, user, super, err)
+			logrus.Warnf(err.Error())
 		} else if tm.State == github.StatePending {
 			logrus.Infof("Invited %s to %d(%s) as a %s", user, gt.ID, gt.Name, role)
 		} else {
@@ -1292,7 +1291,9 @@ func configureTeamMembers(client teamMembersClient, orgName string, gt github.Te
 	remover := func(user string) error {
 		err := client.RemoveTeamMembership(orgName, gt.ID, user)
 		if err != nil {
-			logrus.WithError(err).Warnf("RemoveTeamMembership(%d(%s), %s) failed", gt.ID, gt.Name, user)
+			// Augment the error with the operation we attempted so that the error makes sense after return
+			err = fmt.Errorf("RemoveTeamMembership(%d(%s), %s) failed: %v", gt.ID, gt.Name, user, err)
+			logrus.Warnf(err.Error())
 		} else {
 			logrus.Infof("Removed %s from team %d(%s)", user, gt.ID, gt.Name)
 		}
