@@ -88,7 +88,7 @@ func main() {
 	}
 
 	logrusutil.ComponentInit()
-	log := logrus.StandardLogger().WithField("plugin", "refresh")
+	log := logrus.StandardLogger().WithField("plugin", pluginName)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
