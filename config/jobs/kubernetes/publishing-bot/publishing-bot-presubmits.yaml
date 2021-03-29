@@ -40,7 +40,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.13
         command:
         - go
         args:
