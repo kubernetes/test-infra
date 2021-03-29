@@ -570,7 +570,8 @@ tide:
     - do-not-merge/work-in-progress
   - author: k8s-ci-robot
     labels: # k8s-ci-robot should only create autobump PR with this label
-    - auto/trusted-pullrequest
+    - skip-review
+    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
