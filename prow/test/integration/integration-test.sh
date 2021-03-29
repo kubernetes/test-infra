@@ -31,6 +31,12 @@ retry() {
 }
 
 main() {
+  # Remove retries after
+  # https://github.com/bazelbuild/bazel/issues/12599
+  if [ -n "${BAZEL_FETCH_PLEASE:-}" ]; then
+    (retry "${bazel}" fetch //prow/test/integration:cleanup //prow/test/integration:setup-local-registry //prow:testimage-push //prow/test/integration:setup-cluster //prow/test/integration/test:go_default_test) || ( echo "FAILED: bazel fetch">&2; return 1 )
+  fi
+
   trap "'${bazel}' run //prow/test/integration:cleanup '$@'" EXIT
   "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
   # testimage-push builds images, could fail due to network flakiness
