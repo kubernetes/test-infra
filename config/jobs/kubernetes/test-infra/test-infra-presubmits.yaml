@@ -118,6 +118,9 @@ presubmits:
         args:
         - ./prow/test/integration/integration-test.sh
         - --config=ci
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: "true" # integration test fetches a very specific set of targets, define themin integration-test.sh instead of here
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
