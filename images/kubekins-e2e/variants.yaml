@@ -5,6 +5,7 @@ variants:
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
+    KUBETEST2_VERSION: latest
     UPGRADE_DOCKER: 'true'
   go-canary:
     CONFIG: go-canary
