@@ -1,0 +1,170 @@
+presubmits:
+  IBM/ibm-ingress-nginx-operator:
+  - name: check-ibm-ingress-nginx-operator
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test check-ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-ibm-ingress-nginx-operator
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test test-ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-ibm-ingress-nginx-operator-amd64
+    cluster: default
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test build-ibm-ingress-nginx-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-ingress-nginx-operator-ppc64le
+    cluster: ppc64le
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test build-ibm-ingress-nginx-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-ingress-nginx-operator-s390x
+    cluster: s390x
+    always_run: true
+    branches:
+    - ^release-1.4$
+    decorate: true
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    rerun_command: /test build-ibm-ingress-nginx-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+postsubmits:
+  IBM/ibm-ingress-nginx-operator:
+  - name: image-ibm-ingress-nginx-operator-amd64-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-ingress-nginx-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-ingress-nginx-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - push-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-ingress-nginx-operator-postsubmit
+    cluster: default
+    branches:
+    - ^release-1.4$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-ingress-nginx-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
