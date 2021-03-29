@@ -215,7 +215,7 @@ periodics:
       - --
       - --allow-dup
       - --extra-version-markers=k8s-stable1
-      - --registry=gcr.io/kubernetes-ci-images
+      - --registry=gcr.io/k8s-staging-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20210402-64f9afb
       name: ""
       resources:

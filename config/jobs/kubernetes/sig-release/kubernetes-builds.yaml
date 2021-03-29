@@ -46,7 +46,7 @@ periodics:
       - --
       - --allow-dup
       - --extra-version-markers=k8s-master
-      - --registry=gcr.io/kubernetes-ci-images
+      - --registry=gcr.io/k8s-staging-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
