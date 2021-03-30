@@ -14,6 +14,20 @@ presubmits:
       - image: golang:1.15
         command:
         - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-operator-verify-docs
+    always_run: true
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: operator-verify-docs
+      description: "Verify documentation sources of the operator project"
+    spec:
+      containers:
+      - image: ruby:2.7
+        command:
+        - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-operator-build-image
     always_run: true
     skip_branches:
@@ -35,3 +49,23 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-image.sh
+  - name: pull-node-feature-discovery-operator-build-gh-pages
+    always_run: true
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: operator-build-gh-pages
+      description: "Test build of gh-pages documentation of the operator project"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-gh-pages.sh
