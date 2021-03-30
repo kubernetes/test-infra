@@ -56,7 +56,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.21.0
+      - image: golangci/golangci-lint:v1.32.2
         command:
         - make
         args:
