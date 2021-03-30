@@ -53,6 +53,8 @@ presets:
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-2019
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
@@ -101,6 +103,8 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-gce-20h2
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
@@ -149,6 +153,8 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-gce-2004
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
@@ -197,6 +203,8 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-gce-alpha-features
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
