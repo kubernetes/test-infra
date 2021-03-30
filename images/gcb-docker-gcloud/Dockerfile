@@ -30,7 +30,7 @@ ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
 WORKDIR /workspace
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
-    apk --no-cache add curl python py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make && \
+    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make && \
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
