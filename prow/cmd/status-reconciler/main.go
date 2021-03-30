@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"os"
 	"time"
@@ -51,7 +50,6 @@ type options struct {
 	continueOnError           bool
 	addedPresubmitDenylist    prowflagutil.Strings
 	addedPresubmitDenylistAll prowflagutil.Strings
-	addedPresubmitBlacklist   prowflagutil.Strings
 	dryRun                    bool
 	kubernetes                prowflagutil.KubernetesOptions
 	github                    prowflagutil.GitHubOptions
@@ -80,7 +78,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 	fs.Var(&o.addedPresubmitDenylist, "denylist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.Var(&o.addedPresubmitDenylistAll, "denylist-all", "Org or org/repo to ignore reconciling, set more than once to add more.")
-	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "[Will be deprecated after May 2021] Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
@@ -97,19 +94,12 @@ func (o *options) Validate() error {
 			return err
 		}
 	}
-	if len(o.addedPresubmitBlacklist.Strings()) > 0 {
-		if len(o.addedPresubmitDenylist.Strings()) > 0 {
-			return errors.New("--denylist and --blacklist are mutual exclusive")
-		}
-	}
 
 	return nil
 }
 
 func (o *options) getDenyList() sets.String {
 	denyList := o.addedPresubmitDenylist.Strings()
-	denyList = append(o.addedPresubmitBlacklist.Strings(), denyList...)
-
 	return sets.NewString(denyList...)
 }
 
