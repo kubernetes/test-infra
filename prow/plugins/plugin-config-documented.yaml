@@ -431,7 +431,7 @@ owners:
             owners: ' '
             owners_aliases: ' '
 
-    # LabelsBlackList will be deprecated after October 2021, use
+    # LabelsBlackList will be removed after October 2021, use
     # labels_denylist instead
     labels_blacklist:
       - ""

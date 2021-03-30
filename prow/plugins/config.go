@@ -179,7 +179,7 @@ type Owners struct {
 	// This check is performed by the verify-owners plugin.
 	LabelsDenyList []string `json:"labels_denylist,omitempty"`
 
-	// LabelsBlackList will be deprecated after October 2021, use
+	// LabelsBlackList will be removed after October 2021, use
 	// labels_denylist instead
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 
