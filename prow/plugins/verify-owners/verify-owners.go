@@ -72,11 +72,11 @@ func helpProvider(c *plugins.Configuration, orgRepo []config.OrgRepo) (*pluginhe
 	defaultFilenames := c.OwnersFilenames("", "")
 	descriptionFor := func(filenames ownersconfig.Filenames) string {
 		description := fmt.Sprintf("%s and %s files are validated.", filenames.Owners, filenames.OwnersAliases)
-		if c.Owners.LabelsBlackList != nil {
+		if c.Owners.LabelsDenyList != nil {
 			description = fmt.Sprintf(`%s The verify-owners plugin will complain if %s files contain any of the following banned labels: %s.`,
 				description,
 				filenames.Owners,
-				strings.Join(c.Owners.LabelsBlackList, ", "))
+				strings.Join(c.Owners.LabelsDenyList, ", "))
 		}
 		return description
 	}
@@ -154,7 +154,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		number:       pre.Number,
 	}
 
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -171,7 +171,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 		}
 	}
 
-	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
 }
 
 func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, bannedLabels []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {

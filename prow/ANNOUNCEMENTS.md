@@ -135,6 +135,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 1st, 2021* The `labels_blacklist` field in verify-owners plugin config
+   is deprecated in favor of `labels_denylist`. The support for `labels_blacklist` shall be stopped in
+   *October 2021*.
  - *January 24th, 2021* Planks Pod pending and Pod scheduling timeout defaults where changed from 24h each to the more reasonable 10 minutes/5 minutes, respectively.
  - *January 1, 2021* Support for `whitelist` and `branch_whitelist` fields in Slack merge warning configuration is discontinued. You can use `exempt_users` and `exempt_branches` fields instead.
  - *November 24, 2020* The `requiresig` plugin has been removed in favor of the `require-matching-label` plugin
