@@ -426,6 +426,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		"kubernetes-sigs/sig-windows":                          {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
 		"kubernetes/sig-cloud-provider":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
 		"kubernetes/sig-network":                               {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
+		"kubernetes/sig-release":                               {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"})},
 		"kubernetes-sigs/cluster-api-provider-azure":           {secrets: getSecretsFromPreset(labels{"preset-azure-cred-only": "true"}), allowedInPresubmit: true},
 	}
 	allSecrets := sets.String{}
