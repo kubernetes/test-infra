@@ -112,7 +112,7 @@ def retry(func, *args, **kwargs):
             args_size = sys.getsizeof(args)
             kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
             print(f"Error running {func.__name__} \
-                   ([bytes in args]{','.join([args_size, kwargs_str])}) : {err}")
+                   ([bytes in args]{args_size} with {kwargs_str}) : {err}")
             return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
