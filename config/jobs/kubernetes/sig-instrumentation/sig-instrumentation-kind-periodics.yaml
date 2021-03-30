@@ -4,7 +4,7 @@ periodics:
   name: ci-kubernetes-kind-e2e-json-logging
   annotations:
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind
-    testgrid-tab-name: kind-json-logging
+    testgrid-tab-name: kind-json-logging-master
     description: Smoke tests Kubelet with JSON logging enabled using sigs.k8s.io/kind
     # TODO: anyone else?
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com
