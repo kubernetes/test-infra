@@ -431,10 +431,15 @@ owners:
             owners: ' '
             owners_aliases: ' '
 
-    # LabelsBlackList holds a list of labels that should not be present in any
+    # LabelsBlackList will be deprecated after October 2021, use
+    # labels_denylist instead
+    labels_blacklist:
+      - ""
+
+    # LabelsDenyList holds a list of labels that should not be present in any
     # OWNERS file, preventing their automatic addition by the owners-label plugin.
     # This check is performed by the verify-owners plugin.
-    labels_blacklist:
+    labels_denylist:
       - ""
 
     # MDYAMLRepos is a list of org and org/repo strings specifying the repos that support YAML

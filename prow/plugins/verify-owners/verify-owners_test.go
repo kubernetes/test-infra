@@ -710,7 +710,7 @@ func TestHelpProvider(t *testing.T) {
 			name: "ReviewerCount specified",
 			config: &plugins.Configuration{
 				Owners: plugins.Owners{
-					LabelsBlackList: []string{"label1", "label2"},
+					LabelsDenyList: []string{"label1", "label2"},
 				},
 			},
 			enabledRepos: enabledRepos,
