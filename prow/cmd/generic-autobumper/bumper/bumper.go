@@ -589,25 +589,22 @@ func isUnderPath(name string, paths []string) bool {
 func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, error) {
 	// Key is tag, value is full image.
 	versions := map[string][]string{}
+	consistencyChecker := map[string]string{}
 	for _, prefix := range prefixes {
-		newVersions := 0
-		unbumpedFound := false
 		for k, v := range images {
 			if strings.HasPrefix(k, prefix.Prefix) {
-				if _, ok := versions[v]; !ok {
-					newVersions++
+				found, ok := consistencyChecker[prefix.Prefix]
+				if ok && (found != v) && prefix.ConsistentImages {
+					return nil, fmt.Errorf("%q was supposed to be bumped consistntly but was not", prefix.Name)
+				} else if !ok {
+					consistencyChecker[prefix.Prefix] = v
 				}
-				//Only add the bumped images to the new versions map
+
+				//Only add bumped images to the new versions map
 				if !strings.Contains(k, v) {
 					versions[v] = append(versions[v], k)
-				} else {
-					unbumpedFound = true
-					newVersions--
 				}
-				//If there are more than 1 new images, or an unbumped image and a new bumped image, it is not consistent
-				if prefix.ConsistentImages && (newVersions > 1 || (unbumpedFound && newVersions > 0)) {
-					return nil, fmt.Errorf("%q was supposed to be bumped consistently but was not", prefix.Name)
-				}
+
 			}
 		}
 	}

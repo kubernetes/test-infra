@@ -959,6 +959,20 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
+		{
+			name:             "prefix was not consistent before bump and now is",
+			prefixes:         []Prefix{prowPrefix},
+			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag2": "newtag1"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag2"}},
+		},
+		{
+			name:             "prefix was not consistent before bump one was bumped ahead manually",
+			prefixes:         []Prefix{prowPrefix},
+			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:newtag1": "newtag1"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
