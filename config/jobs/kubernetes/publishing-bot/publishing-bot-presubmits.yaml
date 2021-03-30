@@ -40,11 +40,12 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.16
         command:
         - go
         args:
         - run
+        - -mod=mod
         - k8s.io/publishing-bot/cmd/validate-rules
         - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
     annotations:
