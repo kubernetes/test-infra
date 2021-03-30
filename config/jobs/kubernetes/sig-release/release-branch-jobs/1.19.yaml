@@ -37,7 +37,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
@@ -45,12 +45,12 @@ periodics:
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.19
   cluster: k8s-infra-prow-build
-  cron: 0 3-23/6 * * *
+  cron: 0 8-23/12 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   spec:
     containers:
     - args:
@@ -78,12 +78,12 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     testgrid-dashboards: sig-release-1.19-blocking, sig-node-kubelet, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-1.19
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -160,9 +160,9 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
-  - org: kubernetes
+  - base_ref: release-1.19
+    org: kubernetes
     repo: kubernetes
-    base_ref: release-1.19
   interval: 1h
   labels:
     preset-dind-enabled: "true"
@@ -187,10 +187,10 @@ periodics:
       resources:
         limits:
           cpu: "7"
-          memory: "34Gi"
+          memory: 34Gi
         requests:
           cpu: "7"
-          memory: "34Gi"
+          memory: 34Gi
       securityContext:
         privileged: true
 - annotations:
@@ -229,32 +229,32 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 15 * * *, 0 21 * * *
+    fork-per-release-cron: 0 21 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.19-500
-  cron: 0 9 * * *
+  cron: 0 15 * * *
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 2h0m0s
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.19
+  - base_ref: release-1.19
+    org: kubernetes
     path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: release-1.19
+    repo: kubernetes
+  - base_ref: release-1.19
+    org: kubernetes
     path_alias: k8s.io/perf-tests
+    repo: perf-tests
   labels:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-kubemark-500-gce-stable1
+  name: ci-kubernetes-kubemark-500-gce-stable2
   spec:
     containers:
     - args:
@@ -300,33 +300,33 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.19'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.19-blocking, sig-scalability-gce, google-gce, google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.19-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 0/12 * * *
+  cron: 0 4-16/12 * * *
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 2h20m0s
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.19
+  - base_ref: release-1.19
+    org: kubernetes
     path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: release-1.19
+    repo: kubernetes
+  - base_ref: release-1.19
+    org: kubernetes
     path_alias: k8s.io/perf-tests
+    repo: perf-tests
   labels:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-containerd: "true"
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   spec:
     containers:
     - args:
@@ -464,7 +464,7 @@ periodics:
           memory: 38Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.19-blocking, google-unit
     testgrid-tab-name: integration-1.19
@@ -475,11 +475,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable1
+  name: ci-kubernetes-integration-stable2
   spec:
     containers:
     - args:
@@ -499,7 +499,7 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.19-blocking, google-unit
     testgrid-tab-name: verify-1.19
@@ -510,11 +510,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable1
+  name: ci-kubernetes-verify-stable2
   spec:
     containers:
     - args:
@@ -625,7 +625,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.19-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -639,7 +639,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
@@ -674,7 +674,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.19-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -688,7 +688,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
@@ -1140,16 +1140,16 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 2h0m0s
     extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: release-1.19
+    - base_ref: release-1.19
+      org: kubernetes
       path_alias: k8s.io/perf-tests
-    - org: kubernetes
-      repo: release
-      base_ref: master
+      repo: perf-tests
+    - base_ref: master
+      org: kubernetes
       path_alias: k8s.io/release
+      repo: release
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
@@ -1209,16 +1209,16 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 2h0m0s
     extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: release-1.19
+    - base_ref: release-1.19
+      org: kubernetes
       path_alias: k8s.io/perf-tests
-    - org: kubernetes
-      repo: release
-      base_ref: master
+      repo: perf-tests
+    - base_ref: master
+      org: kubernetes
       path_alias: k8s.io/release
+      repo: release
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
@@ -1375,12 +1375,11 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
-    cluster: k8s-infra-prow-build
     branches:
     - release-1.19
+    cluster: k8s-infra-prow-build
     decorate: true
     name: pull-kubernetes-files-remake
-    optional: false
     path_alias: k8s.io/kubernetes
     run_if_changed: Makefile.generated_files|make-rules
     spec:
