@@ -983,6 +983,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to Network Policy subproject
+        name: area/network-policy
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to the Release Engineering subproject
         name: area/release-eng
         previously:
