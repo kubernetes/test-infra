@@ -425,6 +425,7 @@ func (c *client) batchOnboardNewTokenForRepos() error {
 			} else {
 				delete(c.currentHMACMap, repo)
 			}
+			return err
 		}
 	}
 
