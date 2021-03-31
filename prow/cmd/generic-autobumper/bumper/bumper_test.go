@@ -72,6 +72,7 @@ func TestCommitToRef(t *testing.T) {
 func TestValidateOptions(t *testing.T) {
 	emptyStr := ""
 	whateverStr := "whatever"
+	trueVar := true
 	emptyArr := make([]string, 0)
 	emptyPrefixes := make([]Prefix, 0)
 	latestPrefixes := []Prefix{{
@@ -93,6 +94,11 @@ func TestValidateOptions(t *testing.T) {
 		githubToken         *string
 		githubOrg           *string
 		githubRepo          *string
+		gerrit              *bool
+		gerritAuthor        *string
+		gerritPRIdentifier  *string
+		gerritHostRepo      *string
+		gerritCookieFile    *string
 		remoteName          *string
 		skipPullRequest     *bool
 		targetVersion       *string
@@ -126,6 +132,31 @@ func TestValidateOptions(t *testing.T) {
 			githubRepo: &emptyStr,
 			err:        true,
 		},
+		{
+			name:         "gerritAuthor cannot be empty when SkipPullRequest is false and gerrit is true",
+			gerrit:       &trueVar,
+			gerritAuthor: &emptyStr,
+			err:          true,
+		},
+		{
+			name:           "gerritHostRepo cannot be empty when SkipPullRequest is false and gerrit is true",
+			gerrit:         &trueVar,
+			gerritHostRepo: &emptyStr,
+			err:            true,
+		},
+		{
+			name:             "gerritCookieFile cannot be empty when SkipPullRequest is false and gerrit is true",
+			gerrit:           &trueVar,
+			gerritCookieFile: &emptyStr,
+			err:              true,
+		},
+		{
+			name:               "gerritCommitId cannot be empty when SkipPullRequest is false and gerrit is true",
+			gerrit:             &trueVar,
+			gerritPRIdentifier: &emptyStr,
+			err:                true,
+		},
+
 		{
 			name:          "unformatted TargetVersion is also allowed",
 			targetVersion: &whateverStr,
@@ -188,6 +219,12 @@ func TestValidateOptions(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			gerrit := &Gerrit{
+				Author:               "whatever-author",
+				CookieFile:           "whatever cookie file",
+				AutobumpPRIdentifier: "whatever-commit-id",
+				HostRepo:             "whatever-host-repo",
+			}
 			defaultOption := &Options{
 				GitHubOrg:           "whatever-org",
 				GitHubRepo:          "whatever-repo",
@@ -195,6 +232,7 @@ func TestValidateOptions(t *testing.T) {
 				GitHubToken:         "whatever-token",
 				GitName:             "whatever-name",
 				GitEmail:            "whatever-email",
+				Gerrit:              nil,
 				UpstreamURLBase:     "whatever-URLBase",
 				RemoteName:          "whatever-name",
 				Prefixes:            latestPrefixes,
@@ -229,6 +267,21 @@ func TestValidateOptions(t *testing.T) {
 			}
 			if tc.upstreamURLBase != nil {
 				defaultOption.UpstreamURLBase = *tc.upstreamURLBase
+			}
+			if tc.gerrit != nil {
+				defaultOption.Gerrit = gerrit
+			}
+			if tc.gerritAuthor != nil {
+				defaultOption.Gerrit.Author = *tc.gerritAuthor
+			}
+			if tc.gerritPRIdentifier != nil {
+				defaultOption.Gerrit.AutobumpPRIdentifier = *tc.gerritPRIdentifier
+			}
+			if tc.gerritCookieFile != nil {
+				defaultOption.Gerrit.CookieFile = *tc.gerritCookieFile
+			}
+			if tc.gerritHostRepo != nil {
+				defaultOption.Gerrit.HostRepo = *tc.gerritHostRepo
 			}
 
 			err := validateOptions(defaultOption)

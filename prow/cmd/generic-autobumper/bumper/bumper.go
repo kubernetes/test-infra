@@ -18,6 +18,7 @@ package bumper
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -105,6 +106,8 @@ type Options struct {
 	OncallGroup string `yaml:"onCallGroup"`
 	// Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `yaml:"skipPullRequest"`
+	// Information needed to do a gerrit bump. Do not include if doing github bump
+	Gerrit *Gerrit `yaml:"gerrit"`
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
 	// Images will be bumped based off images located at the address using this URL and the refConfigFile or stagingRefConigFile for each Prefix.
 	UpstreamURLBase string `yaml:"upstreamURLBase"`
@@ -125,6 +128,18 @@ type Options struct {
 	Labels []string `yaml:"labels"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
+}
+
+// Information needed for gerrit bump
+type Gerrit struct {
+	// Unique tag in commit messages to identify a Gerrit bump CR. Required if using gerrit
+	AutobumpPRIdentifier string `yaml:"autobumpPRIdentifier"`
+	// Gerrit CR Author. Only Required if using gerrit
+	Author string `yaml:"author"`
+	// The path to the Gerrit httpcookie file. Only Required if using gerrit
+	CookieFile string `yaml:"cookieFile"`
+	// The path to the hosted Gerrit repo
+	HostRepo string `yaml:"hostRepo"`
 }
 
 // Prefix is the information needed for each prefix being bumped.
@@ -194,17 +209,33 @@ func validateOptions(o *Options) error {
 	if len(o.Prefixes) == 0 {
 		return fmt.Errorf("Must have at least one Prefix specified")
 	}
-	if !o.SkipPullRequest && o.GitHubToken == "" {
-		return fmt.Errorf("gitHubToken is mandatory when skipPullRequest is false or unspecified")
+	if !o.SkipPullRequest && o.Gerrit == nil {
+		if o.GitHubToken == "" {
+			return fmt.Errorf("gitHubToken is mandatory when skipPullRequest is false or unspecified")
+		}
+		if (o.GitEmail == "") != (o.GitName == "") {
+			return fmt.Errorf("gitName and gitEmail must be specified together")
+		}
+		if o.GitHubOrg == "" || o.GitHubRepo == "" {
+			return fmt.Errorf("gitHubOrg and gitHubRepo are mandatory when skipPullRequest is false or unspecified")
+		}
+		if o.RemoteName == "" {
+			return fmt.Errorf("remoteName is mandatory when skipPullRequest is false or unspecified")
+		}
 	}
-	if (o.GitEmail == "") != (o.GitName == "") {
-		return fmt.Errorf("gitName and gitEmail must be specified together")
-	}
-	if !o.SkipPullRequest && (o.GitHubOrg == "" || o.GitHubRepo == "") {
-		return fmt.Errorf("gitHubOrg and gitHubRepo are mandatory when skipPullRequest is false or unspecified")
-	}
-	if !o.SkipPullRequest && (o.RemoteName == "") {
-		return fmt.Errorf("remoteName is mandatory when skipPullRequest is false or unspecified")
+	if !o.SkipPullRequest && o.Gerrit != nil {
+		if o.Gerrit.Author == "" {
+			return fmt.Errorf("GerritAuthor is required when skipPullRequest is false and Gerrit is true")
+		}
+		if o.Gerrit.AutobumpPRIdentifier == "" {
+			return fmt.Errorf("GerritCommitId is required when skipPullRequest is false and Gerrit is true")
+		}
+		if o.Gerrit.HostRepo == "" {
+			return fmt.Errorf("GerritHostRepo is required when skipPullRequest is false and Gerrit is true")
+		}
+		if o.Gerrit.CookieFile == "" {
+			return fmt.Errorf("GerritCookieFile is required when skipPullRequest is false and Gerrit is true")
+		}
 	}
 	if len(o.IncludedConfigPaths) == 0 {
 		return fmt.Errorf("includedConfigPaths is mandatory")
@@ -274,10 +305,13 @@ func Run(o *Options) error {
 		return err
 	}
 
+	var sa secret.Agent
+
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 	if o.SkipPullRequest {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
-	} else {
-		var sa secret.Agent
+	} else if o.Gerrit == nil {
 		if err := sa.Start([]string{o.GitHubToken}); err != nil {
 			return fmt.Errorf("failed to start secrets agent: %w", err)
 		}
@@ -319,8 +353,6 @@ func Run(o *Options) error {
 			}
 		}
 
-		stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-		stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
@@ -335,6 +367,16 @@ func Run(o *Options) error {
 
 		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
+		}
+	} else {
+		changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier)
+		if err != nil {
+			return fmt.Errorf("Failed to create CR: %w", err)
+		}
+		msg := makeGerritCommit(o.Prefixes, versions, o.Gerrit.AutobumpPRIdentifier, changeId)
+		// TODO(mpherman): Add reviewers to CreateCR
+		if err := createCR(msg, "master", changeId, o.Gerrit.HostRepo, o.Gerrit.CookieFile, nil, nil, stdout, stderr); err != nil {
+			return fmt.Errorf("Failled to create the CR: %w", err)
 		}
 	}
 	return nil
@@ -681,6 +723,10 @@ func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, 
 	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr)
 }
 
+func makeGerritCommit(prefixes []Prefix, versions map[string][]string, commitTag, changeId string) string {
+	return fmt.Sprintf("[%s] %s \n\nChange-Id: %s", commitTag, makeCommitSummary(prefixes, versions), changeId)
+}
+
 // GitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
@@ -905,4 +951,140 @@ func getTreeRef(stderr io.Writer, refname string) (string, error) {
 		return "", errors.New("got no otput when trying to rev-parse")
 	}
 	return fields[0], nil
+}
+
+func buildPushRef(branch string, reviewers, cc []string) string {
+	pushRef := fmt.Sprintf("HEAD:refs/for/%s", branch)
+	var addedOptions []string
+	for _, v := range reviewers {
+		addedOptions = append(addedOptions, fmt.Sprintf("r=%s", v))
+	}
+	for _, v := range cc {
+		addedOptions = append(addedOptions, fmt.Sprintf("cc=%s", v))
+	}
+	if len(addedOptions) > 0 {
+		pushRef = fmt.Sprintf("%s%%%s", pushRef, strings.Join(addedOptions, ","))
+	}
+	return pushRef
+}
+
+func getDiff(prevCommit string) (string, error) {
+	var diffBuf bytes.Buffer
+	var errBuf bytes.Buffer
+	if err := Call(&diffBuf, &errBuf, gitCmd, "diff", prevCommit); err != nil {
+		return "", fmt.Errorf("error diffing previous bump: %v -- %s", err, errBuf.String())
+	}
+	return diffBuf.String(), nil
+}
+
+func GerritNoOpChange(changeID, hostRepo string) (bool, error) {
+	var garbageBuf bytes.Buffer
+	var outBuf bytes.Buffer
+	// Fetch current pending CRs
+	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "upstream", "+refs/changes/*:refs/remotes/upstream/changes/*"); err != nil {
+		return false, fmt.Errorf("unable to fetch upstream changes: %v", err)
+	}
+	// Get PR with same ChangeID for this bump
+	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
+		return false, fmt.Errorf("error getting previous bump: %v", err)
+	}
+	prevCommit := strings.TrimSpace(outBuf.String())
+	// No current CRs with cur ChangeID means this is not a noOp change
+	if prevCommit == "" {
+		return false, nil
+	}
+	diff, err := getDiff(prevCommit)
+	if err != nil {
+		return false, err
+	}
+	if diff == "" {
+		return true, nil
+	}
+	return false, nil
+
+}
+
+func createCR(msg, branch, changeID, hostRepo, cookieFile string, reviewers, cc []string, stdout, stderr io.Writer) error {
+	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", cookieFile); err != nil {
+		return fmt.Errorf("unable to load cookiefile: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", hostRepo); err != nil {
+		return fmt.Errorf("unable to add upstream remote: %v", err)
+	}
+	noOp, err := GerritNoOpChange(changeID, hostRepo)
+	if err != nil {
+		return fmt.Errorf("error diffing previous bump: %v", err)
+	}
+	if noOp {
+		logrus.Info("CR is a no-op change. Returning without pushing update")
+		return nil
+	}
+
+	pushRef := buildPushRef(branch, reviewers, cc)
+	if err := Call(stdout, stderr, gitCmd, "commit", "-a", "-v", "-m", msg); err != nil {
+		return fmt.Errorf("unable to commit: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "push", "origin", pushRef); err != nil {
+		return fmt.Errorf("unable to push: %v", err)
+	}
+	return nil
+}
+
+func getLastBumpCommit(gerritAuthor, commitTag string) (string, error) {
+	var outBuf bytes.Buffer
+	var errBuf bytes.Buffer
+
+	if err := Call(&outBuf, &errBuf, gitCmd, "log", fmt.Sprintf("--author=%s", gerritAuthor), fmt.Sprintf("--grep=%s", commitTag), "-1", "--format='%H'"); err != nil {
+		return "", errors.New("error running git command")
+	}
+
+	return outBuf.String(), nil
+}
+
+// getChangeId generates a change ID for the gerrit PR that is deterministic
+// rather than being random as is normally preferable.
+// In particular this chooses a change ID by hashing the last commit by the
+// robot with a given string in the commit message (This string will be added to all autobump commit messages)
+// if there is no commit by the robot with this commit tag, we assume that the job has never run, or that the robot/commit tag has changed
+// in either case, the deterministic ID is generated by just hashing a string of the author + commit tag
+func getChangeId(gerritAuthor, commitTag string) (string, error) {
+	lastBumpCommit, err := getLastBumpCommit(gerritAuthor, commitTag)
+	var id string
+	if err != nil {
+		return "", fmt.Errorf("Error getting change Id: %w", err)
+	}
+	if lastBumpCommit != "" {
+		id = "I" + gitHash(lastBumpCommit)
+	} else {
+		// If it is the first time the autobumper has run a commit will not exist with the tag
+		// create a deterministic tag by hashing the tag itself instead of the last commit.
+		id = "I" + gitHash(gerritAuthor+commitTag)
+	}
+	gitLog, err := getFullLog()
+	if err != nil {
+		return "", err
+	}
+	//While a commit on the base branch exists with this change ID...
+	for strings.Contains(gitLog, id) {
+		// Choose another ID by hashing the current ID.
+		id = "I" + gitHash(id)
+	}
+
+	return id, nil
+}
+
+func getFullLog() (string, error) {
+	var outBuf bytes.Buffer
+	var errBuf bytes.Buffer
+
+	if err := Call(&outBuf, &errBuf, gitCmd, "log"); err != nil {
+		return "", fmt.Errorf("unable to run git log: %w, %s", err, errBuf.String())
+	}
+	return outBuf.String(), nil
+}
+
+func gitHash(hashing string) string {
+	h := sha1.New()
+	io.WriteString(h, hashing)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
