@@ -59,6 +59,9 @@ type Client interface {
 	// CreateBug creates a new bug on the server.
 	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 	CreateBug(bug *BugCreate) (int, error)
+	// CreateComment creates a new bug on the server.
+	// https://bugzilla.redhat.com/docs/en/html/api/core/v1/comment.html#create-comments
+	CreateComment(bug *CommentCreate) (int, error)
 	// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 	CloneBug(bug *Bug) (int, error)
 	// UpdateBug updates the fields of a bug on the server
@@ -535,6 +538,31 @@ func (c *client) CreateBug(bug *BugCreate) (int, error) {
 		return 0, fmt.Errorf("failed to marshal create payload: %v", err)
 	}
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return 0, err
+	}
+	var idStruct struct {
+		ID int `json:"id,omitempty"`
+	}
+	err = json.Unmarshal(resp, &idStruct)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unmarshal server response: %v", err)
+	}
+	return idStruct.ID, nil
+}
+
+func (c *client) CreateComment(comment *CommentCreate) (int, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "CreateComment", "bug": comment.ID})
+	body, err := json.Marshal(comment)
+	if err != nil {
+		return 0, fmt.Errorf("failed to marshal create payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug/%d/comment", c.endpoint, comment.ID), bytes.NewBuffer(body))
 	if err != nil {
 		return 0, err
 	}

@@ -1187,22 +1187,33 @@ func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
 		}
 		if options.StateAfterClose != nil {
-			links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+			bug, err := bc.GetBug(e.bugId)
 			if err != nil {
-				log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
-				return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
+				log.WithError(err).Warn("Unexpected error getting Bugzilla bug.")
+				return comment(formatError("getting bug", bc.Endpoint(), e.bugId, err))
 			}
-			if len(links) == 0 {
-				bug, err := getBug(bc, e.bugId, log, comment)
-				if err != nil || bug == nil {
-					return err
+			if bug.Status != "CLOSED" {
+				links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+				if err != nil {
+					log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
+					return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
 				}
-				if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
-					if err := bc.UpdateBug(e.bugId, *update); err != nil {
-						log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
-						return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+				if len(links) == 0 {
+					bug, err := getBug(bc, e.bugId, log, comment)
+					if err != nil || bug == nil {
+						return err
 					}
-					response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
+						if err := bc.UpdateBug(e.bugId, *update); err != nil {
+							log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+							return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+						}
+						response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					}
+					bzComment := &bugzilla.CommentCreate{ID: bug.ID, Comment: fmt.Sprintf("Bug status changed to %s as previous linked PR https://github.com/%s/%s/pull/%d has been closed", options.StateAfterClose.Status, e.org, e.repo, e.number), IsPrivate: true}
+					if _, err := bc.CreateComment(bzComment); err != nil {
+						response += "\nWarning: Failed to comment on Bugzilla bug with reason for changed state."
+					}
 				}
 			}
 		}

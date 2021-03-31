@@ -189,6 +189,16 @@ type Comment struct {
 	Tags []string `json:"tags,omitempty"`
 }
 
+// CommentCreate holds information needed to create a comment
+type CommentCreate struct {
+	// ID is the ID of the bug this comment is on.
+	ID int `json:"id,omitempty"`
+	// Comment is the text of the comment being created.
+	Comment string `json:"comment,omitempty"`
+	// IsPrivate is true if this comment is private (only visible to a certain group called the "insidergroup"), false otherwise.
+	IsPrivate bool `json:"is_private,omitempty"`
+}
+
 // User holds information about a user
 type User struct {
 	// The user ID for this user.
