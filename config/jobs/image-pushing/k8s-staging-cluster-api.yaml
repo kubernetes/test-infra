@@ -197,7 +197,7 @@ periodics:
 - name: cluster-api-push-images-nightly
   cluster: k8s-infra-prow-build-trusted
   decorate: true
-  cron: '0 8 * * *' # everday at 0:00 PT (8:00 UTC)
+  cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api
@@ -225,4 +225,36 @@ periodics:
     # this is the name of some testgrid dashboard to report to.
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
     testgrid-tab-name: cluster-api-push-images-nightly
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+- name: cluster-api-provider-openstack-push-images-nightly
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-openstack
+      base_ref: master
+      path_alias: sigs.k8s.io/cluster-api-provider-openstack
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+      - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+        command:
+          - /run.sh
+        args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+          - --project=k8s-staging-capi-openstack
+          - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
+          - --env-passthrough=PULL_BASE_REF
+          - --gcb-config=cloudbuild-nightly.yaml
+          - .
+        env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+        - name: PULL_BASE_REF
+          value: master
+  annotations:
+    # this is the name of some testgrid dashboard to report to.
+    testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+    testgrid-tab-name: cluster-api-provider-openstack-push-images-nightly
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
