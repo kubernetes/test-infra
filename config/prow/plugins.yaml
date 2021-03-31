@@ -1081,10 +1081,6 @@ plugins:
     - assign  # Allow /assign and /cc
     - trigger # Allow people to configure CI jobs to /test
 
-  tensorflow/k8s:
-    plugins:
-    - trigger
-
   GoogleCloudPlatform/k8s-multicluster-ingress:
     plugins:
     - trigger
