@@ -318,7 +318,7 @@ presubmits:
       description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
       testgrid-alert-email: jinxu@google.com
 
-  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-1-19
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-20h2
     decorate: true
     decoration_config:
       timeout: 200m
@@ -353,7 +353,7 @@ presubmits:
         - --timeout=180m
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION
-          value: "win2019"
+          value: "win20h2"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
