@@ -19,6 +19,24 @@ set -o pipefail
 
 dir="$(dirname "${BASH_SOURCE[0]}")"
 
+generate_presubmit_annotations() {
+  branch="${1}"
+  # only display on presubmit jobs for master branch for now since
+  # a dashboard cannot have multiple tabs with the same name
+  if [[ "${branch}" != "master" ]]; then
+    echo ""
+    return
+  fi
+  job_name="${2}"
+  cat << EOF
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: ${job_name}
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
+EOF
+}
+
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   orchestrator_release="${release}"
@@ -80,7 +98,7 @@ presubmits:
         - --ginkgo-parallel=30
         securityContext:
           privileged: true
-
+$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-conformance)
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
     decorate: true
     always_run: false
@@ -129,7 +147,7 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-
+$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-disk-vmas)
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
     decorate: true
     always_run: false
@@ -180,7 +198,7 @@ presubmits:
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
         - name: ENABLE_TOPOLOGY
           value: "true"
-
+$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-disk-vmss)
   - name: pull-kubernetes-e2e-aks-engine-azure-file
     decorate: true
     always_run: false
@@ -232,7 +250,7 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
-
+$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-file)
 periodics:
 - interval: 24h
   name: aks-engine-conformance-${release/./-}
