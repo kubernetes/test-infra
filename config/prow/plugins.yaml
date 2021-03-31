@@ -19,9 +19,6 @@ triggers:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
 - repos:
-  - tensorflow/minigo
-  join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
-- repos:
   - bazelbuild
 
 owners:
@@ -1087,12 +1084,6 @@ plugins:
   tensorflow/k8s:
     plugins:
     - trigger
-
-  tensorflow/minigo:
-    plugins:
-    - trigger
-    - lgtm
-    - size
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
     plugins:
