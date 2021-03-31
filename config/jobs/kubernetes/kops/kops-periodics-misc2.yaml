@@ -2,7 +2,7 @@
 # 12 jobs, total of 462 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-arm64
   cron: '33 16 * * *'
   labels:
@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315" \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -58,7 +58,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
           --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM,PublicJWKS \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
@@ -163,7 +163,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
           --env=KOPS_FEATURE_FLAGS=EnableExternalCloudController,SpecOverrideFlag \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -230,7 +230,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --terraform-version=0.14.6 \
@@ -295,7 +295,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=calico --container-runtime=docker --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=calico --container-runtime=docker --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -331,7 +331,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-ha-euwest1
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-release
   cron: '54 4-23/8 * * *'
   labels:
@@ -360,7 +360,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315" \
+          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -387,7 +387,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -396,7 +396,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-arm64-release
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-ci
   cron: '30 2-23/8 * * *'
   labels:
@@ -425,7 +425,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315" \
+          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
           --test=kops \
@@ -454,7 +454,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -463,7 +463,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-arm64-ci
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-arm64-conformance
   cron: '31 0-23/8 * * *'
   labels:
@@ -492,7 +492,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315" \
+          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
           --test=kops \
@@ -522,7 +522,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -560,7 +560,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=kubenet --container-runtime=containerd --node-size=c5.large --master-size=c5.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=kubenet --container-runtime=containerd --node-size=c5.large --master-size=c5.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
           --test=kops \
@@ -628,7 +628,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=calico --container-runtime=containerd --node-size=c5.large --master-size=c5.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=calico --container-runtime=containerd --node-size=c5.large --master-size=c5.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --publish-version-marker=gs://kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -666,7 +666,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-updown
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-scenario-cilium10-arm64
   cron: '25 13-23/24 * * *'
   labels:
@@ -695,7 +695,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=cilium --container-runtime=docker --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315" \
+          --create-args="--channel=alpha --networking=cilium --container-runtime=docker --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -722,7 +722,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc0 --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -760,7 +760,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315' --channel=alpha --networking=cilium --container-runtime=docker --zones=eu-central-1a --override=cluster.spec.networking.cilium.version=v1.10.0-rc0" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325' --channel=alpha --networking=cilium --container-runtime=docker --zones=eu-central-1a --override=cluster.spec.networking.cilium.version=v1.10.0-rc0" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
