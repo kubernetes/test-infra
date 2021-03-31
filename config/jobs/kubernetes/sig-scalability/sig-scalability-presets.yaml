@@ -217,7 +217,7 @@ presets:
       apps/v1/Deployment
       apps/v1/ReplicaSet
       apps/v1/StatefulSet
-      networking.k8s.io/v1beta1/Ingress
+      networking.k8s.io/v1/Ingress
   # Switch to using log-dump.sh script included in the kubekins-e2e image
   # instead of relying on the deprecated one from k/k repository.
   - name: USE_TEST_INFRA_LOG_DUMPING
