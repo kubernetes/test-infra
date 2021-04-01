@@ -93,15 +93,19 @@ func (c *ReloadingCensorer) Refresh(secrets ...string) {
 		}
 	}
 	for _, secret := range secrets {
+		toEncode := []string{secret}
 		if trimmed := strings.TrimSpace(secret); trimmed != secret {
 			secret = trimmed
+			toEncode = append(toEncode, trimmed)
 		}
 		if secret == "" {
 			continue
 		}
 		addReplacement(secret)
-		encoded := base64.StdEncoding.EncodeToString([]byte(secret))
-		addReplacement(encoded)
+		for _, item := range toEncode {
+			encoded := base64.StdEncoding.EncodeToString([]byte(item))
+			addReplacement(encoded)
+		}
 	}
 	c.Lock()
 	c.Replacer = bytereplacer.New(replacements...)

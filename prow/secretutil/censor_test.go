@@ -82,7 +82,7 @@ func TestReloadingCensorer(t *testing.T) {
 			if len(input) != len(text()) {
 				t.Errorf("%s: length of input changed from %d to %d", testCase.name, len(text()), len(input))
 			}
-			if diff := cmp.Diff(testCase.expected, input); diff != "" {
+			if diff := cmp.Diff(string(testCase.expected), string(input)); diff != "" {
 				t.Errorf("%s: got incorrect text after censor: %v", testCase.name, diff)
 			}
 		})
