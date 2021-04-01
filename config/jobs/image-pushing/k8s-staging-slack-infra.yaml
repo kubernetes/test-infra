@@ -10,6 +10,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
