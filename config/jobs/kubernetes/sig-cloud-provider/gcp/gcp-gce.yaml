@@ -117,6 +117,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-nonblocking
       testgrid-tab-name: pull-kubernetes-e2e-gce-kubetest2

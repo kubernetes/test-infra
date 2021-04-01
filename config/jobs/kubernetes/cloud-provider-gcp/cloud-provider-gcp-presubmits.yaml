@@ -30,6 +30,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-gcp
     labels:
       preset-service-account: "true"
+      preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
       description: End to end cluster creation test using kubetest2 based on kubernetes/cloud-provider-gcp.

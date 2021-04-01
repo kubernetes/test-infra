@@ -9,6 +9,7 @@ periodics:
     description: Runs conformance tests using kubetest2 against cloud-provider-gcp master on GCE
   labels:
     preset-service-account: "true"
+    preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-gcp

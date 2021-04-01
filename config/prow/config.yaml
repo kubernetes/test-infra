@@ -667,6 +667,10 @@ presets:
     value: /etc/ssh-key-secret/ssh-private
   - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
     value: /etc/ssh-key-secret/ssh-public
+  - name: GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
   volumes:
   - name: ssh
     secret:

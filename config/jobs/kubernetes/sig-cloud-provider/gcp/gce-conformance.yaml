@@ -48,6 +48,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 220m
