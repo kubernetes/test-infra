@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -47,7 +47,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -83,7 +83,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -114,7 +114,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
       command:
       - runner.sh
       - bash
@@ -151,7 +151,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"

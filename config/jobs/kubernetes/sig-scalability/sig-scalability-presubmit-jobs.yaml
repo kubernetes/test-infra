@@ -32,7 +32,7 @@ presubmits:
       fork-per-release: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -99,7 +99,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -164,7 +164,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -224,7 +224,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -296,7 +296,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -374,7 +374,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -444,7 +444,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -486,7 +486,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -549,7 +549,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
