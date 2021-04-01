@@ -1,10 +1,12 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-kind-dual-canary
+  - name: pull-kubernetes-e2e-kind-dual
     optional: true
-    always_run: false
-    skip_report: false
+    always_run: true
+    skip_report: true
     decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -49,11 +51,14 @@ presubmits:
       testgrid-tab-name: pr-sig-network-kind, dual
       description: Runs tests against a Dual Stack Kubernetes in Docker cluster
       testgrid-alert-email: antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+  - name: pull-kubernetes-e2e-kind-ipvs-dual
     optional: true
     always_run: false
     skip_report: false
     decorate: true
+    run_if_changed: '^pkg/.*/ipvs/'
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
