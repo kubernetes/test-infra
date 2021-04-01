@@ -867,7 +867,41 @@ periodics:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: autoupdate-patch
     description: Weekly module update to latest patched versions
-- cron: "05 16-22/6 * * 1-5"  # Run at 9:05 and 15:05 PST (16:05 UTC) Mon-Fri
+- cron: "05 16-22/6 * * 1-5"  # Bump with label `skip-review`. Run at 9:05 and 15:05 PST (16:05 UTC) Mon-Fri
+  name: ci-test-infra-autobump-prow-for-auto-deploy
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210401-8f0f19a905
+      command:
+      - /app/prow/cmd/generic-autobumper/app.binary
+      args:
+      - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
+      - --labels-override=skip-review # This label is used by tide for identifying trusted PR
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prow-for-auto-deploy
+    description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
+- cron: "30 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
@@ -899,7 +933,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow
-    description: runs experiment/autobumper to create/update a PR that bumps prow to the latest RC
+    description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
 - cron: "06 14-22 * * 1-5"  # Run every hour at 7:06-15:06 PST (14:06 UTC) Mon-Fri
   name: ci-test-infra-autobump-prowjobs
   cluster: test-infra-trusted
