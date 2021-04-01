@@ -136,7 +136,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
-        - --timeout=120m
+        - --timeout=150m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
         resources:
           requests:
