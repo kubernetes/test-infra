@@ -792,6 +792,20 @@ repos:
         name: area/contributor-comms
         target: both
         addedBy: humans
+  kubernetes/dns:
+    labels:
+      - color: 0052cc
+        description: Issues related to kube-dns
+        name: area/kubedns
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues related to node-local-dns
+        name: area/nodelocaldns
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/enhancements:
     labels:
       - color: 0052cc
