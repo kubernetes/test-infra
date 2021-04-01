@@ -46,10 +46,11 @@ import make_json
 MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2855
 
 
-def should_exclude(objectID, bucketID, buckets):
-   # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
-    job_name = objectID.rsplit('/')[-3] # See tests for reference
-    return job_name in buckets[bucketID].get('exclude_jobs', [])
+def should_exclude(object_id, bucket_id, buckets):
+    # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
+    if bucket_id not in buckets:
+        return False
+    return any(f'/{job}/' in object_id for job in buckets[bucket_id].get('exclude_jobs', []))
 
 
 def process_changes(results, buckets):
@@ -59,14 +60,14 @@ def process_changes(results, buckets):
     # process results, find finished builds to process
     for rec_message in results:
         eventType = rec_message.message.attributes['eventType']
-        objectID = rec_message.message.attributes['objectId']
-        bucketID = rec_message.message.attributes['bucketId']
-        exclude = should_exclude(objectID, bucketID, buckets)
-        if eventType != 'OBJECT_FINALIZE' or not objectID.endswith('/finished.json') or exclude:
+        object_id = rec_message.message.attributes['objectId']
+        bucket_id = rec_message.message.attributes['bucketId']
+        exclude = should_exclude(object_id, bucket_id, buckets)
+        if eventType != 'OBJECT_FINALIZE' or not object_id.endswith('/finished.json') or exclude:
             ack_ids.append(rec_message.ack_id)
             continue
-        job, build = objectID[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (bucketID, job)
+        job, build = object_id[:-len('/finished.json')].rsplit('/', 1)
+        job = 'gs://%s/%s' % (bucket_id, job)
         todo.append((rec_message.ack_id, job, build))
     return ack_ids, todo
 

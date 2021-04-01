@@ -70,6 +70,49 @@ class FakeSchemaField:
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
 
+class HelperTest(unittest.TestCase):
+
+    @parameterized.expand([
+        (
+            "No BucketID match",
+            "NA",
+            "IDontExist",
+            {'Bucket':{}, 'OtherBucekt':{}},
+            False,
+        ),
+        (
+            "No excluded jobs",
+            "pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json",
+            "Bucket",
+            {'Bucket':{}, 'OtherBucekt':{}},
+            False,
+        ),
+        (
+            "No excluded jobs match",
+            "pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json",
+            "Bucket",
+            {'Bucket':{'exclude_jobs':['foo', 'bar']}, 'OtherBucekt':{}},
+            False,
+        ),
+        (
+            "No excluded jobs partial match",
+            "pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json",
+            "Bucket",
+            {'Bucket':{'exclude_jobs':['foo', 'bar', 'pull-kubernetes']}, 'OtherBucekt':{}},
+            False,
+        ),
+        (
+            "Excluded jobs match",
+            "pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json",
+            "Bucket",
+            {'Bucket':{'exclude_jobs':['foo', 'bar', 'pull-kubernetes-bazel-test']}, 'OtherBucekt':{}},
+            True,
+        ),
+    ])
+    def test_should_exclude(self, _, object_id, bucket_id, buckets, expected):
+        got = stream.should_exclude(object_id, bucket_id, buckets)
+        self.assertEqual(got, expected)
+
 
 class StreamTest(unittest.TestCase):
 
