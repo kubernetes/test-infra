@@ -17,9 +17,10 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/sirupsen/logrus"
 
@@ -30,8 +31,10 @@ import (
 
 func parseOptions() (*bumper.Options, error) {
 	var config string
+	var labelsOverride []string
 
 	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
+	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
 	flag.Parse()
 
 	var o bumper.Options
@@ -45,6 +48,9 @@ func parseOptions() (*bumper.Options, error) {
 		return nil, fmt.Errorf("Failed to parse yaml file, %s", err)
 	}
 
+	if labelsOverride != nil {
+		o.Labels = labelsOverride
+	}
 	return &o, nil
 }
 
