@@ -125,6 +125,7 @@ presubmit_template = """
             --cloud-provider=aws \\
             --create-args="{{create_args}}" \\
             --kubernetes-version={{k8s_deploy_url}} \\
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \\
             {%- if terraform_version %}
             --terraform-version={{terraform_version}} \\
             {%- endif %}
