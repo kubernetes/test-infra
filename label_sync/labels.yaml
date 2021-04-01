@@ -1488,6 +1488,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: f6c5d8
+        description: Issues or PRs that need to be closed before the next CAPI release
+        name: kind/release-blocking
+        target: both
+        prowPlugin: label
+        addedBy: approvers
       - color: 0052cc
         description: Issues or PRs related to clusterctl
         name: area/clusterctl
@@ -1559,12 +1565,6 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-      - color: f6c5d8
-        description: Issues or PRs that need to be closed before the next CAPI release
-        name: release-blocking
-        target: both
-        prowPlugin: label
-        addedBy: approvers
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
