@@ -51,6 +51,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -115,6 +117,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -179,6 +183,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -243,6 +249,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -307,6 +315,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -371,6 +381,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
@@ -435,6 +447,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"

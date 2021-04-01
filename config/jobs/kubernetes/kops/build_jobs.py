@@ -151,6 +151,8 @@ presubmit_template = """
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
+        - name: GOPATH
+          value: /home/prow/go
         resources:
           requests:
             cpu: "2"
