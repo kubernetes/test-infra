@@ -16,6 +16,7 @@
 - [Labels that apply to kubernetes-sigs/kind, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskind-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/dns, only for issues](#labels-that-apply-to-kubernetesdns-only-for-issues)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/enhancements, only for issues](#labels-that-apply-to-kubernetesenhancements-only-for-issues)
 - [Labels that apply to kubernetes/k8s.io, for both issues and PRs](#labels-that-apply-to-kubernetesk8s.io-for-both-issues-and-prs)
@@ -255,6 +256,13 @@ larger set of contributors to apply/remove them.
 | <a id="area/na-summit" href="#area/na-summit">`area/na-summit`</a> | Issues or PRs related to the Contributor Summit in North America| label | |
 | <a id="area/release-team" href="#area/release-team">`area/release-team`</a> | Issues or PRs related to the release-team subproject| label | |
 | <a id="area/slack-management" href="#area/slack-management">`area/slack-management`</a> | Issues or PRs related to the Slack Management subproject| label | |
+
+## Labels that apply to kubernetes/dns, only for issues
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/kubedns" href="#area/kubedns">`area/kubedns`</a> | Issues related to kube-dns| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/nodelocaldns" href="#area/nodelocaldns">`area/nodelocaldns`</a> | Issues related to node-local-dns| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/enhancements, for both issues and PRs
 
