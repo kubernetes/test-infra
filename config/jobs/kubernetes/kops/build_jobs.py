@@ -91,6 +91,73 @@ periodic_template = """
           memory: 3Gi
 """
 
+presubmit_template = """
+  - name: {{job_name}}
+    branches:
+    - master
+    run_if_changed: '{{run_if_changed}}'
+    skip_report: {{skip_report}}
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: {{job_timeout}}
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+            make test-e2e-install
+            kubetest2 kops \\
+            -v 2 \\
+            --up --build --down \\
+            --cloud-provider=aws \\
+            --create-args="{{create_args}}" \\
+            --kubernetes-version={{k8s_deploy_url}} \\
+            {%- if terraform_version %}
+            --terraform-version={{terraform_version}} \\
+            {%- endif %}
+            --test=kops \\
+            -- \\
+            --ginkgo-args="--debug" \\
+            --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \\
+            {%- if test_package_bucket %}
+            --test-package-bucket={{test_package_bucket}} \\
+            {%- endif %}
+            {%- if test_package_dir %}
+            --test-package-dir={{test_package_dir}} \\
+            {%- endif %}
+            --test-package-marker={{marker}} \\
+            --parallel={{test_parallelism}} \\
+            {%- if focus_regex %}
+            --focus-regex="{{focus_regex}}" \\
+            {%- endif %}
+            --skip-regex="{{skip_regex}}"
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: KUBE_SSH_USER
+          value: {{kops_ssh_user}}
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+"""
+
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
 # and ideally linked to a bug, and removed once the bug is fixed
@@ -377,6 +444,91 @@ def build_test(cloud='aws',
     for line in extra.splitlines():
         output += f"  {line}\n"
     return output, runs_per_week
+
+# Returns a string representing a presubmit prow job YAML
+def presubmit_test(cloud='aws',
+                   distro='u2004',
+                   networking=None,
+                   container_runtime='docker',
+                   k8s_version='latest',
+                   kops_channel='alpha',
+                   name=None,
+                   tab_name=None,
+                   feature_flags=(),
+                   extra_flags=None,
+                   extra_dashboards=None,
+                   test_parallelism=25,
+                   test_timeout_minutes=60,
+                   skip_override=None,
+                   focus_regex=None,
+                   run_if_changed=None,
+                   skip_report=False):
+    # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
+
+    kops_image = distro_images[distro]
+    kops_ssh_user = distros_ssh_user[distro]
+
+    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
+
+    tmpl = jinja2.Template(presubmit_template)
+    job = tmpl.render(
+        job_name=name,
+        kops_ssh_user=kops_ssh_user,
+        create_args=args,
+        k8s_deploy_url=k8s_deploy_url,
+        test_parallelism=str(test_parallelism),
+        job_timeout=str(test_timeout_minutes + 30) + 'm',
+        test_timeout=str(test_timeout_minutes) + 'm',
+        marker=marker,
+        skip_regex=skip_override,
+        kops_feature_flags=','.join(feature_flags),
+        test_package_bucket=test_package_bucket,
+        test_package_dir=test_package_dir,
+        focus_regex=focus_regex,
+        run_if_changed=run_if_changed,
+        skip_report='true' if skip_report else 'false',
+    )
+
+    spec = {
+        'cloud': cloud,
+        'networking': networking,
+        'distro': distro,
+        'k8s_version': k8s_version,
+        'container_runtime': container_runtime,
+        'kops_channel': kops_channel,
+    }
+    if feature_flags:
+        spec['feature_flags'] = ','.join(feature_flags)
+    if extra_flags:
+        spec['extra_flags'] = ' '.join(extra_flags)
+    jsonspec = json.dumps(spec, sort_keys=True)
+
+    dashboards = [
+        'presubmits-kops',
+        'kops-presubmits',
+        'sig-cluster-lifecycle-kops',
+        'kops-kubetest2',
+        f"kops-distro-{distro}",
+        f"kops-k8s-{k8s_version or 'latest'}",
+    ]
+    if extra_dashboards:
+        dashboards.extend(extra_dashboards)
+
+    annotations = {
+        'testgrid-dashboards': ', '.join(sorted(dashboards)),
+        'testgrid-days-of-results': '90',
+        'testgrid-tab-name': tab_name,
+    }
+    for (k, v) in spec.items():
+        annotations[f"test.kops.k8s.io/{k}"] = v or ""
+
+    extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
+
+    output = f"\n# {jsonspec}{job}\n"
+    for line in extra.splitlines():
+        output += f"    {line}\n"
+    return output
 
 ####################
 # Grid Definitions #
@@ -706,6 +858,52 @@ def generate_pipeline():
         )
     return results
 
+########################################
+# kops-presubmits-network-plugins.yaml #
+########################################
+def generate_presubmit_network_plugins():
+    plugins = {
+        'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)', # pylint: disable=line-too-long
+        'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)', # pylint: disable=line-too-long
+        'canal': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/|nodeup\/pkg\/model\/networking\/(flannel|canal).go)', # pylint: disable=line-too-long
+        'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
+        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|nodeup\/pkg\/model\/(sysctls|networking\/flannel).go|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
+        'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
+        'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
+    }
+    results = []
+    skip_base = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+    for plugin, run_if_changed in plugins.items():
+        networking_arg = plugin
+        skip_regex = skip_base
+        if plugin == 'cilium':
+            skip_regex += r'|should.set.TCP.CLOSE_WAIT'
+        else:
+            skip_regex += r'|Services.*functioning.*NodePort'
+        if plugin in ['calico', 'canal', 'weave', 'cilium']:
+            skip_regex += r'|Services.*rejected.*endpoints'
+        if plugin == 'kuberouter':
+            skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
+            networking_arg = 'kube-router'
+        if plugin in ['canal', 'flannel']:
+            skip_regex += r'|up\sand\sdown|headless|service-proxy-name'
+        results.append(
+            presubmit_test(
+                container_runtime='containerd',
+                k8s_version='stable',
+                kops_channel='alpha',
+                name=f"pull-kops-e2e-cni-{plugin}",
+                tab_name=f"e2e-{plugin}",
+                networking=networking_arg,
+                extra_flags=['--node-size=t3.large'],
+                extra_dashboards=['kops-network-plugins'],
+                skip_override=skip_regex,
+                run_if_changed=run_if_changed,
+                skip_report=False,
+            )
+        )
+    return results
+
 ########################
 # YAML File Generation #
 ########################
@@ -716,6 +914,10 @@ periodics_files = {
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
     'kops-periodics-versions.yaml': generate_versions,
     'kops-periodics-pipeline.yaml': generate_pipeline,
+}
+
+presubmits_files = {
+    'kops-presubmits-network-plugins.yaml': generate_presubmit_network_plugins,
 }
 
 def main():
@@ -731,6 +933,19 @@ def main():
         output.insert(0, "# Test jobs generated by build_jobs.py (do not manually edit)\n")
         output.insert(1, f"# {job_count} jobs, total of {runs_per_week} runs per week\n")
         output.insert(2, "periodics:\n")
+        with open(filename, 'w') as fd:
+            fd.write(''.join(output))
+    for filename, generate_func in presubmits_files.items():
+        print(f"Generating {filename}")
+        output = []
+        job_count = 0
+        for res in generate_func():
+            output.append(res)
+            job_count += 1
+        output.insert(0, "# Test jobs generated by build_jobs.py (do not manually edit)\n")
+        output.insert(1, f"# {job_count} jobs\n")
+        output.insert(2, "presubmits:\n")
+        output.insert(3, "  kubernetes/kops:\n")
         with open(filename, 'w') as fd:
             fd.write(''.join(output))
 
