@@ -104,7 +104,6 @@ presubmit_template = """
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
     decorate: true
     decoration_config:
       timeout: {{job_timeout}}
