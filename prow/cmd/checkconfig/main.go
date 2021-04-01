@@ -21,9 +21,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -89,22 +91,23 @@ func (o *options) warningEnabled(warning string) bool {
 }
 
 const (
-	mismatchedTideWarning        = "mismatched-tide"
-	mismatchedTideLenientWarning = "mismatched-tide-lenient"
-	tideStrictBranchWarning      = "tide-strict-branch"
-	tideContextPolicy            = "tide-context-policy"
-	nonDecoratedJobsWarning      = "non-decorated-jobs"
-	validDecorationConfigWarning = "valid-decoration-config"
-	jobNameLengthWarning         = "long-job-names"
-	jobRefsDuplicationWarning    = "duplicate-job-refs"
-	needsOkToTestWarning         = "needs-ok-to-test"
-	managedWebhooksWarning       = "managed-webhooks"
-	validateOwnersWarning        = "validate-owners"
-	missingTriggerWarning        = "missing-trigger"
-	validateURLsWarning          = "validate-urls"
-	unknownFieldsWarning         = "unknown-fields"
-	verifyOwnersFilePresence     = "verify-owners-presence"
-	validateClusterFieldWarning  = "validate-cluster-field"
+	mismatchedTideWarning                         = "mismatched-tide"
+	mismatchedTideLenientWarning                  = "mismatched-tide-lenient"
+	tideStrictBranchWarning                       = "tide-strict-branch"
+	tideContextPolicy                             = "tide-context-policy"
+	nonDecoratedJobsWarning                       = "non-decorated-jobs"
+	validDecorationConfigWarning                  = "valid-decoration-config"
+	jobNameLengthWarning                          = "long-job-names"
+	jobRefsDuplicationWarning                     = "duplicate-job-refs"
+	needsOkToTestWarning                          = "needs-ok-to-test"
+	managedWebhooksWarning                        = "managed-webhooks"
+	validateOwnersWarning                         = "validate-owners"
+	missingTriggerWarning                         = "missing-trigger"
+	validateURLsWarning                           = "validate-urls"
+	unknownFieldsWarning                          = "unknown-fields"
+	verifyOwnersFilePresence                      = "verify-owners-presence"
+	validateClusterFieldWarning                   = "validate-cluster-field"
+	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
 )
 
 var defaultWarnings = []string{
@@ -362,6 +365,12 @@ func validate(o options) error {
 	if o.warningEnabled(validateClusterFieldWarning) {
 		if err := validateCluster(cfg); err != nil {
 			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
+		for _, supplementalProwConfigDir := range o.supplementalProwConfigDirs.Strings() {
+			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filepath.Dir(supplementalProwConfigDir), os.DirFS("/")))
 		}
 	}
 
@@ -1103,4 +1112,121 @@ func validateCluster(cfg *config.Config) error {
 		}
 	}
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS) error {
+	var errs []error
+	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			errs = append(errs, fmt.Errorf("error when walking: %w", err))
+			return nil
+		}
+		// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+		// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+		// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+		// get duplicate data.
+		if strings.HasPrefix(d.Name(), "..") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+
+		fs.ReadFile(filesystem, path)
+
+		if d.IsDir() || (filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml") {
+			return nil
+		}
+
+		pathWithoutRoot := strings.TrimPrefix(path, root)
+		pathWithoutRoot = strings.TrimPrefix(pathWithoutRoot, "/")
+
+		pathElements := strings.Split(pathWithoutRoot, "/")
+		nestingDepth := len(pathElements) - 1
+
+		var isOrgConfig, isRepoConfig bool
+		switch nestingDepth {
+		case 0:
+			// Global config, might contain anything or not even be a Prow config
+			return nil
+		case 1:
+			isOrgConfig = true
+		case 2:
+			isRepoConfig = true
+		default:
+			errs = append(errs, fmt.Errorf("config %s is at an invalid location. All configs must be below %s. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.", path, root))
+			return nil
+		}
+
+		rawCfg, err := fs.ReadFile(filesystem, path)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
+			return nil
+		}
+		var prowCfg config.ProwConfig
+		if err := yaml.Unmarshal(rawCfg, &prowCfg); err != nil {
+			errs = append(errs, fmt.Errorf("failed to deserialize config at %s: %w", path, err))
+			return nil
+		}
+
+		isGlobal, targetedOrgs, targetedRepos := prowCfg.HasConfigFor()
+		if isOrgConfig {
+			expectedTargetOrg := pathElements[0]
+			if !isGlobal && len(targetedOrgs) == 1 && targetedOrgs.Has(expectedTargetOrg) && len(targetedRepos) == 0 {
+				return nil
+			}
+			errMsg := fmt.Sprintf("config %s is invalid: Must contain only config for org %s, but", path, expectedTargetOrg)
+			var needsAnd bool
+			if isGlobal {
+				errMsg += " contains global config"
+				needsAnd = true
+			}
+			for _, org := range targetedOrgs.Delete(expectedTargetOrg).List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
+				needsAnd = true
+			}
+			for _, repo := range targetedRepos.List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
+				needsAnd = true
+			}
+			errs = append(errs, errors.New(errMsg))
+			return nil
+		}
+
+		if isRepoConfig {
+			expectedTargetRepo := pathElements[0] + "/" + pathElements[1]
+			if !isGlobal && len(targetedOrgs) == 0 && len(targetedRepos) == 1 && targetedRepos.Has(expectedTargetRepo) {
+				return nil
+			}
+
+			errMsg := fmt.Sprintf("config %s is invalid: Must only contain config for repo %s, but", path, expectedTargetRepo)
+			var needsAnd bool
+			if isGlobal {
+				errMsg += " contains global config"
+				needsAnd = true
+			}
+			for _, org := range targetedOrgs.List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
+				needsAnd = true
+			}
+			for _, repo := range targetedRepos.Delete(expectedTargetRepo).List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
+				needsAnd = true
+			}
+			errs = append(errs, errors.New(errMsg))
+			return nil
+		}
+
+		// We should have left the function earlier. Error out so bugs in this code can not be abused.
+		return fmt.Errorf("BUG: You should never see this. Path: %s, isGlobal: %t, targetedOrgs: %v, targetedRepos: %v", path, isGlobal, targetedOrgs, targetedRepos)
+	}))
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func prefixWithAndIfNeeded(s string, needsAnd bool) string {
+	if needsAnd {
+		return " and" + s
+	}
+	return s
 }

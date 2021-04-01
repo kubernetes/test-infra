@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
@@ -1650,5 +1651,105 @@ func TestValidateClusterField(t *testing.T) {
 				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
 			}
 		})
+	}
+}
+
+func TestValidateAdditionalProwConfigIsInOrgRepoDirectoryStructure(t *testing.T) {
+	t.Parallel()
+	const root = "root"
+	const invalidConfig = `[]`
+	const validGlobalConfig = `
+sinker:
+  exclude_clusters:
+    - default`
+	const validOrgConfig = `
+branch-protection:
+  orgs:
+    my-org:
+      protect: true`
+	const validRepoConfig = `
+branch-protection:
+  orgs:
+    my-org:
+      repos:
+        my-repo:
+          protect: true`
+
+	tests := []struct {
+		name string
+		fs   fstest.MapFS
+
+		expectedErrorMessage string
+	}{
+		{
+			name: "No configs, no error",
+			fs:   testfs(root+"/OWNERS", "some-owners"),
+		},
+		{
+			name: "Config directly below root, no error",
+			fs:   testfs(root+"/cfg.yaml", validGlobalConfig),
+		},
+		{
+			name: "Valid org config",
+			fs:   testfs(root+"/my-org/cfg.yaml", validOrgConfig),
+		},
+		{
+			name:                 "Valid org config for wrong org",
+			fs:                   testfs(root+"/my-other-org/cfg.yaml", validOrgConfig),
+			expectedErrorMessage: `config root/my-other-org/cfg.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org`,
+		},
+		{
+			name:                 "Invalid org config",
+			fs:                   testfs(root+"/my-org/cfg.yaml", invalidConfig),
+			expectedErrorMessage: `failed to deserialize config at root/my-org/cfg.yaml: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.ProwConfig`,
+		},
+		{
+			name:                 "Repo config at org level",
+			fs:                   testfs(root+"/my-org/cfg.yaml", validRepoConfig),
+			expectedErrorMessage: `config root/my-org/cfg.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo`,
+		},
+		{
+			name: "Valid repo config",
+			fs:   testfs(root+"/my-org/my-repo/cfg.yaml", validRepoConfig),
+		},
+		{
+			name:                 "Valid repo config for wrong repo",
+			fs:                   testfs(root+"/my-org/my-other-repo/cfg.yaml", validRepoConfig),
+			expectedErrorMessage: `config root/my-org/my-other-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo`,
+		},
+		{
+			name:                 "Invalid repo config",
+			fs:                   testfs(root+"/my-org/my-repo/cfg.yaml", invalidConfig),
+			expectedErrorMessage: `failed to deserialize config at root/my-org/my-repo/cfg.yaml: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.ProwConfig`,
+		},
+		{
+			name:                 "Org config at repo level",
+			fs:                   testfs(root+"/my-org/my-repo/cfg.yaml", validOrgConfig),
+			expectedErrorMessage: `config root/my-org/my-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org`,
+		},
+		{
+			name:                 "Nested too deeply",
+			fs:                   testfs(root+"/my-org/my-repo/nest/cfg.yaml", validOrgConfig),
+			expectedErrorMessage: `config root/my-org/my-repo/nest/cfg.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrorMessage != errMsg {
+				t.Errorf("expected error %s, got %s", tc.expectedErrorMessage, errMsg)
+			}
+		})
+	}
+}
+
+func testfs(path, data string) fstest.MapFS {
+	return fstest.MapFS{
+		path: &fstest.MapFile{Data: []byte(data)},
 	}
 }

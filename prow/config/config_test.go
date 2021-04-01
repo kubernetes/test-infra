@@ -33,14 +33,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	fuzz "github.com/google/gofuzz"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
-	fuzz "github.com/google/gofuzz"
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -6178,6 +6179,90 @@ func TestTruncate(t *testing.T) {
 			if exact && out != tc.out {
 				t.Errorf("%s != expected %s", out, tc.out)
 			}
+		})
+	}
+}
+
+func TestHasConfigFor(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name            string
+		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String)
+	}{
+		{
+			name: "Any non-empty config with empty branchprotection.org property is considered global",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig.BranchProtection = BranchProtection{}
+				return fuzzedConfig, true, nil, nil
+			},
+		},
+		{
+			name: "Any config that is empty except for branchprotection.orgs with empty repoo is considered to be for those orgs",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs = sets.String{}
+				result := &ProwConfig{BranchProtection: BranchProtection{Orgs: map[string]Org{}}}
+				for org, orgVal := range fuzzedConfig.BranchProtection.Orgs {
+					orgVal.Repos = nil
+					expectOrgs.Insert(org)
+					result.BranchProtection.Orgs[org] = orgVal
+				}
+				return result, false, expectOrgs, nil
+			},
+		},
+		{
+			name: "Any config that is empty except for repos in branchprotection config is considered to be for those repos",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectRepos = sets.String{}
+				result := &ProwConfig{BranchProtection: BranchProtection{Orgs: map[string]Org{}}}
+				for org, orgVal := range fuzzedConfig.BranchProtection.Orgs {
+					result.BranchProtection.Orgs[org] = Org{Repos: map[string]Repo{}}
+					for repo, repoVal := range orgVal.Repos {
+						expectRepos.Insert(org + "/" + repo)
+						result.BranchProtection.Orgs[org].Repos[repo] = repoVal
+					}
+				}
+				return result, false, nil, expectRepos
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed).
+		// The fuzzer doesn't know what to put into interface fields, so we have to custom handle them.
+		Funcs(
+			// This is not an interface, but it contains an interface type. Handling the interface type
+			// itself makes the bazel-built tests panic with a nullpointer deref but works fine with
+			// go test.
+			func(t *template.Template, _ fuzz.Continue) {
+				*t = *template.New("whatever")
+			},
+			func(*labels.Selector, fuzz.Continue) {},
+		)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for i := 0; i < 100; i++ {
+				fuzzedConfig := &ProwConfig{}
+				fuzzer.Fuzz(fuzzedConfig)
+
+				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
+				actualIsGlobal, actualOrgs, actualRepos := fuzzedAndManipulatedConfig.HasConfigFor()
+
+				if expectIsGlobal != actualIsGlobal {
+					t.Errorf("exepcted isGlobal: %t, got: %t", expectIsGlobal, actualIsGlobal)
+				}
+
+				if diff := cmp.Diff(expectOrgs, actualOrgs); diff != "" {
+					t.Errorf("expected orgs differ from actual: %s", diff)
+				}
+
+				if diff := cmp.Diff(expectRepos, actualRepos); diff != "" {
+					t.Errorf("expected repos differ from actual: %s", diff)
+				}
+			}
+
 		})
 	}
 }
