@@ -19,7 +19,7 @@ import yaml
 import boto3 # pylint: disable=import-error
 import jinja2 # pylint: disable=import-error
 
-job_template = """
+periodic_template = """
 - name: {{job_name}}
   cron: '{{cron}}'
   labels:
@@ -159,6 +159,42 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return True
     return float(k8s_version) > float(kops_version)
 
+def k8s_version_info(k8s_version):
+    test_package_bucket = ''
+    test_package_dir = ''
+    if k8s_version == 'latest':
+        marker = 'latest.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
+    elif k8s_version == 'ci':
+        marker = 'latest.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt"
+        test_package_bucket = 'kubernetes-release-dev'
+        test_package_dir = 'ci'
+    elif k8s_version == 'stable':
+        marker = 'stable.txt'
+        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+    elif k8s_version:
+        marker = f"stable-{k8s_version}.txt"
+        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
+    else:
+        raise Exception('missing required k8s_version')
+    return marker, k8s_deploy_url, test_package_bucket, test_package_dir
+
+def create_args(kops_channel, networking, container_runtime, extra_flags, kops_image):
+    args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
+    if container_runtime:
+        args += f" --container-runtime={container_runtime}"
+
+    image_overridden = False
+    if extra_flags:
+        for arg in extra_flags:
+            if "--image=" in arg:
+                image_overridden = True
+            args = args + " " + arg
+    if not image_overridden:
+        args = f"--image='{kops_image}' {args}"
+    return args.strip()
+
 def latest_aws_image(owner, name):
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
@@ -207,7 +243,7 @@ distros_ssh_user = {
 # Build Test #
 ##############
 
-# Returns a string representing the prow job YAML and the number of job invocations per week
+# Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
                distro='u2004',
                networking=None,
@@ -247,40 +283,8 @@ def build_test(cloud='aws',
     kops_image = distro_images[distro]
     kops_ssh_user = distros_ssh_user[distro]
 
-    test_package_bucket = ''
-    test_package_dir = ''
-    if k8s_version == 'latest':
-        marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
-    elif k8s_version == 'ci':
-        marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt"
-        test_package_bucket = 'kubernetes-release-dev'
-        test_package_dir = 'ci'
-    elif k8s_version == 'stable':
-        marker = 'stable.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-    elif k8s_version:
-        marker = f"stable-{k8s_version}.txt"
-        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
-    else:
-        raise Exception('missing required k8s_version')
-
-    create_args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
-
-    if container_runtime:
-        create_args += f" --container-runtime={container_runtime}"
-
-    image_overridden = False
-    if extra_flags:
-        for arg in extra_flags:
-            if "--image=" in arg:
-                image_overridden = True
-            create_args = create_args + " " + arg
-    if not image_overridden:
-        create_args = f"--image='{kops_image}' {create_args}"
-
-    create_args = create_args.strip()
+    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
 
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
     if networking == "cilium":
@@ -312,12 +316,12 @@ def build_test(cloud='aws',
 
     cron, runs_per_week = build_cron(tab, runs_per_day)
 
-    tmpl = jinja2.Template(job_template)
+    tmpl = jinja2.Template(periodic_template)
     job = tmpl.render(
         job_name=job_name,
         cron=cron,
         kops_ssh_user=kops_ssh_user,
-        create_args=create_args,
+        create_args=args,
         k8s_deploy_url=k8s_deploy_url,
         kops_deploy_url=kops_deploy_url,
         test_parallelism=str(test_parallelism),
@@ -724,7 +728,7 @@ def main():
             output.append(res[0])
             runs_per_week += res[1]
             job_count += 1
-        output.insert(0, "# Test jobs generated by build_grid.py (do not manually edit)\n")
+        output.insert(0, "# Test jobs generated by build_jobs.py (do not manually edit)\n")
         output.insert(1, f"# {job_count} jobs, total of {runs_per_week} runs per week\n")
         output.insert(2, "periodics:\n")
         with open(filename, 'w') as fd:
