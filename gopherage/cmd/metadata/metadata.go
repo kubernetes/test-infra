@@ -19,6 +19,7 @@ package metadata
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -33,41 +34,122 @@ const (
 	repo_owner = "REPO_OWNER"
 )
 
-type flags struct {
+type Flags struct {
 	outputFile    string
 	host          string
 	project       string
+	workspaceRoot string
+	traceType     string
 	commitID      string
 	ref           string
-	workspaceRoot string
+	source        string
+	replace       string
+	patchSet      string
+	changeNum     string
 }
 
+type Metadata interface{}
+
+type gitRunner func(...string) (string, error)
+type envFetcher func(string) string
+
 type CoverageMetadata struct {
-	Host     string `json:"host"`
-	Project  string `json:"project"`
-	Root     string `json:"workspace_root"`
-	Ref      string `json:"ref"`
-	CommitID string `json:"commit_id"`
+	Host      string `json:"host"`
+	Project   string `json:"project"`
+	Root      string `json:"workspace_root"`
+	TraceType string `json:"trace_type"`
+}
+
+type AbsMetadata struct {
+	CoverageMetadata
+	CommitID    string `json:"commit_id"`
+	Ref         string `json:"ref"`
+	Source      string `json:"source"`
+	ReplaceRoot string `json:"git_project"`
+}
+
+type IncMetadata struct {
+	CoverageMetadata
+	ChangeNum string `json:"changelist_num"`
+	PatchSet  string `json:"patchset_num"`
 }
 
 // MakeCommand returns a `junit` command.
 func MakeCommand() *cobra.Command {
-	flags := &flags{}
-	cmd := &cobra.Command{
+	Flags := &Flags{}
+	baseCmd := &cobra.Command{
 		Use:   "metadata [...fields]",
 		Short: "Produce json file containing metadata about coverage collection.",
 		Long:  `Builds a json file containing information about the repo .`,
 		Run: func(cmd *cobra.Command, args []string) {
-			run(flags, cmd, args)
+			fmt.Println("Sub command required [inc, abs]")
+			os.Exit(1)
 		},
 	}
-	cmd.Flags().StringVarP(&flags.outputFile, "output", "o", "-", "output file")
-	cmd.Flags().StringVarP(&flags.host, "host", "", "", "Name of repo host")
-	cmd.Flags().StringVarP(&flags.project, "project", "p", "", "Project name")
-	cmd.Flags().StringVarP(&flags.commitID, "commit", "c", "", "Current Commit Hash (git rev-parse HEAD)")
-	cmd.Flags().StringVarP(&flags.ref, "ref", "r", "", "Current branch ref (git branch --show-current).")
-	cmd.Flags().StringVarP(&flags.workspaceRoot, "root", "w", "", "path to root of repo")
-	return cmd
+
+	absCmd := &cobra.Command{
+		Use:   "abs [...fields]",
+		Short: "Build abs metadata file.",
+		Long:  "Produce json file containing metadata about absremental coverage collection.",
+		Run: func(cmd *cobra.Command, args []string) {
+			ValidateBase(Flags, cmd, os.Getenv)
+			ValidateAbs(Flags, gitCommand)
+			metadata := &AbsMetadata{
+				CoverageMetadata: CoverageMetadata{
+					Host:      Flags.host,
+					Project:   Flags.project,
+					Root:      Flags.workspaceRoot,
+					TraceType: Flags.traceType,
+				},
+				CommitID:    Flags.commitID,
+				Ref:         Flags.ref,
+				Source:      Flags.source,
+				ReplaceRoot: Flags.replace,
+			}
+			WriteJson(Flags, metadata)
+		},
+	}
+	absCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
+	absCmd.Flags().StringVarP(&Flags.host, "host", "", "", "Name of repo host")
+	absCmd.Flags().StringVarP(&Flags.project, "project", "p", "", "Project name")
+	absCmd.Flags().StringVarP(&Flags.workspaceRoot, "root", "w", "", "path to workspace root of repo")
+	absCmd.Flags().StringVarP(&Flags.traceType, "trace", "t", "COV", "type of coverage [COV, LCOV]")
+	absCmd.Flags().StringVarP(&Flags.commitID, "commit", "c", "", "Current Commit Hash (git rev-parse HEAD)")
+	absCmd.Flags().StringVarP(&Flags.ref, "ref", "r", "", "Current branch ref (git branch --show-current).")
+	absCmd.Flags().StringVarP(&Flags.source, "source", "s", "", "custom field for information about coverage source")
+	absCmd.Flags().StringVarP(&Flags.replace, "replace_root", "", "", "path to replace root of coverage paths with")
+
+	incCmd := &cobra.Command{
+		Use:   "inc [...fields]",
+		Short: "Build inc metadata file.",
+		Long:  "Produce json file containing metadata about incremental coverage collection.",
+		Run: func(cmd *cobra.Command, args []string) {
+			ValidateBase(Flags, cmd, os.Getenv)
+			ValidateInc(Flags)
+			metadata := &IncMetadata{
+				CoverageMetadata: CoverageMetadata{
+					Host:      Flags.host,
+					Project:   Flags.project,
+					Root:      Flags.workspaceRoot,
+					TraceType: Flags.traceType,
+				},
+				ChangeNum: Flags.changeNum,
+				PatchSet:  Flags.patchSet,
+			}
+			WriteJson(Flags, metadata)
+		},
+	}
+	incCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
+	incCmd.Flags().StringVarP(&Flags.host, "host", "", "", "Name of repo host")
+	incCmd.Flags().StringVarP(&Flags.project, "project", "p", "", "Project name")
+	incCmd.Flags().StringVarP(&Flags.workspaceRoot, "root", "w", "", "path to workspace root of repo")
+	incCmd.Flags().StringVarP(&Flags.traceType, "trace", "t", "COV", "type of coverage [COV, LCOV]")
+	incCmd.Flags().StringVarP(&Flags.changeNum, "changelist_num", "", "", "Gerrit change number")
+	incCmd.Flags().StringVarP(&Flags.patchSet, "patchset_num", "", "", "Gerrit Patchset Number")
+
+	baseCmd.AddCommand(incCmd, absCmd)
+
+	return baseCmd
 }
 
 func gitCommand(args ...string) (string, error) {
@@ -82,64 +164,71 @@ func gitCommand(args ...string) (string, error) {
 	return strings.TrimSuffix(out.String(), "\n"), nil
 }
 
-func run(flags *flags, cmd *cobra.Command, args []string) {
-	if flags.project == "" {
-		project := os.Getenv(repo_owner)
+func ValidateBase(Flags *Flags, cmd *cobra.Command, env envFetcher) error {
+	if Flags.project == "" {
+		project := env(repo_owner)
 		if project == "" {
-			fmt.Fprintf(os.Stdout, "Failed to collect project from ENV: (%s) not found", repo_owner)
 			cmd.Usage()
-			os.Exit(1)
+			return fmt.Errorf("Failed to collect project from ENV: (%s) not found", repo_owner)
 		}
-		flags.project = project
+		Flags.project = project
 	}
 
-	if flags.commitID == "" {
-		commit, err := gitCommand("rev-parse", "HEAD")
+	return nil
+}
+
+func ValidateInc(Flags *Flags) error {
+	if Flags.changeNum == "" {
+		return errors.New("Gerrit change number is required")
+	}
+
+	if Flags.patchSet == "" {
+		return errors.New("Gerrit patchset number is required")
+	}
+	return nil
+}
+
+func ValidateAbs(Flags *Flags, r gitRunner) error {
+	if Flags.commitID == "" {
+		commit, err := r("rev-parse", "HEAD")
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to fetch Commit Hash from within covered repo: %v.", err)
-			os.Exit(1)
+			return fmt.Errorf("Failed to fetch Commit Hash from within covered repo: %v.", err)
 		}
-		flags.commitID = commit
+		Flags.commitID = commit
 	}
 
-	if flags.ref == "" {
-		ref, err := gitCommand("branch", "--show-current")
+	if Flags.ref == "" {
+		ref, err := r("branch", "--show-current")
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to fetch ref from within covered repo: %v. Defaulting to HEAD", err)
 			ref = "HEAD"
 		}
-		flags.ref = ref
+		Flags.ref = ref
 	}
+	return nil
+}
 
-	metadata := &CoverageMetadata{
-		Host:     flags.host,
-		Project:  flags.project,
-		Root:     flags.workspaceRoot,
-		Ref:      flags.ref,
-		CommitID: flags.commitID,
-	}
+func WriteJson(Flags *Flags, m Metadata) error {
+	var file io.WriteCloser
 
-	j, err := json.Marshal(metadata)
+	j, err := json.Marshal(m)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to build json: %v.", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to build json: %v.", err)
 	}
 
-	var file io.WriteCloser
-	if flags.outputFile == "-" {
+	if Flags.outputFile == "-" {
 		file = os.Stdout
 	} else {
-		file, err = os.Create(flags.outputFile)
+		file, err = os.Create(Flags.outputFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to create file: %v.", err)
-			os.Exit(1)
+			return fmt.Errorf("Failed to create file: %v.", err)
 		}
 	}
 	if _, err := file.Write(j); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write json: %v.", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to write json: %v.", err)
 	}
 	file.Close()
+	return nil
 }
