@@ -11,7 +11,8 @@ dashboard_groups:
     - sig-windows-sac
     - sig-windows-containerd-hyperv
     - sig-windows-networking
-
+    - sig-windows-containerd-runtime-signal
+      
 dashboards:
 - name: sig-windows-signal
 - name: sig-windows-1.18-release
@@ -60,7 +61,12 @@ dashboards:
   - name: sac2004-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
     test_group_name: containerd-windows-sac2004-sdnoverlay
-
+- name: sig-windows-containerd-runtime-signal
+  dashboard_tab:
+  - name: win-1909-containerd-master-integration
+    description: Runs containerd integration & cri-integration tests on Windows (SAC 1909)
+    test_group_name: integration-containerd-windows-sac1909
+ 
 test_groups:
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-winbridge-docker-dsr-disabled-master-windows
@@ -87,3 +93,8 @@ test_groups:
   gcs_prefix: k8s-ovn/logs/containerd-windows-sac2004-sdnbridge
 - name: containerd-windows-sac2004-sdnoverlay
   gcs_prefix: k8s-ovn/logs/containerd-windows-sac2004-sdnoverlay
+# Containerd Runtime integration test groups
+- name: integration-containerd-windows-sac1909
+  gcs_prefix: containerd-integration/logs/windows-sac1909
+ 
+     
