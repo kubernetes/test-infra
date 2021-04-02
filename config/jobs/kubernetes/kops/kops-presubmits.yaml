@@ -50,43 +50,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-test
-  - name: pull-kops-e2e-kubernetes-aws-kubetest2
-    branches:
-    - master
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - make
-        - test-e2e-aws-simple-1-20
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            memory: "3Gi"
-          requests:
-            cpu: "2"
-            memory: "3Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
-      testgrid-tab-name: e2e-kubetest2
   - name: pull-kops-e2e-kubernetes-do-kubetest2
     branches:
     - master
@@ -124,54 +87,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits, kops-kubetest2
       testgrid-tab-name: e2e-do-kubetest2
-  - name: pull-kops-e2e-kubernetes-aws-1-17
-    branches:
-    - release-1.17
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --aws
-        - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --check-leaked-resources=false
-        - --cluster=
-        - --kops-ssh-user=admin
-        - --env=KUBE_SSH_USER=admin
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
-        - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-        - --extract=release/stable-1.17
-        - --ginkgo-parallel
-        - --kops-build
-        - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
-        - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: e2e-1-17
   - name: pull-kops-e2e-kubernetes-aws-1-18
     branches:
     - release-1.18
@@ -346,9 +261,6 @@ presubmits:
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/kops
-    skip_branches:
-    - release-1.17
-    - release-1.16
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-experimental
@@ -515,9 +427,6 @@ presubmits:
     decoration_config:
       timeout: 10m
     path_alias: k8s.io/kops
-    skip_branches:
-    - release-1.17
-    - release-1.16
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-experimental
@@ -539,9 +448,6 @@ presubmits:
     decoration_config:
       timeout: 20m
     path_alias: k8s.io/kops
-    skip_branches:
-    - release-1.17
-    - release-1.16
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-experimental
