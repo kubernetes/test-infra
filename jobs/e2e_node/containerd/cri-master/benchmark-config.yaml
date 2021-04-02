@@ -4,21 +4,21 @@ images:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosstable2-resource2:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosstable2-resource3:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
 
@@ -26,35 +26,35 @@ images:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 35 pods with 0s? interval \[Benchmark\]'
   cosstable2-density2:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \[Benchmark\]'
   cosstable2-density2-qps60:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
   cosstable2-density3:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-2
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \[Benchmark\]'
   cosstable2-density4:
     image_family: cos-81-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 100ms interval \[Benchmark\]'
 
@@ -62,42 +62,42 @@ images:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosstable1-resource2:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosstable1-resource3:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
   cosbeta-resource1:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosbeta-resource2:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosbeta-resource3:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
 
@@ -105,35 +105,35 @@ images:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 35 pods with 0s? interval \[Benchmark\]'
   cosbeta-density2:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \[Benchmark\]'
   cosbeta-density2-qps60:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
   cosbeta-density3:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-2
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 0s? interval \[Benchmark\]'
   cosbeta-density4:
     image_family: cos-85-lts
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'create 90 pods with 100ms interval \[Benchmark\]'
 
@@ -141,21 +141,21 @@ images:
     image_family: cos-dev
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosdev-resource2:
     image_family: cos-dev
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosdev-resource3:
     image_family: cos-dev
     project: cos-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/cri/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env,gci-update-strategy=update_disabled"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env"
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
 
@@ -164,20 +164,20 @@ images:
     image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   ubuntu-gke-1804-resource2:
     image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   ubuntu-gke-1804-resource3:
     image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
-    metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 90 pods per node \[Benchmark\]'
