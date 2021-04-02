@@ -981,8 +981,8 @@ func GerritNoOpChange(changeID, hostRepo string) (bool, error) {
 	var garbageBuf bytes.Buffer
 	var outBuf bytes.Buffer
 	// Fetch current pending CRs
-	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "upstream", "+refs/changes/*:refs/remotes/upstream/changes/*"); err != nil {
-		return false, fmt.Errorf("unable to fetch upstream changes: %v", err)
+	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "origin", "+refs/changes/*:refs/remotes/origin/changes/*"); err != nil {
+		return false, fmt.Errorf("unable to fetch origin changes: %v -- \nOUTPUT: %s", err, garbageBuf.String())
 	}
 	// Get PR with same ChangeID for this bump
 	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
@@ -1005,12 +1005,6 @@ func GerritNoOpChange(changeID, hostRepo string) (bool, error) {
 }
 
 func createCR(msg, branch, changeID, hostRepo, cookieFile string, reviewers, cc []string, stdout, stderr io.Writer) error {
-	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", cookieFile); err != nil {
-		return fmt.Errorf("unable to load cookiefile: %v", err)
-	}
-	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", hostRepo); err != nil {
-		return fmt.Errorf("unable to add upstream remote: %v", err)
-	}
 	noOp, err := GerritNoOpChange(changeID, hostRepo)
 	if err != nil {
 		return fmt.Errorf("error diffing previous bump: %v", err)
