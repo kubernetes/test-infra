@@ -95,7 +95,10 @@ presubmit_template = """
   - name: {{job_name}}
     branches:
     - master
+    {%- if run_if_changed %}
     run_if_changed: '{{run_if_changed}}'
+    {%- endif %}
+    always_run: {{always_run}}
     skip_report: {{skip_report}}
     labels:
       preset-service-account: "true"
@@ -464,7 +467,8 @@ def presubmit_test(cloud='aws',
                    skip_override=None,
                    focus_regex=None,
                    run_if_changed=None,
-                   skip_report=False):
+                   skip_report=False,
+                   always_run=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     kops_image = distro_images[distro]
@@ -490,6 +494,7 @@ def presubmit_test(cloud='aws',
         focus_regex=focus_regex,
         run_if_changed=run_if_changed,
         skip_report='true' if skip_report else 'false',
+        always_run='true' if always_run else 'false',
     )
 
     spec = {
@@ -863,7 +868,7 @@ def generate_pipeline():
 ########################################
 # kops-presubmits-network-plugins.yaml #
 ########################################
-def generate_presubmit_network_plugins():
+def generate_presubmits_network_plugins():
     plugins = {
         'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)', # pylint: disable=line-too-long
         'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)', # pylint: disable=line-too-long
@@ -902,9 +907,37 @@ def generate_presubmit_network_plugins():
                 skip_override=skip_regex,
                 run_if_changed=run_if_changed,
                 skip_report=False,
+                always_run=False,
             )
         )
     return results
+
+############################
+# kops-presubmits-e2e.yaml #
+############################
+def generate_presubmits_e2e():
+    skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+    return [
+        presubmit_test(
+            container_runtime='docker',
+            k8s_version='1.20',
+            kops_channel='stable',
+            name='pull-kops-e2e-kubernetes-aws',
+            tab_name='e2e-docker',
+            always_run=True,
+            skip_override=skip_regex,
+        ),
+        presubmit_test(
+            container_runtime='docker',
+            k8s_version='1.20',
+            kops_channel='stable',
+            name='pull-kops-e2e-k8s-containerd',
+            networking='calico',
+            tab_name='e2e-containerd',
+            always_run=True,
+            skip_override=skip_regex,
+        ),
+    ]
 
 ########################
 # YAML File Generation #
@@ -919,7 +952,8 @@ periodics_files = {
 }
 
 presubmits_files = {
-    'kops-presubmits-network-plugins.yaml': generate_presubmit_network_plugins,
+    'kops-presubmits-network-plugins.yaml': generate_presubmits_network_plugins,
+    'kops-presubmits-e2e.yaml': generate_presubmits_e2e,
 }
 
 def main():
