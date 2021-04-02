@@ -1,6 +1,6 @@
 images:
   ubuntu:
-    image_family: pipeline-2
+    image_family: pipeline-1-20
     project: ubuntu-os-gke-cloud
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
   cos-stable:
