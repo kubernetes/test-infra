@@ -12,7 +12,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -52,7 +52,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -92,7 +92,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -132,7 +132,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
