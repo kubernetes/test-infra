@@ -137,7 +137,10 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		return true
 	}
 
-	allPJAgreeReport := func(labels []string, singlePRAgree func(pj *v1.ProwJob) bool) bool {
+	// allPJsAgreeToReport is a helper function that queries all prowjobs based
+	// on provided labels and run each one through singlePJAgreeToReport,
+	// returns false if any of the prowjob doesn't agree.
+	allPJsAgreeToReport := func(labels []string, singlePJAgreeToReport func(pj *v1.ProwJob) bool) bool {
 		selector := map[string]string{}
 		for _, l := range labels {
 			selector[l] = pj.ObjectMeta.Labels[l]
@@ -150,7 +153,7 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		}
 
 		for _, pjob := range pjs.Items {
-			if !singlePRAgree(&pjob) {
+			if !singlePJAgreeToReport(&pjob) {
 				return false
 			}
 		}
@@ -176,16 +179,19 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		}
 		return intPs
 	}
+
+	// Get patchset number from current pj.
 	patchsetNum := patchsetNumFromPJ(pj)
 
-	return allPJAgreeReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(pj *v1.ProwJob) bool {
+	// Check all other prowjobs to see whether they agree or not
+	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(pj *v1.ProwJob) bool {
 		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 		return true
-	}) && allPJAgreeReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(pj *v1.ProwJob) bool {
+	}) && allPJsAgreeToReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(pj *v1.ProwJob) bool {
 		// Newer patchset exists, skip report
 		return patchsetNumFromPJ(pj) <= patchsetNum
 	})

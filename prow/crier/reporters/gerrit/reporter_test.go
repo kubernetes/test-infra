@@ -1037,7 +1037,7 @@ func TestReport(t *testing.T) {
 			numExpectedReport: 2,
 		},
 		{
-			name: "2 jobs, both failed, newer batch job pending, should not report",
+			name: "2 jobs, both failed, job from newer patchset pending, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -1173,7 +1173,7 @@ func TestReport(t *testing.T) {
 			expectReport: false,
 		},
 		{
-			name: "2 jobs, both failed, newer batch job failed, should not report",
+			name: "2 jobs, both failed, job from newer patchset failed, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
