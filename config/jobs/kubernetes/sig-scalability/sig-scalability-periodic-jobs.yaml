@@ -27,7 +27,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -86,7 +86,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -151,7 +151,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -227,7 +227,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -302,7 +302,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -383,7 +383,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -462,7 +462,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -544,7 +544,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -615,7 +615,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -678,7 +678,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -710,7 +710,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -746,7 +746,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -799,7 +799,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -853,7 +853,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

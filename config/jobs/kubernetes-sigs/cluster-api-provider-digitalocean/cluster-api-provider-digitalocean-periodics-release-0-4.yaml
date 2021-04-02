@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210330-fadf59c-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210402-0a23031-1.18
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
