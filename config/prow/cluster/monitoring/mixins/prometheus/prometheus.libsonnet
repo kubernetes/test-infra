@@ -13,4 +13,5 @@
 (import 'boskos_alerts.libsonnet') +
 (import 'plank_alerts.libsonnet') +
 (import 'slo_recordrules.libsonnet') +
-(import 'prow_alerts.libsonnet')
+(import 'prow_alerts.libsonnet') +
+(import 'external_secret_alerts.libsonnet')
