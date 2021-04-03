@@ -136,6 +136,8 @@ type Gerrit struct {
 	AutobumpPRIdentifier string `yaml:"autobumpPRIdentifier"`
 	// Gerrit CR Author. Only Required if using gerrit
 	Author string `yaml:"author"`
+	// Email account associated with gerrit author. Only required if using gerrit.
+	Email string `yaml:"email"`
 	// The path to the Gerrit httpcookie file. Only Required if using gerrit
 	CookieFile string `yaml:"cookieFile"`
 	// The path to the hosted Gerrit repo
@@ -375,7 +377,7 @@ func Run(o *Options) error {
 		}
 		msg := makeGerritCommit(o.Prefixes, versions, o.Gerrit.AutobumpPRIdentifier, changeId)
 		// TODO(mpherman): Add reviewers to CreateCR
-		if err := createCR(msg, "master", changeId, o.Gerrit.HostRepo, o.Gerrit.CookieFile, nil, nil, stdout, stderr); err != nil {
+		if err := createCR(msg, "master", changeId, o.Gerrit.HostRepo, o.Gerrit.CookieFile, o.Gerrit.Author, o.Gerrit.Email, nil, nil, stdout, stderr); err != nil {
 			return fmt.Errorf("Failled to create the CR: %w", err)
 		}
 	}
@@ -724,7 +726,7 @@ func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, 
 }
 
 func makeGerritCommit(prefixes []Prefix, versions map[string][]string, commitTag, changeId string) string {
-	return fmt.Sprintf("[%s] %s \n\nChange-Id: %s", commitTag, makeCommitSummary(prefixes, versions), changeId)
+	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", makeCommitSummary(prefixes, versions), commitTag, changeId)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
@@ -981,8 +983,8 @@ func GerritNoOpChange(changeID, hostRepo string) (bool, error) {
 	var garbageBuf bytes.Buffer
 	var outBuf bytes.Buffer
 	// Fetch current pending CRs
-	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "origin", "+refs/changes/*:refs/remotes/origin/changes/*"); err != nil {
-		return false, fmt.Errorf("unable to fetch origin changes: %v -- \nOUTPUT: %s", err, garbageBuf.String())
+	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "upstream", "+refs/changes/*:refs/remotes/upstream/changes/*"); err != nil {
+		return false, fmt.Errorf("unable to fetch upstream changes: %v -- \nOUTPUT: %s", err, garbageBuf.String())
 	}
 	// Get PR with same ChangeID for this bump
 	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
@@ -1004,7 +1006,19 @@ func GerritNoOpChange(changeID, hostRepo string) (bool, error) {
 
 }
 
-func createCR(msg, branch, changeID, hostRepo, cookieFile string, reviewers, cc []string, stdout, stderr io.Writer) error {
+func createCR(msg, branch, changeID, hostRepo, cookieFile, author, email string, reviewers, cc []string, stdout, stderr io.Writer) error {
+	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", cookieFile); err != nil {
+		return fmt.Errorf("unable to load cookiefile: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.name", author); err != nil {
+		return fmt.Errorf("unable to set username: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.email", email); err != nil {
+		return fmt.Errorf("unable to set password: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", hostRepo); err != nil {
+		return fmt.Errorf("unable to add upstream remote: %v", err)
+	}
 	noOp, err := GerritNoOpChange(changeID, hostRepo)
 	if err != nil {
 		return fmt.Errorf("error diffing previous bump: %v", err)
@@ -1018,7 +1032,7 @@ func createCR(msg, branch, changeID, hostRepo, cookieFile string, reviewers, cc 
 	if err := Call(stdout, stderr, gitCmd, "commit", "-a", "-v", "-m", msg); err != nil {
 		return fmt.Errorf("unable to commit: %v", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "push", "origin", pushRef); err != nil {
+	if err := Call(stdout, stderr, gitCmd, "push", "upstream", pushRef); err != nil {
 		return fmt.Errorf("unable to push: %v", err)
 	}
 	return nil
