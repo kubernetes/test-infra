@@ -21,6 +21,7 @@ readonly IMAGES=(
     apparmor-loader
     busybox
     cuda-vector-add
+    cuda-vector-add-old
     echoserver
     glusterdynamic-provisioner
     httpd
