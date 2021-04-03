@@ -68,6 +68,7 @@ release(
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),  # TODO(fejta): delete tot
     component("trusted_serviceaccounts", MULTI_KIND),
+    component("kubernetes_external_secrets", MULTI_KIND),
     component(
         "tune-sysctls",
         "daemonset",

@@ -28,7 +28,9 @@ deployment once this PR is merged.
 
 ## Usage (Prow clients)
 
-This is performed by prow serving/build cluster clients.
+This is performed by prow serving/build cluster clients. Note that the GCP
+project mentioned here doesn't have to, and normally is not the same GCP project
+where the prow service/build clusters are located.
 
 1. In the GCP project that stores secrets with google secret manager, grant the
    `roles/secretmanager.viewer` and `roles/secretmanager.secretAccessor`
@@ -37,7 +39,10 @@ This is performed by prow serving/build cluster clients.
    gcloud beta secrets add-iam-policy-binding <my-gsm-secret-name> --member="serviceAccount:<same-service-account-for-workload-identity>" --role=<role> --project=<my-gsm-secret-project>
    ```
    The above command ensures that the service account used by prow can only
-   access the secret name `<my-gsm-secret-name>` in the GCP project owned by clients.
+   access the secret name `<my-gsm-secret-name>` in the GCP project owned by
+   clients. The service account used for prow.k8s.io is defined in
+   [`trusted_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/1b2153ebe2809727a45c5b930647b2a3609dd7e7/config/prow/cluster/trusted_serviceaccounts.yaml#L46)
+
 2. Create secret in google secret manager
 3. Create kubernetes external secrets custom resource by:
    ```
