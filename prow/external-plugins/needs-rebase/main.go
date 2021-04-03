@@ -48,6 +48,7 @@ type options struct {
 	dryRun                 bool
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	logLevel               string
 
 	updatePeriod time.Duration
 
@@ -72,6 +73,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 
 	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
@@ -87,8 +89,11 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.InfoLevel)
+	logLevel, err := logrus.ParseLevel(o.logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to parse loglevel")
+	}
+	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
 	secretAgent := &secret.Agent{}
