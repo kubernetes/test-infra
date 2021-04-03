@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-latest-on-1-20
+- name: ci-kubernetes-e2e-kubeadm-kinder-latest-on-1-21
   interval: 2h
   decorate: true
   labels:
@@ -9,12 +9,52 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
-    testgrid-tab-name: kubeadm-kinder-latest-on-1-20
+    testgrid-tab-name: kubeadm-kinder-latest-on-1-21
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
     testgrid-alert-stale-results-hours: "16"
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.21
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210327-170ffe2-1.21
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "skew-latest-on-1.21"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-21-on-1-20
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.21-informing
+    testgrid-tab-name: kubeadm-kinder-1-21-on-1-20
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
     timeout: 60m
   extra_refs:
@@ -33,7 +73,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-latest-on-1.20"
+      - "skew-1.21-on-1.20"
       securityContext:
         privileged: true
       resources:
