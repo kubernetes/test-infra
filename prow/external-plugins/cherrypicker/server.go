@@ -561,7 +561,7 @@ func (s *Server) createIssue(l *logrus.Entry, org, repo, title, body string, num
 func (s *Server) ensureForkExists(org, repo string) (string, error) {
 	fork := s.botUser.Login + "/" + repo
 
-	// fork repo if it doesn't exsit
+	// fork repo if it doesn't exist
 	repo, err := s.ghc.EnsureFork(s.botUser.Login, org, repo)
 	if err != nil {
 		return repo, err
