@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/release:
   - name: pull-release-cluster-up
-    always_run: true
+    run_if_changed: '^push-build.sh'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
