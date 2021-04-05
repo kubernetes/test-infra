@@ -18,6 +18,7 @@ package initupload
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -106,7 +107,8 @@ func (o Options) Run() error {
 
 	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(bytes.NewReader(startedData))
 
-	if err := o.Options.Run(spec, uploadTargets); err != nil {
+	ctx := context.Background()
+	if err := o.Options.Run(ctx, spec, uploadTargets); err != nil {
 		return fmt.Errorf("failed to upload to blob storage: %v", err)
 	}
 

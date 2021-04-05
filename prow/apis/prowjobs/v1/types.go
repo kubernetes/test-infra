@@ -373,6 +373,10 @@ type DecorationConfig struct {
 
 	// CensoringOptions exposes options for censoring output logs and artifacts.
 	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
+
+	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+	// hope that the test process exits cleanly before starting an upload.
+	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -434,6 +438,7 @@ func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions
 		merged.ExcludeDirectories = def.ExcludeDirectories
 	}
 	return &merged
+
 }
 
 // Resources holds resource requests and limits for
@@ -531,6 +536,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.CensorSecrets == nil {
 		merged.CensorSecrets = def.CensorSecrets
+	}
+
+	if merged.UploadIgnoresInterrupts == nil {
+		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
 	}
 
 	return &merged

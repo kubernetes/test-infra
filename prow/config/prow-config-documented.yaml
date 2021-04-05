@@ -670,6 +670,10 @@ plank:
             # before aborting a job with SIGINT.
             timeout: 0s
 
+            # UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+            # hope that the test process exits cleanly before starting an upload.
+            upload_ignores_interrupts: false
+
             # UtilityImages holds pull specs for utility container
             # images used to decorate a PodSpec.
             utility_images:
@@ -842,6 +846,10 @@ plank:
             # Timeout is how long the pod utilities will wait
             # before aborting a job with SIGINT.
             timeout: 0s
+
+            # UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+            # hope that the test process exits cleanly before starting an upload.
+            upload_ignores_interrupts: false
 
             # UtilityImages holds pull specs for utility container
             # images used to decorate a PodSpec.

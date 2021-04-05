@@ -137,6 +137,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(CensoringOptions)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.UploadIgnoresInterrupts != nil {
+		in, out := &in.UploadIgnoresInterrupts, &out.UploadIgnoresInterrupts
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
