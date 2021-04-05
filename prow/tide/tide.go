@@ -408,6 +408,7 @@ func (c *Controller) Sync() error {
 	c.sc.requiredContexts = requiredContextsMap(filteredPools)
 	select {
 	case c.sc.newPoolPending <- true:
+		c.sc.dontUpdateStatus.reset()
 	default:
 	}
 	c.sc.Unlock()
@@ -1149,8 +1150,8 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 
 		// Ensure tide context has success state, otherwise PR merge will fail if branch protection
 		// in github is enabled and the loop to change tide context hasn't done it already
-		err = setTideStatusSuccess(pr, c.ghc, c.config(), log)
-		if err != nil {
+		c.sc.dontUpdateStatus.insert(sp.org, sp.repo, int(pr.Number))
+		if err := setTideStatusSuccess(pr, c.ghc, c.config(), log); err != nil {
 			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
 			errs = append(errs, err)
 			failed = append(failed, int(pr.Number))
@@ -1196,7 +1197,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 
 // setTideStatusSuccess calls github api to change tide status context to success
 func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, log *logrus.Entry) error {
-	if err := ghc.CreateStatus(
+	return ghc.CreateStatus(
 		string(pr.Repository.Owner.Login),
 		string(pr.Repository.Name),
 		string(pr.HeadRefOID),
@@ -1204,11 +1205,7 @@ func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, 
 			Context:   statusContext,
 			State:     "success",
 			TargetURL: targetURL(cfg, &pr, log),
-		}); err != nil {
-		return err
-	}
-
-	return nil
+		})
 }
 
 // tryMerge attempts 1 merge and returns a bool indicating if we should try
