@@ -68,6 +68,7 @@ type options struct {
 	defaultYAML                string
 	updateDescription          bool
 	prowJobURLPrefix           string
+	strictUnmarshal            bool
 }
 
 func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
@@ -85,6 +86,7 @@ func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
 	fs.BoolVar(&o.updateDescription, "update-description", false, "add prowjob info to description even if non-empty")
 	fs.StringVar(&o.prowJobURLPrefix, "prowjob-url-prefix", "", "for prowjob_config_url in descriptions: {prowjob-url-prefix}/{prowjob.sourcepath}")
+	fs.BoolVar(&o.strictUnmarshal, "strict-unmarshal", false, "whether or not we want to be strict when unmarshalling configs")
 
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -198,7 +200,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
 
 	// Read Data Sources: Default, YAML configs, Prow Annotations
-	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML, false)
+	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML, opt.strictUnmarshal)
 	if err != nil {
 		return fmt.Errorf("could not read testgrid config: %v", err)
 	}
