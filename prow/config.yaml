@@ -198,7 +198,7 @@ presets:
   - name: GOPRIVATE
     value: github.ibm.com,github.com/rh-ibm-synergy
   volumeMounts:
-  - mountPath: /home/ssh
+  - mountPath: /home/.ssh
     name: ssh-keys-ssh-secret
     readOnly: true
 
