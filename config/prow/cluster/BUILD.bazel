@@ -50,6 +50,26 @@ release(
     component("kube-state-metrics", "deployment", "rbac", "service"),
     component("kubernetes-external-secrets", "deployment", "rbac", "service", "crd"),
     component(
+        "kubernetes-external-secrets_deployment",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "kubernetes-external-secrets_rbac",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "kubernetes-external-secrets_service",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "kubernetes-external-secrets_crd",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
         "mem-limit-range",
         "limitrange",
         cluster = BUILD_CLUSTER,
