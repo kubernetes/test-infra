@@ -153,26 +153,6 @@ class StreamTest(unittest.TestCase):
             ])
         ),
         (
-            "Non-Final object",
-            [
-                FakeReceivedMessage(
-                    'a', FakePubSubMessage(
-                        'no_data', {
-                            'eventType': 'OBJECT_DELETE',
-                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json',
-                            'bucketId': 'kubernetes-jenkins'})),
-                FakeReceivedMessage(
-                    'b', FakePubSubMessage(
-                        'no_data2', {
-                            'eventType': 'OBJECT_FINALIZE',
-                            'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
-                            'bucketId': 'kubernetes-jenkins'}))
-            ],
-            (['a'], [
-                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
-            ])
-        ),
-        (
             "Object not finsihed",
             [
                 FakeReceivedMessage(
@@ -224,16 +204,6 @@ class StreamTest(unittest.TestCase):
         db = model.Database(':memory:')
         fake_sub = FakeSub(
             [
-                FakePullResponse(
-                    [FakeReceivedMessage(
-                        'a',
-                        FakePubSubMessage(
-                            'no_data',
-                            {'eventType': 'OBJECT_DELETE',
-                             'objectId': 'logs/fake/123/finished.json',
-                             'bucketId': 'kubernetes-jenkins'})
-                    )]
-                ),
                 FakePullResponse(
                     [FakeReceivedMessage(
                         'b',
@@ -288,8 +258,6 @@ class StreamTest(unittest.TestCase):
             fake_sub.trace,
             [['pull', fake_sub_path, False],
              ['pull', fake_sub_path, True],
-             ['pull', fake_sub_path, True],
-             ['ack', fake_sub_path, ['a']],
              ['modify-ack', fake_sub_path, ['b'], 180],
              ['ack', fake_sub_path, ['b']],
              ['pull', fake_sub_path, False],
