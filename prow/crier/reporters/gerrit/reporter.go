@@ -20,6 +20,7 @@ package gerrit
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -136,28 +137,64 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		return true
 	}
 
-	// Only report when all jobs of the same type on the same revision finished
-	selector := map[string]string{
-		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
-		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
-		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
+	// allPJsAgreeToReport is a helper function that queries all prowjobs based
+	// on provided labels and run each one through singlePJAgreeToReport,
+	// returns false if any of the prowjob doesn't agree.
+	allPJsAgreeToReport := func(labels []string, singlePJAgreeToReport func(pj *v1.ProwJob) bool) bool {
+		selector := map[string]string{}
+		for _, l := range labels {
+			selector[l] = pj.ObjectMeta.Labels[l]
+		}
+
+		var pjs v1.ProwJobList
+		if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+			log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+			return false
+		}
+
+		for _, pjob := range pjs.Items {
+			if !singlePJAgreeToReport(&pjob) {
+				return false
+			}
+		}
+
+		return true
 	}
 
-	var pjs v1.ProwJobList
-	if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
-		log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-		return false
+	// patchsetNumFromPJ converts value of "prow.k8s.io/gerrit-patchset" to
+	// integer, the value is used for evaluating whether a newer patchset for
+	// current CR was already established. It may accidentally omit reporting if
+	// current prowjob doesn't have this label or has an invalid value, this
+	// will be reflected as warning message in prow.
+	patchsetNumFromPJ := func(pj *v1.ProwJob) int {
+		ps, ok := pj.ObjectMeta.Labels[client.GerritPatchset]
+		if !ok {
+			log.Warnf("Label %s not found in prowjob %s", client.GerritPatchset, pj.Name)
+			return -1
+		}
+		intPs, err := strconv.Atoi(ps)
+		if err != nil {
+			log.Warnf("Found non integer label for %s: %s in prowjob %s", client.GerritPatchset, ps, pj.Name)
+			return -1
+		}
+		return intPs
 	}
 
-	for _, pjob := range pjs.Items {
-		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
+	// Get patchset number from current pj.
+	patchsetNum := patchsetNumFromPJ(pj)
+
+	// Check all other prowjobs to see whether they agree or not
+	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(pj *v1.ProwJob) bool {
+		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
-	}
-
-	return true
+		return true
+	}) && allPJsAgreeToReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(pj *v1.ProwJob) bool {
+		// Newer patchset exists, skip report
+		return patchsetNumFromPJ(pj) <= patchsetNum
+	})
 }
 
 // Report will send the current prowjob status as a gerrit review
