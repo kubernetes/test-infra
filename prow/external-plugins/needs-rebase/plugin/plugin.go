@@ -25,6 +25,7 @@ import (
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -123,6 +124,8 @@ func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
 	return takeAction(log, ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
+const searchQueryPrefix = "archived:false is:pr is:open"
+
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to
 // determine if the "needs-rebase" label needs to be added or removed. It
 // depends on GitHub's mergeability check to decide the need for a rebase.
@@ -133,17 +136,45 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		log.Warnf("No repos have been configured for the %s plugin", PluginName)
 		return nil
 	}
-	var buf bytes.Buffer
-	fmt.Fprint(&buf, "archived:false is:pr is:open")
+	// GitHub hard caps queries at 1k results, so do one query per org and one for
+	// all repos. Ref: https://github.community/t/graphql-github-api-how-to-get-more-than-1000-pull-requests/13838/11
+	var queries []string
 	for _, org := range orgs {
-		fmt.Fprintf(&buf, " org:\"%s\"", org)
+		// https://img.17qq.com/images/crqhcuueqhx.jpeg
+		if org == "kubernetes" {
+			queries = append(queries, searchQueryPrefix+` org:"kubernetes" -repo:"kubernetes/kubernetes"`)
+
+			// Sharding by creation time > 2 months ago gives us around 50% of PRs per query (585 for the newer ones, 538 for the older ones when testing)
+			twoMonthsAgoISO8601 := time.Now().Add(-2 * 30 * 24 * time.Hour).Format("2006-01-02")
+			queries = append(queries, searchQueryPrefix+` repo:"kubernetes/kubernetes" created:>=`+twoMonthsAgoISO8601)
+			queries = append(queries, searchQueryPrefix+` repo:"kubernetes/kubernetes" created:<`+twoMonthsAgoISO8601)
+		} else {
+			queries = append(queries, searchQueryPrefix+` org:"`+org+`"`)
+		}
 	}
-	for _, repo := range repos {
-		fmt.Fprintf(&buf, " repo:\"%s\"", repo)
+	if len(repos) > 0 {
+		var reposQuery bytes.Buffer
+		fmt.Fprint(&reposQuery, searchQueryPrefix)
+		for _, repo := range repos {
+			fmt.Fprintf(&reposQuery, " repo:\"%s\"", repo)
+		}
+		queries = append(queries, reposQuery.String())
 	}
-	prs, err := search(context.Background(), log, ghc, buf.String())
-	if err != nil {
-		return err
+
+	var prs []pullRequest
+	var errs []error
+	// Do _not_ parallelize this. It will trigger GitHubs abuse detection and we don't really care anyways except
+	// when developing.
+	for _, query := range queries {
+		found, err := search(context.Background(), log, ghc, query)
+		prs = append(prs, found...)
+		errs = append(errs, err)
+	}
+	if err := utilerrors.NewAggregate(errs); err != nil {
+		if len(prs) == 0 {
+			return err
+		}
+		log.WithError(err).Error("Encountered errors when querying GitHub but will process received results anyways")
 	}
 	log.WithField("prs_found_count", len(prs)).Debug("Processing all found PRs")
 
@@ -226,7 +257,10 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 	}
 	var totalCost int
 	var remaining int
+	requestStart := time.Now()
+	var pageCount int
 	for {
+		pageCount++
 		sq := searchQuery{}
 		if err := ghc.Query(ctx, &sq, vars); err != nil {
 			return nil, err
@@ -241,7 +275,20 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log = log.WithFields(logrus.Fields{
+		"query":          q,
+		"duration":       time.Since(requestStart).String(),
+		"pr_found_count": len(ret),
+		"search_pages":   pageCount,
+		"cost":           totalCost,
+		"remaining":      remaining,
+	})
+	log.Debug("Finished query")
+
+	// https://github.community/t/graphql-github-api-how-to-get-more-than-1000-pull-requests/13838/10
+	if len(ret) == 1000 {
+		log.Warning("Query returned 1k PRs, which is the max number of results per query allowed by GitHub. This indicates that we were not able to process all PRs.")
+	}
 	return ret, nil
 }
 
