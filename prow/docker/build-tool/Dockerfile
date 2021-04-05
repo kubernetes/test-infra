@@ -182,6 +182,7 @@ RUN chmod 777 ${HOME}/go && \
     chmod 777 ${HOME}/.helm
 
 RUN git config --global url."git@github.ibm.com:".insteadOf "https://github.ibm.com/"
+RUN ssh-keyscan github.ibm.com /root/.ssh/known_hosts
 
 # Docker in Docker settings
 VOLUME /var/lib/docker
