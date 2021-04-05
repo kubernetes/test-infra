@@ -9,7 +9,6 @@ postsubmits:
         testgrid-dashboards: sig-contribex-slack-infra
       decorate: true
       branches:
-        - ^master$
         - ^main$
       spec:
         serviceAccountName: gcb-builder
