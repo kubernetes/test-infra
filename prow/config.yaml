@@ -199,8 +199,12 @@ presets:
     value: github.ibm.com,github.com/rh-ibm-synergy
   volumeMounts:
   - mountPath: /home/ssh
-    name: ssh-keys-ssh-secret
+    name: private-ssh-secret
     readOnly: true
+  volumes:
+  - name: private-ssh-secret
+    secret:
+      secretName: private-ssh-secret
 
 # Enable GOPROXY by default
 - env:
