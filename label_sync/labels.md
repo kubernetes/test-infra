@@ -30,6 +30,7 @@
 - [Labels that apply to kubernetes/test-infra, for both issues and PRs](#labels-that-apply-to-kubernetestest-infra-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/test-infra, only for PRs](#labels-that-apply-to-kubernetestest-infra-only-for-prs)
 - [Labels that apply to kubernetes/website, for both issues and PRs](#labels-that-apply-to-kuberneteswebsite-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/website, only for issues](#labels-that-apply-to-kuberneteswebsite-only-for-issues)
 
 
 ## Intro
@@ -450,5 +451,11 @@ larger set of contributors to apply/remove them.
 | <a id="language/uk" href="#language/uk">`language/uk`</a> | Issues or PRs related to Ukrainian language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/vi" href="#language/vi">`language/vi`</a> | Issues or PRs related to Vietnamese language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/zh" href="#language/zh">`language/zh`</a> | Issues or PRs related to Chinese language <br><br> This was previously `language/cn`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes/website, only for issues
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="team/katacoda" href="#team/katacoda">`team/katacoda`</a> | Issues with the Katacoda infrastructure for tutorials| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 
