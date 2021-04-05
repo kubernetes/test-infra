@@ -59,11 +59,10 @@ def process_changes(results, buckets):
     todo = []  # (id, job, build) of builds to grab
     # process results, find finished builds to process
     for rec_message in results:
-        eventType = rec_message.message.attributes['eventType']
         object_id = rec_message.message.attributes['objectId']
         bucket_id = rec_message.message.attributes['bucketId']
         exclude = should_exclude(object_id, bucket_id, buckets)
-        if eventType != 'OBJECT_FINALIZE' or not object_id.endswith('/finished.json') or exclude:
+        if not object_id.endswith('/finished.json') or exclude:
             ack_ids.append(rec_message.ack_id)
             continue
         job, build = object_id[:-len('/finished.json')].rsplit('/', 1)
