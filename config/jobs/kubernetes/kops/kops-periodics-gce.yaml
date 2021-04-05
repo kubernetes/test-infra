@@ -120,7 +120,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
       imagePullPolicy: Always
       resources:
