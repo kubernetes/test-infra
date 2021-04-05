@@ -257,4 +257,6 @@ RUN chmod 777 ${HOME}/go && \
     chmod 777 ${HOME}/.kube && \
     chmod 777 ${HOME}/.helm
 
+RUN git config --global url."git@github.ibm.com:".insteadOf "https://github.ibm.com/"
+
 WORKDIR ${HOME}
