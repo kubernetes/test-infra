@@ -2118,8 +2118,8 @@ def go_repositories():
         build_file_generation = "off",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/GoogleCloudPlatform/testgrid",
-        sum = "h1:UmRXvBWXqxfM0vtluwYZc5Y8o6N3whOtKEP+vEH1/eY=",
-        version = "v0.0.56",
+        sum = "h1:3EU+HN15EHbCKtqU+3I8UXGFY0ZIHK4uG9B+YTTV41M=",
+        version = "v0.0.58",
     )
 
     go_repository(
