@@ -196,16 +196,21 @@ presets:
     preset-private-repo: "true"
   env:
   - name: GOPRIVATE
-    value: github.ibm.com,github.com/rh-ibm-synergy
+    value: github.com/rh-ibm-synergy
   volumeMounts:
   - mountPath: /home/ssh
-    name: private-ssh-secret
+    name: ssh-keys-ssh-secret
     readOnly: true
-  volumes:
-  - name: private-ssh-secret
-    secret:
-      secretName: private-ssh-secret
-
+# presets for private repos
+- labels:
+    preset-ibm-private-repo: "true"
+  env:
+  - name: GOPRIVATE
+    value: github.ibm.com
+  volumeMounts:
+  - mountPath: /home/ssh
+    name: ssh-keys-private-ssh-secret
+    readOnly: true
 # Enable GOPROXY by default
 - env:
   - name: GOPROXY
