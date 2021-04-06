@@ -99,7 +99,7 @@ func (jr JunitResult) Status() testStatus {
 	res := passedStatus
 	if jr.Skipped != nil {
 		res = skippedStatus
-	} else if jr.Failure != nil {
+	} else if jr.Failure != nil || jr.Errored != nil {
 		res = failedStatus
 	}
 	return res

@@ -92,6 +92,10 @@ func TestGetJvd(t *testing.T) {
 		" failure message 0 ",
 		" failure message 1 ",
 	}
+	errorMsgs := []string{
+		" error message 0 ",
+		" error message 1 ",
+	}
 
 	tests := []struct {
 		name       string
@@ -122,6 +126,39 @@ func TestGetJvd(t *testing.T) {
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Errored",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<error message="Error" type=""> error message 0 </error>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Errored:   &errorMsgs[0],
 								},
 							},
 						},

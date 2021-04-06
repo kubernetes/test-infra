@@ -24,7 +24,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.1
 	github.com/Azure/go-autorest/autorest/adal v0.9.5
-	github.com/GoogleCloudPlatform/testgrid v0.0.56
+	github.com/GoogleCloudPlatform/testgrid v0.0.58
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/andygrunwald/go-jira v1.13.0

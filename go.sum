@@ -168,8 +168,8 @@ github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20190822182118-27a4ced3
 github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20190822182118-27a4ced34534/go.mod h1:iroGtC8B3tQiqtds1l+mgk/BBOrxbqjH+eUfFQYRc14=
 github.com/GoogleCloudPlatform/testgrid v0.0.1-alpha.3/go.mod h1:f96W2HYy3tiBNV5zbbRc+NczwYHgG1PHXMQfoEWv680=
 github.com/GoogleCloudPlatform/testgrid v0.0.7/go.mod h1:lmtHGBL0M/MLbu1tR9BWV7FGZ1FEFIdPqmJiHNCL7y8=
-github.com/GoogleCloudPlatform/testgrid v0.0.56 h1:UmRXvBWXqxfM0vtluwYZc5Y8o6N3whOtKEP+vEH1/eY=
-github.com/GoogleCloudPlatform/testgrid v0.0.56/go.mod h1:SIRhudHYGiAUqMwKorBp2Kb5yJKhMq/nEMzFpYlKHVk=
+github.com/GoogleCloudPlatform/testgrid v0.0.58 h1:3EU+HN15EHbCKtqU+3I8UXGFY0ZIHK4uG9B+YTTV41M=
+github.com/GoogleCloudPlatform/testgrid v0.0.58/go.mod h1:SIRhudHYGiAUqMwKorBp2Kb5yJKhMq/nEMzFpYlKHVk=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd h1:sjQovDkwrZp8u+gxLtPgKGjk5hCxuy2hrRejBTA9xFU=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0 h1:zukEsf/1JZwCMgHiK3GZftabmxiCw4apj3a28RPBiVg=
