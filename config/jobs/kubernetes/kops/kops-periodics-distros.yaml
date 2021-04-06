@@ -610,6 +610,7 @@ periodics:
           --create-args="--image='075585003325/Flatcar-stable-2765.2.2-hvm' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --validation-wait=20m \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
