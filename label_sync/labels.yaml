@@ -1494,6 +1494,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: d2b48c
+        description: Issues with the Katacoda infrastructure for tutorials
+        name: team/katacoda
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
       - color: c7def8
