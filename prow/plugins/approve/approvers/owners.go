@@ -183,26 +183,22 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
-	for idx, toApprove := range o.filenames {
+
+	var newFilenames []string
+	for _, toApprove := range o.filenames {
 		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
 		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
 		// the file from our filenames list, because it doesn't need approval
 		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
-			o.filenames = removeFromStringSlice(o.filenames, idx)
+			continue
 		} else {
 			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+			newFilenames = append(newFilenames, toApprove)
 		}
 	}
+	o.filenames = newFilenames
 	o.removeSubdirs(owners)
 	return owners
-}
-
-func removeFromStringSlice(slice []string, idx int) []string {
-	var prevElemIdx int
-	if idx > 0 {
-		prevElemIdx = idx - 1
-	}
-	return slice[prevElemIdx : idx+1]
 }
 
 // GetShuffledApprovers shuffles the potential approvers so that we don't
