@@ -1,0 +1,41 @@
+# PROW_INSTANCE_SPECIFIC
+# Slack endpoint, or even different methods of alerting
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanager-prow
+  namespace: prow-monitoring
+  labels:
+    alertmanagerConfig: alertmanager-prow
+spec:
+  route:
+    groupBy: ['alertname', 'job']
+    groupWait: 30s
+    groupInterval: 10m
+    repeatInterval: 4h
+    receiver: 'slack-warnings'
+    routes:
+      - receiver: 'slack-alerts'
+        groupInterval: 5m
+        repeatInterval: 2h
+        matchRe:
+          severity: 'critical|high'
+  receivers:
+    - name: 'slack-warnings'
+      slackConfigs:
+      - channel: '#prow-alerts'
+        apiURL:
+          name: 'prometheus-alert-slack-post-prow-alerts-secret-url'
+          key: 'url'
+        iconURL: https://avatars3.githubusercontent.com/u/3380462
+        text: '@test-infra-oncall {{ .CommonAnnotations.message }}'
+        linkNames: true
+    - name: 'slack-alerts'
+      slackConfigs:
+      - channel: '#testing-ops'
+        apiURL:
+          name: 'prometheus-alert-slack-post-testing-ops-secret-url'
+          key: 'url'
+        iconURL: https://avatars3.githubusercontent.com/u/3380462
+        text: '@test-infra-oncall {{ .CommonAnnotations.message }}'
+        linkNames: true
