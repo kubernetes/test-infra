@@ -122,7 +122,8 @@ label:
     - tide/merge-method-merge
     - tide/merge-method-rebase
     - tide/merge-method-squash
-
+    # This label, for k/website, identifies issues relevant to https://katacoda.com/
+    - team/katacoda
 
 lgtm:
 - repos:
