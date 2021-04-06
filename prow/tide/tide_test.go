@@ -298,6 +298,8 @@ func TestAccumulateBatch(t *testing.T) {
 }
 
 func TestAccumulate(t *testing.T) {
+
+	const baseSHA = "8d287a3aeae90fd0aef4a70009c715712ff302cd"
 	jobSet := []config.Presubmit{
 		{
 			Reporter: config.Reporter{
@@ -317,9 +319,11 @@ func TestAccumulate(t *testing.T) {
 		sha      string
 	}
 	tests := []struct {
-		presubmits   map[int][]config.Presubmit
-		pullRequests map[int]string
-		prowJobs     []prowjob
+		name                string
+		presubmits          map[int][]config.Presubmit
+		pullRequests        map[int]string
+		pullRequestModifier func(*PullRequest)
+		prowJobs            []prowjob
 
 		successes []int
 		pendings  []int
@@ -488,35 +492,193 @@ func TestAccumulate(t *testing.T) {
 			pendings:  []int{},
 			none:      []int{},
 		},
+		{
+			name:         "Results from successful status context for which we do not have a prowjob anymore are considered",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateSuccess,
+						}}}},
+				}}
+			},
+
+			successes: []int{1},
+		},
+		{
+			name:         "Results from successful status context for wrong baseSHA is ignored",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:c22a32add1a36daf3b16af3762b3922e70c9626a"),
+							State:       githubql.StatusStateSuccess,
+						}}}},
+				}}
+			},
+
+			none: []int{1},
+		},
+		{
+			name:         "Results from failed status context for which we do not have a prowjob anymore are irrelevant",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateFailure,
+						}}}},
+				}}
+			},
+
+			none: []int{1},
+		},
+		{
+			name:         "Successful status context and prowjob, success",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateSuccess,
+						}}}},
+				}}
+			},
+			prowJobs: []prowjob{{1, "job1", prowapi.SuccessState, "headsha"}},
+
+			successes: []int{1},
+		},
+		{
+			name:         "Successful status context, failed prowjob, success",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateSuccess,
+						}}}},
+				}}
+			},
+			prowJobs: []prowjob{{1, "job1", prowapi.FailureState, "headsha"}},
+
+			successes: []int{1},
+		},
+		{
+			name:         "Failed status context, successful prowjob, success",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateFailure,
+						}}}},
+				}}
+			},
+			prowJobs: []prowjob{{1, "job1", prowapi.SuccessState, "headsha"}},
+
+			successes: []int{1},
+		},
+		{
+			name:         "Failed status context and prowjob, failure",
+			presubmits:   map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job1"}}}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateFailure,
+						}}}},
+				}}
+			},
+			prowJobs: []prowjob{{1, "job1", prowapi.FailureState, "headsha"}},
+
+			none: []int{1},
+		},
+		{
+			name: "Mixture of results from status context and prowjobs",
+			presubmits: map[int][]config.Presubmit{1: {
+				{Reporter: config.Reporter{Context: "job1"}},
+				{Reporter: config.Reporter{Context: "job2"}},
+			}},
+			pullRequests: map[int]string{1: "headsha"},
+			pullRequestModifier: func(pr *PullRequest) {
+				pr.Commits.Nodes = []struct{ Commit Commit }{{
+					Commit: Commit{
+						OID: githubql.String("headsha"),
+						Status: CommitStatus{Contexts: []Context{{
+							Context:     githubql.String("job1"),
+							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							State:       githubql.StatusStateSuccess,
+						}}}},
+				}}
+			},
+			prowJobs: []prowjob{{1, "job2", prowapi.SuccessState, "headsha"}},
+
+			successes: []int{1},
+		},
 	}
 
 	for i, test := range tests {
-		var pulls []PullRequest
-		for num, sha := range test.pullRequests {
-			pulls = append(
-				pulls,
-				PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)},
-			)
+		if test.name == "" {
+			test.name = strconv.Itoa(i)
 		}
-		var pjs []prowapi.ProwJob
-		for _, pj := range test.prowJobs {
-			pjs = append(pjs, prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Job:     pj.job,
-					Context: pj.job,
-					Type:    prowapi.PresubmitJob,
-					Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{Number: pj.prNumber, SHA: pj.sha}}},
-				},
-				Status: prowapi.ProwJobStatus{State: pj.state},
-			})
-		}
+		t.Run(test.name, func(t *testing.T) {
+			var pulls []PullRequest
+			for num, sha := range test.pullRequests {
+				newPull := PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)}
+				if test.pullRequestModifier != nil {
+					test.pullRequestModifier(&newPull)
+				}
+				pulls = append(pulls, newPull)
+			}
+			var pjs []prowapi.ProwJob
+			for _, pj := range test.prowJobs {
+				pjs = append(pjs, prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						Job:     pj.job,
+						Context: pj.job,
+						Type:    prowapi.PresubmitJob,
+						Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{Number: pj.prNumber, SHA: pj.sha}}},
+					},
+					Status: prowapi.ProwJobStatus{State: pj.state},
+				})
+			}
 
-		successes, pendings, nones, _ := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
+			successes, pendings, nones, _ := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()), baseSHA, &fgc{})
 
-		t.Logf("test run %d", i)
-		testPullsMatchList(t, "successes", successes, test.successes)
-		testPullsMatchList(t, "pendings", pendings, test.pendings)
-		testPullsMatchList(t, "nones", nones, test.none)
+			t.Logf("test run %d", i)
+			testPullsMatchList(t, "successes", successes, test.successes)
+			testPullsMatchList(t, "pendings", pendings, test.pendings)
+			testPullsMatchList(t, "nones", nones, test.none)
+		})
 	}
 }
 
@@ -3039,6 +3201,8 @@ func TestPrepareMergeDetails(t *testing.T) {
 }
 
 func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
+	const baseSHA = "8d287a3aeae90fd0aef4a70009c715712ff302cd"
+
 	testCases := []struct {
 		name               string
 		presubmits         map[int][]config.Presubmit
@@ -3283,12 +3447,43 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "Result from successful context gets respected",
+			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("headsha"),
+				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+					OID: githubql.String("headsha"),
+					Status: CommitStatus{Contexts: []Context{{
+						Context:     githubql.String("job-1"),
+						Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+						State:       githubql.StatusStateSuccess,
+					}}},
+				}}}}}},
+		},
+		{
+			name:       "Result from failed context gets ignored",
+			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("headsha"),
+				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+					OID: githubql.String("headsha"),
+					Status: CommitStatus{Contexts: []Context{{
+						Context:     githubql.String("job-1"),
+						Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+						State:       githubql.StatusStateFailure,
+					}}},
+				}}}}}},
+			expectedPresubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
+		},
 	}
 
 	log := logrus.NewEntry(logrus.New())
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, _, missingSerialTests := accumulate(tc.presubmits, tc.prs, tc.pjs, log)
+			_, _, _, missingSerialTests := accumulate(tc.presubmits, tc.prs, tc.pjs, log, baseSHA, &fgc{})
 			// Apiequality treats nil slices/maps equal to a zero length slice/map, keeping us from
 			// the burden of having to always initialize them
 			if !apiequality.Semantic.DeepEqual(tc.expectedPresubmits, missingSerialTests) {

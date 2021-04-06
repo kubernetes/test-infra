@@ -25,6 +25,7 @@ import (
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -65,22 +66,6 @@ func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
 }
 
-const (
-	maxLen = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
-	elide  = " ... "
-)
-
-// truncate converts "really long messages" into "really ... messages".
-func truncate(in string) string {
-	const (
-		half = (maxLen - len(elide)) / 2
-	)
-	if len(in) <= maxLen {
-		return in
-	}
-	return in[:half] + elide + in[len(in)-half:]
-}
-
 // reportStatus should be called on any prowjob status changes
 func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
@@ -95,7 +80,7 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		}
 		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
 			State:       contextState,
-			Description: truncate(pj.Status.Description),
+			Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
 			Context:     pj.Spec.Context, // consider truncating this too
 			TargetURL:   pj.Status.URL,
 		}); err != nil {

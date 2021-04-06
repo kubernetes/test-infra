@@ -2536,3 +2536,42 @@ func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	}
 	return pc.BranchProtection.merge(&additional.BranchProtection)
 }
+
+// ContextDescriptionWithBaseSha is used by the GitHub reporting to store the baseSHA of a context
+// in the status context description. Tide will read this if present using the BaseSHAFromContextDescription
+// func. Storing the baseSHA in the status context allows us to store job results pretty much forever,
+// instead of having to rerun everything after sinker cleaned up the ProwJobs.
+func ContextDescriptionWithBaseSha(humanReadable, baseSHA string) string {
+	var suffix string
+	if baseSHA != "" {
+		suffix = contextDescriptionBaseSHADelimiter + baseSHA
+	}
+	return truncate(humanReadable, contextDescriptionMaxLen-len(suffix)) + suffix
+}
+
+// BaseSHAFromContextDescription is used by Tide to decode a baseSHA from a github status context
+// description created via ContextDescriptionWithBaseSha. It will return an empty string if no
+// valid sha was found.
+func BaseSHAFromContextDescription(description string) string {
+	split := strings.Split(description, contextDescriptionBaseSHADelimiter)
+	// SHA1s are always 40 digits long
+	if len(split) != 2 || len(split[1]) != 40 {
+		return ""
+	}
+	return split[1]
+}
+
+const (
+	contextDescriptionBaseSHADelimiter = " Basesha:"
+	contextDescriptionMaxLen           = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
+	elide                              = " ... "
+)
+
+// truncate converts "really long messages" into "really ... messages".
+func truncate(in string, maxLen int) string {
+	half := (maxLen - len(elide)) / 2
+	if len(in) <= maxLen {
+		return in
+	}
+	return in[:half] + elide + in[len(in)-half:]
+}
