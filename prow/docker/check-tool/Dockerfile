@@ -235,8 +235,13 @@ ENV RUBYOPT="-KU -E utf-8:utf-8"
 COPY --from=base_os_context / /
 COPY --from=binary_tools_context /out/ /
 COPY --from=binary_tools_context /usr/local/go /usr/local/go
+
+COPY --from=ruby_tools_context /usr/bin /usr/bin
+COPY --from=ruby_tools_context /usr/lib /usr/lib
+COPY --from=ruby_tools_context /etc/alternatives /etc/alternatives
+COPY --from=ruby_tools_context /var/lib/gems /var/lib/gems
 COPY --from=ruby_tools_context /usr/local/bin /usr/local/bin
-COPY --from=ruby_tools_context /usr/local/lib /usr/local/lib
+
 COPY --from=nodejs_tools_context /usr/local /usr/local
 COPY --from=python_context /usr/local/bin /usr/local/bin
 COPY --from=python_context /usr/local/lib /usr/local/lib
