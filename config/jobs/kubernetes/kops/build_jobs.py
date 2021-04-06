@@ -60,6 +60,9 @@ periodic_template = """
           {%- if terraform_version %}
           --terraform-version={{terraform_version}} \\
           {%- endif %}
+          {%- if validation_wait %}
+          --validation-wait={{validation_wait}} \\
+          {%- endif %}
           --test=kops \\
           -- \\
           --ginkgo-args="--debug" \\
@@ -354,6 +357,7 @@ def build_test(cloud='aws',
 
     kops_image = distro_images[distro]
     kops_ssh_user = distros_ssh_user[distro]
+    validation_wait = '20m' if distro == 'flatcar' else None
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
@@ -407,6 +411,7 @@ def build_test(cloud='aws',
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
         publish_version_marker=publish_version_marker,
+        validation_wait=validation_wait,
     )
 
     spec = {
