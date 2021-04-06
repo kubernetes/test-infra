@@ -10,6 +10,10 @@ periodics:
     repo: cluster-api
     base_ref: master
     path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
@@ -50,6 +54,10 @@ periodics:
     repo: cluster-api
     base_ref: master
     path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
@@ -90,6 +98,10 @@ periodics:
     repo: cluster-api
     base_ref: master
     path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
@@ -130,6 +142,10 @@ periodics:
     repo: cluster-api
     base_ref: master
     path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
@@ -137,12 +153,10 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
-        - name: BUILD_NODE_IMAGE_TAG
-          value: "ci/latest"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.20"
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest"
+          value: "ci/latest-1.21"
         - name: ETCD_VERSION_UPGRADE_TO
           value: "3.4.13-0"
         - name: COREDNS_VERSION_UPGRADE_TO
