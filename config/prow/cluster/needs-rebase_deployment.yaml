@@ -39,6 +39,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-token-path=/etc/github/oauth
+        - --update-period=6h
         ports:
           - name: http
             containerPort: 8888
