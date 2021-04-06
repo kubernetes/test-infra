@@ -228,6 +228,27 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 	return newID, nil
 }
 
+func (c *Fake) CreateComment(comment *CommentCreate) (int, error) {
+	// add new comment one ID newer than highest existing CommentID
+	newCommentID := 0
+	for _, comments := range c.BugComments {
+		for _, comment := range comments {
+			if comment.ID >= newCommentID {
+				newCommentID = comment.ID + 1
+			}
+		}
+	}
+	newComment := Comment{
+		ID:        newCommentID,
+		BugID:     comment.ID,
+		Count:     len(c.BugComments[comment.ID]),
+		Text:      comment.Comment,
+		IsPrivate: comment.IsPrivate,
+	}
+	c.BugComments[comment.ID] = append(c.BugComments[comment.ID], newComment)
+	return newCommentID, nil
+}
+
 // GetComments retrieves the bug comments, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {

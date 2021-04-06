@@ -745,6 +745,7 @@ func TestHandle(t *testing.T) {
 		expectedLabels        []string
 		expectedComment       string
 		expectedBug           *bugzilla.Bug
+		expectedBugComments   map[int][]bugzilla.Comment
 		expectedExternalBugs  []bugzilla.ExternalBug
 		expectedSubComponents map[int]map[string][]string
 	}{
@@ -1297,10 +1298,11 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 		{
-			name:   "closed PR removes link, changes bug state, and comments",
-			merged: false,
-			closed: true,
-			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			name:        "closed PR removes link, changes bug state, and comments",
+			merged:      false,
+			closed:      true,
+			bugs:        []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			bugComments: map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			externalBugs: []bugzilla.ExternalBug{{
 				BugzillaBugID: base.bugId,
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
@@ -1321,6 +1323,7 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug:          &bugzilla.Bug{ID: 123, Status: "NEW", Severity: "urgent"},
 			expectedExternalBugs: []bugzilla.ExternalBug{},
+			expectedBugComments:  map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}, {BugID: 123, ID: 1, Count: 1, Text: "Bug status changed to NEW as previous linked PR https://github.com/org/repo/pull/1 has been closed", IsPrivate: true}}},
 		},
 		{
 			name:        "closed PR with missing bug does nothing",
@@ -1766,6 +1769,17 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			if testCase.expectedSubComponents != nil && !reflect.DeepEqual(bc.SubComponents, testCase.expectedSubComponents) {
 				t.Errorf("%s: got incorrect subcomponents after update: %s", testCase.name, cmp.Diff(actual, expected))
+			}
+			for bugID, expectedComments := range testCase.expectedBugComments {
+				if actualComments, ok := bc.BugComments[bugID]; ok {
+					for index, comment := range expectedComments {
+						if !reflect.DeepEqual(actualComments[index], comment) {
+							t.Errorf("%s: got incorrect bug comments for bugID %d, index %d: %s", testCase.name, bugID, index, cmp.Diff(actualComments[index], comment))
+						}
+					}
+				} else {
+					t.Errorf("%s: Actual comments map missing bugID %d", testCase.name, bugID)
+				}
 			}
 		})
 	}
