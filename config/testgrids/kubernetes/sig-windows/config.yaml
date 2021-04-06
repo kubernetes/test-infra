@@ -96,5 +96,6 @@ test_groups:
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-sac1909
   gcs_prefix: containerd-integration/logs/windows-sac1909
+  disable_prowjob_analysis: true
  
      
