@@ -40,7 +40,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20210405-4a760bc9b
+        image: quay.io/multicloudlab/check-tool:v20210406-b49ca9d61
         name: ""
         securityContext:
           privileged: true
@@ -68,28 +68,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: fake_ibm-monitoring-grafana-operator
-    branches:
-    - ^master$
-    decorate: true
-    decoration_config:
-      ssh_key_secrets:
-      - private-ssh-secret
-    labels:
-      preset-ibm-private-repo: "true"
-    always_run: true
-    path_alias: github.com/IBM/ibm-monitoring-grafana-operator
-    rerun_command: /test fake ibm-monitoring-grafana-operator
-    spec:
-      containers:
-      - command:
-        - sleep
-        - '1800'
-        image: quay.io/multicloudlab/check-tool:v20210405-4a760bc9b
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?fake(?: .*?)?$'
 postsubmits:
   IBM/ibm-monitoring-grafana-operator:
   - name: check_ibm-monitoring-grafana-operator_postsubmit
@@ -107,7 +85,7 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20210405-4a760bc9b
+        image: quay.io/multicloudlab/check-tool:v20210406-b49ca9d61
         name: ""
         securityContext:
           privileged: true
@@ -146,7 +124,7 @@ postsubmits:
       - command:
         - make
         - coverage
-        image: quay.io/multicloudlab/check-tool:v20210405-4a760bc9b
+        image: quay.io/multicloudlab/check-tool:v20210406-b49ca9d61
         name: ""
         env:
         - name: CODECOV_TOKEN
