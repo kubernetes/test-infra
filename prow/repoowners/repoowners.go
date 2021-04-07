@@ -394,7 +394,10 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
 			start = time.Now()
-			ignoreDirPatterns := c.ownersDirDenylist().ListIgnoredDirs(org, repo)
+			var ignoreDirPatterns []string
+			if ownersDirDenylist := c.ownersDirDenylist(); ownersDirDenylist != nil {
+				ignoreDirPatterns = ownersDirDenylist.ListIgnoredDirs(org, repo)
+			}
 			var dirIgnorelist []*regexp.Regexp
 			for _, pattern := range ignoreDirPatterns {
 				re, err := regexp.Compile(pattern)
