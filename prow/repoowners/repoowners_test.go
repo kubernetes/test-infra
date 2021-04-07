@@ -149,8 +149,8 @@ func getTestClient(
 	skipCollab,
 	includeAliases bool,
 	ignorePreconfiguredDefaults bool,
-	ownersDirDenylistDefault []string,
-	ownersDirDenylistByRepo map[string][]string,
+	ownersDirBlacklistDefault []string,
+	ownersDirBlacklistByRepo map[string][]string,
 	extraBranchesAndFiles map[string]map[string][]byte,
 	cacheOptions *cacheOptions,
 	clients localgit.Clients,
@@ -276,10 +276,10 @@ labels:
 				skipCollaborators: func(org, repo string) bool {
 					return skipCollab
 				},
-				ownersDirDenylist: func() *prowConf.OwnersDirDenylist {
-					return &prowConf.OwnersDirDenylist{
-						Repos:                       ownersDirDenylistByRepo,
-						Default:                     ownersDirDenylistDefault,
+				ownersDirBlacklist: func() prowConf.OwnersDirBlacklist {
+					return prowConf.OwnersDirBlacklist{
+						Repos:                       ownersDirBlacklistByRepo,
+						Default:                     ownersDirBlacklistDefault,
 						IgnorePreconfiguredDefaults: ignorePreconfiguredDefaults,
 					}
 				},
@@ -294,16 +294,16 @@ labels:
 		nil
 }
 
-func TestOwnersDirDenylist(t *testing.T) {
-	testOwnersDirDenylist(localgit.New, t)
+func TestOwnersDirBlacklist(t *testing.T) {
+	testOwnersDirBlacklist(localgit.New, t)
 }
 
-func TestOwnersDirDenylistV2(t *testing.T) {
-	testOwnersDirDenylist(localgit.NewV2, t)
+func TestOwnersDirBlacklistV2(t *testing.T) {
+	testOwnersDirBlacklist(localgit.NewV2, t)
 }
 
-func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
-	getRepoOwnersWithDenylist := func(t *testing.T, defaults []string, byRepo map[string][]string, ignorePreconfiguredDefaults bool) *RepoOwners {
+func testOwnersDirBlacklist(clients localgit.Clients, t *testing.T) {
+	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string, ignorePreconfiguredDefaults bool) *RepoOwners {
 		client, cleanup, err := getTestClient(testFiles, true, false, true, ignorePreconfiguredDefaults, defaults, byRepo, nil, nil, clients)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
@@ -392,7 +392,7 @@ func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
 
 	for name, conf := range tests {
 		t.Run(name, func(t *testing.T) {
-			ro := getRepoOwnersWithDenylist(t, conf.blacklistDefault, conf.blacklistByRepo, conf.ignorePreconfiguredDefaults)
+			ro := getRepoOwnersWithBlacklist(t, conf.blacklistDefault, conf.blacklistByRepo, conf.ignorePreconfiguredDefaults)
 
 			includeDirs := sets.NewString(conf.includeDirs...)
 			excludeDirs := sets.NewString(conf.excludeDirs...)
