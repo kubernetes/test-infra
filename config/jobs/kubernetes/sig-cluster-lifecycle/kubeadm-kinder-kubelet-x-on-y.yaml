@@ -73,7 +73,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "skew-kubelet-1.20-on-1-21"
+      - "skew-kubelet-1.20-on-1.21"
       securityContext:
         privileged: true
       resources:
