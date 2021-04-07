@@ -25,6 +25,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
+readonly PROW_SECRET_ACCESSOR_SA="kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com"
+readonly APPS_CONSUME_KUBECONFIG="crier deck hook pipeline prow_controller_manager sinker"
+
 # Specific to Prow instance
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
 GCS_BUCKET="${GCS_BUCKET:-${PROW_INSTANCE_NAME}}"
@@ -47,6 +52,17 @@ ADMIN_IAM_MEMBER="${ADMIN_IAM_MEMBER:-group:mdb.cloud-kubernetes-engprod-oncall@
 
 # Overriding output
 OUT_FILE="${OUT_FILE:-build-cluster-kubeconfig.yaml}"
+
+# Macos specific settings
+SED="sed"
+if command -v gsed &>/dev/null; then
+  SED="gsed"
+fi
+if ! (${SED} --version 2>&1 | grep -q GNU); then
+  # darwin is great (not)
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
+  return 1
+fi
 
 function main() {
   parseArgs "$@"
@@ -123,28 +139,125 @@ function createUploadSASecret() {
 
 origdir="$( pwd -P )"
 tempdir="$( mktemp -d )"
+echo
+echo "Temporary files produced are stored at: ${tempdir}"
+echo
+
 # generate a JWT kubeconfig file that we can merge into prow's kubeconfig secret so that Prow can schedule pods
 function gencreds() {
   getClusterCreds
   local clusterAlias="build-${TEAM}"
   local outfile="${OUT_FILE}"
-  # TODO: Make gencred build without bazel so we can use something like the following:
-  # GO111MODULE=on go run k8s.io/test-infra/gencred --serviceaccount --name "${clusterAlias}"
+
   cd "${tempdir}"
   git clone https://github.com/kubernetes/test-infra --depth=1
   cd test-infra
-  bazel run //gencred -- --context="$(kubectl config current-context)" --name "${clusterAlias}" > "${origdir}/${outfile}"
+  go run ./gencred --context="$(kubectl config current-context)" --name="${clusterAlias}" --output="${origdir}/${outfile}" || (
+    echo "gencred failed:" >&2
+    cat "$origdir/$outfile" >&2
+    return 1
+  )
+
+  # Store kubeconfig secret in the same project where build cluster is located
+  # and set up externalsecret in prow service cluster so that it's synced.
+  # First enable secretmanager API, no op if already enabled
+  gcloud services enable secretmanager.googleapis.com --project="${PROJECT}"
   cd "${origdir}"
-  echo
-  echo "Supply the file '${outfile}' to the current oncall for them to add to Prow's kubeconfig secret via:"
-  echo "  kubectl --context=<kubeconfig-context-for-prow-cluster> create secret generic kubeconfig-${clusterAlias} --from-file=kubeconfig=${outfile}"
-  echo "  Prow oncall should create PR updating build clusters consuming prow components to also include this new build cluster as part of KUBECONFIG env var."
-  echo "  An example of this PR is https://github.com/GoogleCloudPlatform/oss-test-infra/pull/653"
+  local gsm_secret_name="prow_build_cluster_kubeconfig_${clusterAlias}"
+  gcloud secrets create "${gsm_secret_name}" --data-file="$origdir/$outfile" --project="${PROJECT}"
+  # Grant prow service account access to secretmanager in build cluster
+  for role in roles/secretmanager.viewer roles/secretmanager.secretAccessor; do
+    gcloud beta secrets add-iam-policy-binding "${gsm_secret_name}" --member="serviceAccount:${PROW_SECRET_ACCESSOR_SA}" --role="${role}" --project="${PROJECT}"
+  done
+
+  prompt "Create CL for you" create_cl
+
   echo "ProwJobs that intend to use this cluster should specify 'cluster: ${clusterAlias}'" # TODO: color this
   echo
   echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before Prow can schedule jobs to your cluster)..."
   pause
 }
+
+
+ensure_kustomize() {
+  if ! which "kustomize" > /dev/null 2>&1; then
+    GOBIN=$(pwd)/ GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3
+  fi
+}
+
+create_cl() {
+  cd "${ROOT_DIR}"
+  clone_uri="$(git config --get remote.origin.url)"
+  fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
+  if [[ "${fork}" == "kubernetes/test-infra" ]]; then # This is not a fork
+    echo
+    read -r -n1 -p "Please provide the clone url for your fork: "
+    echo
+    clone_uri="$REPLY"
+    fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
+  fi
+
+  local prow_deployment_dir="./config/prow/cluster"
+  cd "${tempdir}"
+  ensure_kustomize
+  git clone "${clone_uri}" --depth=1 forked-test-infra
+  cd forked-test-infra
+
+  git checkout -b add-build-cluster-secret
+
+  cat>>"${prow_deployment_dir}/kubernetes_external_secrets.yaml" <<EOF
+---
+apiVersion: kubernetes-client.io/v1
+kind: ExternalSecret
+metadata:
+  name: kubeconfig-build-${TEAM}
+  namespace: default
+spec:
+  backendType: gcpSecretsManager
+  projectId: ${PROJECT}
+  data:
+  - key: ${gsm_secret_name}
+    name: kubeconfig
+    version: latest
+EOF
+
+  git add "${prow_deployment_dir}/kubernetes_external_secrets.yaml"
+  git commit -m "Add external secret from build cluster for ${TEAM}"
+  git push origin HEAD
+
+  git checkout -b use-build-cluster master
+  
+  for app in ${APPS_CONSUME_KUBECONFIG}; do
+    "${SED}" -i "s;volumeMounts:;volumeMounts:\\
+        - mountPath: /etc/${TEAM}\\
+          name: build-${TEAM}\\
+          readOnly: true;" "${prow_deployment_dir}/${app}_deployment.yaml"
+
+    "${SED}" -i "s;volumes:;volumes:\\
+      - name: build-${TEAM}\\
+        secret:\\
+          defaultMode: 420\\
+          secretName: kubeconfig-build-${TEAM};" "${prow_deployment_dir}/${app}_deployment.yaml"
+
+    # Appends to an existing value doesn't seem to be supported by kustomize, so
+    # using sed instead. `&` represents for regex matched part
+    "${SED}" -E -i "s;/etc/kubeconfig/config-[0-9]+;&:/etc/build-${TEAM}/kubeconfig;" "${prow_deployment_dir}/${app}_deployment.yaml"
+    git add "${prow_deployment_dir}/${app}_deployment.yaml"
+  done
+
+  git commit -m "Add build cluster kubeconfig for ${TEAM}
+
+Please submit this change after the previous PR was submitted and postsubmit job succeeded.
+Prow oncall: please don't submit this change until the secret is created successfully, which will be indicated by prow alerts in 2 minutes after the postsubmit job.
+"
+
+  git push origin HEAD
+  echo
+  echo "Please open https://github.com/${fork}/pull/new/add-build-cluster-secret and https://github.com/${fork}/pull/new/use-build-cluster, creating PRs from both of them and assign to test-infra oncall for approval"
+  echo
+  pause
+}
+
 function cleanup() {
   returnCode="$?"
   rm -f "sa-key.json" || true
