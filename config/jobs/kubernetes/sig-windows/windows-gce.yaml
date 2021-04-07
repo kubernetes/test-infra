@@ -373,7 +373,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/1.21
+      - --extract=ci/latest-1.21
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
