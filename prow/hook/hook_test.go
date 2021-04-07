@@ -108,7 +108,7 @@ func TestHook(t *testing.T) {
 	ca := &config.Agent{}
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:   github.NewFakeClient(),
-		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() *config.OwnersDirDenylist { return &config.OwnersDirDenylist{} }, ownersconfig.FakeResolver),
+		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() config.OwnersDirBlacklist { return config.OwnersDirBlacklist{} }, ownersconfig.FakeResolver),
 		BugzillaClient: &bugzilla.Fake{},
 	}
 	metrics := githubeventserver.NewMetrics()
