@@ -58,6 +58,11 @@ release(
         cluster = BUILD_CLUSTER,
     ),
     component(
+        "build_kubernetes-external-secrets_customresource",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
         "mem-limit-range",
         "limitrange",
         cluster = BUILD_CLUSTER,
