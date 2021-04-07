@@ -11,7 +11,6 @@ dashboard_groups:
     - conformance-cloud-provider-vsphere
     - conformance-vsphere
     - conformance-hack-local-up-cluster
-    - conformance-arm
     - conformance-ppc64le
     - conformance-gardener
     - conformance-s390x
@@ -128,24 +127,6 @@ dashboards:
 - name: conformance-cloud-provider-vsphere
 - name: conformance-vsphere
 - name: conformance-hack-local-up-cluster
-
-- name: conformance-arm
-  dashboard_tab:
-    - name: Periodic Arm64 conformance test
-      test_group_name: arm64-conformance
-      description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
-    - name: Periodic Arm64 conformance test with containerd
-      test_group_name: arm64-conformance-containerd
-      description: Runs conformance test with containerd by using kubetest against latest version of kubernetes on arm64
-    - name: Periodic Arm64 conformance test on AWS
-      test_group_name: arm64-conformance-aws-cluster
-      description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
-    - name: Periodic Arm64 conformance test on PACKET.net
-      test_group_name: arm64-conformance-packet-cluster
-      description: Runs conformance tests by using kubetest against latest version of kubernetes on packet.net"
-    - name: Periodic Arm64 conformance test on VexxHost
-      test_group_name: arm64-conformance-vexxhost-cluster
-      description: Runs conformance tests by using kubetest against latest version of kubernetes on VexxHost"
 
 # ppc64le dashboard
 - name: conformance-ppc64le
@@ -340,33 +321,6 @@ test_groups:
   - configuration_value: k8s-build-version
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-unit-test-ppc64le
-#Arm arm64 test results
-- name: arm64-conformance
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
-- name: arm64-kind-master
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-kind-arm64
-- name: arm64-conformance-containerd
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-containerd
-- name: arm64-conformance-flannel-network
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-flannel
-- name: arm64-conformance-calico-network
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-calico
-- name: arm64-e2e
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-e2e-arm64
-- name: arm64-integration
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-integration
-- name: arm64-conformance-stable
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-stable
-- name: arm64-nodeconformance
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-nodeconformance-arm64
-- name: arm64-conformance-cntainerd-stable
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-containerd-stable
-- name: arm64-conformance-aws-cluster
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
-- name: arm64-conformance-packet-cluster
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-packet-cluster
-- name: arm64-conformance-vexxhost-cluster
-  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-vexxhost-multi-node
 - name: pull-kubernetes-e2e-gce-100-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
