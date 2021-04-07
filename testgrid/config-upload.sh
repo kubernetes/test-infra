@@ -19,7 +19,7 @@ set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
-for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid-canary/configs/k8s/config gs://k8s-testgrid/config gs://k8s-testgrid/configs/k8s/config; do
+for output in gs://k8s-testgrid-canary/configs/k8s/config gs://k8s-testgrid/configs/k8s/config; do
   dir="$(dirname "${BASH_SOURCE}")"
   (
     set -o xtrace
