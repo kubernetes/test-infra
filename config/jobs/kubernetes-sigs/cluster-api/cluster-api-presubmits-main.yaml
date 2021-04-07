@@ -159,7 +159,7 @@ presubmits:
           # and the upgrade tests are being run as part of the periodic upgrade jobs.
           # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
-            value: "\\[PR-Blocking\\] \\[K8s-Upgrade\\]"
+            value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -169,7 +169,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-k8s-latest-main
+  - name: pull-cluster-api-e2e-workload-upgrade-1-20-latest-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -193,13 +193,13 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "v1.20.0"
+            value: "stable-1.20"
           - name: KUBERNETES_VERSION_UPGRADE_TO
             value: "ci/latest-1.21"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.4.13-0"
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: "1.7.0"
+            value: "1.8.0"
           - name: GINKGO_FOCUS
             value: "\\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
@@ -210,4 +210,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-k8s-latest-main
+      testgrid-tab-name: capi-pr-e2e-main-1-20-latest
