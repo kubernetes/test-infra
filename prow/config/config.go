@@ -2533,6 +2533,7 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 
 // mergeFrom merges two prow configs. It must be called _before_ doing any
 // defaulting.
+// If you extend this, please also extend HasConfigFor accordingly.
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	emptyReference := &ProwConfig{BranchProtection: additional.BranchProtection}
 	if diff := cmp.Diff(additional, emptyReference); diff != "" {
@@ -2578,4 +2579,29 @@ func truncate(in string, maxLen int) string {
 		return in
 	}
 	return in[:half] + elide + in[len(in)-half:]
+}
+
+func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
+	global = pc.hasGlobalConfig()
+	orgs = sets.String{}
+	repos = sets.String{}
+
+	for org, orgConfig := range pc.BranchProtection.Orgs {
+		if isPolicySet(orgConfig.Policy) {
+			orgs.Insert(org)
+		}
+		for repo := range orgConfig.Repos {
+			repos.Insert(org + "/" + repo)
+		}
+	}
+
+	return global, orgs, repos
+}
+
+func (pc *ProwConfig) hasGlobalConfig() bool {
+	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || isPolicySet(pc.BranchProtection.Policy) {
+		return true
+	}
+	emptyReference := &ProwConfig{BranchProtection: pc.BranchProtection}
+	return cmp.Diff(pc, emptyReference) != ""
 }
