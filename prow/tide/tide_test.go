@@ -1830,7 +1830,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				newFakeManager(tc.preExistingJobs...),
 				ca.Config,
 				gc,
-				nil,
+				&statusController{},
 				nil,
 				nil,
 				false,
@@ -1885,6 +1885,9 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			}
 			if tc.merged != fgc.merged {
 				t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
+			}
+			if n := len(c.sc.dontUpdateStatus.data); n != tc.merged+len(tc.mergeErrs) {
+				t.Errorf("expected %d entries in the dontUpdateStatus map, got %d", tc.merged+len(tc.mergeErrs), n)
 			}
 			// Ensure that the correct number of batch jobs were triggered
 			if tc.triggeredBatches != len(batchJobs) {
