@@ -204,13 +204,23 @@ func main() {
 	skipCollaborators := func(org, repo string) bool {
 		return pluginAgent.Config().SkipCollaborators(org, repo)
 	}
-	ownersDirBlacklist := func() config.OwnersDirBlacklist {
-		return configAgent.Config().OwnersDirBlacklist
+	ownersDirDenylist := func() *config.OwnersDirDenylist {
+		deprecated := configAgent.Config().OwnersDirBlacklist
+		l := configAgent.Config().OwnersDirDenylist
+		if deprecated != nil {
+			logrus.Warn("owners_dir_blacklist will be deprecated after October 2021, use owners_dir_denylist instead")
+			if l != nil {
+				logrus.Warn("Both owners_dir_blacklist and owners_dir_denylist are provided, owners_dir_blacklist is discarded")
+			} else {
+				l = deprecated
+			}
+		}
+		return l
 	}
 	resolver := func(org, repo string) ownersconfig.Filenames {
 		return pluginAgent.Config().OwnersFilenames(org, repo)
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist, resolver)
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirDenylist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,

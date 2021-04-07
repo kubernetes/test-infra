@@ -163,10 +163,10 @@ type Client struct {
 type delegate struct {
 	git git.ClientFactory
 
-	mdYAMLEnabled      func(org, repo string) bool
-	skipCollaborators  func(org, repo string) bool
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
-	filenames          ownersconfig.Resolver
+	mdYAMLEnabled     func(org, repo string) bool
+	skipCollaborators func(org, repo string) bool
+	ownersDirDenylist func() *prowConf.OwnersDirDenylist
+	filenames         ownersconfig.Resolver
 
 	cache *cache
 }
@@ -196,7 +196,7 @@ func NewClient(
 	ghc github.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
+	ownersDirDenylist func() *prowConf.OwnersDirDenylist,
 	filenames ownersconfig.Resolver,
 ) *Client {
 	return &Client{
@@ -206,10 +206,10 @@ func NewClient(
 			git:   gc,
 			cache: newCache(),
 
-			mdYAMLEnabled:      mdYAMLEnabled,
-			skipCollaborators:  skipCollaborators,
-			ownersDirBlacklist: ownersDirBlacklist,
-			filenames:          filenames,
+			mdYAMLEnabled:     mdYAMLEnabled,
+			skipCollaborators: skipCollaborators,
+			ownersDirDenylist: ownersDirDenylist,
+			filenames:         filenames,
 		},
 	}
 }
@@ -394,7 +394,10 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
 			start = time.Now()
-			ignoreDirPatterns := c.ownersDirBlacklist().ListIgnoredDirs(org, repo)
+			var ignoreDirPatterns []string
+			if ownersDirDenylist := c.ownersDirDenylist(); ownersDirDenylist != nil {
+				ignoreDirPatterns = ownersDirDenylist.ListIgnoredDirs(org, repo)
+			}
 			var dirIgnorelist []*regexp.Regexp
 			for _, pattern := range ignoreDirPatterns {
 				re, err := regexp.Compile(pattern)
