@@ -18,11 +18,13 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE
+              - --env-passthrough=IMAGE_TYPE,IMAGE_USER
               - images/image-user
             env:
               - name: IMAGE_TYPE
                 value: "uid"
+              - name: IMAGE_USER
+                value: "1002"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username
@@ -43,11 +45,13 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE
+              - --env-passthrough=IMAGE_TYPE,IMAGE_USER
               - images/image-user
             env:
               - name: IMAGE_TYPE
                 value: "username"
+              - name: IMAGE_USER
+                value: "www-data"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-uid-group
@@ -68,11 +72,13 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE
+              - --env-passthrough=IMAGE_TYPE,IMAGE_USER
               - images/image-user
             env:
               - name: IMAGE_TYPE
                 value: "uid-group"
+              - name: IMAGE_USER
+                value: "1003:1004"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-username-group
@@ -93,11 +99,13 @@ postsubmits:
               - --project=k8s-staging-cri-tools
               - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
               - --gcb-config=cloudbuild-images.yaml
-              - --env-passthrough=IMAGE_TYPE
+              - --env-passthrough=IMAGE_TYPE,IMAGE_USER
               - images/image-user
             env:
               - name: IMAGE_TYPE
                 value: "username-group"
+              - name: IMAGE_USER
+                value: "www-data:1004"
               - name: LOG_TO_STDOUT
                 value: "y"
     - name: post-cri-tools-push-image-user-multi-arch
