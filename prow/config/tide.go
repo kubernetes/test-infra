@@ -206,21 +206,21 @@ func (t *Tide) GetPRStatusBaseURL(repo OrgRepo) string {
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
 type TideQuery struct {
-	Orgs          []string `json:"orgs,omitempty"`
-	Repos         []string `json:"repos,omitempty"`
-	ExcludedRepos []string `json:"excludedRepos,omitempty"`
-
 	Author string `json:"author,omitempty"`
-
-	ExcludedBranches []string `json:"excludedBranches,omitempty"`
-	IncludedBranches []string `json:"includedBranches,omitempty"`
 
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
 
+	ExcludedBranches []string `json:"excludedBranches,omitempty"`
+	IncludedBranches []string `json:"includedBranches,omitempty"`
+
 	Milestone string `json:"milestone,omitempty"`
 
 	ReviewApprovedRequired bool `json:"reviewApprovedRequired,omitempty"`
+
+	Orgs          []string `json:"orgs,omitempty"`
+	Repos         []string `json:"repos,omitempty"`
+	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 }
 
 // constructQuery returns a map[org][]orgSpecificQueryParts (org, repo, -repo), remainingQueryString
