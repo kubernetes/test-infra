@@ -22,7 +22,10 @@ spec:
         args:
         - --all-contexts
         - --config=/etc/prow-config/config.yaml
-        - --kubeconfig=/etc/kubeconfig/config
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig

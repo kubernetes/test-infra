@@ -42,10 +42,13 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --github-workers=5
         - --job-config-path=/etc/job-config
-        - --kubeconfig=/etc/kubeconfig/config
         - --kubernetes-blob-storage-workers=1
         - --slack-token-file=/etc/slack/token
         - --slack-workers=1
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig
