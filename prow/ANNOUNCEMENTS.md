@@ -135,7 +135,6 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *April 1st, 2021* The `owners_dir_blacklist` field in prow config has been deprecated in favor of `owners_dir_denylist`. The support of `owners_dir_blacklist` will be stopped in October 2021.
  - *April 1st, 2021* The `labels_blacklist` field in verify-owners plugin config
    is deprecated in favor of `labels_denylist`. The support for `labels_blacklist` shall be stopped in
    *October 2021*.

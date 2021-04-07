@@ -481,22 +481,9 @@ managed_webhooks:
     respect_legacy_global_token: false
 
 
-# OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
-owners_dir_blacklist:
-    # Default configures a default blacklist for all repos (or orgs).
-    # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-    # are already preconfigured to be blacklisted, and need not be included here.
-    default:
-      - ""
-
-    # Repos configures a directory blacklist per repo (or org)
-    repos:
-        "": null
-
-
-# OwnersDirDenylist is used to configure regular expressions matching directories
+# OwnersDirBlacklist is used to configure regular expressions matching directories
 # to ignore when searching for OWNERS{,_ALIAS} files in a repo.
-owners_dir_denylist:
+owners_dir_blacklist:
     # Default configures a default blacklist for all repos (or orgs).
     # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
     # are already preconfigured to be blacklisted, and need not be included here.
