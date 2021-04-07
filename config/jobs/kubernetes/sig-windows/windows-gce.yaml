@@ -18,7 +18,7 @@ presets:
 - labels:
     preset-e2e-gce-windows-containerd: "true"
   env:
-  - name: KUBE_CONTAINER_RUNTIME
+  - name: KUBE_WINDOWS_CONTAINER_RUNTIME
     value: "containerd"
   - name: PREPULL_TIMEOUT
     value: "30m"
