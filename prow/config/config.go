@@ -2546,6 +2546,16 @@ func ContextDescriptionWithBaseSha(humanReadable, baseSHA string) string {
 	var suffix string
 	if baseSHA != "" {
 		suffix = contextDescriptionBaseSHADelimiter + baseSHA
+		// Leftpad the baseSHA suffix so its shown at a stable position on the right side in the GitHub UI.
+		// The GitHub UI will also trim it on the right side and replace some part of it with '...'. The
+		// API always returns the full string.
+		if len(humanReadable+suffix) < contextDescriptionMaxLen {
+			for i := 0; i < contextDescriptionMaxLen-len(humanReadable+suffix); i++ {
+				// This looks like a standard space but is U+2001, because GitHub seems to deduplicate normal
+				// spaces in their frontend.
+				suffix = " " + suffix
+			}
+		}
 	}
 	return truncate(humanReadable, contextDescriptionMaxLen-len(suffix)) + suffix
 }
