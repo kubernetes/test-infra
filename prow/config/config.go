@@ -152,9 +152,13 @@ type ProwConfig struct {
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
 
-	// OwnersDirBlacklist is used to configure regular expressions matching directories
+	// OwnersDirDenylist is used to configure regular expressions matching directories
 	// to ignore when searching for OWNERS{,_ALIAS} files in a repo.
-	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+	OwnersDirDenylist *OwnersDirDenylist `json:"owners_dir_denylist,omitempty"`
+
+	// OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
+	// TODO(chaodaiG, November 2021): Removed after October 2021
+	OwnersDirBlacklist *OwnersDirDenylist `json:"owners_dir_blacklist,omitempty"`
 
 	// Pub/Sub Subscriptions that we want to listen to
 	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
@@ -377,9 +381,9 @@ func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHA
 	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
 }
 
-// OwnersDirBlacklist is used to configure regular expressions matching directories
+// OwnersDirDenylist is used to configure regular expressions matching directories
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
-type OwnersDirBlacklist struct {
+type OwnersDirDenylist struct {
 	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos,omitempty"`
 	// Default configures a default blacklist for all repos (or orgs).
@@ -395,17 +399,17 @@ type OwnersDirBlacklist struct {
 
 // ListIgnoredDirs returns regular expressions matching directories to ignore when
 // searching for OWNERS{,_ALIAS} files in a repo.
-func (ownersDirBlacklist OwnersDirBlacklist) ListIgnoredDirs(org, repo string) (ignorelist []string) {
-	ignorelist = append(ignorelist, ownersDirBlacklist.Default...)
-	if bl, ok := ownersDirBlacklist.Repos[org]; ok {
+func (o OwnersDirDenylist) ListIgnoredDirs(org, repo string) (ignorelist []string) {
+	ignorelist = append(ignorelist, o.Default...)
+	if bl, ok := o.Repos[org]; ok {
 		ignorelist = append(ignorelist, bl...)
 	}
-	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
+	if bl, ok := o.Repos[org+"/"+repo]; ok {
 		ignorelist = append(ignorelist, bl...)
 	}
 
 	preconfiguredDefaults := []string{"\\.git$", "_output$", "vendor/.*/.*"}
-	if !ownersDirBlacklist.IgnorePreconfiguredDefaults {
+	if !o.IgnorePreconfiguredDefaults {
 		ignorelist = append(ignorelist, preconfiguredDefaults...)
 	}
 	return
