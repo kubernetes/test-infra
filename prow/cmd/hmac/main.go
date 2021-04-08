@@ -32,6 +32,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/yaml"
 
@@ -287,16 +288,14 @@ func (c *client) handleConfigUpdate() error {
 	// HACK: waiting for the hmac k8s secret update to propagate to the pods that are using the secret,
 	// so that components like hook can start respecting the new hmac values.
 	time.Sleep(20 * time.Second)
-	if err := c.batchOnboardNewTokenForRepos(); err != nil {
-		return fmt.Errorf("error onboarding new token for the repos: %v", err)
-	}
+	errs := c.batchOnboardNewTokenForRepos()
 
 	// Do necessary cleanups after the token and webhook updates are done.
 	if err := c.cleanup(); err != nil {
-		return fmt.Errorf("error cleaning up %v", err)
+		errs = append(errs, fmt.Errorf("error cleaning up %v", err))
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // handleRemoveRepo handles webhook removal and hmac token removal from the current hmac map for all repos removed from the declarative config.
@@ -400,36 +399,40 @@ func (c *client) addRepoToBatchUpdate(repo string) error {
 	return nil
 }
 
-func (c *client) batchOnboardNewTokenForRepos() error {
-	for repo, generatedToken := range c.hmacMapForBatchUpdate {
-		// Update the github webhook to use new token.
-		o := ghhook.Options{
-			GitHubOptions:    c.options.github,
-			GitHubHookClient: c.githubHookClient,
-			Repos:            prowflagutil.NewStrings(repo),
-			HookURL:          c.options.hookUrl,
-			HMACValue:        generatedToken,
-			// Receive hooks for all the events.
-			Events:  prowflagutil.NewStrings(github.AllHookEvents...),
-			Confirm: true,
-		}
-		if err := o.Validate(); err != nil {
-			return fmt.Errorf("error validating the options: %v", err)
-		}
+func (c *client) onboardNewTokenForRepo(repo, generatedToken string) error {
+	// Update the github webhook to use new token.
+	o := ghhook.Options{
+		GitHubOptions:    c.options.github,
+		GitHubHookClient: c.githubHookClient,
+		Repos:            prowflagutil.NewStrings(repo),
+		HookURL:          c.options.hookUrl,
+		HMACValue:        generatedToken,
+		// Receive hooks for all the events.
+		Events:  prowflagutil.NewStrings(github.AllHookEvents...),
+		Confirm: true,
+	}
+	if err := o.Validate(); err != nil {
+		return fmt.Errorf("error validating the options: %v", err)
+	}
 
-		logrus.WithField("repo", repo).Debugf("Updating the webhook for %q", c.options.hookUrl)
-		if err := o.HandleWebhookConfigChange(); err != nil {
+	logrus.WithField("repo", repo).Debugf("Updating the webhook for %q", c.options.hookUrl)
+	return o.HandleWebhookConfigChange()
+}
+
+func (c *client) batchOnboardNewTokenForRepos() []error {
+	var errs []error
+	for repo, generatedToken := range c.hmacMapForBatchUpdate {
+		if err := c.onboardNewTokenForRepo(repo, generatedToken); err != nil {
+			errs = append(errs, err)
 			logrus.WithError(err).Errorf("Error updating the webhook, will revert the hmacs for %q", repo)
 			if hmacs, exist := c.hmacMapForRecovery[repo]; exist {
 				c.currentHMACMap[repo] = hmacs
 			} else {
 				delete(c.currentHMACMap, repo)
 			}
-			return err
 		}
 	}
-
-	return nil
+	return errs
 }
 
 // cleanup will do necessary cleanups after the token and webhook updates are done.
