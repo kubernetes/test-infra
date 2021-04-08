@@ -87,7 +87,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-conformance-v1alpha4
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-gcp-make-conformance-v1alpha4-k8s-ci-artifacts
   labels:
@@ -136,5 +136,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
     testgrid-tab-name: capg-conformance-v1alpha4-k8s-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-num-failures-to-alert: "2"

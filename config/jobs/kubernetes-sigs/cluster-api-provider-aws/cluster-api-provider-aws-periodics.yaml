@@ -37,7 +37,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-v1alpha3
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-capi-e2e-v1alpha3
   decorate: true
@@ -79,7 +79,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-capi-e2e-v1alpha3
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-v1alpha2
   decorate: true
@@ -117,7 +117,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-v1alpha2
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha3
   decorate: true
@@ -155,7 +155,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-conformance-v1alpha3
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha2
   decorate: true
@@ -193,7 +193,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-conformance-v1alpha2
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha2-with-k8s-ci-artifacts
   max_concurrency: 1
@@ -250,7 +250,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: capa-conformance-v1alpha2-k8s-master
     testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
 - name: periodic-cluster-api-provider-aws-e2e-conformance-v1alpha3-with-k8s-ci-artifacts
   max_concurrency: 1
   labels:
@@ -305,4 +305,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws, sig-release-master-informing
     testgrid-tab-name: capa-conformance-v1alpha3-k8s-master
     testgrid-num-columns-recent: '20'
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io, release-team@kubernetes.io

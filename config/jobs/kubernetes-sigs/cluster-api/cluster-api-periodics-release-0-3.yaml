@@ -20,7 +20,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-test-release-0-3
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-e2e-release-0-3
   interval: 1h
@@ -48,7 +48,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-e2e-release-0-3
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-verify-book-links-release-0-3
   interval: 6h
