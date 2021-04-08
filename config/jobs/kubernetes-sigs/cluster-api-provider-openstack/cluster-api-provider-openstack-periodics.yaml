@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-openstack-e2e-test-master
+- name: periodic-cluster-api-provider-openstack-e2e-test-main
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -41,8 +41,10 @@ periodics:
           cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-    testgrid-tab-name: periodic-e2e-test-master
-- name: periodic-cluster-api-provider-openstack-conformance-test-master-with-k8s-ci-artifacts
+    testgrid-tab-name: periodic-e2e-test-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -91,4 +93,6 @@ periodics:
           cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-    testgrid-tab-name: periodic-conformance-test-master
+    testgrid-tab-name: periodic-conformance-test-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
