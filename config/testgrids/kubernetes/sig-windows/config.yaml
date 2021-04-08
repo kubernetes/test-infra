@@ -27,40 +27,40 @@ dashboards:
   dashboard_tab:
   - name: ltsc2019-docker-flannel-winbridge-dsr-disabled-master
     description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-winbridge-docker-dsr-disabled-master-windows
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
   - name: ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
     description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-winoverlay-docker-dsr-disabled-master-windows
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
   - name: ltsc2019-docker-flannel-winbridge-master
     description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-master
   - name: ltsc2019-docker-flannel-winoverlay-master
     description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-flannel-overlay-master-windows
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
   - name: ltsc2019-containerd-flannel-sdnbridge-master
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
+    test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
   - name: ltsc2019-containerd-flannel-sdnoverlay-master
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
+    test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-master
   - name: ltsc2019-containerd-flannel-sdnbridge-stable
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: ci-kubernetes-e2e-sdnbridge-ctrd-stable-windows
+    test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-stable
   - name: ltsc2019-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: ci-kubernetes-e2e-sdnoverlay-ctrd-stable-windows
+    test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
   - name: sac1909-containerd-flannel-sdnbridge-stable
     description: Runs Windows (SAC 1909 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: containerd-windows-sac1909-sdnbridge
+    test_group_name: k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
   - name: sac1909-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (SAC 1909 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: containerd-windows-sac1909-sdnoverlay
+    test_group_name: k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
   - name: sac2004-containerd-flannel-sdnbridge-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: containerd-windows-sac2004-sdnbridge
+    test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
   - name: sac2004-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: containerd-windows-sac2004-sdnoverlay
+    test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
   - name: win-1909-containerd-master-integration
@@ -69,30 +69,30 @@ dashboards:
  
 test_groups:
 # Flannel CNI on Windows test groups
-- name: ci-kubernetes-e2e-winbridge-docker-dsr-disabled-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-winbridge-docker-dsr-disabled-master-windows
-- name: ci-kubernetes-e2e-winoverlay-docker-dsr-disabled-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-winoverlay-docker-dsr-disabled-master-windows
-- name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-flannel-l2bridge-master-windows
-- name: ci-kubernetes-e2e-flannel-overlay-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-flannel-overlay-master-windows
-- name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
-- name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
-- name: ci-kubernetes-e2e-sdnbridge-ctrd-stable-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-sdnbridge-ctrd-stable-windows
-- name: ci-kubernetes-e2e-sdnoverlay-ctrd-stable-windows
-  gcs_prefix: k8s-ovn/logs/ci-kubernetes-e2e-sdnoverlay-ctrd-stable-windows
-- name: containerd-windows-sac1909-sdnbridge
-  gcs_prefix: k8s-ovn/logs/containerd-windows-sac1909-sdnbridge
-- name: containerd-windows-sac1909-sdnoverlay
-  gcs_prefix: k8s-ovn/logs/containerd-windows-sac1909-sdnoverlay
-- name: containerd-windows-sac2004-sdnbridge
-  gcs_prefix: k8s-ovn/logs/containerd-windows-sac2004-sdnbridge
-- name: containerd-windows-sac2004-sdnoverlay
-  gcs_prefix: k8s-ovn/logs/containerd-windows-sac2004-sdnoverlay
+- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
+- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
+- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-master
+- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
+- name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
+- name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-master
+- name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-stable
+- name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
+- name: k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
+- name: k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
+- name: k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
+- name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-sac1909
   gcs_prefix: containerd-integration/logs/windows-sac1909
