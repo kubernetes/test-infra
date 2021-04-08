@@ -1,0 +1,98 @@
+periodics:
+- name: periodic-cluster-api-provider-gcp-make-conformance-v1alpha3
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 24h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-0.3
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  - org: kubernetes-sigs
+    repo: image-builder
+    base_ref: master
+    path_alias: "sigs.k8s.io/image-builder"
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.19
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-conformance-v1alpha3-release-0-3
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-gcp-make-conformance-v1alpha3-k8s-ci-artifacts
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 24h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-gcp
+      base_ref: release-0.3
+      path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+          - "--use-ci-artifacts"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-conformance-v1alpha3-release-0-3-ci-artifacts
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
