@@ -223,6 +223,13 @@ test_suite(
 )
 
 test_suite(
+    name = "verify-golangci-lint",
+    tests = [
+        "@io_k8s_repo_infra//hack:verify-golangci-lint",
+    ],
+)
+
+test_suite(
     name = "verify-linters",
     tags = ["lint"],  # picks up all non-manual targets with this tag
 )

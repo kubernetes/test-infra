@@ -1,0 +1,8 @@
+run:
+  deadline: 10m
+
+linters:
+  disable-all: true
+  enable:
+  - gofmt
+  - misspell
