@@ -143,7 +143,6 @@ func (entry cacheEntry) fullyLoaded() bool {
 
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
-	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 
 	WithFields(fields logrus.Fields) Interface
@@ -257,40 +256,6 @@ type RepoOwners struct {
 
 func (r *RepoOwners) Filenames() ownersconfig.Filenames {
 	return r.filenames
-}
-
-// LoadRepoAliases returns an up-to-date RepoAliases struct for the specified repo.
-// If the repo does not have an aliases file then an empty alias map is returned with no error.
-// Note: The returned RepoAliases should be treated as read only.
-func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
-	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
-	cloneRef := fmt.Sprintf("%s/%s", org, repo)
-	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
-
-	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
-	}
-
-	entry, ok, entryLock := c.cache.getEntry(fullName)
-	defer entryLock.Unlock()
-	if !ok || entry.sha != sha {
-		// entry is non-existent or stale.
-		gitRepo, err := c.git.ClientFor(org, repo)
-		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
-		}
-		defer gitRepo.Clean()
-		if err := gitRepo.Checkout(base); err != nil {
-			return nil, err
-		}
-
-		entry.aliases = loadAliasesFrom(gitRepo.Directory(), c.filenames(org, repo).OwnersAliases, log)
-		entry.sha = sha
-		c.cache.setEntry(fullName, entry)
-	}
-
-	return entry.aliases, nil
 }
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
