@@ -225,7 +225,7 @@ periodics:
     # this is the name of some testgrid dashboard to report to.
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
     testgrid-tab-name: cluster-api-push-images-nightly
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
 - name: cluster-api-provider-openstack-push-images-nightly
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -257,4 +257,4 @@ periodics:
     # this is the name of some testgrid dashboard to report to.
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
     testgrid-tab-name: cluster-api-provider-openstack-push-images-nightly
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io

@@ -35,7 +35,7 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: ci-e2e
         testgrid-num-columns-recent: '20'
-        testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     - name: ci-cluster-api-provider-aws-e2e-conformance
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
@@ -69,4 +69,4 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: ci-e2e-conformance
         testgrid-num-columns-recent: '20'
-        testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
