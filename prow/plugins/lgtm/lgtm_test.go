@@ -47,10 +47,6 @@ type fakeOwnersClient struct {
 
 var _ repoowners.Interface = &fakeOwnersClient{}
 
-func (f *fakeOwnersClient) LoadRepoAliases(org, repo, base string) (repoowners.RepoAliases, error) {
-	return nil, nil
-}
-
 func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
 }
