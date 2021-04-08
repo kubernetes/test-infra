@@ -11,7 +11,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery-operator: check formatting, lint etc."
     spec:
       containers:
-      - image: golang:1.15
+      - image: golang:1.16
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-operator-verify-docs
