@@ -32,51 +32,6 @@ dashboards:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: yum-plugin-build
   - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/guest-agent/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: guest-agent-build'
-    name: guest-agent-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/guest-agent/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: guest-agent-build
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/guest-configs/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: gce-build'
-    name: gce-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/guest-configs/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: gce-build
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: disk-expand-build'
-    name: disk-expand-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/guest-diskexpand/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: disk-expand-build
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/guest-oslogin/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: oslogin-build'
-    name: oslogin-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/guest-oslogin/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: oslogin-build
-  - code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: osconfig-build'
-    name: osconfig-build
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: osconfig-build
-  - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: osconfig-presubmit-gobuild'
     name: OSConfig presubmits - gobuild
@@ -701,16 +656,6 @@ test_groups:
   name: apt-transport-build
 - gcs_prefix: oss-prow/logs/yum-plugin-build
   name: yum-plugin-build
-- gcs_prefix: oss-prow/logs/guest-agent-build
-  name: guest-agent-build
-- gcs_prefix: oss-prow/logs/gce-build
-  name: gce-build
-- gcs_prefix: oss-prow/logs/disk-expand-build
-  name: disk-expand-build
-- gcs_prefix: oss-prow/logs/oslogin-build
-  name: oslogin-build
-- gcs_prefix: oss-prow/logs/osconfig-build
-  name: osconfig-build
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-deploy-knative-prow
   name: post-oss-test-infra-deploy-knative-prow
   num_failures_to_alert: 2
