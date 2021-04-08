@@ -335,23 +335,23 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.21
+    master: v1.22
   kubernetes/kubernetes:
-    master: v1.21
+    master: v1.22
     release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
   kubernetes/org:
-    main: v1.21
+    main: v1.22
   kubernetes/release:
-    master: v1.21
+    master: v1.22
   kubernetes/sig-release:
-    master: v1.21
+    master: v1.22
   kubernetes/test-infra:
-    master: v1.21
+    master: v1.22
   kubernetes/k8s.io:
-    main: v1.21
+    main: v1.22
   kubernetes/kops:
     master: v1.21
     release-1.20: v1.20
