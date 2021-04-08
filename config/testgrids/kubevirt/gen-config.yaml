@@ -115,15 +115,6 @@ dashboards:
     test_group_name: pull-kubevirt-e2e-k8s-1.20-cgroupsv2
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: pull-kubevirt-e2e-k8s-cnao-1.19'
-    name: pull-kubevirt-e2e-k8s-cnao-1.19
-    open_bug_template:
-      url: https://github.com/kubevirt/kubevirt/issues/
-    open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: pull-kubevirt-e2e-k8s-cnao-1.19
-  - code_search_url_template:
-      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-kind-1.17-sriov'
     name: pull-kubevirt-e2e-kind-1.17-sriov
     open_bug_template:
@@ -198,15 +189,6 @@ dashboards:
     test_group_name: periodic-kubevirt-e2e-k8s-latest
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-latest-cnao'
-    name: periodic-kubevirt-e2e-k8s-latest-cnao
-    open_bug_template:
-      url: https://github.com/kubevirt/kubevirt/issues/
-    open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: periodic-kubevirt-e2e-k8s-latest-cnao
-  - code_search_url_template:
-      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: periodic-kubevirt-e2e-k8s-prev'
     name: periodic-kubevirt-e2e-k8s-prev
     open_bug_template:
@@ -268,9 +250,6 @@ test_groups:
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-latest
   name: periodic-kubevirt-e2e-k8s-latest
 - days_of_results: 60
-  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-latest-cnao
-  name: periodic-kubevirt-e2e-k8s-latest-cnao
-- days_of_results: 60
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev
   name: periodic-kubevirt-e2e-k8s-prev
 - days_of_results: 60
@@ -319,9 +298,6 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20-cgroupsv2
   name: pull-kubevirt-e2e-k8s-1.20-cgroupsv2
-  num_columns_recent: 20
-- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-cnao-1.19
-  name: pull-kubevirt-e2e-k8s-cnao-1.19
   num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-kind-1.17-sriov
   name: pull-kubevirt-e2e-kind-1.17-sriov
