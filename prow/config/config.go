@@ -384,16 +384,16 @@ func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHA
 // OwnersDirDenylist is used to configure regular expressions matching directories
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirDenylist struct {
-	// Repos configures a directory blacklist per repo (or org)
+	// Repos configures a directory denylist per repo (or org)
 	Repos map[string][]string `json:"repos,omitempty"`
-	// Default configures a default blacklist for all repos (or orgs).
+	// Default configures a default denylist for all repos (or orgs).
 	// Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-	// are already preconfigured to be blacklisted, and need not be included here.
+	// are already preconfigured to be denylisted, and need not be included here.
 	Default []string `json:"default,omitempty"`
 	// By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
-	// are preconfigured to be blacklisted.
+	// are preconfigured to be denylisted.
 	// If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
-	// to the blacklist.
+	// to the denylist.
 	IgnorePreconfiguredDefaults bool `json:"ignore_preconfigured_defaults,omitempty"`
 }
 

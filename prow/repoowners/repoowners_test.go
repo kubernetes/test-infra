@@ -319,8 +319,8 @@ func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
 	}
 
 	type testConf struct {
-		blacklistDefault            []string
-		blacklistByRepo             map[string][]string
+		denylistDefault             []string
+		denylistByRepo              map[string][]string
 		ignorePreconfiguredDefaults bool
 		includeDirs                 []string
 		excludeDirs                 []string
@@ -328,58 +328,58 @@ func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
 
 	tests := map[string]testConf{}
 
-	tests["blacklist by org"] = testConf{
-		blacklistByRepo: map[string][]string{
+	tests["denylist by org"] = testConf{
+		denylistByRepo: map[string][]string{
 			"org": {"src"},
 		},
 		includeDirs: []string{""},
 		excludeDirs: []string{"src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["blacklist by org/repo"] = testConf{
-		blacklistByRepo: map[string][]string{
+	tests["denylist by org/repo"] = testConf{
+		denylistByRepo: map[string][]string{
 			"org/repo": {"src"},
 		},
 		includeDirs: []string{""},
 		excludeDirs: []string{"src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["blacklist by default"] = testConf{
-		blacklistDefault: []string{"src"},
-		includeDirs:      []string{""},
-		excludeDirs:      []string{"src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
+	tests["denylist by default"] = testConf{
+		denylistDefault: []string{"src"},
+		includeDirs:     []string{""},
+		excludeDirs:     []string{"src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["subdir blacklist"] = testConf{
-		blacklistDefault: []string{"dir"},
-		includeDirs:      []string{"", "src"},
-		excludeDirs:      []string{"src/dir", "src/dir/conformance", "src/dir/subdir"},
+	tests["subdir denylist"] = testConf{
+		denylistDefault: []string{"dir"},
+		includeDirs:     []string{"", "src"},
+		excludeDirs:     []string{"src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["no blacklist setup"] = testConf{
+	tests["no denylist setup"] = testConf{
 		includeDirs: []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["blacklist setup but not matching this repo"] = testConf{
-		blacklistByRepo: map[string][]string{
+	tests["denylist setup but not matching this repo"] = testConf{
+		denylistByRepo: map[string][]string{
 			"not_org/not_repo": {"src"},
 			"not_org":          {"src"},
 		},
 		includeDirs: []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["non-matching blacklist"] = testConf{
-		blacklistDefault: []string{"sr$"},
-		includeDirs:      []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
+	tests["non-matching denylist"] = testConf{
+		denylistDefault: []string{"sr$"},
+		includeDirs:     []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["path blacklist"] = testConf{
-		blacklistDefault: []string{"src/dir"},
-		includeDirs:      []string{"", "src"},
-		excludeDirs:      []string{"src/dir", "src/dir/conformance", "src/dir/subdir"},
+	tests["path denylist"] = testConf{
+		denylistDefault: []string{"src/dir"},
+		includeDirs:     []string{"", "src"},
+		excludeDirs:     []string{"src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
-	tests["regexp blacklist path"] = testConf{
-		blacklistDefault: []string{"src/dir/."},
-		includeDirs:      []string{"", "src", "src/dir"},
-		excludeDirs:      []string{"src/dir/conformance", "src/dir/subdir"},
+	tests["regexp denylist path"] = testConf{
+		denylistDefault: []string{"src/dir/."},
+		includeDirs:     []string{"", "src", "src/dir"},
+		excludeDirs:     []string{"src/dir/conformance", "src/dir/subdir"},
 	}
 	tests["path substring"] = testConf{
-		blacklistDefault: []string{"/c"},
-		includeDirs:      []string{"", "src", "src/dir", "src/dir/subdir"},
-		excludeDirs:      []string{"src/dir/conformance"},
+		denylistDefault: []string{"/c"},
+		includeDirs:     []string{"", "src", "src/dir", "src/dir/subdir"},
+		excludeDirs:     []string{"src/dir/conformance"},
 	}
 	tests["exclude preconfigured defaults"] = testConf{
 		includeDirs: []string{"", "src", "src/dir", "src/dir/subdir", "vendor"},
@@ -392,7 +392,7 @@ func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
 
 	for name, conf := range tests {
 		t.Run(name, func(t *testing.T) {
-			ro := getRepoOwnersWithDenylist(t, conf.blacklistDefault, conf.blacklistByRepo, conf.ignorePreconfiguredDefaults)
+			ro := getRepoOwnersWithDenylist(t, conf.denylistDefault, conf.denylistByRepo, conf.ignorePreconfiguredDefaults)
 
 			includeDirs := sets.NewString(conf.includeDirs...)
 			excludeDirs := sets.NewString(conf.excludeDirs...)

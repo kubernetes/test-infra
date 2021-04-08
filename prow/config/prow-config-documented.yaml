@@ -483,13 +483,13 @@ managed_webhooks:
 
 # OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
 owners_dir_blacklist:
-    # Default configures a default blacklist for all repos (or orgs).
+    # Default configures a default denylist for all repos (or orgs).
     # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-    # are already preconfigured to be blacklisted, and need not be included here.
+    # are already preconfigured to be denylisted, and need not be included here.
     default:
       - ""
 
-    # Repos configures a directory blacklist per repo (or org)
+    # Repos configures a directory denylist per repo (or org)
     repos:
         "": null
 
@@ -497,13 +497,13 @@ owners_dir_blacklist:
 # OwnersDirDenylist is used to configure regular expressions matching directories
 # to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 owners_dir_denylist:
-    # Default configures a default blacklist for all repos (or orgs).
+    # Default configures a default denylist for all repos (or orgs).
     # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-    # are already preconfigured to be blacklisted, and need not be included here.
+    # are already preconfigured to be denylisted, and need not be included here.
     default:
       - ""
 
-    # Repos configures a directory blacklist per repo (or org)
+    # Repos configures a directory denylist per repo (or org)
     repos:
         "": null
 plank:
