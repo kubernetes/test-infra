@@ -209,3 +209,23 @@ spec:
   selector:
     matchLabels:
       app: crier
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: kubernetes-external-secrets
+    app: kubernetes-external-secrets
+  name: kubernetes-external-secrets
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    port: prometheus
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubernetes-external-secrets
