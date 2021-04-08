@@ -205,17 +205,22 @@ func main() {
 		return pluginAgent.Config().SkipCollaborators(org, repo)
 	}
 	ownersDirDenylist := func() *config.OwnersDirDenylist {
+		// OwnersDirDenylist struct contains some defaults that's required by all
+		// repos, so this function cannot return nil
+		res := &config.OwnersDirDenylist{}
 		deprecated := configAgent.Config().OwnersDirBlacklist
-		l := configAgent.Config().OwnersDirDenylist
+		if l := configAgent.Config().OwnersDirDenylist; l != nil {
+			res = l
+		}
 		if deprecated != nil {
 			logrus.Warn("owners_dir_blacklist will be deprecated after October 2021, use owners_dir_denylist instead")
-			if l != nil {
+			if res != nil {
 				logrus.Warn("Both owners_dir_blacklist and owners_dir_denylist are provided, owners_dir_blacklist is discarded")
 			} else {
-				l = deprecated
+				res = deprecated
 			}
 		}
-		return l
+		return res
 	}
 	resolver := func(org, repo string) ownersconfig.Filenames {
 		return pluginAgent.Config().OwnersFilenames(org, repo)
