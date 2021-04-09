@@ -17,13 +17,41 @@ presubmits:
         - test
         - --config=ci
         - --nobuild_tests_only
+        - --
         - //...
+        - -//hack:verify-golangci-lint
         env:
         - name: BAZEL_FETCH_PLEASE
           value: //...
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: bazel
+
+  - name: pull-test-infra-golangci-lint
+    branches:
+    - master
+    always_run: false
+    optional: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
+        command:
+        - hack/bazel.sh
+        args:
+        - test
+        - --config=ci
+        - --nobuild_tests_only
+        - //hack:verify-golangci-lint
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: //...
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: golangci-lint
 
   - name: pull-test-infra-gubernator
     branches:

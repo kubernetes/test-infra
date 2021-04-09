@@ -223,6 +223,11 @@ test_suite(
 )
 
 test_suite(
+    name = "verify-golangci-lint",
+    tests = [],
+)
+
+test_suite(
     name = "verify-linters",
     tags = ["lint"],  # picks up all non-manual targets with this tag
 )
