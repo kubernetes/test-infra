@@ -65,10 +65,9 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-json-sort-check
-  - name: packer-validate
+  - name: pull-packer-validate
     decorate: true
-    always_run: false
-    optional: true
+    run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh'
     decoration_config:
       timeout: 20m
     max_concurrency: 5
@@ -92,7 +91,6 @@ presubmits:
     max_concurrency: 5
     labels:
       preset-service-account: "true"
-    run_if_changed: 'images/capi/.*'
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
