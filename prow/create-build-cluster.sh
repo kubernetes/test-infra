@@ -115,7 +115,7 @@ function createUploadSASecret() {
   kubectl create secret generic "service-account" -n "test-pods" --from-file="service-account.json=sa-key.json"
   echo
   echo "Please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
-  echo "  gsutil acl ch -u \"${saFull}:O\" \"gs://${GCS_BUCKET}\""
+  echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
   echo
   echo "Press any key to aknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
   pause
