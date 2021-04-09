@@ -76,23 +76,9 @@ presubmits:
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
-          command:
-          - make
           args:
-          - -C
-          - ./images/capi
-          - validate-all
-          env:
-          - name: AZURE_LOCATION
-            value: "fake"
-          - name: RESOURCE_GROUP_NAME
-            value: "fake"
-          - name: STORAGE_ACCOUNT_NAME
-            value: "fake"
-          - name: DIGITALOCEAN_ACCESS_TOKEN
-            value: "fake"
-          - name: GCP_PROJECT_ID
-            value: "fake"
+          - runner.sh
+          - "./images/capi/scripts/ci-packer-validate.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
