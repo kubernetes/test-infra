@@ -5,7 +5,9 @@ Manager.
 
 ## Prerequisite
 
-- Set `GOOGLE_APPLICATION_CREDENTIALS`
+- Authenticate with GCP, could be done by either of:
+  - Run `gcloud auth login && gcloud auth application-default login`
+  - Set `GOOGLE_APPLICATION_CREDENTIALS` if prefer to use service account key file
 - Already authenticated with cluster to be backed up
 
 ## Usage

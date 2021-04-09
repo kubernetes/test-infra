@@ -31,12 +31,13 @@ type Client struct {
 	// ProjectID is GCP project in which to store secrets in Secret Manager.
 	ProjectID string
 	client    *secretmanager.Client
+	dryrun    bool
 }
 
 // ClientInterface is the interface for manipulating secretmanager
 type ClientInterface interface {
 	CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error)
-	AddSecretLabel(ctx context.Context, secretID, key, val string) error
+	AddSecretLabel(ctx context.Context, secretID string, labels map[string]string) error
 	AddSecretVersion(ctx context.Context, secretName string, payload []byte) error
 	ListSecrets(ctx context.Context) ([]*secretmanagerpb.Secret, error)
 	GetSecret(ctx context.Context, secretName string) (*secretmanagerpb.Secret, error)
@@ -44,18 +45,21 @@ type ClientInterface interface {
 }
 
 // NewClient creates a client for secretmanager, it would fail if not authenticated
-func NewClient(projectID string) (*Client, error) {
+func NewClient(projectID string, dryrun bool) (*Client, error) {
 	// Create the client.
 	ctx := context.Background()
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to setup client: %v", err)
 	}
-	return &Client{ProjectID: projectID, client: client}, nil
+	return &Client{ProjectID: projectID, client: client, dryrun: dryrun}, nil
 }
 
 // CreateSecret creates a secret
 func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error) {
+	if c.dryrun {
+		return nil, nil
+	}
 	// Create the request to create the secret.
 	createSecretReq := &secretmanagerpb.CreateSecretRequest{
 		Parent:   fmt.Sprintf("projects/%s", c.ProjectID),
@@ -73,17 +77,25 @@ func (c *Client) CreateSecret(ctx context.Context, secretID string) (*secretmana
 }
 
 // AddSecretLabel adds a label to a secret
-func (c *Client) AddSecretLabel(ctx context.Context, secretID, key, val string) error {
+func (c *Client) AddSecretLabel(ctx context.Context, secretID string, labels map[string]string) error {
+	if c.dryrun {
+		return nil
+	}
 	secret, err := c.GetSecret(ctx, secretID)
 	if err != nil {
 		return err
 	}
-	labels := secret.Labels
-	labels[key] = val
+	existinglabels := secret.Labels
+	for key, val := range labels {
+		if existinglabels == nil {
+			existinglabels = map[string]string{}
+		}
+		existinglabels[key] = val
+	}
 	updateSecretReq := &secretmanagerpb.UpdateSecretRequest{
 		Secret: &secretmanagerpb.Secret{
 			Name:   fmt.Sprintf("projects/%s/secrets/%s", c.ProjectID, secretID),
-			Labels: labels,
+			Labels: existinglabels,
 		},
 		UpdateMask: &field_mask.FieldMask{
 			Paths: []string{"labels"},
@@ -96,6 +108,9 @@ func (c *Client) AddSecretLabel(ctx context.Context, secretID, key, val string) 
 
 // AddSecretVersion adds a secret version, aka update the value of a secret
 func (c *Client) AddSecretVersion(ctx context.Context, secretName string, payload []byte) error {
+	if c.dryrun {
+		return nil
+	}
 	// Build the request.
 	addSecretVersionReq := &secretmanagerpb.AddSecretVersionRequest{
 		Parent: fmt.Sprintf("projects/%s/secrets/%s", c.ProjectID, secretName),
