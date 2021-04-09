@@ -2571,15 +2571,20 @@ func BaseSHAFromContextDescription(description string) string {
 	split := strings.Split(description, contextDescriptionBaseSHADelimiter)
 	// SHA1s are always 40 digits long
 	if len(split) != 2 || len(split[1]) != 40 {
+		// Fallback to deprecated one if available
+		if split = strings.Split(description, contextDescriptionBaseSHADelimiterDeprecated); len(split) == 2 && len(split[1]) == 40 {
+			return split[1]
+		}
 		return ""
 	}
 	return split[1]
 }
 
 const (
-	contextDescriptionBaseSHADelimiter = " Basesha:"
-	contextDescriptionMaxLen           = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
-	elide                              = " ... "
+	contextDescriptionBaseSHADelimiter           = " BaseSHA:"
+	contextDescriptionBaseSHADelimiterDeprecated = " Basesha:"
+	contextDescriptionMaxLen                     = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
+	elide                                        = " ... "
 )
 
 // truncate converts "really long messages" into "really ... messages".

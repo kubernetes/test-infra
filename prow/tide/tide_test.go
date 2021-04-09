@@ -502,7 +502,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateSuccess,
 						}}}},
 				}}
@@ -520,7 +520,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:c22a32add1a36daf3b16af3762b3922e70c9626a"),
+							Description: githubql.String("Job succeeded. BaseSHA:c22a32add1a36daf3b16af3762b3922e70c9626a"),
 							State:       githubql.StatusStateSuccess,
 						}}}},
 				}}
@@ -538,7 +538,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateFailure,
 						}}}},
 				}}
@@ -556,7 +556,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateSuccess,
 						}}}},
 				}}
@@ -575,7 +575,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateSuccess,
 						}}}},
 				}}
@@ -594,7 +594,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateFailure,
 						}}}},
 				}}
@@ -613,7 +613,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateFailure,
 						}}}},
 				}}
@@ -635,7 +635,7 @@ func TestAccumulate(t *testing.T) {
 						OID: githubql.String("headsha"),
 						Status: CommitStatus{Contexts: []Context{{
 							Context:     githubql.String("job1"),
-							Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+							Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 							State:       githubql.StatusStateSuccess,
 						}}}},
 				}}
@@ -3460,6 +3460,21 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
+						Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
+						State:       githubql.StatusStateSuccess,
+					}}},
+				}}}}}},
+		},
+		{
+			name:       "Result from successful context gets respected with deprecated baseha delimiter",
+			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("headsha"),
+				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+					OID: githubql.String("headsha"),
+					Status: CommitStatus{Contexts: []Context{{
+						Context:     githubql.String("job-1"),
 						Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
 						State:       githubql.StatusStateSuccess,
 					}}},
@@ -3475,7 +3490,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
-						Description: githubql.String("Job succeeded. Basesha:" + baseSHA),
+						Description: githubql.String("Job succeeded. BaseSHA:" + baseSHA),
 						State:       githubql.StatusStateFailure,
 					}}},
 				}}}}}},
