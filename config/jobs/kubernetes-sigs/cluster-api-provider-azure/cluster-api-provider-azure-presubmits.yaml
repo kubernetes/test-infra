@@ -223,6 +223,41 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pull-conformance-v1alpha4-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-upstream-v1alpha4-windows
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-go-canary
+        command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+        env:
+        - name: WINDOWS
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pull-upstream-v1alpha4-main-windows
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
