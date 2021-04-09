@@ -156,6 +156,11 @@ type Tide struct {
 	// PRs should match all labels contained in a set to be prioritized. The first entry has
 	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
+
+	// BatchAllowPending is a config that allows tide to select PRs that still have pending tests,
+	// this is intended to increase the likelihood of batch PRs.
+	// Note that failed or error status contexts will still preclude PR from being in a batch.
+	BatchAllowPending *bool `json:"batch_skip_tests,omitempty"`
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
