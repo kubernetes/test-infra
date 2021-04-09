@@ -19,6 +19,7 @@ release(
     component("alertmanager_rbac", MULTI_KIND),
     component("alertmanager_expose", MULTI_KIND),
     component("prow", "alertmanager"),
+    component("prow", "alertmanagerconfig"),
     component("monitoring-prow-k8s-io", "managedcertificate"),
     component("additional-scrape-configs", "secret"),
     component("blackbox_prober", MULTI_KIND),

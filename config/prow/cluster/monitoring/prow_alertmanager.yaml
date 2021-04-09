@@ -5,6 +5,9 @@ metadata:
   namespace: prow-monitoring
 spec:
   replicas: 3
+  alertmanagerConfigSelector:
+    matchLabels:
+      alertmanagerConfig: alertmanager-prow
   image: docker.io/prom/alertmanager
   listenLocal: false
   nodeSelector: {}
