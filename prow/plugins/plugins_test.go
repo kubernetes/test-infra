@@ -247,6 +247,6 @@ func TestGenYamlDocs(t *testing.T) {
 		t.Fatalf("failed to read fixture: %v", err)
 	}
 	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
-		t.Errorf("Actual result differs from expected: %s. If this is expected, re-run the tests with the UPDATE env var set to update the fixture: UPDATE=true go test ./...", diff)
+		t.Errorf("Actual result differs from expected: %s\nIf this is expected, re-run the tests with the UPDATE env var set to update the fixture:\n\tUPDATE=true go test ./prow/plugins/... -run TestGenYamlDocs", diff)
 	}
 }
