@@ -214,11 +214,7 @@ test_suite(
     name = "verify-all",
     tests = [
         ":verify-linters",
-        # "@io_k8s_repo_infra//hack:verify-all", # TODO(fejta): golangci-lint
-        "@io_k8s_repo_infra//hack:verify-bazel",
-        "@io_k8s_repo_infra//hack:verify-boilerplate",
-        "@io_k8s_repo_infra//hack:verify-deps",
-        "@io_k8s_repo_infra//hack:verify-gofmt",
+        "@io_k8s_repo_infra//hack:verify-all",
     ],
 )
 
