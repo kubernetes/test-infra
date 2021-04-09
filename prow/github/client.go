@@ -395,7 +395,13 @@ type throttlerDelegate struct {
 }
 
 func (t *throttler) Wait() {
+	start := time.Now()
 	log := logrus.WithFields(logrus.Fields{"client": "github", "throttled": true})
+	defer func() {
+		if waitTime := time.Since(start); waitTime > time.Minute {
+			log.WithField("throttle-duration", waitTime.String()).Warn("Throttled clientside for more than a minute")
+		}
+	}()
 	t.lock.RLock()
 	defer t.lock.RUnlock()
 	var more bool
