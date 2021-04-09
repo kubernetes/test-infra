@@ -248,7 +248,7 @@ type RepoOwners struct {
 
 	baseDir      string
 	enableMDYAML bool
-	dirBlacklist []*regexp.Regexp
+	dirDenylist  []*regexp.Regexp
 	filenames    ownersconfig.Filenames
 
 	log *logrus.Entry
@@ -364,7 +364,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			for _, pattern := range ignoreDirPatterns {
 				re, err := regexp.Compile(pattern)
 				if err != nil {
-					log.WithError(err).Errorf("Invalid OWNERS dir blacklist regexp %q.", pattern)
+					log.WithError(err).Errorf("Invalid OWNERS dir denylist regexp %q.", pattern)
 					continue
 				}
 				dirIgnorelist = append(dirIgnorelist, re)
@@ -454,7 +454,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
-		dirBlacklist: dirIgnorelist,
+		dirDenylist: dirIgnorelist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -485,7 +485,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	relPathDir := canonicalize(filepath.Dir(relPath))
 
 	if info.Mode().IsDir() {
-		for _, re := range o.dirBlacklist {
+		for _, re := range o.dirDenylist {
 			if re.MatchString(relPath) {
 				return filepath.SkipDir
 			}
@@ -554,7 +554,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 	// if path is in an ignored directory, ignore it
 	dir := filepath.Dir(path)
-	for _, re := range o.dirBlacklist {
+	for _, re := range o.dirDenylist {
 		if re.MatchString(dir) {
 			return FullConfig{}, filepath.SkipDir
 		}
@@ -573,7 +573,7 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 	// if path is in a an ignored directory, ignore it
 	dir := filepath.Dir(path)
-	for _, re := range o.dirBlacklist {
+	for _, re := range o.dirDenylist {
 		if re.MatchString(dir) {
 			return SimpleConfig{}, filepath.SkipDir
 		}

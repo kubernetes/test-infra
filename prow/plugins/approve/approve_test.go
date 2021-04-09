@@ -137,7 +137,7 @@ type fakeRepo struct {
 	approverOwners map[string]string
 	// dir -> allowed
 	autoApproveUnownedSubfolders map[string]bool
-	dirBlacklist                 []*regexp.Regexp
+	dirDenylist                  []*regexp.Regexp
 }
 
 func (fr fakeRepo) Filenames() ownersconfig.Filenames {
@@ -165,7 +165,7 @@ func (fr fakeRepo) TopLevelApprovers() sets.String {
 
 func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range fr.dirBlacklist {
+	for _, re := range fr.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -182,7 +182,7 @@ func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, erro
 
 func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range fr.dirBlacklist {
+	for _, re := range fr.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}

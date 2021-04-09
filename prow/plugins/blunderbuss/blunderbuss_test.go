@@ -112,7 +112,7 @@ type fakeOwnersClient struct {
 	reviewers         map[string]layeredsets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
-	dirBlacklist      []*regexp.Regexp
+	dirDenylist       []*regexp.Regexp
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -161,7 +161,7 @@ func (foc *fakeOwnersClient) IsAutoApproveUnownedSubfolders(path string) bool {
 
 func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -178,7 +178,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 
 func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}

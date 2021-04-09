@@ -60,9 +60,9 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 }
 
 type fakeRepoOwners struct {
-	approvers    map[string]layeredsets.String
-	reviewers    map[string]layeredsets.String
-	dirBlacklist []*regexp.Regexp
+	approvers   map[string]layeredsets.String
+	reviewers   map[string]layeredsets.String
+	dirDenylist []*regexp.Regexp
 }
 
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
@@ -98,7 +98,7 @@ func (f *fakeRepoOwners) TopLevelApprovers() sets.String                  { retu
 
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range f.dirBlacklist {
+	for _, re := range f.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -115,7 +115,7 @@ func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig
 
 func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range f.dirBlacklist {
+	for _, re := range f.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
