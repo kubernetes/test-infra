@@ -91,7 +91,6 @@ presubmits:
     max_concurrency: 5
     labels:
       preset-service-account: "true"
-    run_if_changed: 'images/capi/.*'
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
