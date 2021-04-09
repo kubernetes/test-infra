@@ -30,6 +30,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -93,6 +94,17 @@ func (o Options) censor() error {
 				return nil
 			}
 			logger := logrus.WithField("path", absPath)
+			relpath, shouldNotErr := filepath.Rel(item, absPath)
+			if shouldNotErr != nil {
+				logrus.WithError(shouldNotErr).Warnf("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", item, absPath)
+			}
+			should, err := shouldCensor(*o.CensoringOptions, relpath)
+			if err != nil {
+				return fmt.Errorf("could not determine if we should censor path: %w", err)
+			}
+			if !should {
+				return nil
+			}
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
@@ -119,6 +131,28 @@ func (o Options) censor() error {
 	close(errors)
 	errLock.Lock()
 	return kerrors.NewAggregate(errs)
+}
+
+func shouldCensor(options CensoringOptions, path string) (bool, error) {
+	for _, glob := range options.ExcludeDirectories {
+		found, err := zglob.Match(glob, path)
+		if err != nil {
+			return false, err
+		}
+		if found {
+			return false, nil // when explicitly excluded, do not censor
+		}
+	}
+	for _, glob := range options.IncludeDirectories {
+		found, err := zglob.Match(glob, path)
+		if err != nil {
+			return false, err
+		}
+		if found {
+			return true, nil // when explicitly included, censor
+		}
+	}
+	return len(options.IncludeDirectories) == 0, nil // censor if no explicit includes exist
 }
 
 // fileCensorer returns a closure over all of our synchronization for a clean handler signature
@@ -288,7 +322,10 @@ func archive(srcDir, destArchive string) error {
 			return fmt.Errorf("could not create tar header: %w", err)
 		}
 		// the header won't get nested paths right
-		relpath, _ := filepath.Rel(srcDir, absPath) // err happens when there's no rel path, but we know there must be
+		relpath, shouldNotErr := filepath.Rel(srcDir, absPath)
+		if shouldNotErr != nil {
+			logrus.WithError(shouldNotErr).Warnf("filepath.Rel returned an error, but we assumed there must be a relative path between %s and %s", srcDir, absPath)
+		}
 		header.Name = relpath
 		if err := tarWriter.WriteHeader(header); err != nil {
 			return fmt.Errorf("could not write tar header: %w", err)

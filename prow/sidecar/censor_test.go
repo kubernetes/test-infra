@@ -165,6 +165,7 @@ func TestCensorIntegration(t *testing.T) {
 			SecretDirectories: []string{"testdata/secrets"},
 			// this will be smaller than the size of a secret, so this tests our buffer calculation
 			CensoringBufferSize: &bufferSize,
+			ExcludeDirectories:  []string{"**/exclude"},
 		},
 	}
 	if err := options.censor(); err != nil {
@@ -299,5 +300,65 @@ func TestLoadDockerCredentials(t *testing.T) {
 	sort.Strings(actual)
 	if diff := cmp.Diff(actual, expected); diff != "" {
 		t.Errorf("dockerconfigjson: got incorrect values: %s", err)
+	}
+}
+
+func TestShouldCensor(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		path     string
+		options  CensoringOptions
+		expected bool
+	}{
+		{
+			name:     "no options defaults to include",
+			options:  CensoringOptions{},
+			path:     "/usr/bin/bash",
+			expected: true,
+		},
+		{
+			name: "not matching include defaults to false",
+			options: CensoringOptions{
+				IncludeDirectories: []string{"/tmp/**/*"},
+			},
+			path:     "/usr/bin/bash",
+			expected: false,
+		},
+		{
+			name: "matching include censors",
+			options: CensoringOptions{
+				IncludeDirectories: []string{"/usr/**/*"},
+			},
+			path:     "/usr/bin/bash",
+			expected: true,
+		},
+		{
+			name: "matching include and exclude does not censor",
+			options: CensoringOptions{
+				IncludeDirectories: []string{"/usr/**/*"},
+				ExcludeDirectories: []string{"/usr/bin/**/*"},
+			},
+			path:     "/usr/bin/bash",
+			expected: false,
+		},
+		{
+			name: "matching exclude does not censor",
+			options: CensoringOptions{
+				ExcludeDirectories: []string{"/usr/bin/**/*"},
+			},
+			path:     "/usr/bin/bash",
+			expected: false,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			should, err := shouldCensor(testCase.options, testCase.path)
+			if err != nil {
+				t.Fatalf("%s: got an error from shouldCensor: %v", testCase.name, err)
+			}
+			if should != testCase.expected {
+				t.Errorf("%s: expected %v, got %v", testCase.name, testCase.expected, should)
+			}
+		})
 	}
 }

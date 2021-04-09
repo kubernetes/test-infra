@@ -368,9 +368,72 @@ type DecorationConfig struct {
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
 
-	// CensorSecrets determines if the sidecar should be instructed to censor
-	// secret data that is otherwise mounted to the ProwJob Pod
+	// CensorSecrets enables censoring output logs and artifacts.
 	CensorSecrets *bool `json:"censor_secrets,omitempty"`
+
+	// CensoringOptions exposes options for censoring output logs and artifacts.
+	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
+}
+
+type CensoringOptions struct {
+	// CensoringConcurrency is the maximum number of goroutines that should be censoring
+	// artifacts and logs at any time. If unset, defaults to 10.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is the size in bytes of the buffer allocated for every file
+	// being censored. We want to keep as little of the file in memory as possible in
+	// order for censoring to be reasonably performant in space. However, to guarantee
+	// that we censor every instance of every secret, our buffer size must be at least
+	// two times larger than the largest secret we are about to censor. While that size
+	// is the smallest possible buffer we could use, if the secrets being censored are
+	// small, censoring will not be performant as the number of I/O actions per file
+	// would increase. If unset, defaults to 10MiB.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+
+	// IncludeDirectories are directories which should have their content censored. If
+	// present, only content in these directories will be censored. Entries in this list
+	// are relative to $ARTIFACTS and are parsed with the go-zglob library, allowing for
+	// globbed matches.
+	IncludeDirectories []string `json:"include_directories,omitempty"`
+
+	// ExcludeDirectories are directories which should not have their content censored. If
+	// present, content in these directories will not be censored even if the directory also
+	// matches a glob in IncludeDirectories. Entries in this list are relative to $ARTIFACTS,
+	// and are parsed with the go-zglob library, allowing for globbed matches.
+	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
+}
+
+// ApplyDefault applies the defaults for CensoringOptions decorations. If a field has a zero value,
+// it replaces that with the value set in def.
+func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions {
+	if g == nil && def == nil {
+		return nil
+	}
+	var merged CensoringOptions
+	if g != nil {
+		merged = *g.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if g == nil || def == nil {
+		return &merged
+	}
+
+	if merged.CensoringConcurrency == nil {
+		merged.CensoringConcurrency = def.CensoringConcurrency
+	}
+
+	if merged.CensoringBufferSize == nil {
+		merged.CensoringBufferSize = def.CensoringBufferSize
+	}
+
+	if merged.IncludeDirectories == nil {
+		merged.IncludeDirectories = def.IncludeDirectories
+	}
+
+	if merged.ExcludeDirectories == nil {
+		merged.ExcludeDirectories = def.ExcludeDirectories
+	}
+	return &merged
 }
 
 // Resources holds resource requests and limits for
@@ -434,6 +497,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
 	merged.Resources = merged.Resources.ApplyDefault(def.Resources)
 	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
+	merged.CensoringOptions = merged.CensoringOptions.ApplyDefault(def.CensoringOptions)
 
 	if merged.Timeout == nil {
 		merged.Timeout = def.Timeout
