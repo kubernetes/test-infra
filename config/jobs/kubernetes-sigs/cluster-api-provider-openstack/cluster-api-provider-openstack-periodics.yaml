@@ -44,6 +44,7 @@ periodics:
     testgrid-tab-name: periodic-e2e-test-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "48"
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
@@ -96,3 +97,4 @@ periodics:
     testgrid-tab-name: periodic-conformance-test-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "48"
