@@ -49,6 +49,7 @@ type options struct {
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	logLevel               string
+	hourlyTokens           int
 
 	updatePeriod time.Duration
 
@@ -74,6 +75,7 @@ func gatherOptions() options {
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
+	fs.IntVar(&o.hourlyTokens, "hourly-tokens", 360, "The number of hourly tokens need-rebase may use")
 
 	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
@@ -110,7 +112,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(360, 360)
+	githubClient.Throttle(o.hourlyTokens, o.hourlyTokens)
 
 	server := &Server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
