@@ -169,7 +169,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-20-latest-main
+  - name: pull-cluster-api-e2e-workload-upgrade-1-21-latest-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -193,9 +193,9 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.20"
+            value: "stable-1.21"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.21"
+            value: "ci/latest-1.22"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.4.13-0"
           - name: COREDNS_VERSION_UPGRADE_TO
@@ -210,4 +210,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-20-latest
+      testgrid-tab-name: capi-pr-e2e-main-1-21-latest
