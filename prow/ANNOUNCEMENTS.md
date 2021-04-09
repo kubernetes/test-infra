@@ -3,6 +3,9 @@
 ## New features
 
 New features added to each component:
+  - *March 9th, 2021* Tide batchtesting will now continue to test a given batch even
+    when more PRs became eligible while a test failed. You can disable this by setting
+    `tide.prioritize_existing_batches.<org or org/repo>: false` in your Prow config.
   - *March 3, 2021* `plank.default_decoration_configs` can optionally be replaced with
     `plank.default_decoration_config_entries` which supports a new format
     that is a slice of filters with associated decoration configs rather than a

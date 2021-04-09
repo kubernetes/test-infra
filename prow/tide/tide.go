@@ -1044,7 +1044,46 @@ func prNumbers(prs []PullRequest) []int {
 	return nums
 }
 
-func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullRequest, []config.Presubmit, error) {
+func (c *Controller) pickNewBatch(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+	var res []PullRequest
+	r, err := c.gc.ClientFor(sp.org, sp.repo)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Clean()
+	if err := r.Config("user.name", "prow"); err != nil {
+		return nil, err
+	}
+	if err := r.Config("user.email", "prow@localhost"); err != nil {
+		return nil, err
+	}
+	if err := r.Config("commit.gpgsign", "false"); err != nil {
+		sp.log.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
+	}
+	if err := r.Checkout(sp.sha); err != nil {
+		return nil, err
+	}
+
+	for _, pr := range candidates {
+		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
+			// we failed to abort the merge and our git client is
+			// in a bad state; it must be cleaned before we try again
+			return nil, err
+		} else if ok {
+			res = append(res, pr)
+			// TODO: Make this configurable per subpool.
+			if maxBatchSize > 0 && len(res) >= maxBatchSize {
+				break
+			}
+		}
+	}
+
+	return res, nil
+}
+
+type newBatchFunc func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error)
+
+func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFunc newBatchFunc) ([]PullRequest, []config.Presubmit, error) {
 	batchLimit := c.config().Tide.BatchSizeLimit(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 	if batchLimit < 0 {
 		sp.log.Debug("Batch merges disabled by configuration in this repo.")
@@ -1061,42 +1100,23 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 		}
 	}
 
+	log := sp.log.WithField("subpool_pr_count", len(sp.prs))
 	if len(candidates) == 0 {
-		sp.log.Debugf("of %d possible PRs, none were passing tests, no batch will be created", len(sp.prs))
+		log.Debug("None of the prs in the subpool was passing tests, no batch will be created")
 		return nil, nil, nil
 	}
-	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
-
-	r, err := c.gc.ClientFor(sp.org, sp.repo)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer r.Clean()
-	if err := r.Config("user.name", "prow"); err != nil {
-		return nil, nil, err
-	}
-	if err := r.Config("user.email", "prow@localhost"); err != nil {
-		return nil, nil, err
-	}
-	if err := r.Config("commit.gpgsign", "false"); err != nil {
-		sp.log.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
-	}
-	if err := r.Checkout(sp.sha); err != nil {
-		return nil, nil, err
-	}
+	log.WithField("candidate_count", len(candidates)).Debug("Found PRs with passing tests when picking batch")
 
 	var res []PullRequest
-	for _, pr := range candidates {
-		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
-			// we failed to abort the merge and our git client is
-			// in a bad state; it must be cleaned before we try again
+	if c.config().Tide.PrioritizeExistingBatches(config.OrgRepo{Repo: sp.repo, Org: sp.org}) {
+		res = pickBatchWithPreexistingTests(sp, candidates, batchLimit)
+	}
+	// No batch with pre-existing tests found or prioritize_existing_batches disabled
+	if len(res) == 0 {
+		var err error
+		res, err = newBatchFunc(sp, candidates, batchLimit)
+		if err != nil {
 			return nil, nil, err
-		} else if ok {
-			res = append(res, pr)
-			// TODO: Make this configurable per subpool.
-			if batchLimit > 0 && len(res) >= batchLimit {
-				break
-			}
 		}
 	}
 
@@ -1393,7 +1413,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && len(batchPending) == 0 {
-		batch, presubmits, err := c.pickBatch(sp, sp.cc)
+		batch, presubmits, err := c.pickBatch(sp, sp.cc, c.pickNewBatch)
 		if err != nil {
 			return Wait, nil, err
 		}
@@ -2074,4 +2094,92 @@ func checkRunToContext(checkRun CheckRun) Context {
 
 	context.State = githubql.StatusStateFailure
 	return context
+}
+
+func pickBatchWithPreexistingTests(sp subpool, candidates []PullRequest, maxSize int) []PullRequest {
+	batchCandidatesBySuccessfulJobCount := map[string]int{}
+	batchCandidatesByPendingJobCount := map[string]int{}
+
+	prNumbersToMapKey := func(prs []prowapi.Pull) string {
+		var numbers []string
+		for _, pr := range prs {
+			numbers = append(numbers, strconv.Itoa(pr.Number))
+		}
+		return strings.Join(numbers, "|")
+	}
+	prNumbersFromMapKey := func(s string) []int {
+		var result []int
+		for _, element := range strings.Split(s, "|") {
+			intVal, err := strconv.Atoi(element)
+			if err != nil {
+				logrus.WithField("element", element).Error("BUG: Found element in pr numbers map that was not parseable as int")
+				return nil
+			}
+			result = append(result, intVal)
+		}
+		return result
+	}
+	for _, pj := range sp.pjs {
+		if pj.Spec.Type != prowapi.BatchJob || (maxSize != 0 && len(pj.Spec.Refs.Pulls) > maxSize) || (pj.Status.State != prowapi.SuccessState && pj.Status.State != prowapi.PendingState) {
+			continue
+		}
+		var hasInvalidPR bool
+		for _, pull := range pj.Spec.Refs.Pulls {
+			if !isPullInPRList(pull, candidates) {
+				hasInvalidPR = true
+				break
+			}
+		}
+		if hasInvalidPR {
+			continue
+		}
+		if pj.Status.State == prowapi.SuccessState {
+			batchCandidatesBySuccessfulJobCount[prNumbersToMapKey(pj.Spec.Refs.Pulls)]++
+		} else {
+			batchCandidatesByPendingJobCount[prNumbersToMapKey(pj.Spec.Refs.Pulls)]++
+		}
+	}
+
+	var resultPullNumbers []int
+	if len(batchCandidatesBySuccessfulJobCount) > 0 {
+		resultPullNumbers = prNumbersFromMapKey(mapKeyWithHighestvalue(batchCandidatesBySuccessfulJobCount))
+	} else if len(batchCandidatesByPendingJobCount) > 0 {
+		resultPullNumbers = prNumbersFromMapKey(mapKeyWithHighestvalue(batchCandidatesByPendingJobCount))
+	}
+
+	var result []PullRequest
+	for _, resultPRNumber := range resultPullNumbers {
+		for _, pr := range sp.prs {
+			if int(pr.Number) == resultPRNumber {
+				result = append(result, pr)
+				break
+			}
+		}
+	}
+
+	return result
+}
+
+func isPullInPRList(pull prowapi.Pull, allPRs []PullRequest) bool {
+	for _, pullRequest := range allPRs {
+		if pull.Number != int(pullRequest.Number) {
+			continue
+		}
+		return pull.SHA == string(pullRequest.HeadRefOID)
+	}
+
+	return false
+}
+
+func mapKeyWithHighestvalue(m map[string]int) string {
+	var result string
+	var resultVal int
+	for k, v := range m {
+		if v > resultVal {
+			result = k
+			resultVal = v
+		}
+	}
+
+	return result
 }

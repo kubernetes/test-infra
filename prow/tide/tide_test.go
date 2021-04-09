@@ -694,9 +694,10 @@ type fgc struct {
 	mergeErrs  map[int]error
 	queryCalls int
 
-	expectedSHA    string
-	combinedStatus map[string]string
-	checkRuns      *github.CheckRunList
+	expectedSHA          string
+	skipExpectedShaCheck bool
+	combinedStatus       map[string]string
+	checkRuns            *github.CheckRunList
 }
 
 func (f *fgc) GetRepo(o, r string) (github.FullRepo, error) {
@@ -760,7 +761,7 @@ func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
 }
 
 func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
-	if f.expectedSHA != ref {
+	if !f.skipExpectedShaCheck && f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
 	var statuses []github.Status
@@ -774,7 +775,7 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 }
 
 func (f *fgc) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
-	if f.expectedSHA != ref {
+	if !f.skipExpectedShaCheck && f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
 	if f.checkRuns != nil {
@@ -1120,7 +1121,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		6: &config.TideContextPolicy{},
 		7: &config.TideContextPolicy{},
 		8: &config.TideContextPolicy{},
-	})
+	}, c.pickNewBatch)
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -4303,5 +4304,192 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
 			}
 		})
+	}
+}
+
+func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
+	t.Parallel()
+	const org, repo = "org", "repo"
+	tests := []struct {
+		name                         string
+		subpool                      func(*subpool)
+		prsFailingContextCheck       sets.Int
+		maxBatchSize                 int
+		prioritizeExistingBatchesMap map[string]bool
+
+		expectedPullRequests []PullRequest
+	}{
+		{
+			name:                 "No pre-existing jobs, new batch is picked",
+			subpool:              func(sp *subpool) { sp.pjs = nil },
+			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:    "Batch with pre-existing success jobs exists and is picked",
+			subpool: func(sp *subpool) {},
+			expectedPullRequests: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
+				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			},
+		},
+		{
+			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled globally, new batch is picked",
+			subpool:                      func(sp *subpool) {},
+			prioritizeExistingBatchesMap: map[string]bool{"*": false},
+			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for org, new batch is picked",
+			subpool:                      func(sp *subpool) {},
+			prioritizeExistingBatchesMap: map[string]bool{org: false},
+			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for repo, new batch is picked",
+			subpool:                      func(sp *subpool) {},
+			prioritizeExistingBatchesMap: map[string]bool{org + "/" + repo: false},
+			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                   "Batch with pre-existing success job exists but one fails context check, new batch is picked",
+			subpool:                func(sp *subpool) {},
+			prsFailingContextCheck: sets.NewInt(1),
+			expectedPullRequests:   []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                 "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
+			subpool:              func(sp *subpool) {},
+			maxBatchSize:         3,
+			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                 "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
+			subpool:              func(sp *subpool) { sp.prs[0].HeadRefOID = githubql.String("new-sha") },
+			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name:                 "Batchjobs exist but is failed, new batch is picked",
+			subpool:              func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
+			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+		},
+		{
+			name: "Batch with pre-existing success jobs and batch with pre-existing pending jobs exists, batch with success jobs is picked",
+			subpool: func(sp *subpool) {
+				sp.pjs = append(sp.pjs, *sp.pjs[0].DeepCopy())
+				sp.pjs[0].Spec.Refs.Pulls = []prowapi.Pull{{Number: 1, SHA: "1"}, {Number: 2, SHA: "2"}}
+
+				sp.pjs[1].Status.State = prowapi.PendingState
+				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
+			},
+			expectedPullRequests: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+			},
+		},
+		{
+			name:    "Batch with pre-existing pending jobs exists and is picked",
+			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.PendingState },
+			expectedPullRequests: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
+				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			},
+		},
+		{
+			name: "Multiple success batches exists, the one with the highest number of tests is picked",
+			subpool: func(sp *subpool) {
+				sp.pjs = append(sp.pjs, *sp.pjs[0].DeepCopy(), *sp.pjs[0].DeepCopy())
+
+				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
+				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
+			},
+			expectedPullRequests: []PullRequest{
+				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
+				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			},
+		},
+		{
+			name: "Multiple pending batches exist, the one with the highest number of tests is picked",
+			subpool: func(sp *subpool) {
+				sp.pjs[0].Status.State = prowapi.PendingState
+				sp.pjs = append(sp.pjs, *sp.pjs[0].DeepCopy(), *sp.pjs[0].DeepCopy())
+
+				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
+				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
+			},
+			expectedPullRequests: []PullRequest{
+				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
+				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			sp := subpool{
+				org:  org,
+				repo: repo,
+				log:  logrus.WithField("test", tc.name),
+				prs: []PullRequest{
+					{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+					{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+					{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
+					{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+					{Number: githubql.Int(5), HeadRefOID: githubql.String("5")},
+				},
+				pjs: []prowapi.ProwJob{{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{
+							{Number: 1, SHA: "1"},
+							{Number: 2, SHA: "2"},
+							{Number: 3, SHA: "3"},
+							{Number: 4, SHA: "4"},
+						}},
+						Type: prowapi.BatchJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.SuccessState,
+					},
+				}},
+			}
+			tc.subpool(&sp)
+
+			contextCheckers := make(map[int]contextChecker, len(sp.prs))
+			for _, pr := range sp.prs {
+				cc := &config.TideContextPolicy{}
+				if tc.prsFailingContextCheck.Has(int(pr.Number)) {
+					cc.RequiredContexts = []string{"guaranteed-absent"}
+				}
+				contextCheckers[int(pr.Number)] = cc
+			}
+
+			newBatchFunc := func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+				return []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}}, nil
+			}
+
+			c := &Controller{
+				logger: logrus.WithField("test", tc.name),
+				config: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{
+						Tide: config.Tide{
+							BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
+							PrioritizeExistingBatchesMap: tc.prioritizeExistingBatchesMap,
+						}},
+					}
+				},
+				ghc: &fgc{skipExpectedShaCheck: true},
+			}
+			prs, _, err := c.pickBatch(sp, contextCheckers, newBatchFunc)
+			if err != nil {
+				t.Fatalf("pickBatch failed: %v", err)
+			}
+			if diff := cmp.Diff(tc.expectedPullRequests, prs); diff != "" {
+				t.Errorf("expected pull requests differ from actual: %s", diff)
+			}
+		})
+
 	}
 }
