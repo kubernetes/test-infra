@@ -48,7 +48,10 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
-        - --kubeconfig=/etc/kubeconfig/config
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         ports:
           - name: http
             containerPort: 8888

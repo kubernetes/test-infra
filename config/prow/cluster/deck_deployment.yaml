@@ -44,7 +44,6 @@ spec:
           - name: http
             containerPort: 8080
         args:
-        - --kubeconfig=/etc/kubeconfig/config
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
@@ -59,6 +58,10 @@ spec:
         - --github-oauth-config-file=/etc/githuboauth/secret
         - --cookie-secret=/etc/cookie/secret
         - --plugin-config=/etc/plugins/plugins.yaml
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
