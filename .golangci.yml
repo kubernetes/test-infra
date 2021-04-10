@@ -1,0 +1,24 @@
+run:
+  deadline: 13m
+  skip-dirs:
+  - .git
+  - .tool
+  - vendor
+  - verify
+
+linters-settings:
+  dupl:
+    threshold: 100
+  gocyclo:
+    min-complexity: 50
+
+linters:
+  enable:
+  - govet
+  disable-all: true
+
+issues:
+  exclude-rules:
+  - linters:
+    - golint
+    text: ".*should not use dot dot imports"
