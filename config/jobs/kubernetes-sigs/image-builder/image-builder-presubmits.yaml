@@ -111,8 +111,7 @@ presubmits:
       testgrid-tab-name: pr-pull-image-builder-gcp-all
   - name: pull-goss-populate
     path_alias: sigs.k8s.io/image-builder
-    always_run: false
-    optional: true
+    run_if_changed: 'images/capi/packer/config/.*|images/capi/packer/goss/.*|images/capi/scripts/ci-goss-populate\.sh|images/capi/hack/generate-goss-specs\.py'
     decorate: true
     decoration_config:
       timeout: 20m
