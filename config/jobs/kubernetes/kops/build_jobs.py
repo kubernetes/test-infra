@@ -893,7 +893,7 @@ def generate_presubmits_network_plugins():
         else:
             skip_regex += r'|Services.*functioning.*NodePort'
         if plugin in ['calico', 'canal', 'weave', 'cilium']:
-            skip_regex += r'|Services.*rejected.*endpoints'
+            skip_regex += r'|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP' # pylint: disable=line-too-long
         if plugin == 'kuberouter':
             skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
             networking_arg = 'kube-router'
