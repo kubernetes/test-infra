@@ -93,7 +93,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20201021-a62ce8a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
           args:
             - runner.sh
             - "./images/capi/packer/gce/scripts/ci-gce.sh"
@@ -109,3 +109,20 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-pull-image-builder-gcp-all
+  - name: pull-goss-populate
+    path_alias: sigs.k8s.io/image-builder
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    max_concurrency: 5
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+          args:
+            - runner.sh
+            - "./images/capi/scripts/ci-goss-populate.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-goss-populate
