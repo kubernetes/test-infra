@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
@@ -106,7 +108,7 @@ func (f *fghc) DeleteStaleComments(org, repo string, number int, comments []gith
 	return nil
 }
 
-func (f *fghc) Query(_ context.Context, q interface{}, _ map[string]interface{}) error {
+func (f *fghc) QueryWithGitHubAppsSupport(_ context.Context, q interface{}, _ map[string]interface{}, _ string) error {
 	query, ok := q.(*searchQuery)
 	if !ok {
 		return errors.New("invalid query format")
@@ -365,10 +367,149 @@ func TestHandleAll(t *testing.T) {
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}
 
-	if err := HandleAll(logrus.WithField("plugin", PluginName), fake, config); err != nil {
+	if err := HandleAll(logrus.WithField("plugin", PluginName), fake, config, false); err != nil {
 		t.Fatalf("Unexpected error handling all prs: %v.", err)
 	}
 	for i, pr := range testPRs {
 		fake.compareExpected(t, "", "", i, pr.expectedAdded, pr.expectedRemoved, pr.expectComment, pr.expectDeletion)
+	}
+}
+
+func TestConstructQueries(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name         string
+		orgs         []string
+		repos        []string
+		usesAppsAuth bool
+
+		expected map[string][]string
+	}{
+		{
+			name: "Kubernetes and Kubernetes-Sigs org, no repos",
+			orgs: []string{"kubernetes", "kubernetes-sigs"},
+
+			expected: map[string][]string{
+				"kubernetes": {
+					`archived:false is:pr is:open org:"kubernetes" -repo:"kubernetes/kubernetes"`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:>=0000-11-02`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:<0000-11-02`,
+				},
+				"kubernetes-sigs": {`archived:false is:pr is:open org:"kubernetes-sigs"`},
+			},
+		},
+		{
+			name:         "Kubernetes and Kubernetes-Sigs org, no repos, apps auth",
+			orgs:         []string{"kubernetes", "kubernetes-sigs"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"kubernetes": {
+					`archived:false is:pr is:open org:"kubernetes" -repo:"kubernetes/kubernetes"`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:>=0000-11-02`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:<0000-11-02`,
+				},
+				"kubernetes-sigs": {`archived:false is:pr is:open org:"kubernetes-sigs"`},
+			},
+		},
+		{
+			name: "Other orgs, no repos",
+			orgs: []string{"other", "other-sigs"},
+
+			expected: map[string][]string{
+				"other":      {`archived:false is:pr is:open org:"other"`},
+				"other-sigs": {`archived:false is:pr is:open org:"other-sigs"`},
+			},
+		},
+		{
+			name:         "Other org, no repos, apps auth",
+			orgs:         []string{"other", "other-sigs"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"other":      {`archived:false is:pr is:open org:"other"`},
+				"other-sigs": {`archived:false is:pr is:open org:"other-sigs"`},
+			},
+		},
+		{
+			name:  "Some repos, no orgs",
+			repos: []string{"org/repo", "other/repo"},
+
+			expected: map[string][]string{"": {`archived:false is:pr is:open repo:"org/repo" repo:"other/repo"`}},
+		},
+		{
+			name:         "Some repos, no orgs, apps auth",
+			repos:        []string{"org/repo", "other/repo"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"org":   {`archived:false is:pr is:open repo:"org/repo"`},
+				"other": {`archived:false is:pr is:open repo:"other/repo"`},
+			},
+		},
+		{
+			name:  "Invalid repo is ignored",
+			repos: []string{"repo"},
+		},
+		{
+			name:  "Org and repo in that org, repo is ignored",
+			orgs:  []string{"org"},
+			repos: []string{"org/repo"},
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open org:"org"`}},
+		},
+		{
+			name:  "Org and repo in that org, repo is ignored, apps auth",
+			orgs:  []string{"org"},
+			repos: []string{"org/repo"},
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open org:"org"`}},
+		},
+		{
+			name:  "Some orgs and some repos",
+			orgs:  []string{"org", "other"},
+			repos: []string{"repoorg/repo", "otherrepoorg/repo"},
+
+			expected: map[string][]string{
+				"":      {`archived:false is:pr is:open repo:"repoorg/repo" repo:"otherrepoorg/repo"`},
+				"org":   {`archived:false is:pr is:open org:"org"`},
+				"other": {`archived:false is:pr is:open org:"other"`},
+			},
+		},
+		{
+			name:         "Some orgs and some repos, apps auth",
+			orgs:         []string{"org", "other"},
+			repos:        []string{"repoorg/repo", "otherrepoorg/repo"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"org":          {`archived:false is:pr is:open org:"org"`},
+				"other":        {`archived:false is:pr is:open org:"other"`},
+				"otherrepoorg": {`archived:false is:pr is:open repo:"otherrepoorg/repo"`},
+				"repoorg":      {`archived:false is:pr is:open repo:"repoorg/repo"`},
+			},
+		},
+		{
+			name:  "Multiple repos in the same org",
+			repos: []string{"org/a", "org/b"},
+
+			expected: map[string][]string{"": {`archived:false is:pr is:open repo:"org/a" repo:"org/b"`}},
+		},
+		{
+			name:         "Multiple repos in the same org, apps auth",
+			repos:        []string{"org/a", "org/b"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open repo:"org/a" repo:"org/b"`}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := constructQueries(logrus.WithField("test", tc.name), time.Time{}, tc.orgs, tc.repos, tc.usesAppsAuth)
+			if diff := cmp.Diff(tc.expected, result, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected result differs from actual: %s", diff)
+			}
+		})
 	}
 }
