@@ -9,7 +9,7 @@ Prow has a microservice architecture implemented as a collection of container im
 #### Core Components
 
 * [`hook`](/prow/cmd/hook) is the most important piece. It is a stateless server that listens for GitHub webhooks and dispatches them to the appropriate plugins. Hook's plugins are used to trigger jobs, implement 'slash' commands, post to Slack, and more. See the [`prow/plugins`](/prow/plugins/) directory for more information on plugins.
-* [`plank`](/prow/cmd/plank) is the controller that manages the job execution and lifecycle for jobs that run in k8s pods.
+* [`plank`](/prow/plank) is the controller that manages the job execution and lifecycle for jobs that run in k8s pods. It is deployed as part of the [prow-controller-manager](/prow-cmd/prow-controller-manager).
 * [`deck`](/prow/cmd/deck) presents a nice view of [recent jobs](https://prow.k8s.io/), [command](https://prow.k8s.io/command-help) and [plugin](https://prow.k8s.io/plugins) help information, the [current status](https://prow.k8s.io/tide) and [history](https://prow.k8s.io/tide-history) of merge automation, and a [dashboard for PR authors](https://prow.k8s.io/pr).
 * [`horologium`](/prow/cmd/horologium) triggers periodic jobs when necessary.
 * [`sinker`](/prow/cmd/sinker) cleans up old jobs and pods.

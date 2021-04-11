@@ -52,6 +52,11 @@ import (
 
 const ControllerName = "plank"
 
+// PodStatus constants
+const (
+	Evicted = "Evicted"
+)
+
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
@@ -804,4 +809,30 @@ func didPodSucceed(p *corev1.Pod) bool {
 	}
 
 	return true
+}
+
+func getPodBuildID(pod *corev1.Pod) string {
+	if buildID, ok := pod.ObjectMeta.Labels[kube.ProwBuildIDLabel]; ok && buildID != "" {
+		return buildID
+	}
+
+	// For backwards compatibility: existing pods may not have the buildID label.
+	for _, env := range pod.Spec.Containers[0].Env {
+		if env.Name == "BUILD_ID" {
+			return env.Value
+		}
+	}
+
+	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
+	return ""
+}
+
+// isRequestError extracts an HTTP status code from a kerrors.APIStatus and
+// returns true if it is a 4xx error.
+func isRequestError(err error) bool {
+	code := 500 // This is what kerrors.ReasonForError() defaults to.
+	if statusErr, ok := err.(kerrors.APIStatus); ok {
+		code = int(statusErr.Status().Code)
+	}
+	return 400 <= code && code < 500
 }

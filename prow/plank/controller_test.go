@@ -29,7 +29,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/mohae/deepcopy"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -124,8 +123,7 @@ func TestTerminateDupes(t *testing.T) {
 	type testCase struct {
 		Name string
 
-		PJs  []prowapi.ProwJob
-		IsV2 bool
+		PJs []prowapi.ProwJob
 
 		TerminatedPJs sets.String
 	}
@@ -261,17 +259,6 @@ func TestTerminateDupes(t *testing.T) {
 		},
 	}
 
-	// Duplicate all tests for PlankV2
-	for _, tc := range testcases {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		testcases = append(testcases, newTc)
-	}
-
 	for _, tc := range testcases {
 		t.Run(tc.Name, func(t *testing.T) {
 			var prowJobs []runtime.Object
@@ -292,32 +279,19 @@ func TestTerminateDupes(t *testing.T) {
 			}
 			log := logrus.NewEntry(logrus.StandardLogger())
 
-			if !tc.IsV2 {
-				c := Controller{
-					prowJobClient: fakeProwJobClient,
-					log:           log,
-					config:        fca.Config,
-					clock:         clock.RealClock{},
+			r := &reconciler{
+				pjClient: fakeProwJobClient,
+				log:      log,
+				config:   fca.Config,
+				clock:    clock.RealClock{},
+			}
+			for _, pj := range tc.PJs {
+				res, err := r.reconcile(context.Background(), &pj)
+				if res != nil {
+					err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
 				}
-				if err := c.terminateDupes(tc.PJs); err != nil {
+				if err != nil {
 					t.Fatalf("Error terminating dupes: %v", err)
-				}
-
-			} else {
-				r := &reconciler{
-					pjClient: fakeProwJobClient,
-					log:      log,
-					config:   fca.Config,
-					clock:    clock.RealClock{},
-				}
-				for _, pj := range tc.PJs {
-					res, err := r.reconcile(context.Background(), &pj)
-					if res != nil {
-						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
-					}
-					if err != nil {
-						t.Fatalf("Error terminating dupes: %v", err)
-					}
 				}
 			}
 
@@ -349,7 +323,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		MaxConcurrency int
 		Pods           map[string][]v1.Pod
 		PodErr         error
-		IsV2           bool
 
 		ExpectedState       prowapi.ProwJobState
 		ExpectedPodHasName  bool
@@ -732,17 +705,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		},
 	}
 
-	// Duplicate all tests for PlankV2
-	for _, tc := range testcases {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		testcases = append(testcases, newTc)
-	}
-
 	for _, tc := range testcases {
 		t.Run(tc.Name, func(t *testing.T) {
 			totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -775,67 +737,43 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				}
 			}
 
-			if !tc.IsV2 {
-				c := Controller{
-					prowJobClient: fakeProwJobClient,
-					buildClients:  buildClients,
-					log:           logrus.NewEntry(logrus.StandardLogger()),
-					config:        newFakeConfigAgent(t, tc.MaxConcurrency).Config,
-					totURL:        totServ.URL,
-					pendingJobs:   make(map[string]int),
-					clock:         fakeClock,
-				}
-				if tc.PendingJobs != nil {
-					c.pendingJobs = tc.PendingJobs
-				}
-
-				if err := c.syncTriggeredJob(tc.PJ, pm); (err != nil) != tc.ExpectError {
-					if tc.ExpectError {
-						t.Errorf("for case %q expected an error, but got none", tc.Name)
-					} else {
-						t.Errorf("for case %q got an unexpected error: %v", tc.Name, err)
-					}
-					return
-				}
-			} else {
-				for jobName, numJobsToCreate := range tc.PendingJobs {
-					for i := 0; i < numJobsToCreate; i++ {
-						if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      fmt.Sprintf("%s-%d", jobName, i),
-								Namespace: "prowjobs",
-							},
-							Spec: prowapi.ProwJobSpec{
-								Agent: prowapi.KubernetesAgent,
-								Job:   jobName,
-							},
-						}); err != nil {
-							t.Fatalf("failed to create prowJob: %v", err)
-						}
+			for jobName, numJobsToCreate := range tc.PendingJobs {
+				for i := 0; i < numJobsToCreate; i++ {
+					if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      fmt.Sprintf("%s-%d", jobName, i),
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Agent: prowapi.KubernetesAgent,
+							Job:   jobName,
+						},
+					}); err != nil {
+						t.Fatalf("failed to create prowJob: %v", err)
 					}
 				}
-				r := &reconciler{
-					pjClient:     fakeProwJobClient,
-					buildClients: buildClients,
-					log:          logrus.NewEntry(logrus.StandardLogger()),
-					config:       newFakeConfigAgent(t, tc.MaxConcurrency).Config,
-					totURL:       totServ.URL,
-					clock:        fakeClock,
+			}
+			r := &reconciler{
+				pjClient:     fakeProwJobClient,
+				buildClients: buildClients,
+				log:          logrus.NewEntry(logrus.StandardLogger()),
+				config:       newFakeConfigAgent(t, tc.MaxConcurrency).Config,
+				totURL:       totServ.URL,
+				clock:        fakeClock,
+			}
+			pj := tc.PJ.DeepCopy()
+			pj.UID = types.UID("under-test")
+			if _, err := r.syncTriggeredJob(context.Background(), pj); (err != nil) != tc.ExpectError {
+				if tc.ExpectError {
+					t.Errorf("for case %q expected an error, but got none", tc.Name)
+				} else {
+					t.Errorf("for case %q got an unexpected error: %v", tc.Name, err)
 				}
-				pj := tc.PJ.DeepCopy()
-				pj.UID = types.UID("under-test")
-				if _, err := r.syncTriggeredJob(context.Background(), pj); (err != nil) != tc.ExpectError {
-					if tc.ExpectError {
-						t.Errorf("for case %q expected an error, but got none", tc.Name)
-					} else {
-						t.Errorf("for case %q got an unexpected error: %v", tc.Name, err)
-					}
-					return
-				}
-				// In PlankV2 we throw them all into the same client and then count the resulting number
-				for _, pendingJobs := range tc.PendingJobs {
-					tc.ExpectedCreatedPJs += pendingJobs
-				}
+				return
+			}
+			// In PlankV2 we throw them all into the same client and then count the resulting number
+			for _, pendingJobs := range tc.PendingJobs {
+				tc.ExpectedCreatedPJs += pendingJobs
 			}
 
 			actualProwJobs := &prowapi.ProwJobList{}
@@ -891,7 +829,6 @@ func TestSyncPendingJob(t *testing.T) {
 		PJ   prowapi.ProwJob
 		Pods []v1.Pod
 		Err  error
-		IsV2 bool
 
 		ExpectedState      prowapi.ProwJobState
 		ExpectedNumPods    int
@@ -1575,17 +1512,6 @@ func TestSyncPendingJob(t *testing.T) {
 		},
 	}
 
-	// Copy the tests for PlankV2
-	for _, tc := range testcases {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		testcases = append(testcases, newTc)
-	}
-
 	for _, tc := range testcases {
 		t.Run(tc.Name, func(t *testing.T) {
 			totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -1609,32 +1535,16 @@ func TestSyncPendingJob(t *testing.T) {
 				prowapi.DefaultClusterAlias: fakeClient,
 			}
 
-			if !tc.IsV2 {
-				c := Controller{
-					prowJobClient: fakeProwJobClient,
-					buildClients:  buildClients,
-					log:           logrus.NewEntry(logrus.StandardLogger()),
-					config:        newFakeConfigAgent(t, 0).Config,
-					totURL:        totServ.URL,
-					pendingJobs:   make(map[string]int),
-					clock:         clock.RealClock{},
-				}
-
-				if err := c.syncPendingJob(tc.PJ, pm); err != nil {
-					t.Fatalf("syncPendingJob failed: %v", err)
-				}
-			} else {
-				r := &reconciler{
-					pjClient:     fakeProwJobClient,
-					buildClients: buildClients,
-					log:          logrus.NewEntry(logrus.StandardLogger()),
-					config:       newFakeConfigAgent(t, 0).Config,
-					totURL:       totServ.URL,
-					clock:        clock.RealClock{},
-				}
-				if err := r.syncPendingJob(context.Background(), &tc.PJ); err != nil {
-					t.Fatalf("syncPendingJob failed: %v", err)
-				}
+			r := &reconciler{
+				pjClient:     fakeProwJobClient,
+				buildClients: buildClients,
+				log:          logrus.NewEntry(logrus.StandardLogger()),
+				config:       newFakeConfigAgent(t, 0).Config,
+				totURL:       totServ.URL,
+				clock:        clock.RealClock{},
+			}
+			if err := r.syncPendingJob(context.Background(), &tc.PJ); err != nil {
+				t.Fatalf("syncPendingJob failed: %v", err)
 			}
 
 			actualProwJobs := &prowapi.ProwJobList{}
@@ -1671,185 +1581,97 @@ func TestSyncPendingJob(t *testing.T) {
 	}
 }
 
-func TestOrderedJobs(t *testing.T) {
-	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
-	defer totServ.Close()
-	var pjs []prowapi.ProwJob
-
-	// Add 3 jobs with incrementing timestamp
-	for i := 0; i < 3; i++ {
-		job := pjutil.NewProwJob(pjutil.PeriodicSpec(config.Periodic{
-			JobBase: config.JobBase{
-				Name:    fmt.Sprintf("ci-periodic-job-%d", i),
-				Agent:   "kubernetes",
-				Cluster: "trusted",
-				Spec:    &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
-			},
-		}), nil, nil)
-		job.ObjectMeta.CreationTimestamp = metav1.Time{
-			Time: time.Now().Add(time.Duration(i) * time.Hour),
-		}
-		job.Namespace = "prowjobs"
-		pjs = append(pjs, job)
-	}
-	expOut := []string{"ci-periodic-job-0", "ci-periodic-job-1", "ci-periodic-job-2"}
-
-	for _, orders := range [][]int{
-		{0, 1, 2},
-		{1, 2, 0},
-		{2, 0, 1},
-	} {
-		newPjs := make([]runtime.Object, 3)
-		for i := 0; i < len(pjs); i++ {
-			newPjs[i] = &pjs[orders[i]]
-		}
-		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(newPjs...)
-		buildClients := map[string]ctrlruntimeclient.Client{
-			"trusted": fakectrlruntimeclient.NewFakeClient(),
-		}
-		log := logrus.NewEntry(logrus.StandardLogger())
-		c := Controller{
-			prowJobClient: fakeProwJobClient,
-			buildClients:  buildClients,
-			log:           log,
-			config:        newFakeConfigAgent(t, 0).Config,
-			totURL:        totServ.URL,
-			pendingJobs:   make(map[string]int),
-			lock:          sync.RWMutex{},
-			clock:         clock.RealClock{},
-		}
-		if err := c.Sync(); err != nil {
-			t.Fatalf("Error on first sync: %v", err)
-		}
-		for i, name := range expOut {
-			if c.pjs[i].Spec.Job != name {
-				t.Errorf("Error in keeping order, want: '%s', got '%s'", name, c.pjs[i].Spec.Job)
-			}
-		}
-	}
-}
-
 // TestPeriodic walks through the happy path of a periodic job.
 func TestPeriodic(t *testing.T) {
-	testCases := []struct {
-		name string
-	}{
-		{"v1"},
-		{"v2"},
+	per := config.Periodic{
+		JobBase: config.JobBase{
+			Name:    "ci-periodic-job",
+			Agent:   "kubernetes",
+			Cluster: "trusted",
+			Spec:    &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			per := config.Periodic{
-				JobBase: config.JobBase{
-					Name:    "ci-periodic-job",
-					Agent:   "kubernetes",
-					Cluster: "trusted",
-					Spec:    &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
-				},
-			}
+	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+	defer totServ.Close()
+	pj := pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)
+	pj.Namespace = "prowjobs"
+	fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&pj)
+	buildClients := map[string]ctrlruntimeclient.Client{
+		prowapi.DefaultClusterAlias: fakectrlruntimeclient.NewFakeClient(),
+		"trusted":                   fakectrlruntimeclient.NewFakeClient(),
+	}
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	log := logrus.NewEntry(logger)
+	r := reconciler{
+		pjClient:     fakeProwJobClient,
+		buildClients: buildClients,
+		log:          log,
+		config:       newFakeConfigAgent(t, 0).Config,
+		totURL:       totServ.URL,
+		clock:        clock.RealClock{},
+	}
+	if _, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}}); err != nil {
+		t.Fatalf("Error on first sync: %v", err)
+	}
 
-			totServ := httptest.NewServer(http.HandlerFunc(handleTot))
-			defer totServ.Close()
-			pj := pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)
-			pj.Namespace = "prowjobs"
-			fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&pj)
-			buildClients := map[string]ctrlruntimeclient.Client{
-				prowapi.DefaultClusterAlias: fakectrlruntimeclient.NewFakeClient(),
-				"trusted":                   fakectrlruntimeclient.NewFakeClient(),
-			}
-			logger := logrus.New()
-			logger.SetLevel(logrus.DebugLevel)
-			log := logrus.NewEntry(logger)
-			var syncF func() error
-			if tc.name == "v1" {
-				c := Controller{
-					prowJobClient: fakeProwJobClient,
-					buildClients:  buildClients,
-					log:           log,
-					config:        newFakeConfigAgent(t, 0).Config,
-					totURL:        totServ.URL,
-					pendingJobs:   make(map[string]int),
-					lock:          sync.RWMutex{},
-					clock:         clock.RealClock{},
-				}
-				syncF = c.Sync
-			} else {
-				r := reconciler{
-					pjClient:     fakeProwJobClient,
-					buildClients: buildClients,
-					log:          log,
-					config:       newFakeConfigAgent(t, 0).Config,
-					totURL:       totServ.URL,
-					clock:        clock.RealClock{},
-				}
-				syncF = func() error {
-					_, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}})
-					return err
-				}
-			}
-			if err := syncF(); err != nil {
-				t.Fatalf("Error on first sync: %v", err)
-			}
-
-			afterFirstSync := &prowapi.ProwJobList{}
-			if err := fakeProwJobClient.List(context.Background(), afterFirstSync); err != nil {
-				t.Fatalf("could not list prowJobs from the client: %v", err)
-			}
-			if len(afterFirstSync.Items) != 1 {
-				t.Fatalf("saw %d prowjobs after sync, not 1", len(afterFirstSync.Items))
-			}
-			if len(afterFirstSync.Items[0].Spec.PodSpec.Containers) != 1 || afterFirstSync.Items[0].Spec.PodSpec.Containers[0].Name != "test-name" {
-				t.Fatalf("Sync step updated the pod spec: %#v", afterFirstSync.Items[0].Spec.PodSpec)
-			}
-			podsAfterSync := &v1.PodList{}
-			if err := buildClients["trusted"].List(context.Background(), podsAfterSync); err != nil {
-				t.Fatalf("could not list pods from the client: %v", err)
-			}
-			if len(podsAfterSync.Items) != 1 {
-				t.Fatalf("expected exactly one pod, got %d", len(podsAfterSync.Items))
-			}
-			if len(podsAfterSync.Items[0].Spec.Containers) != 1 {
-				t.Fatal("Wiped container list.")
-			}
-			if len(podsAfterSync.Items[0].Spec.Containers[0].Env) == 0 {
-				t.Fatal("Container has no env set.")
-			}
-			if err := syncF(); err != nil {
-				t.Fatalf("Error on second sync: %v", err)
-			}
-			podsAfterSecondSync := &v1.PodList{}
-			if err := buildClients["trusted"].List(context.Background(), podsAfterSecondSync); err != nil {
-				t.Fatalf("could not list pods from the client: %v", err)
-			}
-			if len(podsAfterSecondSync.Items) != 1 {
-				t.Fatalf("Wrong number of pods after second sync: %d", len(podsAfterSecondSync.Items))
-			}
-			update := podsAfterSecondSync.Items[0].DeepCopy()
-			update.Status.Phase = v1.PodSucceeded
-			if err := buildClients["trusted"].Update(context.Background(), update); err != nil {
-				t.Fatalf("could not update pod to be succeeded: %v", err)
-			}
-			if err := syncF(); err != nil {
-				t.Fatalf("Error on third sync: %v", err)
-			}
-			afterThirdSync := &prowapi.ProwJobList{}
-			if err := fakeProwJobClient.List(context.Background(), afterThirdSync); err != nil {
-				t.Fatalf("could not list prowJobs from the client: %v", err)
-			}
-			if len(afterThirdSync.Items) != 1 {
-				t.Fatalf("Wrong number of prow jobs: %d", len(afterThirdSync.Items))
-			}
-			if !afterThirdSync.Items[0].Complete() {
-				t.Fatal("Prow job didn't complete.")
-			}
-			if afterThirdSync.Items[0].Status.State != prowapi.SuccessState {
-				t.Fatalf("Should be success: %v", afterThirdSync.Items[0].Status.State)
-			}
-			if err := syncF(); err != nil {
-				t.Fatalf("Error on fourth sync: %v", err)
-			}
-		})
+	afterFirstSync := &prowapi.ProwJobList{}
+	if err := fakeProwJobClient.List(context.Background(), afterFirstSync); err != nil {
+		t.Fatalf("could not list prowJobs from the client: %v", err)
+	}
+	if len(afterFirstSync.Items) != 1 {
+		t.Fatalf("saw %d prowjobs after sync, not 1", len(afterFirstSync.Items))
+	}
+	if len(afterFirstSync.Items[0].Spec.PodSpec.Containers) != 1 || afterFirstSync.Items[0].Spec.PodSpec.Containers[0].Name != "test-name" {
+		t.Fatalf("Sync step updated the pod spec: %#v", afterFirstSync.Items[0].Spec.PodSpec)
+	}
+	podsAfterSync := &v1.PodList{}
+	if err := buildClients["trusted"].List(context.Background(), podsAfterSync); err != nil {
+		t.Fatalf("could not list pods from the client: %v", err)
+	}
+	if len(podsAfterSync.Items) != 1 {
+		t.Fatalf("expected exactly one pod, got %d", len(podsAfterSync.Items))
+	}
+	if len(podsAfterSync.Items[0].Spec.Containers) != 1 {
+		t.Fatal("Wiped container list.")
+	}
+	if len(podsAfterSync.Items[0].Spec.Containers[0].Env) == 0 {
+		t.Fatal("Container has no env set.")
+	}
+	if _, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}}); err != nil {
+		t.Fatalf("Error on second sync: %v", err)
+	}
+	podsAfterSecondSync := &v1.PodList{}
+	if err := buildClients["trusted"].List(context.Background(), podsAfterSecondSync); err != nil {
+		t.Fatalf("could not list pods from the client: %v", err)
+	}
+	if len(podsAfterSecondSync.Items) != 1 {
+		t.Fatalf("Wrong number of pods after second sync: %d", len(podsAfterSecondSync.Items))
+	}
+	update := podsAfterSecondSync.Items[0].DeepCopy()
+	update.Status.Phase = v1.PodSucceeded
+	if err := buildClients["trusted"].Update(context.Background(), update); err != nil {
+		t.Fatalf("could not update pod to be succeeded: %v", err)
+	}
+	if _, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}}); err != nil {
+		t.Fatalf("Error on third sync: %v", err)
+	}
+	afterThirdSync := &prowapi.ProwJobList{}
+	if err := fakeProwJobClient.List(context.Background(), afterThirdSync); err != nil {
+		t.Fatalf("could not list prowJobs from the client: %v", err)
+	}
+	if len(afterThirdSync.Items) != 1 {
+		t.Fatalf("Wrong number of prow jobs: %d", len(afterThirdSync.Items))
+	}
+	if !afterThirdSync.Items[0].Complete() {
+		t.Fatal("Prow job didn't complete.")
+	}
+	if afterThirdSync.Items[0].Status.State != prowapi.SuccessState {
+		t.Fatalf("Should be success: %v", afterThirdSync.Items[0].Status.State)
+	}
+	if _, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "prowjobs", Name: pj.Name}}); err != nil {
+		t.Fatalf("Error on fourth sync: %v", err)
 	}
 }
 
@@ -1858,7 +1680,6 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		Name         string
 		PJs          []prowapi.ProwJob
 		PendingJobs  map[string]int
-		IsV2         bool
 		ExpectedPods int
 	}
 
@@ -1978,16 +1799,6 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			ExpectedPods: 0,
 		},
 	}
-	// Duplicate all tests for PlankV2
-	for _, tc := range tests {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		tests = append(tests, newTc)
-	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
@@ -2008,54 +1819,38 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			buildClients := map[string]ctrlruntimeclient.Client{
 				prowapi.DefaultClusterAlias: fakectrlruntimeclient.NewFakeClient(),
 			}
-			if !test.IsV2 {
-				c := Controller{
-					prowJobClient: fakeProwJobClient,
-					buildClients:  buildClients,
-					log:           logrus.NewEntry(logrus.StandardLogger()),
-					config:        newFakeConfigAgent(t, 0).Config,
-					pendingJobs:   test.PendingJobs,
-					clock:         clock.RealClock{},
-				}
-
-				errors := make(chan error, len(test.PJs))
-				pm := make(map[string]v1.Pod)
-
-				syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, errors, pm)
-			} else {
-				for jobName, numJobsToCreate := range test.PendingJobs {
-					for i := 0; i < numJobsToCreate; i++ {
-						if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      fmt.Sprintf("%s-%d", jobName, i),
-								Namespace: "prowjobs",
-							},
-							Spec: prowapi.ProwJobSpec{
-								Agent: prowapi.KubernetesAgent,
-								Job:   jobName,
-							},
-							Status: prowapi.ProwJobStatus{
-								State: prowapi.PendingState,
-							},
-						}); err != nil {
-							t.Fatalf("failed to create prowJob: %v", err)
-						}
+			for jobName, numJobsToCreate := range test.PendingJobs {
+				for i := 0; i < numJobsToCreate; i++ {
+					if err := fakeProwJobClient.Create(context.Background(), &prowapi.ProwJob{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      fmt.Sprintf("%s-%d", jobName, i),
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Agent: prowapi.KubernetesAgent,
+							Job:   jobName,
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.PendingState,
+						},
+					}); err != nil {
+						t.Fatalf("failed to create prowJob: %v", err)
 					}
 				}
-				r := newReconciler(context.Background(),
-					&indexingClient{
-						Client:     fakeProwJobClient,
-						indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
-					}, nil, newFakeConfigAgent(t, 0).Config, "")
-				r.buildClients = buildClients
-				for _, job := range test.PJs {
-					request := reconcile.Request{NamespacedName: types.NamespacedName{
-						Name:      job.Name,
-						Namespace: job.Namespace,
-					}}
-					if _, err := r.Reconcile(context.Background(), request); err != nil {
-						t.Fatalf("failed to reconcile job %s: %v", request.String(), err)
-					}
+			}
+			r := newReconciler(context.Background(),
+				&indexingClient{
+					Client:     fakeProwJobClient,
+					indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
+				}, nil, newFakeConfigAgent(t, 0).Config, "")
+			r.buildClients = buildClients
+			for _, job := range test.PJs {
+				request := reconcile.Request{NamespacedName: types.NamespacedName{
+					Name:      job.Name,
+					Namespace: job.Namespace,
+				}}
+				if _, err := r.Reconcile(context.Background(), request); err != nil {
+					t.Fatalf("failed to reconcile job %s: %v", request.String(), err)
 				}
 			}
 
@@ -2076,7 +1871,6 @@ func TestMaxConcurency(t *testing.T) {
 		ProwJob          prowapi.ProwJob
 		ExistingProwJobs []prowapi.ProwJob
 		PendingJobs      map[string]int
-		IsV2             bool
 
 		ExpectedResult bool
 	}
@@ -2178,17 +1972,6 @@ func TestMaxConcurency(t *testing.T) {
 		},
 	}
 
-	// Duplicate all tests for PlankV2
-	for _, tc := range testCases {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		testCases = append(testCases, newTc)
-	}
-
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 
@@ -2198,57 +1981,43 @@ func TestMaxConcurency(t *testing.T) {
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			logrus.SetLevel(logrus.DebugLevel)
 
-			var result bool
-			if !tc.IsV2 {
-				c := Controller{
-					pjs:          tc.ExistingProwJobs,
-					buildClients: buildClients,
-					log:          logrus.NewEntry(logrus.StandardLogger()),
-					config:       newFakeConfigAgent(t, 0).Config,
-					pendingJobs:  tc.PendingJobs,
-					clock:        clock.RealClock{},
+			var prowJobs []runtime.Object
+			for i := range tc.ExistingProwJobs {
+				tc.ExistingProwJobs[i].Namespace = "prowjobs"
+				prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
+			}
+			for jobName, numJobsToCreate := range tc.PendingJobs {
+				for i := 0; i < numJobsToCreate; i++ {
+					prowJobs = append(prowJobs, &prowapi.ProwJob{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      fmt.Sprintf("%s-%d", jobName, i),
+							Namespace: "prowjobs",
+						},
+						Spec: prowapi.ProwJobSpec{
+							Agent: prowapi.KubernetesAgent,
+							Job:   jobName,
+						},
+						Status: prowapi.ProwJobStatus{
+							State: prowapi.PendingState,
+						},
+					})
 				}
-				result = c.canExecuteConcurrently(&tc.ProwJob)
-			} else {
-				var prowJobs []runtime.Object
-				for i := range tc.ExistingProwJobs {
-					tc.ExistingProwJobs[i].Namespace = "prowjobs"
-					prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
-				}
-				for jobName, numJobsToCreate := range tc.PendingJobs {
-					for i := 0; i < numJobsToCreate; i++ {
-						prowJobs = append(prowJobs, &prowapi.ProwJob{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      fmt.Sprintf("%s-%d", jobName, i),
-								Namespace: "prowjobs",
-							},
-							Spec: prowapi.ProwJobSpec{
-								Agent: prowapi.KubernetesAgent,
-								Job:   jobName,
-							},
-							Status: prowapi.ProwJobStatus{
-								State: prowapi.PendingState,
-							},
-						})
-					}
-				}
-				r := &reconciler{
-					pjClient: &indexingClient{
-						Client:     fakectrlruntimeclient.NewFakeClient(prowJobs...),
-						indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
-					},
-					buildClients: buildClients,
-					log:          logrus.NewEntry(logrus.StandardLogger()),
-					config:       newFakeConfigAgent(t, 0).Config,
-					clock:        clock.RealClock{},
-				}
-				var err error
-				// We filter ourselves out via the UID, so make sure its not the empty string
-				tc.ProwJob.UID = types.UID("under-test")
-				result, err = r.canExecuteConcurrently(context.Background(), &tc.ProwJob)
-				if err != nil {
-					t.Fatalf("canExecuteConcurrently: %v", err)
-				}
+			}
+			r := &reconciler{
+				pjClient: &indexingClient{
+					Client:     fakectrlruntimeclient.NewFakeClient(prowJobs...),
+					indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
+				},
+				buildClients: buildClients,
+				log:          logrus.NewEntry(logrus.StandardLogger()),
+				config:       newFakeConfigAgent(t, 0).Config,
+				clock:        clock.RealClock{},
+			}
+			// We filter ourselves out via the UID, so make sure its not the empty string
+			tc.ProwJob.UID = types.UID("under-test")
+			result, err := r.canExecuteConcurrently(context.Background(), &tc.ProwJob)
+			if err != nil {
+				t.Fatalf("canExecuteConcurrently: %v", err)
 			}
 
 			if result != tc.ExpectedResult {
@@ -2319,7 +2088,6 @@ func TestSyncAbortedJob(t *testing.T) {
 		Name           string
 		Pod            *v1.Pod
 		DeleteError    error
-		IsV2           bool
 		ExpectSyncFail bool
 		ExpectDelete   bool
 		ExpectComplete bool
@@ -2354,17 +2122,6 @@ func TestSyncAbortedJob(t *testing.T) {
 		},
 	}
 
-	// Duplicate all tests for PlankV2
-	for _, tc := range testCases {
-		if tc.IsV2 {
-			continue
-		}
-		newTc := deepcopy.Copy(tc).(testCase)
-		newTc.Name = "[PlankV2] " + newTc.Name
-		newTc.IsV2 = true
-		testCases = append(testCases, newTc)
-	}
-
 	const cluster = "cluster"
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -2382,10 +2139,8 @@ func TestSyncAbortedJob(t *testing.T) {
 			}
 
 			var pods []runtime.Object
-			var podMap map[string]v1.Pod
 			if tc.Pod != nil {
 				pods = append(pods, tc.Pod)
-				podMap = map[string]v1.Pod{pj.Name: *tc.Pod}
 			}
 			podClient := &deleteTrackingFakeClient{
 				deleteError: tc.DeleteError,
@@ -2393,34 +2148,19 @@ func TestSyncAbortedJob(t *testing.T) {
 			}
 
 			pjClient := fakectrlruntimeclient.NewFakeClient(pj)
-			var sync func() error
-			if !tc.IsV2 {
-				c := &Controller{
-					log:           logrus.NewEntry(logrus.New()),
-					prowJobClient: pjClient,
-					buildClients:  map[string]ctrlruntimeclient.Client{cluster: podClient},
-				}
-				sync = func() error {
-					return c.syncAbortedJob(*pj, podMap)
-				}
-			} else {
-				r := &reconciler{
-					log:          logrus.NewEntry(logrus.New()),
-					config:       func() *config.Config { return &config.Config{} },
-					pjClient:     pjClient,
-					buildClients: map[string]ctrlruntimeclient.Client{cluster: podClient},
-				}
-				sync = func() error {
-					res, err := r.reconcile(context.Background(), pj)
-					if res != nil {
-						err = utilerrors.NewAggregate([]error{err, fmt.Errorf("expected reconcile.Result to be nil, was %v", res)})
-					}
-					return err
-				}
+			r := &reconciler{
+				log:          logrus.NewEntry(logrus.New()),
+				config:       func() *config.Config { return &config.Config{} },
+				pjClient:     pjClient,
+				buildClients: map[string]ctrlruntimeclient.Client{cluster: podClient},
 			}
 
-			if err := sync(); (err != nil) != tc.ExpectSyncFail {
+			res, err := r.reconcile(context.Background(), pj)
+			if (err != nil) != tc.ExpectSyncFail {
 				t.Fatalf("sync failed: %v, expected it to fail: %t", err, tc.ExpectSyncFail)
+			}
+			if res != nil {
+				t.Errorf("expected reconcile.Result to be nil, was %v", res)
 			}
 
 			if err := pjClient.Get(context.Background(), types.NamespacedName{Name: pj.Name}, pj); err != nil {
