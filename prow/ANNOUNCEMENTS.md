@@ -138,6 +138,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 12th, 2021* Horologium now uses a cached client, which requires it to have watch permissions for Prowjobs on top of the already-required list and create.
  - *April 11th, 2021* The plank binary has been removed. Please use the [Prow Controller Manager](/prow/cmd/prow-controller-manager) instead, which provides a more modern implementation
    of the same functionality.
  - *April 1st, 2021* The `owners_dir_blacklist` field in prow config has been deprecated in favor of `owners_dir_denylist`. The support of `owners_dir_blacklist` will be stopped in October 2021.

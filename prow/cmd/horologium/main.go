@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -93,9 +93,30 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
+	cfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		logrus.WithError(err).Fatal("Failed to get prowjob kubeconfig")
+	}
+	cluster, err := cluster.New(cfg, func(o *cluster.Options) { o.Namespace = configAgent.Config().ProwJobNamespace })
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to construct prowjob client")
+	}
+	// Trigger cache creation for ProwJobs so the following cacheSync actually does something. If we don't
+	// do this here, the first List request for ProwJobs will transiently trigger cache creation and sync,
+	// which doesn't allow us to fail the binary if it doesn't work.
+	if _, err := cluster.GetCache().GetInformer(interrupts.Context(), &prowapi.ProwJob{}); err != nil {
+		logrus.WithError(err).Fatal("failed to get a prowjob informer")
+	}
+	interrupts.Run(func(ctx context.Context) {
+		if err := cluster.Start(ctx); err != nil {
+			logrus.WithError(err).Fatal("Cache failed to start")
+		}
+		logrus.Info("Cache finished gracefully.")
+	})
+	cacheSyncCtx, cacheSyncCancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cacheSyncCancel()
+	if synced := cluster.GetCache().WaitForCacheSync(cacheSyncCtx); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
 	}
 
 	// start a cron
@@ -106,16 +127,11 @@ func main() {
 
 	interrupts.TickLiteral(func() {
 		start := time.Now()
-		if err := sync(prowJobClient, configAgent.Config(), cr, start); err != nil {
+		if err := sync(cluster.GetClient(), configAgent.Config(), cr, start); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
 		logrus.WithField("duration", time.Since(start)).Info("Synced periodic jobs")
 	}, 1*time.Minute)
-}
-
-type prowJobClient interface {
-	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
-	List(context.Context, metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
 
 type cronClient interface {
@@ -123,10 +139,10 @@ type cronClient interface {
 	QueuedJobs() []string
 }
 
-func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now time.Time) error {
-	jobs, err := prowJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: labels.Everything().String()})
-	if err != nil {
-		return fmt.Errorf("error listing prow jobs: %v", err)
+func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronClient, now time.Time) error {
+	jobs := &prowapi.ProwJobList{}
+	if err := prowJobClient.List(context.TODO(), jobs, ctrlruntimeclient.InNamespace(cfg.ProwJobNamespace)); err != nil {
+		return fmt.Errorf("error listing prow jobs: %w", err)
 	}
 	latestJobs := pjutil.GetLatestProwJobs(jobs.Items, prowapi.PeriodicJob)
 
@@ -152,8 +168,9 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+				prowJob.Namespace = cfg.ProwJobNamespace
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
-				if _, err := prowJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
+				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
 					errs = append(errs, err)
 				}
 			}
@@ -162,8 +179,9 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+				prowJob.Namespace = cfg.ProwJobNamespace
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
-				if _, err := prowJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
+				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
 					errs = append(errs, err)
 				}
 			} else {

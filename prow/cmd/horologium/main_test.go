@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"reflect"
 	"testing"
@@ -25,10 +26,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 )
@@ -140,19 +141,13 @@ func TestSync(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
+		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
 		fc := &fakeCron{}
-		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 
-		sawCreation := false
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				sawCreation = true
-			}
-		}
+		sawCreation := fakeProwJobClient.sawCreate
 		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
@@ -222,19 +217,13 @@ func TestSyncCron(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
+		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
 		fc := &fakeCron{}
-		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 
-		sawCreation := false
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				sawCreation = true
-			}
-		}
+		sawCreation := fakeProwJobClient.sawCreate
 		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
@@ -341,4 +330,14 @@ func TestFlags(t *testing.T) {
 			}
 		})
 	}
+}
+
+type createTrackingClient struct {
+	ctrlruntimeclient.Client
+	sawCreate bool
+}
+
+func (ct *createTrackingClient) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	ct.sawCreate = true
+	return ct.Client.Create(ctx, obj, opts...)
 }
