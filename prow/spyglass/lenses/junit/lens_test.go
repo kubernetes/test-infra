@@ -31,7 +31,6 @@ import (
 )
 
 const (
-	fakeResourceDir   = "resources-for-tests"
 	fakeCanonicalLink = "linknotfound.io/404"
 )
 

@@ -24,7 +24,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -40,8 +39,7 @@ import (
 )
 
 const (
-	pluginName  = "buildifier"
-	maxComments = 20
+	pluginName = "buildifier"
 )
 
 var buildifyRe = regexp.MustCompile(`(?mi)^/buildif(y|ier)\s*$`)
@@ -108,19 +106,6 @@ func modifiedBazelFiles(ghc githubClient, org, repo string, number int, sha stri
 		modifiedFiles[change.Filename] = change.Patch
 	}
 	return modifiedFiles, nil
-}
-
-func uniqProblems(problems []string) []string {
-	sort.Strings(problems)
-	var uniq []string
-	last := ""
-	for _, s := range problems {
-		if s != last {
-			last = s
-			uniq = append(uniq, s)
-		}
-	}
-	return uniq
 }
 
 // problemsInFiles runs buildifier on the files. It returns a map from the file to

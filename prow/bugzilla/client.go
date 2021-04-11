@@ -256,29 +256,6 @@ func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
 	return getClones(c, bug)
 }
 
-// Gets children clones recursively using a mechanism similar to bfs
-func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
-	var errs []error
-	var bug *Bug
-	clones := []*Bug{}
-	childrenQ := []*Bug{}
-	childrenQ = append(childrenQ, root)
-	// FYI Cannot think of any situation for circular clones
-	// But might need to revisit in case there are infinite loops at any point
-	for len(childrenQ) > 0 {
-		bug, childrenQ = childrenQ[0], childrenQ[1:]
-		clones = append(clones, bug)
-		children, err := getClones(c, bug)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("Error finding clones Bug#%d: %v", bug.ID, err))
-		}
-		if len(children) > 0 {
-			childrenQ = append(childrenQ, children...)
-		}
-	}
-	return clones, utilerrors.NewAggregate(errs)
-}
-
 // getImmediateParents gets the Immediate parents of bugs with a matching summary
 func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
 	var errs []error

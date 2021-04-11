@@ -52,10 +52,6 @@ var (
 	fakeGCSServer *fakestorage.Server
 )
 
-const (
-	testSrc = "gs://test-bucket/logs/example-ci-run/403"
-)
-
 type fkc []prowapi.ProwJob
 
 func (f fkc) List(ctx context.Context, pjs *prowapi.ProwJobList, _ ...ctrlruntimeclient.ListOption) error {

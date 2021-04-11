@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"strings"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -188,9 +187,4 @@ func (a *PodLogArtifact) Size() (int64, error) {
 	}
 	return int64(len(logs)), nil
 
-}
-
-// isProwJobSource returns true if the provided string is a valid Prowjob source and false otherwise
-func isProwJobSource(src string) bool {
-	return strings.HasPrefix(src, "prowjob/")
 }

@@ -37,7 +37,7 @@ import (
 type extractMode int
 
 const (
-	none       extractMode = iota
+	_          extractMode = iota
 	localBazel             // local bazel
 	local                  // local
 	gci                    // gci/FAMILY, gci/FAMILY?project=IMAGE_PROJECT:k8s-map-bucket=BUCKET_NAME

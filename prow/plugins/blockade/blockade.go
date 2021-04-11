@@ -111,13 +111,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type blockCalc func([]github.PullRequestChange, []blockade) summary
 
-type client struct {
-	ghc githubClient
-	log *logrus.Entry
-
-	blockCalc blockCalc
-}
-
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {

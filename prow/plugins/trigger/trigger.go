@@ -267,14 +267,6 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notSecondaryMember | notCollaborator).String()}, nil
 }
 
-func skippedStatusFor(context string) github.Status {
-	return github.Status{
-		State:       github.StatusSuccess,
-		Context:     context,
-		Description: "Skipped.",
-	}
-}
-
 // validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
 func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 	requestedContexts := sets.NewString()
