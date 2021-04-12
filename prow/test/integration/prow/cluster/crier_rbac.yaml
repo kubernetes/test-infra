@@ -1,7 +1,23 @@
+# Copyright 2019 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  annotations:
+    iam.gke.io/gcp-service-account: control-plane@k8s-prow.iam.gserviceaccount.com
   name: crier
   namespace: default
 ---
@@ -69,60 +85,3 @@ subjects:
 - kind: ServiceAccount
   name: crier
   namespace: default
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: crier
-  namespace: default
-  name: crier
-spec:
-  ports:
-    - name: metrics
-      port: 9090
-  selector:
-    app: crier
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: default
-  name: crier
-  labels:
-    app: crier
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: crier
-  template:
-    metadata:
-      labels:
-        app: crier
-    spec:
-      serviceAccountName: crier
-      terminationGracePeriodSeconds: 30
-      containers:
-      - name: crier
-        image: localhost:5000/crier
-        args:
-        - --config-path=/etc/config/config.yaml
-        - --github-endpoint=http://fakeghserver
-        - --github-token-path=/etc/github/oauth
-        - --github-workers=1
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
-      volumes:
-      - name: config
-        configMap:
-          name: config
-      - name: oauth
-        secret:
-          secretName: oauth-token
