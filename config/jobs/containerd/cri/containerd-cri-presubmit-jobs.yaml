@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         env:
         - name: GO111MODULE
           value: "off"
@@ -44,7 +44,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         command:
         - sh
         - -c
@@ -74,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -102,7 +102,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-windows-cri
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         command:
         - runner.sh
         args:

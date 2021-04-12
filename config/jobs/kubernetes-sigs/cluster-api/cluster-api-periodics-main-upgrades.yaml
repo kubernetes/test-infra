@@ -17,7 +17,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -105,7 +105,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -149,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
