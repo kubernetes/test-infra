@@ -16,6 +16,7 @@ linters:
   enable:
   - govet
   - deadcode
+  - misspell
   disable-all: true
 
 issues:
