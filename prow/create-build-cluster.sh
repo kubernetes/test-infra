@@ -146,7 +146,7 @@ echo
 # generate a JWT kubeconfig file that we can merge into prow's kubeconfig secret so that Prow can schedule pods
 function gencreds() {
   getClusterCreds
-  local clusterAlias="build-${TEAM}"
+  local clusterAlias="$(cluster_alias)"
   local outfile="${OUT_FILE}"
 
   cd "${tempdir}"
@@ -163,7 +163,7 @@ function gencreds() {
   # First enable secretmanager API, no op if already enabled
   gcloud services enable secretmanager.googleapis.com --project="${PROJECT}"
   cd "${origdir}"
-  local gsm_secret_name="prow_build_cluster_kubeconfig_${clusterAlias}"
+  local gsm_secret_name="$(gsm_secret_name)"
   gcloud secrets create "${gsm_secret_name}" --data-file="$origdir/$outfile" --project="${PROJECT}"
   # Grant prow service account access to secretmanager in build cluster
   for role in roles/secretmanager.viewer roles/secretmanager.secretAccessor; do
@@ -178,7 +178,12 @@ function gencreds() {
   pause
 }
 
-
+cluster_alias() {
+  echo "build-${TEAM}"
+}
+gsm_secret_name() {
+  echo "prow_build_cluster_kubeconfig_$(cluster_alias)"
+}
 ensure_kustomize() {
   if ! which "kustomize" > /dev/null 2>&1; then
     GOBIN=$(pwd)/ GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3
@@ -186,6 +191,7 @@ ensure_kustomize() {
 }
 
 create_cl() {
+  local gsm_secret_name="$(gsm_secret_name)"
   cd "${ROOT_DIR}"
   clone_uri="$(git config --get remote.origin.url)"
   fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
