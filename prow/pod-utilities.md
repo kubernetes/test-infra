@@ -62,7 +62,7 @@ dumped for automatic upload to GCS upon job completion.
 ### How to configure
 
 In order to use the pod utilities, you will need to configure plank with some settings first.
-See plank's [README](/prow/cmd/plank) for reference.
+See plank's [README](/prow/plank) for reference.
 
 ProwJobs may request Pod Utility decoration by setting `decorate: true` in their config.
 Example ProwJob configuration:
@@ -147,7 +147,7 @@ job turns on censoring:
 ### Censoring Process
 
 The automatic censoring process is written to be as useful as possible while having a bounded impact on the
-execution cost in resources and time for the job. In order to censor every possible leak, all keys in all 
+execution cost in resources and time for the job. In order to censor every possible leak, all keys in all
 `Secrets` that are mounted into the test `Pod` are treated as sensitive data. For each of these keys, the
 value of the key as well as the base-64 encoded value are censored from the job's log as well as any
 artifacts the job produces. If any archives (e.g. `.tar.gz`) are found in the output artifacts for a job,

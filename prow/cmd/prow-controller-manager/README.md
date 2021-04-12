@@ -28,6 +28,6 @@ $ bazel run //prow/cmd/prow-controller-manager -- --help
 * [Deployment manifest](/config/prow/cluster/prow_controller_manager_deployment.yaml)
 * [RBAC manifest](/config/prow/cluster/prow_controller_manager_rbac.yaml)
 
-[Plank]: /prow/cmd/plank
+[Plank]: /prow/plank
 [Sinker]: /prow/cmd/sinker
 [Crier]: /prow/cmd/crier
