@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -33,7 +33,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
         args:
           - runner.sh
           - "./images/capi/packer/azure/scripts/ci-azure-e2e.sh"
@@ -55,7 +55,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
           args:
             - runner.sh
             - "./images/capi/hack/ci-json-sort.sh"
@@ -74,7 +74,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-packer-validate.sh"
@@ -93,7 +93,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
           args:
             - runner.sh
             - "./images/capi/packer/gce/scripts/ci-gce.sh"
@@ -119,7 +119,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-goss-populate.sh"
