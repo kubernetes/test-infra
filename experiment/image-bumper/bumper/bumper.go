@@ -103,6 +103,24 @@ func DeconstructTag(tag string) (date, commit, variant string) {
 	return parts[0][1:], parts[len(parts)-1], currentTagParts[tagExtraPart]
 }
 
+func (cli *Client) getManifest(imageHost, imageName string) (manifest, error) {
+	resp, err := cli.httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
+	if err != nil {
+		return nil, fmt.Errorf("couldn't fetch tag list: %v", err)
+	}
+	defer resp.Body.Close()
+
+	result := struct {
+		Manifest manifest `json:"manifest"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("couldn't parse tag information from registry: %v", err)
+	}
+
+	return result.Manifest, nil
+}
+
 // FindLatestTag returns the latest valid tag for the given image.
 func (cli *Client) FindLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	k := imageHost + "/" + imageName + ":" + currentTag
@@ -118,21 +136,12 @@ func (cli *Client) FindLatestTag(imageHost, imageName, currentTag string) (strin
 		return currentTag, nil
 	}
 
-	resp, err := cli.httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
+	imageList, err := cli.getManifest(imageHost, imageName)
 	if err != nil {
-		return "", fmt.Errorf("couldn't fetch tag list: %v", err)
-	}
-	defer resp.Body.Close()
-
-	result := struct {
-		Manifest manifest `json:"manifest"`
-	}{}
-
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("couldn't parse tag information from registry: %v", err)
+		return "", err
 	}
 
-	latestTag, err := pickBestTag(currentTagParts, result.Manifest)
+	latestTag, err := pickBestTag(currentTagParts, imageList)
 	if err != nil {
 		return "", err
 	}
@@ -140,6 +149,23 @@ func (cli *Client) FindLatestTag(imageHost, imageName, currentTag string) (strin
 	cli.tagCache[k] = latestTag
 
 	return latestTag, nil
+}
+
+func (cli *Client) TagExists(imageHost, imageName, currentTag string) (bool, error) {
+	imageList, err := cli.getManifest(imageHost, imageName)
+	if err != nil {
+		return false, err
+	}
+
+	for _, v := range imageList {
+		for _, tag := range v.Tags {
+			if tag == currentTag {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {

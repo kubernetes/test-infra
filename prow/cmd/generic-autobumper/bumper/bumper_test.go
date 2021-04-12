@@ -534,6 +534,13 @@ func (c *fakeImageBumperCli) AddToCache(image, newTag string) {
 	c.tagCache[image] = newTag
 }
 
+func (cli *fakeImageBumperCli) TagExists(imageHost, imageName, currentTag string) (bool, error) {
+	if currentTag == "DNE" {
+		return false, nil
+	}
+	return true, nil
+}
+
 func TestUpdateReferences(t *testing.T) {
 	cases := []struct {
 		description        string
@@ -716,6 +723,8 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 	fakeUpstreamURLBase := "test.com"
 	prowPrefix := "gcr.io/k8s-prow/"
 	boskosPrefix := "gcr.io/k8s-boskos/"
+	doesNotExistPrefix := "gcr.io/dne"
+	doesNotExist := "DNE"
 
 	prowPrefixStruct := Prefix{
 		Prefix:               prowPrefix,
@@ -727,9 +736,17 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 		RefConfigFile:        boskosRefConfigFile,
 		StagingRefConfigFile: boskosStagingRefConfigFile,
 	}
+	//Prefix used to test when a tag does not exist. This is used to have parser return a tag that will make TagExists return false
+	tagDoesNotExistPrefix := Prefix{
+		Prefix:               doesNotExistPrefix,
+		RefConfigFile:        doesNotExist,
+		StagingRefConfigFile: doesNotExist,
+	}
 
 	fakeImageVersionParser := func(upstreamAddress, prefix string) (string, error) {
 		switch upstreamAddress {
+		case fakeUpstreamURLBase + "/" + doesNotExist:
+			return doesNotExist, nil
 		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
 			return prowProdFakeVersion, nil
 		case fakeUpstreamURLBase + "/" + prowStagingRefConfigFile:
@@ -751,6 +768,7 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 		currentTag          string
 		expectedTargetTag   string
 		expectError         bool
+		resolverError       bool
 		prefixes            []Prefix
 	}{
 		{
@@ -786,6 +804,16 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   "whatever-current-tag",
 		},
+		{
+			description:         "tag does not exist",
+			upstreamVersionType: upstreamVersion,
+			expectError:         false,
+			prefixes:            []Prefix{tagDoesNotExistPrefix},
+			imageHost:           doesNotExistPrefix,
+			currentTag:          "doesNotExist",
+			expectedTargetTag:   "",
+			resolverError:       true,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
@@ -810,10 +838,17 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 			}
 
 			if resolver != nil {
-				res, _ := resolver(tc.imageHost, tc.imageName, tc.currentTag)
+				res, resErr := resolver(tc.imageHost, tc.imageName, tc.currentTag)
+				if !tc.resolverError && resErr != nil {
+					t.Errorf("Expected resolver to return without error, but received error: %v", resErr)
+				}
+				if tc.resolverError && resErr == nil {
+					t.Error("Expected resolver to return with error, but did not receive one")
+				}
 				if tc.expectedTargetTag != res {
 					t.Errorf("Expected to get target tag %q but got %q", tc.expectedTargetTag, res)
 				}
+
 			}
 
 		})
