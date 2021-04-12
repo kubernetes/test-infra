@@ -202,7 +202,7 @@ default:
       previously:
         - name: release-note-label-needed
       target: prs
-      prowPlugin: releasenote
+      prowPlugin: release-note
       addedBy: prow
     - color: e11d21
       description: Indicates that a PR should not merge because it is a work in progress.
@@ -418,19 +418,19 @@ default:
       description: Denotes a PR that will be considered when it comes time to generate release notes.
       name: release-note
       target: prs
-      prowPlugin: releasenote
+      prowPlugin: release-note
       addedBy: prow
     - color: c2e0c6
       description: Denotes a PR that introduces potentially breaking changes that require user action. # These actions will be specifically called out when it comes time to generate release notes.
       name: release-note-action-required
       target: prs
-      prowPlugin: releasenote
+      prowPlugin: release-note
       addedBy: prow
     - color: c2e0c6
       description: Denotes a PR that doesn't merit a release note. # will be ignored when it comes time to generate release notes.
       name: release-note-none
       target: prs
-      prowPlugin: releasenote
+      prowPlugin: release-note
       addedBy: prow or member or author
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG API Machinery.
