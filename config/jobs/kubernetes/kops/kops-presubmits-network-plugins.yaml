@@ -113,7 +113,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols"
         securityContext:
           privileged: true
         env:
@@ -181,7 +181,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|up\sand\sdown|headless|service-proxy-name"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols|up\sand\sdown|headless|service-proxy-name"
         securityContext:
           privileged: true
         env:
@@ -249,7 +249,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols"
         securityContext:
           privileged: true
         env:
@@ -453,7 +453,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols"
         securityContext:
           privileged: true
         env:
