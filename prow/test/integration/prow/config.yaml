@@ -4,6 +4,9 @@ sinker:
   max_pod_age: 48h
   terminated_pod_ttl: 30m
 
+horologium:
+  tick_interval: 5s
+
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug

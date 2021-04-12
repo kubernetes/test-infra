@@ -120,6 +120,7 @@ type ProwConfig struct {
 	BranchProtection BranchProtection `json:"branch-protection"`
 	Gerrit           Gerrit           `json:"gerrit"`
 	GitHubReporter   GitHubReporter   `json:"github_reporter"`
+	Horologium       Horologium       `json:"horologium"`
 	// Deprecated: this option will be removed in May 2020.
 	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
@@ -688,6 +689,13 @@ type Gerrit struct {
 	// DeckURL is the root URL of Deck. This is used to construct links to
 	// job runs for a given CL.
 	DeckURL string `json:"deck_url,omitempty"`
+}
+
+// Horologium is config for the Horologium.
+type Horologium struct {
+	// TickInterval is the interval in which we check if new jobs need to be
+	// created. Defaults to one minute.
+	TickInterval *metav1.Duration `json:"tick_interval,omitempty"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.

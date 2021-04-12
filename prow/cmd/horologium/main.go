@@ -40,6 +40,10 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
+const (
+	defaultTickInterval = time.Minute
+)
+
 type options struct {
 	configPath                 string
 	jobConfigPath              string
@@ -125,13 +129,17 @@ func main() {
 
 	metrics.ExposeMetrics("horologium", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
 
+	tickInterval := defaultTickInterval
+	if configAgent.Config().Horologium.TickInterval != nil {
+		tickInterval = configAgent.Config().Horologium.TickInterval.Duration
+	}
 	interrupts.TickLiteral(func() {
 		start := time.Now()
 		if err := sync(cluster.GetClient(), configAgent.Config(), cr, start); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
 		logrus.WithField("duration", time.Since(start)).Info("Synced periodic jobs")
-	}, 1*time.Minute)
+	}, tickInterval)
 }
 
 type cronClient interface {
