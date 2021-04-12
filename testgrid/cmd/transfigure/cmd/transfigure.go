@@ -60,7 +60,7 @@ var rootCmd = &cobra.Command{
 	Use:   "transfigure",
 	Short: "Generates a YAML Testgrid config from a Prow config and pushes it to testgrid.k8s.io.",
 	Long: `Transfigure is an image that generates a YAML Testgrid configuration
-		   from a Prow configuration and pushes it to be used on testgrid.k8s.io. It 
+		   from a Prow configuration and pushes it to be used on testgrid.k8s.io. It
 	       is used specifically for Prow instances other than the k8s instance of Prow.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := run()
@@ -241,17 +241,6 @@ func runBazelTests() error {
 	out, err := runCmd(cmd)
 	log.Print("Bazel Test output: " + out)
 	return err
-}
-
-func ensureGitUserAndEmail() error {
-	log.Print("Checking Git Config user and email")
-	if _, err := runCmd(exec.Command("git", "config", "user.name", o.gitUser)); err != nil {
-		return fmt.Errorf("%v (Caused by: %v)", "Error setting git user name", err)
-	}
-	if _, err := runCmd(exec.Command("git", "config", "user.email", o.gitEmail)); err != nil {
-		return fmt.Errorf("%v (Caused by: %v)", "Error setting git user email", err)
-	}
-	return nil
 }
 
 func gitCommitAndPush() error {

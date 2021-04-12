@@ -50,10 +50,6 @@ type gerritClient interface {
 	Account(instance string) *gerrit.AccountInfo
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // Controller manages gerrit changes.
 type Controller struct {
 	config        config.Getter

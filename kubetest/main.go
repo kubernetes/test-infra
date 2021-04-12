@@ -883,13 +883,6 @@ func activateServiceAccount(path string) error {
 	return control.FinishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
 }
 
-// Make all artifacts world readable.
-// The root user winds up owning the files when the container exists.
-// Ensure that other users can read these files at that time.
-func chmodArtifacts() error {
-	return control.FinishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
-}
-
 func prepare(o *options) error {
 	if err := util.MigrateOptions([]util.MigratedOption{
 		{

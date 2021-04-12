@@ -24,10 +24,8 @@ const (
 	// TestContainerName specifies the primary container name.
 	TestContainerName = "test"
 
-	inClusterBaseURL = "https://kubernetes.default"
-	maxRetries       = 8
-	retryDelay       = 2 * time.Second
-	requestTimeout   = time.Minute
+	maxRetries = 8
+	retryDelay = 2 * time.Second
 
 	// EmptySelector selects everything
 	EmptySelector = ""

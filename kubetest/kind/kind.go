@@ -19,12 +19,10 @@ package kind
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -90,16 +88,6 @@ type Deployer struct {
 	kindNodeImage      string
 	kindBaseImage      string
 	kindClusterName    string
-}
-
-type kindReleaseAsset struct {
-	Name        string `json:"name"`
-	DownloadURL string `json:"browser_download_url"`
-}
-
-type kindRelease struct {
-	Tag    string             `json:"tag_name"`
-	Assets []kindReleaseAsset `json:"assets"`
 }
 
 // NewDeployer creates a new kind deployer.
@@ -540,75 +528,4 @@ func hashFile(path string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
-}
-
-// getKindRelease accepts either a kind release tag or 'kindBinaryLatest'.
-// UNUSED: we might end up using this one day.
-func getKindRelease(tag string) (*kindRelease, error) {
-	b, err := getFromURL("https://api.github.com/repos/kubernetes-sigs/kind/releases")
-	if err != nil {
-		return nil, err
-	}
-
-	var releases []kindRelease
-	err = json.Unmarshal(b, &releases)
-	if err != nil {
-		return nil, err
-	}
-	if len(releases) == 0 {
-		return nil, errors.New("could not obtain a list of releases from GitHub")
-	}
-
-	switch tag {
-	case kindBinaryBuild:
-		return &releases[0], nil
-	default:
-		for _, r := range releases {
-			if r.Tag == tag {
-				return &r, nil
-			}
-		}
-		return nil, fmt.Errorf("could not find a release tagged as %q", tag)
-	}
-}
-
-// getKindBinaryFromRelease downloads a kind binary based on arch/platform (assetName) and a kindRelease.
-// UNUSED: we might end up using this one day.
-func getKindBinaryFromRelease(release *kindRelease, assetName string) ([]byte, error) {
-	if release == nil {
-		return nil, errors.New("getKindBinaryFromRelease() received nil value for 'release'")
-	}
-	if len(release.Assets) == 0 {
-		return nil, fmt.Errorf("no assets defined for release %q", release.Tag)
-	}
-	for _, a := range release.Assets {
-		if strings.Contains(a.Name, assetName) {
-			log.Printf("Downloading asset name %q for kind release tag %q", assetName, release.Tag)
-			b, err := getFromURL(a.DownloadURL)
-			if err != nil {
-				return nil, err
-			}
-			return b, nil
-		}
-	}
-	return nil, fmt.Errorf("no matching asset name %q", assetName)
-}
-
-// getFromURL downloads raw bytes from a URL.
-func getFromURL(url string) ([]byte, error) {
-	timeout := time.Duration(60 * time.Second)
-	client := http.Client{
-		Timeout: timeout,
-	}
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
 }

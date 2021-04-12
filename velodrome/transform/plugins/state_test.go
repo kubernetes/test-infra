@@ -24,13 +24,6 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
-func statePoint(t time.Time, values map[string]interface{}) Point {
-	return Point{
-		Date:   t,
-		Values: values,
-	}
-}
-
 func TestStatePlugin(t *testing.T) {
 	tests := []struct {
 		description string

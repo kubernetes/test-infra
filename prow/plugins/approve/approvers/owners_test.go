@@ -70,11 +70,6 @@ func (f FakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
 	return f.autoApproveUnownedSubfolders[ownerFilePath]
 }
 
-type dir struct {
-	fullPath  string
-	approvers sets.String
-}
-
 func canonicalize(path string) string {
 	if path == "." {
 		return ""

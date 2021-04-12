@@ -1131,22 +1131,6 @@ func TestCanonicalize(t *testing.T) {
 	}
 }
 
-var (
-	lowerCaseAliases = []byte(`
-aliases:
-  team/t1:
-    - u1
-    - u2
-  team/t2:
-    - u1
-    - u3`)
-	mixedCaseAliases = []byte(`
-aliases:
-  TEAM/T1:
-    - U1
-    - U2`)
-)
-
 func TestExpandAliases(t *testing.T) {
 	testAliases := RepoAliases{
 		"team/t1": sets.NewString("u1", "u2"),

@@ -32,10 +32,6 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func strP(str string) *string {
-	return &str
-}
-
 func TestHandlePullRequest(t *testing.T) {
 	var testcases = []struct {
 		// test settings

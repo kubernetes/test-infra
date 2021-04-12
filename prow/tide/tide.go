@@ -326,16 +326,6 @@ func prKey(pr *PullRequest) string {
 	return fmt.Sprintf("%s#%d", string(pr.Repository.NameWithOwner), int(pr.Number))
 }
 
-// org/repo#number -> pr
-func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
-	m := make(map[string]PullRequest)
-	for _, pr := range prs {
-		key := prKey(&pr)
-		m[key] = pr
-	}
-	return m
-}
-
 // newExpectedContext creates a Context with Expected state.
 func newExpectedContext(c string) Context {
 	return Context{

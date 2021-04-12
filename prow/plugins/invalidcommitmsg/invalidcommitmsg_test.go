@@ -32,10 +32,6 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func strP(str string) *string {
-	return &str
-}
-
 func makeFakePullRequestEvent(action github.PullRequestEventAction, title string) github.PullRequestEvent {
 	return github.PullRequestEvent{
 		Action: action,

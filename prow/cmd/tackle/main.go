@@ -143,12 +143,6 @@ func currentZone() (string, error) {
 	return output("gcloud", "config", "get-value", "compute/zone")
 }
 
-// project holds info about a project
-type project struct {
-	name string
-	id   string
-}
-
 // projects returns the list of accessible gcp projects
 func projects(max int) ([]string, error) {
 	out, err := output("gcloud", "projects", "list", fmt.Sprintf("--limit=%d", max), "--format=value(project_id)")

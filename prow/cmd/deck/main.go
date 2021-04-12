@@ -740,16 +740,6 @@ func loadToken(file string) ([]byte, error) {
 	return bytes.TrimSpace(raw), nil
 }
 
-// copy a http.Request
-// see: https://go-review.googlesource.com/c/go/+/36483/3/src/net/http/server.go
-func dupeRequest(original *http.Request) *http.Request {
-	r2 := new(http.Request)
-	*r2 = *original
-	r2.URL = new(url.URL)
-	*r2.URL = *original.URL
-	return r2
-}
-
 func handleCached(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// This looks ridiculous but actually no-cache means "revalidate" and

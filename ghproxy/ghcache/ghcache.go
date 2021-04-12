@@ -27,8 +27,6 @@ package ghcache
 
 import (
 	"context"
-	"crypto/sha256"
-	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -209,16 +207,6 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	ghmetrics.CollectGitHubRequestMetrics(tokenBudgetName, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
 
 	return resp, nil
-}
-
-func authHeaderHash(req *http.Request) string {
-	// get authorization header to convert to sha256
-	authHeader := req.Header.Get("Authorization")
-	if authHeader == "" {
-		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
-		authHeader = "unknown"
-	}
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
 }
 
 const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because legacyDisablePartitioningByAuthHeader is true"

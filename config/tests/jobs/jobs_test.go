@@ -286,20 +286,6 @@ type SubmitQueueConfig struct {
 	RequiredRetestContexts string `json:"required-retest-contexts"`
 }
 
-func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
-	var required []string
-	for _, p := range presubmits {
-		if !p.AlwaysRun {
-			continue
-		}
-		if p.SkipReport {
-			continue
-		}
-		required = append(required, p.Context)
-	}
-	return required
-}
-
 // Enforce conventions for jobs that run in test-infra-trusted cluster
 func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
