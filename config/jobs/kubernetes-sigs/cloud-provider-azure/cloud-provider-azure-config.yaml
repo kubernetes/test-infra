@@ -37,12 +37,12 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.20
+      base_ref: release-1.21
       path_alias: k8s.io/kubernetes
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
         command:
         - runner.sh
         - kubetest
@@ -59,7 +59,7 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-ccm
@@ -95,12 +95,12 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.20
+      base_ref: release-1.21
       path_alias: k8s.io/kubernetes
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
         command:
         - runner.sh
         - kubetest
@@ -117,7 +117,7 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-ccm
@@ -156,12 +156,12 @@ presubmits:
     extra_refs:
       - org: kubernetes
         repo: kubernetes
-        base_ref: release-1.20
+        base_ref: release-1.21
         path_alias: k8s.io/kubernetes
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
           command:
             - runner.sh
             - kubetest
@@ -178,7 +178,7 @@ presubmits:
             - --aksengine-agentpoolcount=2
             - --aksengine-admin-username=azureuser
             - --aksengine-creds=$(AZURE_CREDENTIALS)
-            - --aksengine-orchestratorRelease=1.20
+            - --aksengine-orchestratorRelease=1.21
             - --aksengine-mastervmsize=Standard_DS2_v2
             - --aksengine-agentvmsize=Standard_D4s_v3
             - --aksengine-ccm
@@ -236,7 +236,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -244,7 +244,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -261,7 +261,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -297,7 +297,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -305,7 +305,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -322,7 +322,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -360,7 +360,7 @@ periodics:
   extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.20
+      base_ref: release-1.21
       path_alias: k8s.io/kubernetes
     - org: kubernetes-sigs
       repo: cloud-provider-azure
@@ -368,7 +368,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -385,7 +385,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -423,7 +423,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -431,7 +431,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -448,7 +448,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -481,7 +481,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -489,7 +489,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -506,7 +506,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -540,7 +540,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: cloud-provider-azure
@@ -548,7 +548,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -565,7 +565,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_D4s_v3
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -609,7 +609,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -617,7 +617,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -634,7 +634,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -670,7 +670,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -678,7 +678,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -695,7 +695,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -728,7 +728,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -736,7 +736,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -753,7 +753,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -786,7 +786,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cloud-provider-azure
@@ -794,7 +794,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
       command:
       - runner.sh
       - kubetest
@@ -811,7 +811,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-ccm
@@ -867,7 +867,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
