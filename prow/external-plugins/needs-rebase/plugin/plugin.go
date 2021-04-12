@@ -50,7 +50,7 @@ type githubClient interface {
 	RemoveLabel(org, repo string, number int, label string) error
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
-	Query(context.Context, interface{}, map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
@@ -129,46 +129,24 @@ const searchQueryPrefix = "archived:false is:pr is:open"
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to
 // determine if the "needs-rebase" label needs to be added or removed. It
 // depends on GitHub's mergeability check to decide the need for a rebase.
-func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
+func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration, usesAppsAuth bool) error {
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(PluginName)
 	if len(orgs) == 0 && len(repos) == 0 {
 		log.Warnf("No repos have been configured for the %s plugin", PluginName)
 		return nil
 	}
-	// GitHub hard caps queries at 1k results, so do one query per org and one for
-	// all repos. Ref: https://github.community/t/graphql-github-api-how-to-get-more-than-1000-pull-requests/13838/11
-	var queries []string
-	for _, org := range orgs {
-		// https://img.17qq.com/images/crqhcuueqhx.jpeg
-		if org == "kubernetes" {
-			queries = append(queries, searchQueryPrefix+` org:"kubernetes" -repo:"kubernetes/kubernetes"`)
-
-			// Sharding by creation time > 2 months ago gives us around 50% of PRs per query (585 for the newer ones, 538 for the older ones when testing)
-			twoMonthsAgoISO8601 := time.Now().Add(-2 * 30 * 24 * time.Hour).Format("2006-01-02")
-			queries = append(queries, searchQueryPrefix+` repo:"kubernetes/kubernetes" created:>=`+twoMonthsAgoISO8601)
-			queries = append(queries, searchQueryPrefix+` repo:"kubernetes/kubernetes" created:<`+twoMonthsAgoISO8601)
-		} else {
-			queries = append(queries, searchQueryPrefix+` org:"`+org+`"`)
-		}
-	}
-	if len(repos) > 0 {
-		var reposQuery bytes.Buffer
-		fmt.Fprint(&reposQuery, searchQueryPrefix)
-		for _, repo := range repos {
-			fmt.Fprintf(&reposQuery, " repo:\"%s\"", repo)
-		}
-		queries = append(queries, reposQuery.String())
-	}
 
 	var prs []pullRequest
 	var errs []error
-	// Do _not_ parallelize this. It will trigger GitHubs abuse detection and we don't really care anyways except
-	// when developing.
-	for _, query := range queries {
-		found, err := search(context.Background(), log, ghc, query)
-		prs = append(prs, found...)
-		errs = append(errs, err)
+	for org, queries := range constructQueries(log, time.Now(), orgs, repos, usesAppsAuth) {
+		// Do _not_ parallelize this. It will trigger GitHubs abuse detection and we don't really care anyways except
+		// when developing.
+		for _, query := range queries {
+			found, err := search(context.Background(), log, ghc, query, org)
+			prs = append(prs, found...)
+			errs = append(errs, err)
+		}
 	}
 	if err := utilerrors.NewAggregate(errs); err != nil {
 		if len(prs) == 0 {
@@ -249,7 +227,7 @@ func shouldPrune(isBot func(string) bool) func(github.IssueComment) bool {
 	}
 }
 
-func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) ([]pullRequest, error) {
+func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q, org string) ([]pullRequest, error) {
 	var ret []pullRequest
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
@@ -262,7 +240,7 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 	for {
 		pageCount++
 		sq := searchQuery{}
-		if err := ghc.Query(ctx, &sq, vars); err != nil {
+		if err := ghc.QueryWithGitHubAppsSupport(ctx, &sq, vars, org); err != nil {
 			return nil, err
 		}
 		totalCost += int(sq.RateLimit.Cost)
@@ -327,4 +305,58 @@ type searchQuery struct {
 			PullRequest pullRequest `graphql:"... on PullRequest"`
 		}
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
+}
+
+// constructQueries constructs the v4 queries for the peridic scan.
+// It returns a map[org][]query.
+func constructQueries(log *logrus.Entry, now time.Time, orgs, repos []string, usesGitHubAppsAuth bool) map[string][]string {
+	result := map[string][]string{}
+
+	// GitHub hard caps queries at 1k results, so always do one query per org and one for
+	// all repos. Ref: https://github.community/t/graphql-github-api-how-to-get-more-than-1000-pull-requests/13838/11
+	for _, org := range orgs {
+		// https://img.17qq.com/images/crqhcuueqhx.jpeg
+		if org == "kubernetes" {
+			result[org] = append(result[org], searchQueryPrefix+` org:"kubernetes" -repo:"kubernetes/kubernetes"`)
+
+			// Sharding by creation time > 2 months ago gives us around 50% of PRs per query (585 for the newer ones, 538 for the older ones when testing)
+			twoMonthsAgoISO8601 := now.Add(-2 * 30 * 24 * time.Hour).Format("2006-01-02")
+			result[org] = append(result[org], searchQueryPrefix+` repo:"kubernetes/kubernetes" created:>=`+twoMonthsAgoISO8601)
+			result[org] = append(result[org], searchQueryPrefix+` repo:"kubernetes/kubernetes" created:<`+twoMonthsAgoISO8601)
+		} else {
+			result[org] = append(result[org], searchQueryPrefix+` org:"`+org+`"`)
+		}
+	}
+
+	reposQueries := map[string]*bytes.Buffer{}
+	for _, repo := range repos {
+		slashSplit := strings.Split(repo, "/")
+		if n := len(slashSplit); n != 2 {
+			log.WithField("repo", repo).Warn("Found repo that was not in org/repo format, ignoring...")
+			continue
+		}
+		org := slashSplit[0]
+		if _, hasOrgQuery := result[org]; hasOrgQuery {
+			log.WithField("repo", repo).Warn("Plugin was enabled for repo even though it is already enabled for the org, ignoring...")
+			continue
+		}
+		var b *bytes.Buffer
+		if usesGitHubAppsAuth {
+			if reposQueries[org] == nil {
+				reposQueries[org] = bytes.NewBufferString(searchQueryPrefix)
+			}
+			b = reposQueries[org]
+		} else {
+			if reposQueries[""] == nil {
+				reposQueries[""] = bytes.NewBufferString(searchQueryPrefix)
+			}
+			b = reposQueries[""]
+		}
+		fmt.Fprintf(b, " repo:\"%s\"", repo)
+	}
+	for org, repoQuery := range reposQueries {
+		result[org] = append(result[org], repoQuery.String())
+	}
+
+	return result
 }

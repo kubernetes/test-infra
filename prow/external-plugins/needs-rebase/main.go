@@ -124,7 +124,7 @@ func main() {
 
 	interrupts.TickLiteral(func() {
 		start := time.Now()
-		if err := plugin.HandleAll(log, githubClient, pa.Config()); err != nil {
+		if err := plugin.HandleAll(log, githubClient, pa.Config(), o.github.AppID != ""); err != nil {
 			log.WithError(err).Error("Error during periodic update of all PRs.")
 		}
 		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
