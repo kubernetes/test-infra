@@ -3,6 +3,8 @@
 ## New features
 
 New features added to each component:
+  - *April 12th, 2021* End of grace period for storage bucket validation, additional buckets have to be allowed
+    by adding them to the `deck.additional_allowed_buckets` list.
   - *March 9th, 2021* Tide batchtesting will now continue to test a given batch even
     when more PRs became eligible while a test failed. You can disable this by setting
     `tide.prioritize_existing_batches.<org or org/repo>: false` in your Prow config.

@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
@@ -86,7 +88,13 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fakeGCSClient := fakeGCSServer.Client()
 			ca := &config.Agent{}
-			ca.Set(&config.Config{})
+			ca.Set(&config.Config{
+				ProwConfig: config.ProwConfig{
+					Deck: config.Deck{
+						AllKnownStorageBuckets: sets.NewString("test-bucket"),
+					},
+				},
+			})
 			sg := New(context.Background(), fakeJa, ca.Config, io.NewGCSOpener(fakeGCSClient), false)
 			got, err := sg.ListArtifacts(context.Background(), tt.args.src)
 			if (err != nil) != tt.wantErr {

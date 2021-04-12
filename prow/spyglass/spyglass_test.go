@@ -26,6 +26,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -1278,6 +1280,9 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 	fakeConfigAgent := fca{
 		c: config.Config{
 			ProwConfig: config.ProwConfig{
+				Deck: config.Deck{
+					AllKnownStorageBuckets: sets.NewString("job", "kubernetes-jenkins", "multi-container-one-log"),
+				},
 				Plank: config.Plank{
 					JobURLPrefixConfig: map[string]string{"*": "https://gubernator.example.com/build/"},
 				},
@@ -1561,7 +1566,15 @@ func TestExtraLinks(t *testing.T) {
 			defer gcsServer.Stop()
 
 			gcsClient := gcsServer.Client()
-			fakeConfigAgent := fca{}
+			fakeConfigAgent := fca{
+				c: config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							AllKnownStorageBuckets: sets.NewString("test-bucket"),
+						},
+					},
+				},
+			}
 			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 			fakeJa.Start()
 			sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(gcsClient), false)
