@@ -393,9 +393,9 @@ func Run(o *Options) error {
 		// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
 		if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
 			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
-			changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
-			if err != nil {
-				return err
+			changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
+			if subErr != nil {
+				return subErr
 
 			}
 			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {

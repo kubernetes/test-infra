@@ -169,10 +169,8 @@ func deleteHook(m map[string][]github.Hook, key string, req github.HookRequest) 
 		return nil
 	}
 
-	hookExists := false
 	for i, hook := range m[key] {
 		if hook.Config.URL == req.Config.URL {
-			hookExists = true
 			m[key] = append(m[key][:i], m[key][i+1:]...)
 			if len(m[key]) == 0 {
 				delete(m, key)
@@ -181,8 +179,5 @@ func deleteHook(m map[string][]github.Hook, key string, req github.HookRequest) 
 		}
 	}
 
-	if !hookExists {
-		return fmt.Errorf("hook for %q does not exist, cannot delete", req.Config.URL)
-	}
-	return nil
+	return fmt.Errorf("hook for %q does not exist, cannot delete", req.Config.URL)
 }

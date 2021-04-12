@@ -17,6 +17,7 @@ linters:
   - govet
   - deadcode
   - misspell
+  - ineffassign
   disable-all: true
 
 issues:
