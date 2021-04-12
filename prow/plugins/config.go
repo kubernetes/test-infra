@@ -612,7 +612,7 @@ type Dco struct {
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
 	// if the skip DCO option is enabled. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
-	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted collaborators
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
 }
 
