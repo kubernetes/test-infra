@@ -99,7 +99,11 @@ func main() {
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
+	secrets := []string{o.webhookSecretFile}
+	if o.github.TokenPath != "" {
+		secrets = append(secrets, o.github.TokenPath)
+	}
+	if err := secretAgent.Start(secrets); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
