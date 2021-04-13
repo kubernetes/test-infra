@@ -782,7 +782,7 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 			orgMap[org] = nil
 		}
 	} else {
-		orgs, repos, orgMap = c.EnabledReposForPlugin(plugin)
+		_, repos, orgMap = c.EnabledReposForPlugin(plugin)
 	}
 	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
 }
