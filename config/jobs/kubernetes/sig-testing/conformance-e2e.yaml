@@ -88,6 +88,7 @@ presubmits:
             # during the tests more like 3-20m is used
             cpu: 2000m
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: sig-testing-kind
       description: Use kind to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
       testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
