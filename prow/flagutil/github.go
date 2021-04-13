@@ -134,7 +134,7 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 			return nil, fmt.Errorf("cannot store token from %q without a secret agent", o.AppPrivateKeyPath)
 		}
 		if err := secretAgent.Add(o.AppPrivateKeyPath); err != nil {
-			return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to scret agent: %w", err)
+			return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
 		}
 		appsGenerator = func() *rsa.PrivateKey {
 			raw := secretAgent.GetTokenGenerator(o.AppPrivateKeyPath)()
