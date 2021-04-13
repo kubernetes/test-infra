@@ -40,8 +40,16 @@ where the prow service/build clusters are located.
    ```
    The above command ensures that the service account used by prow can only
    access the secret name `<my-gsm-secret-name>` in the GCP project owned by
-   clients. The service account used for prow.k8s.io is defined in
-   [`trusted_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/1b2153ebe2809727a45c5b930647b2a3609dd7e7/config/prow/cluster/trusted_serviceaccounts.yaml#L46)
+   clients. The service account used for prow.k8s.io (aka `test-infra-trusted`
+   build cluster) is defined in
+   [`trusted_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/1b2153ebe2809727a45c5b930647b2a3609dd7e7/config/prow/cluster/trusted_serviceaccounts.yaml#L46),
+   and the secrets are defined in
+   [`kubernetes_external_secrets.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/kubernetes_external_secrets.yaml).
+   The service account used for `k8s-prow-builds` cluster(aka the default build
+   cluster) is defined in
+   [`build_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/1b2153ebe2809727a45c5b930647b2a3609dd7e7/config/prow/cluster/build_serviceaccounts.yaml#L43),
+   and the secrets are defined in
+   [`build_kubernetes-external-secrets_customresource.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/build_kubernetes-external-secrets_customresource.yaml).
 
 2. Create secret in google secret manager
 3. Create kubernetes external secrets custom resource by:
@@ -75,6 +83,8 @@ data:
 ```
 
 The `Secret` will be updated automatically when the secret value in gsm changed
-or the `ExternalSecret` is changed. The secret will not be deleted by kubernetes
-external secret, even in the case of `ExternalSecret` CR is deleted from the
-cluster. Deletion of `Secret` will need to be handled separately if desired.
+or the `ExternalSecret` is changed. when `ExternalSecret` CR is deleted from the
+cluster, the secret will be also be deleted by kubernetes external secret.
+(Note: deleting the `ExternelSecret` CR config from source control doesn't
+result in deletion of corresponding `ExternalSecret` CR from the cluster as the
+postsubmit action only does `kubectl apply`).
