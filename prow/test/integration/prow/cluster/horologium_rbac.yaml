@@ -2,13 +2,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   namespace: default
-  name: "hook"
+  name: "horologium"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
-  name: "hook"
+  name: "horologium"
 rules:
   - apiGroups:
       - "prow.k8s.io"
@@ -16,27 +16,18 @@ rules:
       - prowjobs
     verbs:
       - create
-      - get
       - list
-      - update
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - create
-      - get
-      - update
+      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
-  name: "hook"
+  name: "horologium"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: "hook"
+  name: "horologium"
 subjects:
 - kind: ServiceAccount
-  name: "hook"
+  name: "horologium"

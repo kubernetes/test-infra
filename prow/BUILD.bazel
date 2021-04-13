@@ -66,6 +66,7 @@ prow_push(
             "localhost:5000/sinker": "//prow/cmd/sinker:image",
             "localhost:5000/crier": "//prow/cmd/crier:image",
             "localhost:5000/hook": "//prow/cmd/hook:image",
+            "localhost:5000/horologium": "//prow/cmd/horologium:image",
             "localhost:5000/fakeghserver": "//prow/test/integration/fakeghserver:image",
         },
     ),
