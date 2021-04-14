@@ -22,12 +22,14 @@ dir="$(dirname "${BASH_SOURCE[0]}")"
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   orchestrator_release="${release}"
+  kubernetes_version="latest"
 
   if [[ "${release}" == "master" ]]; then
     branch="master"
     orchestrator_release="1.21"
   else
     branch="release-${release}"
+    kubernetes_version+="-${release}"
   fi
 
   cat >"${output}" <<EOF
@@ -48,7 +50,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
         command:
         - runner.sh
         - kubetest
@@ -98,7 +100,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
         command:
         - runner.sh
         - kubetest
@@ -147,7 +149,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
         command:
         - runner.sh
         - kubetest
@@ -198,7 +200,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
         command:
         - runner.sh
         - kubetest
@@ -246,7 +248,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
       command:
       - runner.sh
       - kubetest
@@ -272,8 +274,8 @@ periodics:
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/kubernetes.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
       # Specific test args
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]
-      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
@@ -300,7 +302,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
       command:
       - runner.sh
       - kubetest
@@ -353,7 +355,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
       command:
       - runner.sh
       - kubetest
@@ -408,7 +410,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
       command:
       - runner.sh
       - kubetest
@@ -447,12 +449,50 @@ periodics:
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
+  name: capz-conformance-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      command:
+      - runner.sh
+      - ./scripts/ci-conformance.sh
+      env:
+      - name: E2E_ARGS
+        value: "-kubetest.use-ci-artifacts"
+      - name: KUBERNETES_VERSION
+        value: "${kubernetes_version}"
+      - name: CONFORMANCE_WORKER_MACHINE_COUNT
+        value: "2"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-conformance
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+
+- interval: 24h
   name: capz-azure-file-${release/./-}
   decorate: true
   decoration_config:
     timeout: 3h
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred: "true"
@@ -471,7 +511,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -483,8 +523,6 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
         make e2e-test
       env:
-      - name: SKIP_UPSTREAM_E2E_TESTS
-        value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -507,7 +545,6 @@ periodics:
   decoration_config:
     timeout: 3h
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred: "true"
@@ -526,7 +563,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -538,8 +575,6 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
         make e2e-test
       env:
-      - name: SKIP_UPSTREAM_E2E_TESTS
-        value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: EXP_MACHINE_POOL
@@ -564,7 +599,6 @@ periodics:
   decoration_config:
     timeout: 3h
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred: "true"
@@ -583,7 +617,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -594,8 +628,6 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
         make e2e-test
       env:
-      - name: SKIP_UPSTREAM_E2E_TESTS
-        value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -618,7 +650,6 @@ periodics:
   decoration_config:
     timeout: 3h
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred: "true"
@@ -637,7 +668,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -648,8 +679,6 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
         make e2e-test
       env:
-      - name: SKIP_UPSTREAM_E2E_TESTS
-        value: "true"
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: EXP_MACHINE_POOL
