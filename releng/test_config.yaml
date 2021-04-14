@@ -384,7 +384,8 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
+    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable1
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -423,7 +424,8 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
+    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable2
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -461,7 +463,8 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
+    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable3
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
