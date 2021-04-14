@@ -54,7 +54,6 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -866,7 +865,7 @@ type Deck struct {
 
 // Validate performs validation and sanitization on the Deck object.
 func (d *Deck) Validate() error {
-	if len(d.AdditionalAllowedBuckets) > 0 && !d.ShouldValidateStorageBuckets() {
+	if len(d.AdditionalAllowedBuckets) > 0 && !d.shouldValidateStorageBuckets() {
 		return fmt.Errorf("deck.skip_storage_path_validation is enabled despite deck.additional_allowed_buckets being configured: %v", d.AdditionalAllowedBuckets)
 	}
 
@@ -893,24 +892,13 @@ func (d *Deck) Validate() error {
 	return nil
 }
 
-var warnInRepoStorageBucketValidation time.Time
-
 // ValidateStorageBucket validates a storage bucket (unless the `Deck.SkipStoragePathValidation` field is true).
 // The bucket name must be included in any of the following:
 //    1) Any job's `.DecorationConfig.GCSConfiguration.Bucket` (except jobs defined externally via InRepoConfig)
 //    2) `Plank.DefaultDecorationConfigs.GCSConfiguration.Bucket`
 //    3) `Deck.AdditionalAllowedBuckets`
 func (c *Config) ValidateStorageBucket(bucketName string) error {
-	if len(c.InRepoConfig.Enabled) > 0 && len(c.Deck.AdditionalAllowedBuckets) == 0 {
-		logrusutil.ThrottledWarnf(&warnInRepoStorageBucketValidation, 1*time.Hour,
-			"skipping storage-path validation because `in_repo_config` is enabled, but `deck.additional_allowed_buckets` empty. "+
-				"(Note: Validation will be enabled by default in January 2021. "+
-				"To disable this message, populate `deck.additional_allowed_buckets` with at least one storage bucket. "+
-				"When `deck.additional_allowed_buckets` is populated, this message will be disabled.)")
-		return nil
-	}
-
-	if !c.Deck.ShouldValidateStorageBuckets() {
+	if !c.Deck.shouldValidateStorageBuckets() {
 		return nil
 	}
 
@@ -920,12 +908,11 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 	return nil
 }
 
-// ShouldValidateStorageBuckets returns whether or not the Deck's storage path should be validated.
-// Validation could be either disabled by default or explicitly turned off.
-func (d *Deck) ShouldValidateStorageBuckets() bool {
+// shouldValidateStorageBuckets returns whether or not the Deck's storage path should be validated.
+// Validation could be either enabled by default or explicitly turned off.
+func (d *Deck) shouldValidateStorageBuckets() bool {
 	if d.SkipStoragePathValidation == nil {
-		// TODO(e-blackwelder): validate storage paths by default (~Jan 2021)
-		return false
+		return true
 	}
 	return !*d.SkipStoragePathValidation
 }

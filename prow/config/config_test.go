@@ -1617,9 +1617,9 @@ func TestValidateDeck(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => error",
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => no error",
 			deck:        Deck{AdditionalAllowedBuckets: []string{"hello", "world"}},
-			expectedErr: "skip_storage_path_validation is enabled",
+			expectedErr: "",
 		},
 		{
 			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is true => error",
@@ -5796,10 +5796,10 @@ func TestValidateStorageBucket(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name:        "unspecified config means no validation",
+			name:        "unspecified config means validation",
 			yaml:        ``,
 			bucket:      "who-knows",
-			expectedErr: "",
+			expectedErr: "bucket \"who-knows\" not in allowed list",
 		},
 		{
 			name: "validation disabled",
