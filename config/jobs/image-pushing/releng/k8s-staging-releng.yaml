@@ -124,7 +124,7 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
               - name: REGISTRY
-                value: "gcr.io/k8s-staging-build-image"
+                value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
         github_team_ids:
           - 2241179 # release-managers
