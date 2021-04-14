@@ -140,17 +140,6 @@ func (o *options) Validate() error {
 		return errors.New("required flag --config-path was unset")
 	}
 
-	// TODO(Katharine): remove this handling after 2019-10-31
-	// We used to set a default value for --cookie-secret-file, but we also have code that
-	// assumes we don't. If it's not set, but it is required that it is, and a file exists
-	// at the old default, we set it back to that default and emit an error.
-	if o.cookieSecretFile == "" && o.oauthURL != "" {
-		if _, err := os.Stat("/etc/cookie/secret"); err == nil {
-			o.cookieSecretFile = "/etc/cookie/secret"
-			logrus.Error("You haven't set --cookie-secret, but you're assuming it is set to '/etc/cookie/secret'. Add --cookie-secret=/etc/cookie/secret to your deck instance's arguments. Your configuration will stop working at the end of October 2019.")
-		}
-	}
-
 	if o.oauthURL != "" {
 		if o.githubOAuthConfigFile == "" {
 			return errors.New("an OAuth URL was provided but required flag --github-oauth-config-file was unset")
