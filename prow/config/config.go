@@ -640,19 +640,8 @@ func (p *Plank) FinalizeDefaultDecorationConfigs() error {
 }
 
 // GetJobURLPrefix gets the job url prefix from the config
-// for the given refs. As we're deprecating the "gcs/" suffix
-// (to allow using multiple storageProviders within a repo)
-// we always trim the suffix here. Thus, every caller can assume
-// the job url prefix does not have a storageProvider suffix.
+// for the given refs.
 func (p Plank) GetJobURLPrefix(pj *prowapi.ProwJob) string {
-	jobURLPrefix := p.getJobURLPrefix(pj)
-	if strings.HasSuffix(jobURLPrefix, "gcs/") {
-		return strings.TrimSuffix(jobURLPrefix, "gcs/")
-	}
-	return strings.TrimSuffix(jobURLPrefix, "gcs")
-}
-
-func (p Plank) getJobURLPrefix(pj *prowapi.ProwJob) string {
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil && pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix != "" {
 		return pj.Spec.DecorationConfig.GCSConfiguration.JobURLPrefix
 	}
@@ -1534,14 +1523,6 @@ func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
-		}
-		// TODO(@sbueringer): Remove in September 2020
-		if strings.HasSuffix(v, "gcs/") {
-			logrus.Warning(strings.Join([]string{
-				"configuring the 'gcs/' storage provider suffix in the job url prefix is now deprecated, ",
-				"please configure the job url prefix without the suffix as it's now appended automatically. Handling of the old ",
-				"configuration will be removed in September 2020",
-			}, ""))
 		}
 	}
 	if c.Gerrit.DeckURL != "" {
