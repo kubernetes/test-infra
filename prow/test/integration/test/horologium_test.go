@@ -57,6 +57,8 @@ func TestLaunchProwJob(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// getNextRunOrFail is a helper function getting the latest run
+			// after lastRun, and fail if there is none found.
 			getNextRunOrFail := func(t *testing.T, jobName string, lastRun *v1.Time) *prowjobv1.ProwJob {
 				var res *prowjobv1.ProwJob
 				if err := wait.Poll(time.Second, 70*time.Second, func() (bool, error) {
@@ -85,19 +87,29 @@ func TestLaunchProwJob(t *testing.T) {
 				return res
 			}
 
-			t.Logf("Wait for the next run of %q", existJobName)
+			t.Logf("Ensure there is at least one run of %q", existJobName)
 			pj := getNextRunOrFail(t, existJobName, nil)
-			// Enforce that the previous run was created 30-60 seconds ago, so
-			// that the next run won't happen in the following 30 seconds.
+
+			// Now examines that 'interval' respects the last run instead of a
+			// fixed schedule. For example, if the previous pj started at 00:00:00,
+			// the next one will be scheduled to run at 00:01:00. But if this
+			// job was triggered out of schedule for whatever reason, for
+			// example at 00:00:39, then the next run will be expected to run at
+			// 00:01:39 instead of 00:01:00.
+
+			// First make sure that the previous run was created more than 30
+			// seconds ago, this will enforce the next scheduled run to be 30-60
+			// seconds later.
 			if pj.CreationTimestamp.Add(30 * time.Second).After(time.Now()) {
 				pj = getNextRunOrFail(t, existJobName, &pj.CreationTimestamp)
 			}
 
-			// Wait for 15 seconds, the next run kicked off by horologium should
-			// be no more than 45 seconds later, unless there is manual
-			// interruption as what the next section is going to do.
+			// Wait for 15 seconds, so the next scheduled run is 15-45 seconds
+			// later.
 			time.Sleep(15 * time.Second)
 
+			// Now kick off this job manually, which should alter the next run
+			// to be scheduled after 60 seconds instead of 15-45 seconds.
 			timeBeforeNewJob := time.Now()
 			pjToBe := pj.DeepCopy()
 			pjToBe.ResourceVersion = ""
@@ -109,6 +121,7 @@ func TestLaunchProwJob(t *testing.T) {
 			}
 			t.Logf("Finished creating prowjob")
 
+			// Assert the new run is 60 seconds later.
 			cutoff := v1.NewTime(time.Now().Add(1 * time.Second))
 			t.Logf("Finding job after: %v", cutoff)
 			nextPj := getNextRunOrFail(t, existJobName, &cutoff)
