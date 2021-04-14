@@ -839,36 +839,6 @@ periodics:
     testgrid-alert-email: release-team@kubernetes.io
     description: Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 
-- interval: 30m
-  name: ci-kubernetes-e2e-gce-multizone
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=bootstrap-e2e-gce-mz
-      - --env=MULTIZONE=true
-      # Where the nodes reside.  Master is in the first one.
-      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-e2e-gce-ubelite
-      - --gcp-zone=us-central1-a
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
-  annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: gce-multizone
-
 - interval: 12h
   name: ci-kubernetes-soak-gce-gci
   labels:

@@ -346,36 +346,6 @@ periodics:
     testgrid-tab-name: e2e-cos-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
-- interval: 2h
-  name: ci-cri-containerd-e2e-gce-multizone
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=MULTIZONE=true
-      # Where the nodes reside.  Master is in the first one.
-      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-a
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
-  annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: e2e-cos-multizone
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce
   labels:
