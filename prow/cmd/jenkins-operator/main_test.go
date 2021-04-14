@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"testing"
 
 	"k8s.io/test-infra/prow/flagutil"
@@ -104,6 +105,10 @@ func TestOptions_Validate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testCase.input.config.AddFlags(&flag.FlagSet{})
+		if testCase.input.config.ConfigPath == "" {
+			testCase.input.config.ConfigPath = "/etc/config/config.yaml"
+		}
 		err := testCase.input.Validate()
 		if testCase.expectedErr && err == nil {
 			t.Errorf("%s: expected an error but got none", testCase.name)

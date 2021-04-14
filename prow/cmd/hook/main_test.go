@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -53,7 +54,7 @@ func Test_gatherOptions(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -86,8 +87,13 @@ func Test_gatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port:              8888,
-				configPath:        "yo",
+				port: 8888,
+				config: configflagutil.ConfigOptions{
+					ConfigPath:                      "yo",
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				pluginConfig:      "/etc/plugins/plugins.yaml",
 				dryRun:            true,
 				gracePeriod:       180 * time.Second,
@@ -131,7 +137,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
 			}
 		})
 	}

@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -33,8 +34,8 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			input: options{
-				jobName:    "job",
-				configPath: "somewhere",
+				jobName: "job",
+				config:  configflagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: false,
 		},
@@ -48,7 +49,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing job",
 			input: options{
-				configPath: "somewhere",
+				config: configflagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: true,
 		},

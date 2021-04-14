@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -44,12 +45,10 @@ type opener interface {
 }
 
 type statusController struct {
-	logger                     *logrus.Entry
-	opener                     opener
-	statusURI                  string
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs []string
+	logger     *logrus.Entry
+	opener     opener
+	statusURI  string
+	configOpts configflagutil.ConfigOptions
 
 	storedState
 	config.Agent
@@ -64,8 +63,8 @@ func (s *statusController) Load() (chan config.Delta, error) {
 	changes := make(chan config.Delta)
 	s.Agent.Subscribe(changes)
 
-	if err := s.Agent.Start(s.configPath, s.jobConfigPath, s.supplementalProwConfigDirs); err != nil {
-		s.logger.WithError(err).Fatal("Error starting config agent.")
+	if _, err := s.configOpts.ConfigAgent(&s.Agent); err != nil {
+		s.logger.WithError(err).Error("Error starting config agent.")
 		return nil, err
 	}
 	return changes, nil

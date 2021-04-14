@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -32,8 +31,8 @@ import (
 
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
-	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -46,13 +45,12 @@ import (
 )
 
 type options struct {
-	allContexts                bool
-	buildCluster               string
-	configPath                 string
-	supplementalProwConfigDirs prowflagutil.Strings
-	kubeconfig                 string
-	totURL                     string
-	instrumentationOptions     prowflagutil.InstrumentationOptions
+	allContexts            bool
+	buildCluster           string
+	config                 configflagutil.ConfigOptions
+	kubeconfig             string
+	totURL                 string
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
 func parseOptions() options {
@@ -64,17 +62,17 @@ func parseOptions() options {
 }
 
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
+	o.config.ConfigPathFlagName = "config"
 	flags.BoolVar(&o.allContexts, "all-contexts", false, "Monitor all cluster contexts, not just default")
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
-	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
-	flags.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	o.instrumentationOptions.AddFlags(flags)
+	o.config.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
 	}
-	if o.configPath == "" {
-		return errors.New("--config is mandatory, set --config to prow config.yaml file")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
 	return nil
 }
@@ -116,8 +114,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 

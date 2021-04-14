@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -44,14 +44,12 @@ const (
 )
 
 type options struct {
-	config                     string
-	jobConfig                  string
-	supplementalProwConfigDirs flagutil.Strings
-	confirm                    bool
-	verifyRestrictions         bool
-	tokens                     int
-	tokenBurst                 int
-	github                     flagutil.GitHubOptions
+	config             configflagutil.ConfigOptions
+	confirm            bool
+	verifyRestrictions bool
+	tokens             int
+	tokenBurst         int
+	github             flagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
@@ -59,8 +57,8 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if o.config == "" {
-		return errors.New("empty --config-path")
+	if err := o.config.Validate(!o.confirm); err != nil {
+		return err
 	}
 
 	return nil
@@ -69,13 +67,11 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
-	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
 	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -109,10 +105,11 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig, o.supplementalProwConfigDirs.Strings())
+	ca, err := o.config.ConfigAgent()
 	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
+		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config.ConfigPath)
 	}
+	cfg := ca.Config()
 	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()), cfg.PresubmitsStatic)
 
 	secretAgent := &secret.Agent{}

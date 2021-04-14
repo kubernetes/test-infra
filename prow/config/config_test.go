@@ -252,7 +252,7 @@ deck:
 			t.Fatalf("fail to write spyglass config: %v", err)
 		}
 
-		cfg, err := Load(spyglassConfig, "", nil)
+		cfg, err := Load(spyglassConfig, "", nil, "")
 		if (err != nil) != tc.expectError {
 			t.Fatalf("tc %s: expected error: %v, got: %v, error: %v", tc.name, tc.expectError, (err != nil), err)
 		}
@@ -801,7 +801,7 @@ periodics:
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			cfg, err := Load(prowConfig, "", nil)
+			cfg, err := Load(prowConfig, "", nil, "")
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -2485,7 +2485,7 @@ in_repo_config:
 				}
 			}
 
-			cfg, err := Load(prowConfig, jobConfig, nil)
+			cfg, err := Load(prowConfig, jobConfig, nil, "")
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -2782,7 +2782,7 @@ github_reporter:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "", nil)
+		cfg, err := Load(prowConfig, "", nil, "")
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -2860,7 +2860,7 @@ deck:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		_, err = Load(prowConfig, "", nil)
+		_, err = Load(prowConfig, "", nil, "")
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -3048,7 +3048,7 @@ tide:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "", nil)
+		cfg, err := Load(prowConfig, "", nil, "")
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -5883,12 +5883,12 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 		if err := os.Mkdir(dir, 0755); err != nil {
 			t.Fatalf("failed to create dir %s for supplemental prow config: %v", dir, err)
 		}
-		if err := ioutil.WriteFile(filepath.Join(dir, "config.yaml"), []byte(cfg), 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(dir, "_prowconfig.yaml"), []byte(cfg), 0644); err != nil {
 			t.Fatalf("failed to write supplemental prow config: %v", err)
 		}
 	}
 
-	return Load(prowConfig, "", supplementalProwConfigDirs)
+	return Load(prowConfig, "", supplementalProwConfigDirs, "_prowconfig.yaml")
 }
 
 func TestGenYamlDocs(t *testing.T) {

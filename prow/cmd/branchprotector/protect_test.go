@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -41,7 +42,9 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			opt: options{
-				config: "dummy",
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
 				github: flagutil.GitHubOptions{TokenPath: "fake"},
 			},
 			expectedErr: false,
@@ -49,7 +52,6 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "no config",
 			opt: options{
-				config: "",
 				github: flagutil.GitHubOptions{TokenPath: "fake"},
 			},
 			expectedErr: true,
@@ -57,14 +59,18 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "no token, allow",
 			opt: options{
-				config: "dummy",
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "override default tokens allowed",
 			opt: options{
-				config:     "dummy",
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
 				tokens:     5000,
 				tokenBurst: 200,
 			},

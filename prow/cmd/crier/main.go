@@ -36,6 +36,7 @@ import (
 	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/io"
@@ -51,9 +52,7 @@ type options struct {
 	github           prowflagutil.GitHubOptions
 	githubEnablement prowflagutil.GitHubEnablementOptions
 
-	configPath                 string
-	supplementalProwConfigDirs prowflagutil.Strings
-	jobConfigPath              string
+	config configflagutil.ConfigOptions
 
 	gerritWorkers         int
 	pubsubWorkers         int
@@ -77,9 +76,6 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
-	}
 
 	// TODO(krzyzacy): gerrit && github report are actually stateful..
 	// Need a better design to re-enable parallel reporting
@@ -137,7 +133,7 @@ func (o *options) validate() error {
 		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
 	}
 
-	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement} {
+	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
 		if err := opt.Validate(o.dryrun); err != nil {
 			return err
 		}
@@ -164,13 +160,10 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
-
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
 
+	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
 	o.storage.AddFlags(fs)
@@ -201,8 +194,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config

@@ -31,7 +31,9 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/flagutil/config:go_default_library",
         "//prow/pjutil:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_googlecloudplatform_testgrid//config/yamlcfg:go_default_library",
         "@com_github_googlecloudplatform_testgrid//pb/config:go_default_library",
     ],
@@ -47,7 +49,7 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/flagutil:go_default_library",
+        "//prow/flagutil/config:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",

@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -42,27 +43,23 @@ const bootstrapMode = true
 type options struct {
 	sourcePaths prowflagutil.Strings
 
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	pluginConfig               string
+	config       configflagutil.ConfigOptions
+	pluginConfig string
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
 }
 
 func gatherOptions() options {
-	o := options{}
+	o := options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.Var(&o.sourcePaths, "source-path", "Path to root of source directory to use for config updates. Can be set multiple times.")
 
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
@@ -75,6 +72,10 @@ func (o *options) Validate() error {
 	}
 
 	if err := o.kubernetes.Validate(o.dryRun); err != nil {
+		return err
+	}
+
+	if err := o.config.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -169,8 +170,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

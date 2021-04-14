@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -41,9 +42,7 @@ import (
 )
 
 type options struct {
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
+	config configflagutil.ConfigOptions
 
 	kubernetes             flagutil.KubernetesOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
@@ -52,11 +51,9 @@ type options struct {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
+	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
 
@@ -69,7 +66,7 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if o.configPath == "" {
+	if err := o.config.Validate(o.dryRun); err != nil {
 		return errors.New("--config-path is required")
 	}
 
@@ -88,8 +85,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

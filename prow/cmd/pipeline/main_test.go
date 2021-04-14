@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func TestOptions(t *testing.T) {
@@ -44,7 +45,12 @@ func TestOptions(t *testing.T) {
 		name: "only config works",
 		args: []string{"--config=/etc/config.yaml"},
 		expected: &options{
-			configPath:             "/etc/config.yaml",
+			config: configflagutil.ConfigOptions{
+				ConfigPathFlagName:              "config",
+				ConfigPath:                      "/etc/config.yaml",
+				JobConfigPathFlagName:           "job-config-path",
+				SupplementalProwConfigsFileName: "_prowconfig.yaml",
+			},
 			instrumentationOptions: defaultInstrumentationOptions,
 		},
 	}, {
@@ -52,10 +58,15 @@ func TestOptions(t *testing.T) {
 		args: []string{"--all-contexts=true", "--tot-url=https://tot",
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml"},
 		expected: &options{
-			allContexts:            true,
-			totURL:                 "https://tot",
-			kubeconfig:             "/root/kubeconfig",
-			configPath:             "/etc/config.yaml",
+			allContexts: true,
+			totURL:      "https://tot",
+			kubeconfig:  "/root/kubeconfig",
+			config: configflagutil.ConfigOptions{
+				ConfigPathFlagName:              "config",
+				ConfigPath:                      "/etc/config.yaml",
+				JobConfigPathFlagName:           "job-config-path",
+				SupplementalProwConfigsFileName: "_prowconfig.yaml",
+			},
 			instrumentationOptions: defaultInstrumentationOptions,
 		},
 	}}

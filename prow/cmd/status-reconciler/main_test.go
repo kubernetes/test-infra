@@ -25,6 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func newSetStringsFlagForTest(vals ...string) flagutil.Strings {
@@ -105,8 +106,13 @@ func TestGatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				dryRun:        true,
-				configPath:    "yo",
+				dryRun: true,
+				config: configflagutil.ConfigOptions{
+					ConfigPath:                      "yo",
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				pluginConfig:  "/etc/plugins/plugins.yaml",
 				kubernetes:    flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				tokenBurst:    100,

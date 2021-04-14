@@ -61,7 +61,7 @@ func TestMain(m *testing.M) {
 		panic("--config must set")
 	}
 
-	conf, err := Load(*configPath, *jobConfigPath, nil)
+	conf, err := Load(*configPath, *jobConfigPath, nil, "")
 	if err != nil {
 		panic(fmt.Sprintf("Could not load config: %v", err))
 	}

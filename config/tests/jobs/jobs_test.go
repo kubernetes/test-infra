@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	conf, err := cfg.Load(*configPath, *jobConfigPath, nil)
+	conf, err := cfg.Load(*configPath, *jobConfigPath, nil, "")
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)

@@ -23,7 +23,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
@@ -40,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -49,13 +49,11 @@ import (
 )
 
 type options struct {
-	runOnce                    bool
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs flagutil.Strings
-	dryRun                     bool
-	kubernetes                 flagutil.KubernetesOptions
-	instrumentationOptions     flagutil.InstrumentationOptions
+	runOnce                bool
+	config                 configflagutil.ConfigOptions
+	dryRun                 bool
+	kubernetes             flagutil.KubernetesOptions
+	instrumentationOptions flagutil.InstrumentationOptions
 }
 
 const (
@@ -70,12 +68,10 @@ const (
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 
+	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
 	fs.Parse(args)
@@ -87,8 +83,8 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if o.configPath == "" {
-		return errors.New("--config-path is required")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	return nil
@@ -106,8 +102,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config

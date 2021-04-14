@@ -38,6 +38,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -1276,9 +1277,14 @@ func TestOptions(t *testing.T) {
 				"--expensive-checks=false",
 			},
 			expectedOptions: &options{
-				configPath:      "prow/config.yaml",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					ConfigPath:                      "prow/config.yaml",
+					JobConfigPath:                   "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				pluginConfig:    "prow/plugins/plugin.yaml",
-				jobConfigPath:   "config/jobs/org/job.yaml",
 				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
 				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
 				strict:          true,
@@ -1296,9 +1302,14 @@ func TestOptions(t *testing.T) {
 				"--prow-yaml-repo-name=my/repo",
 			},
 			expectedOptions: &options{
-				configPath:       "prow/config.yaml",
-				pluginConfig:     "prow/plugins/plugin.yaml",
-				jobConfigPath:    "config/jobs/org/job.yaml",
+				pluginConfig: "prow/plugins/plugin.yaml",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					ConfigPath:                      "prow/config.yaml",
+					JobConfigPath:                   "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				prowYAMLRepoName: "my/repo",
 				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
 				github:           defaultGitHubOptions,
@@ -1326,7 +1337,7 @@ func TestOptions(t *testing.T) {
 			case actualErr != nil:
 				t.Errorf("unexpected error: %v", actualErr)
 			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
-				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
+				t.Errorf("actual \n%#v\n != expected \n%#v\n", actualOptions, *tc.expectedOptions)
 			}
 		})
 	}
@@ -1447,7 +1458,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 			t.Errorf("failed to close tempFile: %v", err)
 		}
 
-		cfg, err := config.Load(tempConfig.Name(), "", nil)
+		cfg, err := config.Load(tempConfig.Name(), "", nil, "")
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}
@@ -1553,7 +1564,7 @@ func TestValidate(t *testing.T) {
 		{
 			name: "combined config",
 			opts: options{
-				configPath: "testdata/combined.yaml",
+				config: configflagutil.ConfigOptions{ConfigPath: "testdata/combined.yaml"},
 			},
 		},
 	}

@@ -38,6 +38,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -864,7 +865,7 @@ func TestFlags(t *testing.T) {
 				"--config-path": "/random/path",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/path"
+				o.config.ConfigPath = "/random/path"
 			},
 		},
 		{
@@ -910,8 +911,13 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath: "yo",
-				dryRun:     false,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					ConfigPath:                      "yo",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
+				dryRun: false,
 				instrumentationOptions: flagutil.InstrumentationOptions{
 					MetricsPort: flagutil.DefaultMetricsPort,
 					PProfPort:   flagutil.DefaultPProfPort,
@@ -947,7 +953,7 @@ func TestFlags(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
 			}
 		})
 	}
