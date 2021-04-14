@@ -283,8 +283,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=350m
@@ -380,8 +380,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|device.plugin.for.Windows|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|device.plugin.for.Windows|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=230m
