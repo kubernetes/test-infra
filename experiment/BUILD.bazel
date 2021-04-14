@@ -21,6 +21,7 @@ filegroup(
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/cluster-upgrader:all-srcs",
+        "//experiment/clustersecretbackup:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/dummybenchmarks:all-srcs",
         "//experiment/image-bumper:all-srcs",
