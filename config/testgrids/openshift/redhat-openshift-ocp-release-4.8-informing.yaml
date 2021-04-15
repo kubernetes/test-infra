@@ -2862,14 +2862,11 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-metal-ipi-upgrade
-- days_of_results: 17
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8
   name: promote-release-openshift-machine-os-content-e2e-aws-4.8
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8-ppc64le
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8-ppc64le
   name: promote-release-openshift-machine-os-content-e2e-aws-4.8-ppc64le
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8

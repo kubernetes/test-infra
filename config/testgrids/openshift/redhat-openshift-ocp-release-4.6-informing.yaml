@@ -2298,7 +2298,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.6-openshift-ipi-azure-arcconformance
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-upgrade-from-stable-4.5-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.6-upgrade-from-stable-4.5-e2e-metal-ipi-upgrade
-- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6
   name: promote-release-openshift-machine-os-content-e2e-aws-4.6
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le

@@ -2353,7 +2353,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.7-upgrade-from-stable-4.6-e2e-aws-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.7-upgrade-from-stable-4.6-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.7-upgrade-from-stable-4.6-e2e-metal-ipi-upgrade
-- days_of_results: 17
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.7
   name: promote-release-openshift-machine-os-content-e2e-aws-4.7
 - days_of_results: 60
