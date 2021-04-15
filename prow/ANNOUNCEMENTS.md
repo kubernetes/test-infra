@@ -140,6 +140,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
  - *April 14th, 2021* Deck remove default value for `--cookie-secret-file`.
  - *April 12th, 2021* Horologium now uses a cached client, which requires it to have watch permissions for Prowjobs on top of the already-required list and create.
  - *April 11th, 2021* The plank binary has been removed. Please use the [Prow Controller Manager](/prow/cmd/prow-controller-manager) instead, which provides a more modern implementation

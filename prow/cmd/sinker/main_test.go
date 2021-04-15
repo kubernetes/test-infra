@@ -868,14 +868,11 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "expicitly set --dry-run=false",
+			name: "explicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Explicit: true,
-				}
 			},
 		},
 		{
@@ -893,18 +890,19 @@ func TestFlags(t *testing.T) {
 				"--deck-url": "http://whatever",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Value:    true,
-					Explicit: true,
-				}
+				o.dryRun = true
 				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 		{
-			name: "dry run defaults to false", // TODO(fejta): change to true in April
-			del:  sets.NewString("--dry-run"),
+			name: "dry run defaults to true",
+			args: map[string]string{
+				"--deck-url": "http://whatever",
+			},
+			del: sets.NewString("--dry-run"),
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{}
+				o.dryRun = true
+				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 	}
@@ -913,9 +911,7 @@ func TestFlags(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath: "yo",
-				dryRun: flagutil.Bool{
-					Explicit: true,
-				},
+				dryRun:     false,
 				instrumentationOptions: flagutil.InstrumentationOptions{
 					MetricsPort: flagutil.DefaultMetricsPort,
 					PProfPort:   flagutil.DefaultPProfPort,
