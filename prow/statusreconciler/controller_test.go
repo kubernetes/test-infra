@@ -247,14 +247,14 @@ func TestAddedBlockingPresubmits(t *testing.T) {
 	}
 }
 
-func TestRemovedBlockingPresubmits(t *testing.T) {
+func TestRemovedPresubmits(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		old, new string
 		expected map[string][]config.Presubmit
 	}{
 		{
-			name: "no change in blocking presubmits means no removed blocking jobs",
+			name: "no change in blocking presubmits means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -266,29 +266,36 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "removed optional presubmit means no removed blocking jobs",
+			name: "removed optional presubmit means removed job",
 			old: `"org/repo":
 - name: old-job
   context: old-context
   optional: true`,
 			new: `"org/repo": []`,
 			expected: map[string][]config.Presubmit{
-				"org/repo": {},
+				"org/repo": {{
+					JobBase:  config.JobBase{Name: "old-job"},
+					Reporter: config.Reporter{Context: "old-context"},
+					Optional: true,
+				}},
 			},
 		},
 		{
-			name: "removed non-reporting presubmit means no removed blocking jobs",
+			name: "removed non-reporting presubmit means removed job",
 			old: `"org/repo":
 - name: old-job
   context: old-context
   skip_report: true`,
 			new: `"org/repo": []`,
 			expected: map[string][]config.Presubmit{
-				"org/repo": {},
+				"org/repo": {{
+					JobBase:  config.JobBase{Name: "old-job"},
+					Reporter: config.Reporter{Context: "old-context", SkipReport: true},
+				}},
 			},
 		},
 		{
-			name: "removed required presubmit means removed blocking jobs",
+			name: "removed required presubmit means removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -301,7 +308,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning to optional means no removed blocking jobs",
+			name: "required presubmit transitioning to optional means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -314,7 +321,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "reporting presubmit transitioning to non-reporting means no removed blocking jobs",
+			name: "reporting presubmit transitioning to non-reporting means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -327,7 +334,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "all presubmits removed means removed blocking jobs",
+			name: "all presubmits removed means removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -340,7 +347,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning to new context means no removed blocking jobs",
+			name: "required presubmit transitioning to new context means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -352,7 +359,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning run_if_changed means no removed blocking jobs",
+			name: "required presubmit transitioning run_if_changed means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context
@@ -366,7 +373,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "optional presubmit transitioning to required run_if_changed means no removed blocking jobs",
+			name: "optional presubmit transitioning to required run_if_changed means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context
@@ -390,7 +397,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, _ := removedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
+			if actual, _ := removedPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
 				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
 			}
 		})
