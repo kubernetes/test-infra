@@ -1998,7 +1998,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-vsphere-upi-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-openshift-ipi-azure-arcconformance
   name: periodic-ci-openshift-release-master-nightly-4.5-openshift-ipi-azure-arcconformance
-- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5
   name: promote-release-openshift-machine-os-content-e2e-aws-4.5
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5-ppc64le
