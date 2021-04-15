@@ -664,15 +664,6 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 			},
 		},
 		{
-			name: "job url prefix ends in /gcs, removed",
-			jobURLPrefixConfig: map[string]string{
-				"*": "https://config.go.k8s.io/gcs",
-			},
-			expectedOpenTestTemplate: &config.LinkTemplate{
-				Url: "https://config.go.k8s.io/gs/<gcs_prefix>/<changelist>",
-			},
-		},
-		{
 			name: "job url prefix for org is preferred over *",
 			jobURLPrefixConfig: map[string]string{
 				"*":    "https://some.other.url",

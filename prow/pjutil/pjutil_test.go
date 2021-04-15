@@ -854,44 +854,6 @@ func TestJobURL(t *testing.T) {
 			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
 		},
 		{
-			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format)",
-			plank: config.Plank{
-				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs"},
-			},
-			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Refs: &prowapi.Refs{
-					Org:   "org",
-					Repo:  "repo",
-					Pulls: []prowapi.Pull{{Number: 1}},
-				},
-				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "gs://bucket",
-					PathStrategy: prowapi.PathStrategyExplicit,
-				}},
-			}},
-			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
-		},
-		{
-			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (deprecated job url format with trailing slash)",
-			plank: config.Plank{
-				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/gcs/"},
-			},
-			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Refs: &prowapi.Refs{
-					Org:   "org",
-					Repo:  "repo",
-					Pulls: []prowapi.Pull{{Number: 1}},
-				},
-				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
-					Bucket:       "gs://bucket",
-					PathStrategy: prowapi.PathStrategyExplicit,
-				}},
-			}},
-			expected: "https://prow.k8s.io/view/gs/bucket/pr-logs/pull/org_repo/1",
-		},
-		{
 			name: "decorated job with prefix uses gcsupload and new bucket format with gcs (new job url format)",
 			plank: config.Plank{
 				JobURLPrefixConfig: map[string]string{"*": "https://prow.k8s.io/view/"},
