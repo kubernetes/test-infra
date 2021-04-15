@@ -524,6 +524,7 @@ type imageBumper interface {
 	UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error), path string, imageFilter *regexp.Regexp) error
 	GetReplacements() map[string]string
 	AddToCache(image, newTag string)
+	TagExists(imageHost, imageName, currentTag string) (bool, error)
 }
 
 func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *Options) (map[string]string, error) {
@@ -596,8 +597,17 @@ func upstreamImageVersionResolver(
 		imageFullPath := imageHost + "/" + imageName + ":" + currentTag
 		for prefix, version := range upstreamVersions {
 			if strings.HasPrefix(imageFullPath, prefix) {
-				imageBumperCli.AddToCache(imageFullPath, version)
-				return version, nil
+				exists, err := imageBumperCli.TagExists(imageHost, imageName, version)
+				if err != nil {
+					return "", err
+				}
+				if exists {
+					imageBumperCli.AddToCache(imageFullPath, version)
+					return version, nil
+				} else {
+					imageBumperCli.AddToCache(imageFullPath, currentTag)
+					return "", fmt.Errorf("Unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
+				}
 			}
 		}
 		return currentTag, nil
