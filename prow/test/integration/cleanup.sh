@@ -20,7 +20,7 @@ set -o pipefail
 readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly PROW_COMPONENTS="sinker crier hook horologium fakeghserver"
+readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver"
 
 function do_kubectl() {
   kubectl --context=${DEFAULT_CONTEXT} $@

@@ -422,6 +422,10 @@ github_reporter:
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
       - ""
+horologium:
+    # TickInterval is the interval in which we check if new jobs need to be
+    # created. Defaults to one minute.
+    tick_interval: 0s
 in_repo_config:
     # AllowedClusters is a list of allowed clusternames that can be used for jobs on
     # a given repo. All clusters that are allowed for the specific repo, its org or

@@ -23,6 +23,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/phony:go_default_library",
+        "@com_github_satori_go_uuid//:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/labels:go_default_library",

@@ -5962,6 +5962,7 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+horologium: {}
 in_repo_config:
   allowed_clusters:
     '*':

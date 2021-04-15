@@ -30,7 +30,7 @@ readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
 readonly DEFAULT_REGISTRY_PORT="5000"
-readonly PROW_COMPONENTS="sinker crier hook horologium fakeghserver"
+readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
