@@ -10,6 +10,7 @@
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, only for issues](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-only-for-issues)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
 - [Labels that apply to kubernetes-sigs/k8s-container-image-promoter, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsk8s-container-image-promoter-for-both-issues-and-prs)
@@ -201,6 +202,30 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="adr-required" href="#adr-required">`adr-required`</a> | Denotes an issue or PR contains a decision that needs documenting using an ADR.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/api" href="#area/api">`area/api`</a> | Issues or PRs related to the APIs| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/clusterawsadm" href="#area/clusterawsadm">`area/clusterawsadm`</a> | Issues or PRs related to clusterawsadm| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/code-organization" href="#area/code-organization">`area/code-organization`</a> | Issues or PRs related to Cluster API code organization| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to Cluster API and Kubernetes conformance tests| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking Cluster API tests| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/kubetest" href="#area/kubetest">`area/kubetest`</a> | Issues or PRs related to Cluster API Kubetest2 Provider| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/networking" href="#area/networking">`area/networking`</a> | Issues or PRs related to networking| label | |
+| <a id="area/provider/eks" href="#area/provider/eks">`area/provider/eks`</a> | Issues or PRs related to Amazon EKS provider| label | |
+| <a id="area/release" href="#area/release">`area/release`</a> | Issues or PRs related to releasing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/security" href="#area/security">`area/security`</a> | Issues or PRs related to security| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/testing" href="#area/testing">`area/testing`</a> | Issues or PRs related to testing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/upgrades" href="#area/upgrades">`area/upgrades`</a> | Issues or PRs related to upgrades| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/ux" href="#area/ux">`area/ux`</a> | Issues or PRs related to UX| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/vpc" href="#area/vpc">`area/vpc`</a> | Issues or PRs related to Amazon VPCs| label | |
+| <a id="kind/backport" href="#kind/backport">`kind/backport`</a> | Issues or PRs requiring backports| approvers |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="kind/proposal" href="#kind/proposal">`kind/proposal`</a> | Issues or PRs related to proposals.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="kind/release-blocking" href="#kind/release-blocking">`kind/release-blocking`</a> | Issues or PRs that need to be closed before the next release| approvers |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/cluster-api-provider-aws, only for issues
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/admin" href="#area/admin">`area/admin`</a> | Indicates an issue on admin area.| label | |
 
 ## Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs
 
