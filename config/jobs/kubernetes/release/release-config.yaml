@@ -333,7 +333,6 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-image-k8s-ci-builder
-    optional: true
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: '^images\/releng\/k8s-ci-builder\/'
