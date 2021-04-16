@@ -16,20 +16,21 @@ data:
   plugins.yaml: |
     plugins:
       << your_github_org >>:
-      - approve
-      - assign
-      - blunderbuss
-      - cat
-      - dog
-      - help
-      - heart
-      - hold
-      - label
-      - lgtm
-      - trigger
-      - verify-owners
-      - wip
-      - yuks
+        plugins:
+        - approve
+        - assign
+        - blunderbuss
+        - cat
+        - dog
+        - help
+        - heart
+        - hold
+        - label
+        - lgtm
+        - trigger
+        - verify-owners
+        - wip
+        - yuks
 ---
 apiVersion: v1
 kind: Secret
@@ -370,7 +371,6 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
-        - --plugin-config=/etc/plugins/plugins.yaml
         - --spyglass=true
         ports:
           - name: http
@@ -534,7 +534,7 @@ spec:
     targetPort: 8888
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   namespace: prow
@@ -544,26 +544,30 @@ metadata:
     # nothing when not using cert-manager.
     cert-manager.io/cluster-issuer: letsencrypt-staging
 spec:
-  backend:
+  defaultBackend:
     # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#default_backend)
-    serviceName: deck
-    servicePort: 80
+    service:
+      name: deck
+      port:
+        number: 80
   rules:
   - host: prow.<< your-domain.com >>
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: deck
-          servicePort: 80
+          service:
+            name: deck
+            port:
+              number: 80
       - path: /hook
+        pathType: Prefix
         backend:
-          serviceName: hook
-          servicePort: 8888
-  tls:
-  - hosts:
-    - prow.<< your-domain.com >>
-    secretName: prow-ingress-tls
+          service:
+            name: hook
+            port:
+              number: 8888
 ---
 apiVersion: apps/v1
 kind: Deployment
