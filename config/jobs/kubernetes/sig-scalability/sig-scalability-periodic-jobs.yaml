@@ -467,8 +467,9 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      # TODO(mm4tt): Remove after 2021-04-15
+      # TODO(mm4tt): Remove after 2021-04-19
       - --env=KUBEMARK_NODE_OBJECT_SIZE_BYTES=
+      - --env=HOLLOW_KUBELET_TEST_ARGS=--use-host-image-service=false
       - --cluster=kubemark-5000
       - --extract=ci/latest
       - --gcp-node-image=gci
