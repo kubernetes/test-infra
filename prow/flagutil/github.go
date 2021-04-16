@@ -83,12 +83,6 @@ func (o *GitHubOptions) Validate(bool) error {
 		return errors.New("--app-id and --app-private-key-path must be set together")
 	}
 
-	if o.TokenPath == "" && o.AppID == "" && !o.AllowAnonymous {
-		// TODO(fejta): just return error after May 2020
-		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
-		o.TokenPath = DefaultGitHubTokenPath
-	}
-
 	if o.TokenPath != "" && len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint && !o.AllowDirectAccess {
 		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
 	}

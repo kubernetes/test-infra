@@ -253,12 +253,6 @@ func TestGitHubOptions(t *testing.T) {
 			expectedWorkers:   5,
 			expectedTokenPath: "tkpath",
 		},
-		{
-			name:              "github missing --github-token-path, uses default",
-			args:              []string{"--github-workers=5", "--config-path=foo"},
-			expectedWorkers:   5,
-			expectedTokenPath: "/etc/github/oauth",
-		},
 	}
 
 	for _, tc := range cases {
