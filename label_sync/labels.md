@@ -326,6 +326,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/infra/monitoring" href="#area/infra/monitoring">`area/infra/monitoring`</a> | Issues or PRs related to monitoring of the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/publishing-bot" href="#area/infra/publishing-bot">`area/infra/publishing-bot`</a> | Issues or PRs related to Publishing bot| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/reliability" href="#area/infra/reliability">`area/infra/reliability`</a> | Issues or PR related to reliability of the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/infra/terraform" href="#area/infra/terraform">`area/infra/terraform`</a> | Issues or PR related to Terraform usage| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PR related to prow, build clusters, migrating jobs| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
