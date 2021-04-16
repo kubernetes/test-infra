@@ -80,7 +80,8 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:v20201128-v0.6.0-6-g6313f696-default
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
       command:
       - wrapper.sh
       - /krel
@@ -105,7 +106,7 @@ periodics:
       - 2241179 # release-managers
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta"
+    fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
