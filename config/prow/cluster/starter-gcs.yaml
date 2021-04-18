@@ -326,6 +326,7 @@ spec:
         image: gcr.io/k8s-prow/sinker:v20210415-ecffc9c27e
         args:
         - --config-path=/etc/config/config.yaml
+        - --dry-run=false
         volumeMounts:
         - name: config
           mountPath: /etc/config
