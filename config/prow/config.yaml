@@ -94,6 +94,9 @@ deck:
       github_team_ids:
       - 2009231 # test-infra-admins
       - 2460384 # milestone-maintainers
+  additional_allowed_buckets:
+    - k8s-ovn
+    - containerd-integration
 
 prowjob_namespace: default
 pod_namespace: test-pods
