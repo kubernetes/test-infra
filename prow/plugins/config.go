@@ -610,7 +610,7 @@ type Welcome struct {
 type Wip struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	Label string `json:"label"`
+	Label string   `json:"label"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
