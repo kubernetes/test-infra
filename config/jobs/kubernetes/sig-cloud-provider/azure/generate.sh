@@ -252,9 +252,11 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
           value: kubernetes.io/azure-file # In-tree Azure file storage class
 $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-file)
 periodics:
-- interval: 24h
+- interval: 3h
   name: aks-engine-conformance-${release/./-}
   decorate: true
+  decoration_config:
+    timeout: 3h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -466,7 +468,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
-- interval: 24h
+- interval: 3h
   name: capz-conformance-${release/./-}
   decorate: true
   decoration_config:

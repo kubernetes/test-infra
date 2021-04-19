@@ -343,7 +343,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
@@ -406,7 +406,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-autoscaling
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-autoscaling-multipool runs node autoscaling tests with multiple nodepools periodically.
@@ -469,7 +469,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-autoscaling-multipool
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs node multiple nodepools autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
@@ -527,7 +527,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-slow runs Kubernetes slow tests periodically.
@@ -585,7 +585,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-serial runs Kubernetes serial tests periodically.
@@ -655,7 +655,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-serial
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-master-vmss runs Azure specific tests periodically on VMSS.
@@ -716,7 +716,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-vmss
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 - interval: 24h
   # cloud-provider-azure-conformance-vmss runs Kubernetes conformance tests periodically on VMSS.
@@ -774,7 +774,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-vmss
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 - interval: 24h
   # cloud-provider-azure-slow-vmss runs Kubernetes slow tests periodically on VMSS.
@@ -832,7 +832,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-vmss
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 - interval: 24h
   # cloud-provider-azure-multiple-zones runs Kubernetes multiple availability zones tests periodically.
@@ -891,7 +891,7 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-multiple-zones
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
 
 # conformance test against kubernetes master branch with `azure` ipv6
@@ -945,7 +945,7 @@ periodics:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: ci-kubernetes-azure-conformance-ipv6
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     testgrid-num-columns-recent: '3'
 
 # scalability tests

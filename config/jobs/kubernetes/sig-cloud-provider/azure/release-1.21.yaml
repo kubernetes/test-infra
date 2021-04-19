@@ -8,14 +8,14 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-    - release-1.20
+    - release-1.21
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
         command:
         - runner.sh
         - kubetest
@@ -32,7 +32,7 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_DS2_v2
         - --aksengine-deploy-custom-k8s
@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-    - release-1.20
+    - release-1.21
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -65,7 +65,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
         command:
         - runner.sh
         - kubetest
@@ -81,7 +81,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
@@ -102,7 +102,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-    - release-1.20
+    - release-1.21
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -114,7 +114,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
         command:
         - runner.sh
         - kubetest
@@ -130,7 +130,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-deploy-custom-k8s
         - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
@@ -153,7 +153,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-    - release-1.20
+    - release-1.21
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -165,7 +165,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
         command:
         - runner.sh
         - kubetest
@@ -182,7 +182,7 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_DS2_v2
         - --aksengine-deploy-custom-k8s
@@ -200,7 +200,7 @@ presubmits:
 
 periodics:
 - interval: 3h
-  name: aks-engine-conformance-1-20
+  name: aks-engine-conformance-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -211,11 +211,11 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
       command:
       - runner.sh
       - kubetest
@@ -232,7 +232,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_DS2_v2
       - --aksengine-deploy-custom-k8s
@@ -246,13 +246,13 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: aks-engine-conformance
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: aks-engine-azure-disk-vmas-1-20
+  name: aks-engine-azure-disk-vmas-1-21
   decorate: true
   labels:
     preset-service-account: "true"
@@ -261,7 +261,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -269,7 +269,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
       command:
       - runner.sh
       - kubetest
@@ -285,7 +285,7 @@ periodics:
       - --deployment=aksengine
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
@@ -299,13 +299,13 @@ periodics:
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: aks-engine-azure-disk-vmas
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: aks-engine-azure-disk-vmss-1-20
+  name: aks-engine-azure-disk-vmss-1-21
   decorate: true
   labels:
     preset-service-account: "true"
@@ -314,7 +314,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -322,7 +322,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
       command:
       - runner.sh
       - kubetest
@@ -338,7 +338,7 @@ periodics:
       - --deployment=aksengine
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-deploy-custom-k8s
       - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
@@ -354,13 +354,13 @@ periodics:
       - name: ENABLE_TOPOLOGY
         value: "true"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: aks-engine-azure-disk-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: aks-engine-azure-file-1-20
+  name: aks-engine-azure-file-1-21
   decorate: true
   labels:
     preset-service-account: "true"
@@ -369,7 +369,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -377,7 +377,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
       command:
       - runner.sh
       - kubetest
@@ -394,7 +394,7 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.21
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_DS2_v2
       - --aksengine-deploy-custom-k8s
@@ -410,13 +410,13 @@ periodics:
       - name: AZURE_STORAGE_DRIVER
         value: kubernetes.io/azure-file # In-tree Azure file storage class
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: aks-engine-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 3h
-  name: capz-conformance-1-20
+  name: capz-conformance-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -439,7 +439,7 @@ periodics:
       - name: E2E_ARGS
         value: "-kubetest.use-ci-artifacts"
       - name: KUBERNETES_VERSION
-        value: "latest-1.20"
+        value: "latest-1.21"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
       securityContext:
@@ -449,13 +449,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: capz-conformance
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-file-1-20
+  name: capz-azure-file-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -474,7 +474,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -501,13 +501,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: capz-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-file-machinepool-1-20
+  name: capz-azure-file-machinepool-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -526,7 +526,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -555,13 +555,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: capz-azure-file-machinepool
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-disk-1-20
+  name: capz-azure-disk-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -580,7 +580,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -606,13 +606,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: capz-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-disk-machinepool-1-20
+  name: capz-azure-disk-machinepool-1-21
   decorate: true
   decoration_config:
     timeout: 3h
@@ -631,7 +631,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.20
+    base_ref: release-1.21
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -659,7 +659,7 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.20-signal
+    testgrid-dashboards: provider-azure-1.21-signal
     testgrid-tab-name: capz-azure-disk-machinepool
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
