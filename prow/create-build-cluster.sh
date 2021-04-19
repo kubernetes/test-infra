@@ -191,7 +191,12 @@ ensure_kustomize() {
 }
 
 create_cl() {
-  local gsm_secret_name="$(gsm_secret_name)"
+  local cluster_alias
+  cluster_alias="$(cluster_alias)"
+  local gsm_secret_name
+  gsm_secret_name="$(gsm_secret_name)"
+  local build_cluster_kubeconfig_mount_path="/etc/${cluster_alias}"
+  local build_clster_secret_name_in_cluster="kubeconfig-build-${TEAM}"
   cd "${ROOT_DIR}"
   clone_uri="$(git config --get remote.origin.url)"
   fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
@@ -216,7 +221,7 @@ create_cl() {
 apiVersion: kubernetes-client.io/v1
 kind: ExternalSecret
 metadata:
-  name: kubeconfig-build-${TEAM}
+  name: ${build_clster_secret_name_in_cluster}
   namespace: default
 spec:
   backendType: gcpSecretsManager
@@ -234,21 +239,22 @@ EOF
   git checkout -b use-build-cluster master
   
   for app in ${APPS_CONSUME_KUBECONFIG}; do
+    local app_deployment_file="${app}_deployment.yaml"
     "${SED}" -i "s;volumeMounts:;volumeMounts:\\
-        - mountPath: /etc/${TEAM}\\
-          name: build-${TEAM}\\
-          readOnly: true;" "${prow_deployment_dir}/${app}_deployment.yaml"
+        - mountPath: ${build_cluster_kubeconfig_mount_path}\\
+          name: ${cluster_alias}\\
+          readOnly: true;" "${prow_deployment_dir}/${app_deployment_file}"
 
     "${SED}" -i "s;volumes:;volumes:\\
-      - name: build-${TEAM}\\
+      - name: ${cluster_alias}\\
         secret:\\
           defaultMode: 420\\
-          secretName: kubeconfig-build-${TEAM};" "${prow_deployment_dir}/${app}_deployment.yaml"
+          secretName: ${build_clster_secret_name_in_cluster};" "${prow_deployment_dir}/${app_deployment_file}"
 
     # Appends to an existing value doesn't seem to be supported by kustomize, so
     # using sed instead. `&` represents for regex matched part
-    "${SED}" -E -i "s;/etc/kubeconfig/config-[0-9]+;&:/etc/build-${TEAM}/kubeconfig;" "${prow_deployment_dir}/${app}_deployment.yaml"
-    git add "${prow_deployment_dir}/${app}_deployment.yaml"
+    "${SED}" -E -i "s;/etc/kubeconfig/config-[0-9]+;&:${build_cluster_kubeconfig_mount_path}/kubeconfig;" "${prow_deployment_dir}/${app_deployment_file}"
+    git add "${prow_deployment_dir}/${app_deployment_file}"
   done
 
   git commit -m "Add build cluster kubeconfig for ${TEAM}
