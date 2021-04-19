@@ -36,6 +36,7 @@ func TestWipLabel(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		title         string
+		label         string
 		draft         bool
 		hasLabel      bool
 		shouldLabel   bool
@@ -89,16 +90,39 @@ func TestWipLabel(t *testing.T) {
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
+		{
+			name:          "wip title adds custom label",
+			title:         wipTitle,
+			label:         "wip",
+			draft:         false,
+			hasLabel:      false,
+			shouldLabel:   true,
+			shouldUnlabel: false,
+		},
+		{
+			name:          "regular PR, remove custom label",
+			title:         regularTitle,
+			label:         "wip",
+			draft:         false,
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+		},
 	}
 	for _, tc := range testcases {
 		fc := fakegithub.NewFakeClient()
 		fc.PullRequests = make(map[int]*github.PullRequest)
 		fc.IssueComments = make(map[int][]github.IssueComment)
 		org, repo, number := "org", "repo", 5
+		label := tc.label
+		if label == "" {
+			label = labels.WorkInProgress
+		}
 		e := &event{
 			org:      org,
 			repo:     repo,
 			number:   number,
+			label:    label,
 			title:    tc.title,
 			draft:    tc.draft,
 			hasLabel: tc.hasLabel,
@@ -109,20 +133,20 @@ func TestWipLabel(t *testing.T) {
 			continue
 		}
 
-		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, labels.WorkInProgress)
+		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, label)
 		if tc.shouldLabel {
 			if len(fc.IssueLabelsAdded) != 1 || fc.IssueLabelsAdded[0] != fakeLabel {
-				t.Errorf("For case %s: expected to add %q Label but instead added: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsAdded)
+				t.Errorf("For case %s: expected to add %q Label but instead added: %v", tc.name, label, fc.IssueLabelsAdded)
 			}
 		} else if len(fc.IssueLabelsAdded) > 0 {
-			t.Errorf("For case %s, expected to not add %q Label but added: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsAdded)
+			t.Errorf("For case %s, expected to not add %q Label but added: %v", tc.name, label, fc.IssueLabelsAdded)
 		}
 		if tc.shouldUnlabel {
 			if len(fc.IssueLabelsRemoved) != 1 || fc.IssueLabelsRemoved[0] != fakeLabel {
-				t.Errorf("For case %s: expected to remove %q Label but instead removed: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsRemoved)
+				t.Errorf("For case %s: expected to remove %q Label but instead removed: %v", tc.name, label, fc.IssueLabelsRemoved)
 			}
 		} else if len(fc.IssueLabelsRemoved) > 0 {
-			t.Errorf("For case %s, expected to not remove %q Label but removed: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsRemoved)
+			t.Errorf("For case %s, expected to not remove %q Label but removed: %v", tc.name, label, fc.IssueLabelsRemoved)
 		}
 	}
 }
