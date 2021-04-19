@@ -273,7 +273,7 @@ func main() {
 	pjutil.ServePProf(o.instrumentation.PProfPort)
 
 	// setup config agent, pod log clients etc.
-	configAgent, err := o.config.ConfigAgent()
+	configAgent, err := o.config.ConfigAgentWithAdditionals(&config.Agent{}, []func(*config.Config) error{spglassConfigDefaulting})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
