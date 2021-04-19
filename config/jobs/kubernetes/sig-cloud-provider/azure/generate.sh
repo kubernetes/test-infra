@@ -68,7 +68,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
         command:
         - runner.sh
         - kubetest
@@ -118,7 +118,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-confor
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
         command:
         - runner.sh
         - kubetest
@@ -167,7 +167,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
         command:
         - runner.sh
         - kubetest
@@ -218,7 +218,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
         command:
         - runner.sh
         - kubetest
@@ -266,7 +266,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
       command:
       - runner.sh
       - kubetest
@@ -320,7 +320,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
       command:
       - runner.sh
       - kubetest
@@ -373,7 +373,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
       command:
       - runner.sh
       - kubetest
@@ -428,7 +428,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-${release}
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171002-6e8d729f-${release}
       command:
       - runner.sh
       - kubetest
@@ -482,7 +482,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -529,7 +529,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -581,7 +581,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -635,7 +635,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -686,7 +686,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
