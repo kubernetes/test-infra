@@ -45,7 +45,11 @@ presubmits:
         - --ginkgo-parallel=30
         securityContext:
           privileged: true
-
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-conformance
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
     decorate: true
     always_run: false
@@ -94,7 +98,11 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
     decorate: true
     always_run: false
@@ -145,7 +153,11 @@ presubmits:
           value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
         - name: ENABLE_TOPOLOGY
           value: "true"
-
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-aks-engine-azure-file
     decorate: true
     always_run: false
@@ -197,7 +209,11 @@ presubmits:
         env:
         - name: AZURE_STORAGE_DRIVER
           value: kubernetes.io/azure-file # In-tree Azure file storage class
-
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 24h
   name: aks-engine-conformance-master
