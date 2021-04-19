@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
       resources:
         requests:
           cpu: 1000m
@@ -67,7 +67,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -107,7 +107,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -147,7 +147,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
       resources:
         requests:
           cpu: 1000m
@@ -186,7 +186,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -233,7 +233,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.20
       resources:
         requests:
           cpu: 1000m
@@ -268,7 +268,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -308,7 +308,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -345,7 +345,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -390,7 +390,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -431,7 +431,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
       resources:
         requests:
           cpu: 1000m
@@ -466,7 +466,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -506,7 +506,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
       resources:
         requests:
           cpu: 1000m
@@ -545,7 +545,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -584,7 +584,7 @@ periodics:
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -621,7 +621,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -662,7 +662,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -702,7 +702,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -743,7 +743,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.20
       resources:
         requests:
           cpu: 1000m
@@ -779,7 +779,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -820,7 +820,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -861,7 +861,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
       resources:
         requests:
           cpu: 1000m
@@ -896,7 +896,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -933,7 +933,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -974,7 +974,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1011,7 +1011,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1051,7 +1051,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.20
       resources:
         requests:
           cpu: 1000m
@@ -1090,7 +1090,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1131,7 +1131,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
       resources:
         requests:
           cpu: 1000m
@@ -1170,7 +1170,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
       resources:
         requests:
           cpu: 1000m
@@ -1210,7 +1210,7 @@ periodics:
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1250,7 +1250,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1291,7 +1291,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1332,7 +1332,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1373,7 +1373,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.20
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.20
       resources:
         requests:
           cpu: 1000m
@@ -1412,7 +1412,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1453,7 +1453,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
       resources:
         requests:
           cpu: 1000m
@@ -1488,7 +1488,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1528,7 +1528,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1569,7 +1569,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1611,7 +1611,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1648,7 +1648,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1690,7 +1690,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1727,7 +1727,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1769,7 +1769,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
       resources:
         requests:
           cpu: 1000m
@@ -1808,7 +1808,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1846,7 +1846,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1885,7 +1885,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1926,7 +1926,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -1962,7 +1962,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2002,7 +2002,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
       resources:
         requests:
           cpu: 1000m
@@ -2039,7 +2039,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2081,7 +2081,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2119,7 +2119,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2161,7 +2161,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2202,7 +2202,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2243,7 +2243,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2280,7 +2280,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2320,7 +2320,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.18
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
       resources:
         requests:
           cpu: 1000m
@@ -2359,7 +2359,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2399,7 +2399,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.19
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
       resources:
         requests:
           cpu: 1000m
@@ -2435,7 +2435,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2477,7 +2477,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
@@ -2517,7 +2517,7 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
       resources:
         requests:
           cpu: 1000m
