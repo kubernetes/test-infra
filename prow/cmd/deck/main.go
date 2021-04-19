@@ -81,6 +81,7 @@ import (
 	"k8s.io/test-infra/prow/spyglass/lenses"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/coverage"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/html"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/links"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"

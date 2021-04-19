@@ -1,0 +1,21 @@
+{{define "header"}}
+  <link rel="stylesheet" type="text/css" href="html.css">
+  <script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+  <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    {{ range $title, $content:= . }}
+    <tr class="header section-expander">
+      <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>{{$title}}</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
+    </tr>
+    {{/* Do _not_ hide this by default, that will break inner javascript that dynamically resizes. Hiding post-render is ok */}}
+    <tr class="">
+      <td colspan="2" style="border: 0px; padding: 0px;">
+        <iframe srcdoc="{{$content}}" title="{{$title}}" sandbox="allow-scripts" id="{{$title}}" width="100%" scrolling="no"></iframe>
+      </td>
+    </tr>
+    {{end}}
+  </table>
+{{end}}

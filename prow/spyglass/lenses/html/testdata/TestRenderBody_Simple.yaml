@@ -1,0 +1,28 @@
+
+  <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    
+    <tr class="header section-expander">
+      <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>file.html</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
+    </tr>
+    
+    <tr class="">
+      <td colspan="2" style="border: 0px; padding: 0px;">
+        <iframe srcdoc="<div id=&quot;wrapper&quot;><body>Hello world!</body></div><script type=&quot;text/javascript&quot;>
+window.addEventListener(&quot;load&quot;, function(){
+    if(window.self === window.top) return; // if w.self === w.top, we are not in an iframe
+    send_height_to_parent_function = function(){
+        var height = document.getElementById(&quot;wrapper&quot;).offsetHeight;
+        parent.postMessage({&quot;height&quot; : height , &quot;id&quot;: &quot;file.html&quot;}, &quot;*&quot;);
+    }
+    send_height_to_parent_function(); //whenever the page is loaded
+    window.addEventListener(&quot;resize&quot;, send_height_to_parent_function); // whenever the page is resized
+    var observer = new MutationObserver(send_height_to_parent_function);           // whenever DOM changes PT1
+    var config = { attributes: true, childList: true, characterData: true, subtree:true}; // PT2
+    observer.observe(window.document, config);                                            // PT3
+});
+</script>" title="file.html" sandbox="allow-scripts" id="file.html" width="100%" scrolling="no"></iframe>
+      </td>
+    </tr>
+    
+  </table>
