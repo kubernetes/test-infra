@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
@@ -50,10 +51,8 @@ import (
 type options struct {
 	port int
 
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	pluginConfig               string
+	config       configflagutil.ConfigOptions
+	pluginConfig string
 
 	dryRun                 bool
 	gracePeriod            time.Duration
@@ -69,7 +68,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -82,14 +81,11 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement, &o.config} {
 		group.AddFlags(fs)
 	}
 
@@ -107,8 +103,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

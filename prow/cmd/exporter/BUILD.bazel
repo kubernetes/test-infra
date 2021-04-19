@@ -24,8 +24,8 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/informers/externalversions:go_default_library",
-        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
+        "//prow/flagutil/config:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",

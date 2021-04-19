@@ -38,17 +38,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	// pjv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	cfg "k8s.io/test-infra/prow/config"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 // TODO: parse testgrid config to catch
 //	- jobs that aren't prowjobs but are on release-informing dashboards
 //	- jobs that don't declare testgrid info via annotations
-var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
-var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
-var supplementalProwConfigDirs prowflagutil.Strings
 var reportFormat = flag.String("format", "csv", "Output format [csv|json|html] defaults to csv")
 var reportDate = flag.String("date", "now", "Date to include in report ('now' is converted to today)")
 
@@ -56,25 +52,25 @@ var reportDate = flag.String("date", "now", "Date to include in report ('now' is
 var prowConfig *cfg.Config
 
 func main() {
-	flag.Var(&supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
-	flag.Parse()
-	if *configPath == "" {
-		fmt.Println("--config must set")
-		os.Exit(1)
+	configOpts := configflagutil.ConfigOptions{
+		ConfigPathFlagName:    "config",
+		JobConfigPathFlagName: "job-config",
+		ConfigPath:            "../../config/prow/config.yaml",
+		JobConfigPath:         "../../config/jobs",
 	}
-	if *jobConfigPath == "" {
-		fmt.Println("--job-config must set")
+	configOpts.AddFlags(flag.CommandLine)
+	flag.Parse()
+	if err := configOpts.Validate(false); err != nil {
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	conf, err := cfg.Load(*configPath, *jobConfigPath, supplementalProwConfigDirs.Strings())
+	agent, err := configOpts.ConfigAgent()
 	if err != nil {
-		fmt.Printf("configPath: %v\n", *configPath)
-		fmt.Printf("jobConfigPath: %v\n", *jobConfigPath)
 		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
 	}
-	prowConfig = conf
+	prowConfig = agent.Config()
 
 	date := *reportDate
 	if date == "now" {

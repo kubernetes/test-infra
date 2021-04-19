@@ -31,20 +31,19 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configPath, jobConfigPath string, supplementalProwConfigDirs []string, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configOpts configflagutil.ConfigOptions, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
 	sc := &statusController{
-		logger:                     logrus.WithField("client", "statusController"),
-		opener:                     opener,
-		statusURI:                  statusURI,
-		configPath:                 configPath,
-		jobConfigPath:              jobConfigPath,
-		supplementalProwConfigDirs: supplementalProwConfigDirs,
+		logger:     logrus.WithField("client", "statusController"),
+		opener:     opener,
+		statusURI:  statusURI,
+		configOpts: configOpts,
 	}
 
 	return &Controller{

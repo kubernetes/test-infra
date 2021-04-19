@@ -32,6 +32,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 type fakeCron struct {
@@ -247,7 +248,7 @@ func TestFlags(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -288,8 +289,13 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath: "yo",
-				dryRun:     true,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					ConfigPath:                      "yo",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
+				dryRun: true,
 				instrumentationOptions: flagutil.InstrumentationOptions{
 					MetricsPort: flagutil.DefaultMetricsPort,
 					PProfPort:   flagutil.DefaultPProfPort,

@@ -40,14 +40,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/ghhook"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 type options struct {
-	configPath                 string
-	supplementalProwConfigDirs prowflagutil.Strings
+	config configflagutil.ConfigOptions
 
 	dryRun        bool
 	github        prowflagutil.GitHubOptions
@@ -61,7 +61,7 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -69,9 +69,6 @@ func (o *options) validate() error {
 
 	if o.kubeconfigCtx == "" {
 		return errors.New("required flag --kubeconfig-context was unset")
-	}
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
 	}
 	if o.hookUrl == "" {
 		return errors.New("required flag --hook-url was unset")
@@ -89,12 +86,11 @@ func (o *options) validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 
+	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
 	fs.StringVar(&o.kubeconfigCtx, "kubeconfig-context", "", "Context of the Prow component cluster and namespace in the kubeconfig.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	fs.StringVar(&o.hookUrl, "hook-url", "", "Prow hook external webhook URL (e.g. https://prow.k8s.io/hook).")
@@ -136,8 +132,8 @@ func main() {
 		logrus.WithError(err).Fatalf("Error starting secret agent %s", o.github.TokenPath)
 	}
 
-	var configAgent config.Agent
-	if err := configAgent.Start(o.configPath, "", o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	newHMACConfig := configAgent.Config().ManagedWebhooks

@@ -24,6 +24,10 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func Test_Options(t *testing.T) {
@@ -42,8 +46,13 @@ func Test_Options(t *testing.T) {
 			expected: &options{
 				inputs:      []string{"file.yaml"},
 				defaultYAML: "file.yaml",
-				printText:   true,
-				oneshot:     true,
+				prowConfig: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "prow-config",
+					JobConfigPathFlagName:           "prow-job-config",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
+				printText: true,
+				oneshot:   true,
 			},
 		},
 		{
@@ -52,15 +61,25 @@ func Test_Options(t *testing.T) {
 			expected: &options{
 				inputs:      []string{"file.yaml"},
 				defaultYAML: "file.yaml",
-				output:      "gs://foo/bar",
+				prowConfig: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "prow-config",
+					JobConfigPathFlagName:           "prow-job-config",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
+				output: "gs://foo/bar",
 			},
 		},
 		{
 			name: "Many files: first set as default",
 			args: []string{"--yaml=first,second,third", "--validate-config-file"},
 			expected: &options{
-				inputs:             []string{"first", "second", "third"},
-				defaultYAML:        "first",
+				inputs:      []string{"first", "second", "third"},
+				defaultYAML: "first",
+				prowConfig: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "prow-config",
+					JobConfigPathFlagName:           "prow-job-config",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				validateConfigFile: true,
 			},
 		},
@@ -85,7 +104,7 @@ func Test_Options(t *testing.T) {
 			case err != nil && test.expected != nil:
 				t.Errorf("Unexpected error: %v", err)
 			case test.expected != nil && !reflect.DeepEqual(*test.expected, actual):
-				t.Errorf("Mismatched Options: got %v, expected %v", actual, *test.expected)
+				t.Errorf("Mismatched Options: diff: %s", cmp.Diff(*test.expected, actual, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}

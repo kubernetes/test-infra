@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/cmd/hmac/fakeghhook"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -49,7 +50,7 @@ func TestGatherOptions(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -76,7 +77,12 @@ func TestGatherOptions(t *testing.T) {
 			ghoptions.AddFlags(&flag.FlagSet{})
 			ghoptions.Validate(false)
 			expected := &options{
-				configPath:               "yo",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:              "config-path",
+					JobConfigPathFlagName:           "job-config-path",
+					ConfigPath:                      "yo",
+					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+				},
 				dryRun:                   true,
 				github:                   ghoptions,
 				kubernetes:               flagutil.KubernetesOptions{DeckURI: "http://whatever-deck-url"},
@@ -119,7 +125,7 @@ func TestGatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
 			}
 		})
 	}

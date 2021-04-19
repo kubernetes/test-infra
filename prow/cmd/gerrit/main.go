@@ -31,8 +31,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
@@ -42,12 +42,10 @@ import (
 )
 
 type options struct {
-	cookiefilePath             string
-	tokenPathOverride          string
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	projects                   client.ProjectsFlag
+	cookiefilePath    string
+	tokenPathOverride string
+	config            configflagutil.ConfigOptions
+	projects          client.ProjectsFlag
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	lastSyncFallback       string
@@ -69,8 +67,8 @@ func (o *options) validate() error {
 		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
 
-	if o.configPath == "" {
-		return errors.New("--config-path must be set")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	if o.lastSyncFallback == "" {
@@ -89,15 +87,12 @@ func (o *options) validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	o.projects = client.ProjectsFlag{}
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host")
 	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -244,8 +239,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	var ca config.Agent
-	if err := ca.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	ca, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := ca.Config

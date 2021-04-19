@@ -32,7 +32,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowConfig "k8s.io/test-infra/prow/config"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -54,21 +54,19 @@ func (m *multiString) Set(v string) error {
 const pollingTime = time.Second
 
 type options struct {
-	creds                      string
-	inputs                     multiString
-	oneshot                    bool
-	output                     string
-	printText                  bool
-	validateConfigFile         bool
-	worldReadable              bool
-	writeYAML                  bool
-	prowConfig                 string
-	prowJobConfig              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	defaultYAML                string
-	updateDescription          bool
-	prowJobURLPrefix           string
-	strictUnmarshal            bool
+	creds              string
+	inputs             multiString
+	oneshot            bool
+	output             string
+	printText          bool
+	validateConfigFile bool
+	worldReadable      bool
+	writeYAML          bool
+	prowConfig         configflagutil.ConfigOptions
+	defaultYAML        string
+	updateDescription  bool
+	prowJobURLPrefix   string
+	strictUnmarshal    bool
 }
 
 func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
@@ -80,9 +78,9 @@ func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
 	fs.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
 	fs.BoolVar(&o.writeYAML, "output-yaml", false, "Output to TestGrid YAML instead of config proto")
 	fs.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
-	fs.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
-	fs.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
+	o.prowConfig.ConfigPathFlagName = "prow-config"
+	o.prowConfig.JobConfigPathFlagName = "prow-job-config"
+	o.prowConfig.AddFlags(fs)
 	fs.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
 	fs.BoolVar(&o.updateDescription, "update-description", false, "add prowjob info to description even if non-empty")
 	fs.StringVar(&o.prowJobURLPrefix, "prowjob-url-prefix", "", "for prowjob_config_url in descriptions: {prowjob-url-prefix}/{prowjob.sourcepath}")
@@ -102,8 +100,8 @@ func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
 	if o.validateConfigFile && o.output != "" {
 		return errors.New("--validate-config-file doesn't write the proto anywhere")
 	}
-	if (o.prowConfig == "") != (o.prowJobConfig == "") {
-		return errors.New("--prow-config and --prow-job-config must be specified together")
+	if err := o.prowConfig.ValidateConfigOptional(); err != nil {
+		return err
 	}
 	if o.defaultYAML == "" && !o.writeYAML {
 		logrus.Warnf("--default not explicitly specified; assuming %s", o.inputs[0])
@@ -224,7 +222,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		defaultTestgridConfig: d,
 		prowConfig:            prowConfigAgent.Config(),
 		updateDescription:     opt.updateDescription,
-		prowJobConfigPath:     opt.prowJobConfig,
+		prowJobConfigPath:     opt.prowConfig.JobConfigPath,
 		prowJobURLPrefix:      opt.prowJobURLPrefix,
 	}
 
@@ -273,11 +271,13 @@ func main() {
 
 	ctx := context.Background()
 
-	prowConfigAgent := &prowConfig.Agent{}
-	if opt.prowConfig != "" && opt.prowJobConfig != "" {
-		if err := prowConfigAgent.Start(opt.prowConfig, opt.prowJobConfig, opt.supplementalProwConfigDirs.Strings()); err != nil {
+	var prowConfigAgent *prowConfig.Agent
+	if opt.prowConfig.ConfigPath != "" && opt.prowConfig.JobConfigPath != "" {
+		agent, err := opt.prowConfig.ConfigAgent()
+		if err != nil {
 			log.Fatalf("FAIL: couldn't load prow config: %v", err)
 		}
+		prowConfigAgent = agent
 	}
 
 	// Config file validation only

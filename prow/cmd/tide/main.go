@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -29,9 +28,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -43,9 +42,7 @@ import (
 type options struct {
 	port int
 
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
+	config configflagutil.ConfigOptions
 
 	syncThrottle   int
 	statusThrottle int
@@ -74,9 +71,9 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for idx, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return fmt.Errorf("%d: %w", idx, err)
+			return err
 		}
 	}
 	return nil
@@ -85,12 +82,9 @@ func (o *options) Validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
@@ -120,8 +114,8 @@ func main() {
 		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config

@@ -57,6 +57,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
@@ -100,32 +101,30 @@ const (
 )
 
 type options struct {
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	instrumentation            prowflagutil.InstrumentationOptions
-	kubernetes                 prowflagutil.KubernetesOptions
-	github                     prowflagutil.GitHubOptions
-	tideURL                    string
-	hookURL                    string
-	oauthURL                   string
-	githubOAuthConfigFile      string
-	cookieSecretFile           string
-	redirectHTTPTo             string
-	hiddenOnly                 bool
-	pregeneratedData           string
-	staticFilesLocation        string
-	templateFilesLocation      string
-	showHidden                 bool
-	spyglass                   bool
-	spyglassFilesLocation      string
-	storage                    prowflagutil.StorageClientOptions
-	gcsNoAuth                  bool
-	gcsCookieAuth              bool
-	rerunCreatesJob            bool
-	allowInsecure              bool
-	dryRun                     bool
-	pluginConfig               string
+	config                configflagutil.ConfigOptions
+	instrumentation       prowflagutil.InstrumentationOptions
+	kubernetes            prowflagutil.KubernetesOptions
+	github                prowflagutil.GitHubOptions
+	tideURL               string
+	hookURL               string
+	oauthURL              string
+	githubOAuthConfigFile string
+	cookieSecretFile      string
+	redirectHTTPTo        string
+	hiddenOnly            bool
+	pregeneratedData      string
+	staticFilesLocation   string
+	templateFilesLocation string
+	showHidden            bool
+	spyglass              bool
+	spyglassFilesLocation string
+	storage               prowflagutil.StorageClientOptions
+	gcsNoAuth             bool
+	gcsCookieAuth         bool
+	rerunCreatesJob       bool
+	allowInsecure         bool
+	dryRun                bool
+	pluginConfig          string
 }
 
 func (o *options) Validate() error {
@@ -136,8 +135,8 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	if o.oauthURL != "" {
@@ -163,9 +162,6 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
 	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
@@ -187,6 +183,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
+	o.config.AddFlags(fs)
 	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.github.AddFlags(fs)
@@ -275,8 +272,8 @@ func main() {
 	pjutil.ServePProf(o.instrumentation.PProfPort)
 
 	// setup config agent, pod log clients etc.
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings(), spglassConfigDefaulting); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config

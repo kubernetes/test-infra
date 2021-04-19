@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/kube"
@@ -61,10 +62,8 @@ import (
 )
 
 type options struct {
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs flagutil.Strings
-	pluginConfig               string
+	config       configflagutil.ConfigOptions
+	pluginConfig string
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -141,8 +140,8 @@ func getAllWarnings() []string {
 
 func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
@@ -178,9 +177,6 @@ func parseOptions() (options, error) {
 }
 
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
@@ -190,6 +186,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
 	o.github.AddFlags(flag)
 	o.github.AllowAnonymous = true
+	o.config.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -231,8 +228,8 @@ func validate(o options) error {
 		}
 	}
 
-	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
@@ -335,11 +332,11 @@ func validate(o options) error {
 		}
 	}
 	if o.warningEnabled(unknownFieldsWarning) {
-		cfgBytes, err := ioutil.ReadFile(o.configPath)
+		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
-		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
+		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.config.ConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -369,7 +366,7 @@ func validate(o options) error {
 	}
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
-		for _, supplementalProwConfigDir := range o.supplementalProwConfigDirs.Strings() {
+		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
 			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filepath.Dir(supplementalProwConfigDir), os.DirFS("/")))
 		}
 	}

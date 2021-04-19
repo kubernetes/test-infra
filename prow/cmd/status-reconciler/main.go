@@ -27,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -43,10 +43,8 @@ const (
 )
 
 type options struct {
-	configPath                 string
-	jobConfigPath              string
-	supplementalProwConfigDirs prowflagutil.Strings
-	pluginConfig               string
+	config       configflagutil.ConfigOptions
+	pluginConfig string
 
 	continueOnError           bool
 	addedPresubmitDenylist    prowflagutil.Strings
@@ -69,11 +67,8 @@ type options struct {
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
-	o := options{}
+	o := options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
 
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.Var(&o.supplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
@@ -84,7 +79,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -92,7 +87,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -130,8 +125,8 @@ func main() {
 
 	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings()); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -167,7 +162,7 @@ func main() {
 		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
-	c := statusreconciler.NewController(o.continueOnError, o.getDenyList(), o.getDenyListAll(), opener, o.configPath, o.jobConfigPath, o.supplementalProwConfigDirs.Strings(), o.statusURI, prowJobClient, githubClient, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, o.getDenyList(), o.getDenyListAll(), opener, o.config, o.statusURI, prowJobClient, githubClient, pluginAgent)
 	interrupts.Run(func(ctx context.Context) {
 		c.Run(ctx)
 	})
