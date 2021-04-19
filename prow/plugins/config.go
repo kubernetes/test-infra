@@ -87,6 +87,7 @@ type Configuration struct {
 	Size                 Size                         `json:"size,omitempty"`
 	Triggers             []Trigger                    `json:"triggers,omitempty"`
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
+	Wip                  []Wip                        `json:"wip,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
 }
@@ -603,6 +604,13 @@ type Welcome struct {
 	// MessageTemplate is the welcome message template to post on new-contributor PRs
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	MessageTemplate string `json:"message_template,omitempty"`
+}
+
+// Wip is config for the wip plugin.
+type Wip struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	Label string `json:"label"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.

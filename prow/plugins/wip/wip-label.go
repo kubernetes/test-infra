@@ -23,6 +23,7 @@ package wip
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -49,6 +50,7 @@ type event struct {
 	number   int
 	title    string
 	draft    bool
+	label    string
 	hasLabel bool
 }
 
@@ -59,7 +61,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The wip (Work In Progress) plugin applies the '" + labels.WorkInProgress + "' Label to pull requests whose title starts with 'WIP' or are in the 'draft' stage, and removes it from pull requests when they remove the title prefix or become ready for review. The '" + labels.WorkInProgress + "' Label is typically used to block a pull request from merging while it is still in progress.",
+			Description: "The wip (Work In Progress) plugin applies a work in progress label (default '" + labels.WorkInProgress + "') to pull requests whose title starts with 'WIP' or are in the 'draft' stage, and removes it from pull requests when they remove the title prefix or become ready for review. The label is typically used to block a pull request from merging while it is still in progress.",
 		},
 		nil
 }
@@ -87,6 +89,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 		number = pe.PullRequest.Number
 		title  = pe.PullRequest.Title
 		draft  = pe.PullRequest.Draft
+		label  = optionsForRepo(pc.PluginConfig, org, repo).Label
 	)
 
 	currentLabels, err := pc.GitHubClient.GetIssueLabels(org, repo, number)
@@ -95,7 +98,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	}
 	hasLabel := false
 	for _, l := range currentLabels {
-		if l.Name == labels.WorkInProgress {
+		if l.Name == label {
 			hasLabel = true
 		}
 	}
@@ -105,6 +108,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 		number:   number,
 		title:    title,
 		draft:    draft,
+		label:    label,
 		hasLabel: hasLabel,
 	}
 	return handle(pc.GitHubClient, pc.Logger, e)
@@ -118,15 +122,41 @@ func handle(gc githubClient, le *logrus.Entry, e *event) error {
 	needsLabel := e.draft || titleRegex.MatchString(e.title)
 
 	if needsLabel && !e.hasLabel {
-		if err := gc.AddLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
-			le.Warnf("error while adding Label %q: %v", labels.WorkInProgress, err)
+		if err := gc.AddLabel(e.org, e.repo, e.number, e.label); err != nil {
+			le.Warnf("error while adding Label %q: %v", e.label, err)
 			return err
 		}
 	} else if !needsLabel && e.hasLabel {
-		if err := gc.RemoveLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
-			le.Warnf("error while removing Label %q: %v", labels.WorkInProgress, err)
+		if err := gc.RemoveLabel(e.org, e.repo, e.number, e.label); err != nil {
+			le.Warnf("error while removing Label %q: %v", e.label, err)
 			return err
 		}
 	}
 	return nil
+}
+
+// optionsForRepo gets the plugins.Wip struct that is applicable to the indicated repo.
+func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Wip {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+
+	// First search for repo config
+	for _, c := range config.Wip {
+		if !sets.NewString(c.Repos...).Has(fullName) {
+			continue
+		}
+		return &c
+	}
+
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Wip {
+		if !sets.NewString(c.Repos...).Has(org) {
+			continue
+		}
+		return &c
+	}
+
+	// Return an empty config, and default to defaultWelcomeMessage
+	return &plugins.Wip{
+		Label: labels.WorkInProgress,
+	}
 }
