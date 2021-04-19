@@ -78,5 +78,9 @@ func (o *ConfigOptions) ConfigAgent(reuse ...*config.Agent) (*config.Agent, erro
 	} else {
 		ca = &config.Agent{}
 	}
-	return ca, ca.Start(o.ConfigPath, o.JobConfigPath, o.SupplementalProwConfigDirs.Strings(), o.SupplementalProwConfigsFileName)
+	return o.ConfigAgentWithAdditionals(ca, nil)
+}
+
+func (o *ConfigOptions) ConfigAgentWithAdditionals(ca *config.Agent, additionals []func(*config.Config) error) (*config.Agent, error) {
+	return ca, ca.Start(o.ConfigPath, o.JobConfigPath, o.SupplementalProwConfigDirs.Strings(), o.SupplementalProwConfigsFileName, additionals...)
 }
