@@ -84,9 +84,7 @@ func (o *GitHubOptions) Validate(bool) error {
 	}
 
 	if o.TokenPath == "" && o.AppID == "" && !o.AllowAnonymous {
-		// TODO(fejta): just return error after May 2020
-		logrus.Warnf("missing required flag: please set to --github-token-path=%s before June 2020", DefaultGitHubTokenPath)
-		o.TokenPath = DefaultGitHubTokenPath
+		return fmt.Errorf("missing required flag: please set to --github-token-path=%s", DefaultGitHubTokenPath)
 	}
 
 	if o.TokenPath != "" && len(endpoints) == 1 && endpoints[0] == github.DefaultAPIEndpoint && !o.AllowDirectAccess {
