@@ -104,12 +104,16 @@ presubmit_template = """
     always_run: {{always_run}}
     skip_report: {{skip_report}}
     labels:
+      {%- if cloud == "aws" %}
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      {%- else %}
+      preset-k8s-ssh: "true"
+      {%- endif %}
     decorate: true
     decoration_config:
       timeout: {{job_timeout}}
@@ -128,8 +132,11 @@ presubmit_template = """
             kubetest2 kops \\
             -v 2 \\
             --up --build --down \\
-            --cloud-provider=aws \\
+            --cloud-provider={{cloud}} \\
             --create-args="{{create_args}}" \\
+            {%- if kops_feature_flags %}
+            --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \\
+            {%- endif %}
             --kubernetes-version={{k8s_deploy_url}} \\
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \\
             {%- if terraform_version %}
@@ -155,7 +162,7 @@ presubmit_template = """
           privileged: true
         env:
         - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
+          value: {{kops_ssh_key_path}}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         - name: GOPATH
@@ -260,14 +267,15 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
     if container_runtime:
         args += f" --container-runtime={container_runtime}"
 
-    image_overridden = False
-    if extra_flags:
-        for arg in extra_flags:
-            if "--image=" in arg:
-                image_overridden = True
-            args = args + " " + arg
-    if not image_overridden:
-        args = f"--image='{kops_image}' {args}"
+    if kops_image:
+        image_overridden = False
+        if extra_flags:
+            for arg in extra_flags:
+                if "--image=" in arg:
+                    image_overridden = True
+                args = args + " " + arg
+        if not image_overridden:
+            args = f"--image='{kops_image}' {args}"
     return args.strip()
 
 def latest_aws_image(owner, name):
@@ -475,9 +483,14 @@ def presubmit_test(cloud='aws',
                    skip_report=False,
                    always_run=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
-
-    kops_image = distro_images[distro]
-    kops_ssh_user = distros_ssh_user[distro]
+    if cloud == 'aws':
+        kops_image = distro_images[distro]
+        kops_ssh_user = distros_ssh_user[distro]
+        kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
+    elif cloud == 'gce':
+        kops_image = None
+        kops_ssh_user = 'prow'
+        kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
@@ -485,6 +498,8 @@ def presubmit_test(cloud='aws',
     tmpl = jinja2.Template(presubmit_template)
     job = tmpl.render(
         job_name=name,
+        cloud=cloud,
+        kops_ssh_key_path=kops_ssh_key_path,
         kops_ssh_user=kops_ssh_user,
         create_args=args,
         k8s_deploy_url=k8s_deploy_url,
@@ -941,6 +956,18 @@ def generate_presubmits_e2e():
             tab_name='e2e-containerd',
             always_run=True,
             skip_override=skip_regex,
+        ),
+        presubmit_test(
+            cloud='gce',
+            container_runtime='containerd',
+            k8s_version='1.20',
+            kops_channel='stable',
+            name='pull-kops-e2e-k8s-gce',
+            networking='cilium',
+            tab_name='e2e-gce',
+            always_run=False,
+            skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints', # pylint: disable=line-too-long
+            feature_flags=['GoogleCloudBucketACL'],
         ),
     ]
 
