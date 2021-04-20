@@ -174,3 +174,40 @@ periodics:
     testgrid-tab-name: capa-conformance-k8s-main
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io, release-team@kubernetes.io
+- name: periodic-cluster-api-provider-aws-coverage
+  interval: 24h
+  decorate: true
+  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-aws
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+        command:
+          - runner.sh
+          - bash
+        args:
+          - -c
+          - |
+            result=0
+            ./scripts/ci-test-coverage.sh || result=$?
+            cp coverage.* ${ARTIFACTS}
+            cd ../../k8s.io/test-infra/gopherage
+            GO111MODULE=on go build .
+            ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+            ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+            ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+            exit $result
+        securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-tab-name: periodic-capa-test-coverage
