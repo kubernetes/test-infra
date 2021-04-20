@@ -58,6 +58,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
+    run_if_changed: 'azure.*\.go$|.*windows\.go$'
     decorate: true
     decoration_config:
       timeout: 3h
@@ -116,7 +117,7 @@ presubmits:
       timeout: 2h
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
+    run_if_changed: 'azure.*\.go$'
     path_alias: k8s.io/kubernetes
     branches:
     - master
@@ -178,7 +179,7 @@ presubmits:
       timeout: 2h
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
+    run_if_changed: 'azure.*\.go$'
     path_alias: k8s.io/kubernetes
     branches:
     - master
