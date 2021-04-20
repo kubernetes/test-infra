@@ -119,6 +119,9 @@ presubmit_template = """
       timeout: {{job_timeout}}
     path_alias: k8s.io/kops
     spec:
+      {%- if cloud == "gce" %}
+      serviceAccountName: k8s-kops-test
+      {%- endif %}
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
         imagePullPolicy: Always
