@@ -440,7 +440,9 @@ type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
 	// Key is the key in the ConfigMap to update with the file contents.
-	// If no explicit key is given, the basename of the file will be used.
+	// If no explicit key is given, the basename of the file will be used unless
+	// use_full_path_as_key: true is set, in which case the full filepath relative
+	// to the repository root will be used, replacing slashes with dashes.
 	Key string `json:"key,omitempty"`
 	// GZIP toggles whether the key's data should be GZIP'd before being stored
 	// If set to false and the global GZIP option is enabled, this file will
@@ -451,6 +453,10 @@ type ConfigMapSpec struct {
 	Clusters map[string][]string `json:"clusters"`
 	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
 	ClusterGroups []string `json:"cluster_groups,omitempty"`
+	// UseFullPathAsKey controls if the full path of the original file relative to the
+	// repository root should be used as the configmap key. Slashes will be replaced by
+	// dashes. Using this avoids the need for unique file names in the original repo.
+	UseFullPathAsKey bool `json:"use_full_path_as_key,omitempty"`
 }
 
 // A ClusterGroup is a list of clusters with namespaces

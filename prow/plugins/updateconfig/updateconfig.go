@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/mattn/go-zglob"
@@ -227,10 +228,19 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 				id := plugins.ConfigMapID{Name: cm.Name, Namespace: ns, Cluster: cluster}
 				key := cm.Key
 				if key == "" {
-					key = path.Base(change.Filename)
+					if cm.UseFullPathAsKey {
+						key = strings.ReplaceAll(change.Filename, "/", "-")
+					} else {
+						key = path.Base(change.Filename)
+					}
 					// if the key changed, we need to remove the old key
 					if change.Status == github.PullRequestFileRenamed {
-						oldKey := path.Base(change.PreviousFilename)
+						var oldKey string
+						if cm.UseFullPathAsKey {
+							oldKey = strings.ReplaceAll(change.PreviousFilename, "/", "-")
+						} else {
+							oldKey = path.Base(change.PreviousFilename)
+						}
 						// not setting the filename field will cause the key to be
 						// deleted
 						toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
