@@ -124,6 +124,7 @@ var defaultWarnings = []string{
 	validateURLsWarning,
 	unknownFieldsWarning,
 	validateClusterFieldWarning,
+	validateSupplementalProwConfigOrgRepoHirarchy,
 }
 
 var expensiveWarnings = []string{
@@ -367,7 +368,7 @@ func validate(o options) error {
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
 		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
-			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filepath.Dir(supplementalProwConfigDir), os.DirFS("/")))
+			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./")))
 		}
 	}
 
