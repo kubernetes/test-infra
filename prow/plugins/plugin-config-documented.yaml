@@ -351,7 +351,9 @@ config_updater:
             gzip: false
 
             # Key is the key in the ConfigMap to update with the file contents.
-            # If no explicit key is given, the basename of the file will be used.
+            # If no explicit key is given, the basename of the file will be used unless
+            # use_full_path_as_key: true is set, in which case the full filepath relative
+            # to the repository root will be used, replacing slashes with dashes.
             key: ' '
 
             # Name of ConfigMap

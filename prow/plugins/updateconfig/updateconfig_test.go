@@ -626,6 +626,51 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			},
 		},
 		{
+			name:        "Renamed with UseFullPathAsKey set, old entry gets deleted",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "54321",
+			changes: []github.PullRequestChange{
+				{
+					Filename:         "dir/subdir/fejtaverse/fejtabot.yaml",
+					PreviousFilename: "dir/subdir/fejtaverse/krzyzacy.yaml",
+					Status:           "renamed",
+					Additions:        1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"dir-subdir-fejtaverse-krzyzacy.yaml": "retired",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"dir-subdir-fejtaverse-fejtabot.yaml": "new-fejtabot-config",
+						"VERSION":                             "54321",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"dir/subdir/**/*.yaml": {
+						Name:             "config",
+						UseFullPathAsKey: true,
+					},
+				},
+			},
+		},
+		{
 			name:        "add delete edit glob config, 3 update",
 			prAction:    github.PullRequestActionClosed,
 			merged:      true,
@@ -1120,6 +1165,40 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 				Maps: map[string]plugins.ConfigMapSpec{
 					"prow/*.yaml": {
 						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "Uses the full path slash-separated when UseFullPathAsKey is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"prow-config.yaml": "new-config",
+						"VERSION":          "12345",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: false,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name:             "config",
+						UseFullPathAsKey: true,
 					},
 				},
 			},
