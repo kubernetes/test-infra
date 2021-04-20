@@ -20,6 +20,20 @@ dashboards:
     test_group_name: kyma-aks-nightly
   - code_search_url_template:
       url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Evaluation profile Kyma Alpha Azure Gardener integration job.
+    name: kyma-alpha-integration-evaluation-gardener-azure
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-alpha-integration-evaluation-gardener-azure
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: Production profile Kyma Alpha Azure Gardener integration job.
+    name: kyma-alpha-integration-production-gardener-azure
+    open_bug_template:
+      url: https://github.com/kyma-project/test-infra/issues/
+    test_group_name: kyma-alpha-integration-production-gardener-azure
+  - code_search_url_template:
+      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE nightly build.
     name: kyma-gke-nightly
     open_bug_template:
@@ -316,6 +330,10 @@ dashboards:
 test_groups:
 - gcs_prefix: kyma-prow-logs/logs/kyma-aks-nightly
   name: kyma-aks-nightly
+- gcs_prefix: kyma-prow-logs/logs/kyma-alpha-integration-evaluation-gardener-azure
+  name: kyma-alpha-integration-evaluation-gardener-azure
+- gcs_prefix: kyma-prow-logs/logs/kyma-alpha-integration-production-gardener-azure
+  name: kyma-alpha-integration-production-gardener-azure
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-nightly
   name: kyma-gke-nightly
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly
