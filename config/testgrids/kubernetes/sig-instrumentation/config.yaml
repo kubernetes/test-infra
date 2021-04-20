@@ -18,10 +18,6 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce serial e2e tests for master branch
-    - name: gci-gce-es-logging
-      test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gce elasticsearch logging e2e tests for master branch
 - name: sig-instrumentation-image-pushes
 - name: sig-instrumentation-metrics-server
 - name: sig-instrumentation-custom-metrics-apiserver
