@@ -77,14 +77,14 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(_ *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + ReleaseNoteLabelNeeded + `' label.
+		Description: `The releasenote plugin implements a release note process that uses a markdown 'release-note' code block to associate a release note with a pull request. Until the 'release-note' block in the pull request body is populated the PR will be assigned the '` + ReleaseNoteLabelNeeded + `' label.
 <br>There are three valid types of release notes that can replace this label:
-<ol><li>PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.</li>
+<ol><li>PRs with a normal release note in the 'release-note' block are given the label '` + releaseNote + `'.</li>
 <li>PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
-<li>PRs that contain 'action required' in their 'releasenote' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
-` + "To use the plugin, in the pull request body text:\n\n```releasenote\n<release note content>\n```",
+<li>PRs that contain 'action required' in their 'release-note' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
+` + "To use the plugin, in the pull request body text:\n\n```release-note\n<release note content>\n```",
 	}
 	// NOTE: the other two commands re deprecated, so we're not documenting them
 	pluginHelp.AddCommand(pluginhelp.Command{
