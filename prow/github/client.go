@@ -1437,7 +1437,7 @@ func (c *client) ListCurrentUserOrgInvitations() ([]UserOrgInvitation, error) {
 		func(obj interface{}) {
 			for _, uoi := range *(obj.(*[]UserOrgInvitation)) {
 				if uoi.State == "pending" {
-					ret = append(ret, *(obj.(*[]UserOrgInvitation))...)
+					ret = append(ret, uoi)
 				}
 			}
 		},
