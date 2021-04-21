@@ -1458,7 +1458,7 @@ func (c *client) AcceptUserOrgInvitation(org string) error {
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/user/memberships/orgs/%s", org),
 		org:         org,
-		requestBody: &struct{ state string }{state: "active"},
+		requestBody: map[string]string{"state": "active"},
 		exitCodes:   []int{204},
 	}, nil)
 
