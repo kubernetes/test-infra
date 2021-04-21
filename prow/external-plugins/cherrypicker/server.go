@@ -347,6 +347,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	// Handle multiple comments serially. Make sure to filter out
 	// comments targeting the same branch.
 	handledBranches := make(map[string]bool)
+	var errs []error
 	for requestor, branches := range requestorToComments {
 		for targetBranch, ic := range branches {
 			if handledBranches[targetBranch] {
@@ -369,12 +370,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 			l.Debug("Cherrypick request.")
 			err := s.handle(l, requestor, ic, org, repo, targetBranch, title, body, num)
 			if err != nil {
-				l.WithError(err).Error("failed to create cherrypick")
-				return err
+				errs = append(errs, fmt.Errorf("failed to create cherrypick: %w", err))
 			}
 		}
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
