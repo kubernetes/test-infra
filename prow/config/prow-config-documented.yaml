@@ -277,32 +277,6 @@ deck:
     hidden_repos:
       - ""
 
-    # Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
-    # The permissions here apply to all jobs.
-    # This option will be removed in favor of RerunAuthConfigs in July 2020.
-    rerun_auth_config:
-        # GitHubOrgs contains names of GitHub organizations whose members can rerun the job
-        github_orgs:
-          - ""
-
-        # GitHubTeams contains IDs of GitHub teams of users who can rerun the job
-        # If you know the name of a team and the org it belongs to,
-        # you can look up its ID using this command, where the team slug is the hyphenated name:
-        # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
-        # or, to list all teams in a given org, use
-        # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
-        github_team_ids:
-          - 0
-
-        # GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
-        github_team_slugs:
-          - org: ' '
-            slug: ' '
-
-        # GitHubUsers contains names of individual users who can rerun the job
-        github_users:
-          - ""
-
     # RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
     # accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
     # config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.

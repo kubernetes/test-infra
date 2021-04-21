@@ -3255,28 +3255,6 @@ func TestValidateComponentConfig(t *testing.T) {
 			errExpected: true,
 		},
 		{
-			name: "Both RerunAuthConfig and RerunAuthConfigs are invalid, err",
-			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
-				RerunAuthConfig:  &prowapi.RerunAuthConfig{AllowAnyone: true},
-				RerunAuthConfigs: RerunAuthConfigs{"*": prowapi.RerunAuthConfig{AllowAnyone: true}},
-			}}},
-			errExpected: true,
-		},
-		{
-			name: "RerunAuthConfig and not RerunAuthConfigs is valid, no err",
-			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
-				RerunAuthConfig: &prowapi.RerunAuthConfig{AllowAnyone: false, GitHubUsers: []string{"grantsmith"}},
-			}}},
-			errExpected: false,
-		},
-		{
-			name: "RerunAuthConfig only and validation fails, err",
-			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
-				RerunAuthConfig: &prowapi.RerunAuthConfig{AllowAnyone: true, GitHubUsers: []string{"grantsmith"}},
-			}}},
-			errExpected: true,
-		},
-		{
 			name: "RerunAuthConfigs and not RerunAuthConfig is valid, no err",
 			config: &Config{ProwConfig: ProwConfig{Deck: Deck{
 				RerunAuthConfigs: RerunAuthConfigs{
