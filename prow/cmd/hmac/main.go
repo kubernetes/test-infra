@@ -210,7 +210,7 @@ func (c *client) handleInvitation() error {
 			// org if it only configured a repo in hmac
 			if iv.Repository.FullName == repoName {
 				if err := c.githubHookClient.AcceptUserRepoInvitation(iv.InvitationID); err != nil {
-					return fmt.Errorf("failed accepting repo invitation: %w", err)
+					return fmt.Errorf("failed accepting repo invitation from %s: %w", iv.Repository.FullName, err)
 				}
 				logrus.Infof("Successfully accepted invitation from %s", iv.Repository.FullName)
 			}
@@ -223,7 +223,7 @@ func (c *client) handleInvitation() error {
 	}
 	for _, iv := range orgIvs {
 		if iv.Role != github.OrgAdmin {
-			logrus.Errorf("invalid invitation from %s not accepted. Want: %v, got: %s",
+			logrus.Errorf("Invalid invitation from %s not accepted. Want: %v, got: %s",
 				iv.Org.Login, github.Admin, iv.Role)
 			continue
 		}
@@ -231,7 +231,7 @@ func (c *client) handleInvitation() error {
 			// Accept org invitation even if only single repo want hmac
 			if repoName == iv.Org.Login || strings.HasPrefix(repoName, iv.Org.Login+"/") {
 				if err := c.githubHookClient.AcceptUserOrgInvitation(iv.Org.Login); err != nil {
-					return fmt.Errorf("failed accepting org invitation: %w", err)
+					return fmt.Errorf("failed accepting org invitation from %s: %w", iv.Org.Login, err)
 				}
 				logrus.Infof("Successfully accepted invitation from %s", iv.Org.Login)
 			}

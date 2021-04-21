@@ -1095,11 +1095,15 @@ const (
 	OrgMember OrgPermissionLevel = "member"
 	// OrgAdmin manages the org
 	OrgAdmin OrgPermissionLevel = "admin"
+	// OrgUnaffiliated probably means user not a member yet, this was returned
+	// from an org invitation, had to add it so unmarshal doesn't crash
+	OrgUnaffiliated OrgPermissionLevel = "unaffiliated"
 )
 
 var orgPermissionLevels = map[OrgPermissionLevel]bool{
-	OrgMember: true,
-	OrgAdmin:  true,
+	OrgMember:       true,
+	OrgAdmin:        true,
+	OrgUnaffiliated: true,
 }
 
 // MarshalText returns the byte representation of the permission
@@ -1111,7 +1115,7 @@ func (l OrgPermissionLevel) MarshalText() ([]byte, error) {
 func (l *OrgPermissionLevel) UnmarshalText(text []byte) error {
 	v := OrgPermissionLevel(text)
 	if _, ok := orgPermissionLevels[v]; !ok {
-		return fmt.Errorf("bad repo permission: %s not in %v", v, orgPermissionLevels)
+		return fmt.Errorf("bad org permission: %s not in %v", v, orgPermissionLevels)
 	}
 	*l = v
 	return nil
