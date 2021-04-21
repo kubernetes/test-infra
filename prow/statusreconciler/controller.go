@@ -191,7 +191,7 @@ func (c *Controller) reconcile(delta config.Delta, log *logrus.Entry) error {
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
+	if err := c.retireRemovedContexts(removedPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
@@ -401,19 +401,12 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus
 	return added, log
 }
 
-// removedBlockingPresubmits determines stale blocking presubmits based on a
-// config update. Presubmits that are no longer blocking due to no longer
-// reporting or being optional require no action as Tide will honor those
-// statuses correctly.
-func removedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
+// removedPresubmits determines stale presubmits based on a config update.
+func removedPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
 	removed := map[string][]config.Presubmit{}
-
 	for repo, oldPresubmits := range old {
 		removed[repo] = []config.Presubmit{}
 		for _, oldPresubmit := range oldPresubmits {
-			if !oldPresubmit.ContextRequired() {
-				continue
-			}
 			var found bool
 			for _, newPresubmit := range new[repo] {
 				if oldPresubmit.Name == newPresubmit.Name {
