@@ -1459,7 +1459,7 @@ func (c *client) AcceptUserOrgInvitation(org string) error {
 		path:        fmt.Sprintf("/user/memberships/orgs/%s", org),
 		org:         org,
 		requestBody: map[string]string{"state": "active"},
-		exitCodes:   []int{204},
+		exitCodes:   []int{200},
 	}, nil)
 
 	return err
