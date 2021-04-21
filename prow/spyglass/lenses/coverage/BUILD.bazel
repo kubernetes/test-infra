@@ -31,6 +31,7 @@ ts_library(
 rollup_bundle(
     name = "script_bundle",
     entry_point = ":coverage.ts",
+    link_workspace_root = True,
     deps = [
         ":script",
         "//gopherage/cmd/html/static:parser",
