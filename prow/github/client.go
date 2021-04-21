@@ -906,7 +906,7 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 
 					want := sets.NewString(strings.Split(acceptedScopes, ",")...)
 					got := strings.Split(authorizedScopes, ",")
-					if len(want) > 0 && !want.HasAny(got...) {
+					if acceptedScopes != "" && !want.HasAny(got...) {
 						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
 					} else {
 						body, _ := ioutil.ReadAll(resp.Body)

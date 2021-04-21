@@ -154,16 +154,25 @@ func TestIncorrectOAuthScopes(t *testing.T) {
 		name                string
 		acceptedOAuthScopes string
 		oauthScopes         string
+		expectedErr         string
 	}{
 		{
 			name:                "no overlapping OAuth scopes",
 			acceptedOAuthScopes: "admin:org,repo",
 			oauthScopes:         "admin:repo_hook,workflow",
+			expectedErr:         "the account is using admin:repo_hook,workflow oauth scopes, please make sure you are using at least one of the following oauth scopes: admin:org,repo",
 		},
 		{
 			name:                "empty OAuth scopes",
 			acceptedOAuthScopes: "admin:org,repo",
 			oauthScopes:         "",
+			expectedErr:         "the account is using no oauth scopes, please make sure you are using at least one of the following oauth scopes: admin:org,repo",
+		},
+		{
+			name:                "empty accepted OAuth scopes",
+			acceptedOAuthScopes: "",
+			oauthScopes:         "",
+			expectedErr:         "the GitHub API request returns a 403 error: 403 Forbidden\n",
 		},
 	}
 	for _, tc := range testCases {
@@ -179,6 +188,8 @@ func TestIncorrectOAuthScopes(t *testing.T) {
 		_, err := c.requestRetry(http.MethodGet, "/", "", "", nil)
 		if err == nil {
 			t.Error("Expected an error from a request with incorrect OAuth scopes, but succeeded!?")
+		} else if diff := cmp.Diff(err.Error(), tc.expectedErr); diff != "" {
+			t.Errorf("Unexpected error message: %s", diff)
 		}
 	}
 }
