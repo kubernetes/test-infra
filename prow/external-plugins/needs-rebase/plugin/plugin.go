@@ -26,7 +26,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -93,7 +92,7 @@ func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.Is
 // label needs to be added or removed. It depends on GitHub mergeability check
 // to decide the need for a rebase.
 func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
-	if pr.Merged {
+	if pr.State != string(githubql.PullRequestStateOpen) {
 		return nil
 	}
 	// Before checking mergeability wait a few seconds to give github a chance to calculate it.
@@ -157,8 +156,8 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 	log.WithField("prs_found_count", len(prs)).Debug("Processing all found PRs")
 
 	for _, pr := range prs {
-		// Skip PRs that are calculating mergeability. They will be updated by event or next loop.
-		if pr.Mergeable == githubql.MergeableStateUnknown {
+		// Skip PRs that are calculating mergeability or are not open. They will be updated by event or next loop.
+		if pr.Mergeable == githubql.MergeableStateUnknown || pr.State != githubql.PullRequestStateOpen {
 			continue
 		}
 		org := string(pr.Repository.Owner.Login)
@@ -288,6 +287,7 @@ type pullRequest struct {
 		}
 	} `graphql:"labels(first:100)"`
 	Mergeable githubql.MergeableState
+	State     githubql.PullRequestState
 }
 
 // See: https://developer.github.com/v4/query/.

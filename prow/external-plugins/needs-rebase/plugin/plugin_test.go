@@ -29,7 +29,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
@@ -172,8 +171,8 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 		pr   *github.PullRequest
 
 		mergeable bool
-		merged    bool
 		labels    []string
+		state     githubql.PullRequestState
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -188,18 +187,21 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     githubql.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     githubql.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     githubql.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -209,14 +211,22 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     githubql.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 		{
-			name:   "merged pr is ignored",
-			pr:     pr(),
-			merged: true,
+			name:      "merged pr is ignored",
+			pr:        pr(),
+			mergeable: false,
+			state:     githubql.PullRequestStateMerged,
+		},
+		{
+			name:      "closed pr is ignored",
+			pr:        pr(),
+			mergeable: false,
+			state:     githubql.PullRequestStateClosed,
 		},
 	}
 
@@ -226,7 +236,8 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			ice := &github.IssueCommentEvent{}
 			if tc.pr != nil {
 				ice.Issue.PullRequest = &struct{}{}
-				tc.pr.Merged = tc.merged
+				tc.pr.Merged = tc.state == githubql.PullRequestStateMerged
+				tc.pr.State = string(tc.state)
 			}
 			if err := HandleIssueCommentEvent(logrus.WithField("plugin", PluginName), fake, ice); err != nil {
 				t.Fatalf("error handling issue comment event: %v", err)
@@ -245,8 +256,8 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		name string
 
 		mergeable bool
-		merged    bool
 		labels    []string
+		state     githubql.PullRequestState
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -257,16 +268,19 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "mergeable no-op",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     githubql.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     githubql.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     githubql.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -275,13 +289,18 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     githubql.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 		{
-			name:   "merged pr is ignored",
-			merged: true,
+			name:  "merged pr is ignored",
+			state: githubql.PullRequestStateMerged,
+		},
+		{
+			name:  "closed pr is ignored",
+			state: githubql.PullRequestStateClosed,
 		},
 	}
 
@@ -296,7 +315,8 @@ func TestHandlePullRequestEvent(t *testing.T) {
 						Owner: github.User{Login: "org"},
 					},
 				},
-				Merged: tc.merged,
+				Merged: tc.state == githubql.PullRequestStateMerged,
+				State:  string(tc.state),
 				Number: 5,
 			},
 		}
@@ -312,20 +332,29 @@ func TestHandleAll(t *testing.T) {
 	testPRs := []struct {
 		labels    []string
 		mergeable bool
+		state     githubql.PullRequestState
 
 		expectedAdded, expectedRemoved []string
 		expectComment, expectDeletion  bool
 	}{
 		{
-			mergeable: true,
+			mergeable: false,
+			state:     githubql.PullRequestStateMerged,
 			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			mergeable: false,
+			state:     githubql.PullRequestStateClosed,
+			labels:    []string{labels.LGTM, labels.Approved},
+		},
+		{
+			mergeable: false,
+			state:     githubql.PullRequestStateClosed,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
+			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
@@ -333,6 +362,7 @@ func TestHandleAll(t *testing.T) {
 		},
 		{
 			mergeable: true,
+			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
@@ -344,6 +374,7 @@ func TestHandleAll(t *testing.T) {
 	for i, testPR := range testPRs {
 		pr := pullRequest{
 			Number: githubql.Int(i),
+			State:  testPR.state,
 		}
 		if testPR.mergeable {
 			pr.Mergeable = githubql.MergeableStateMergeable
