@@ -228,7 +228,7 @@ func main() {
 
 	var hasReporter bool
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
+		if cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
 		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {

@@ -3346,20 +3346,6 @@ func TestSlackReporterValidation(t *testing.T) {
 		successExpected bool
 	}{
 		{
-			name: "Valid config w/ slack_reporter - no error",
-			config: func() Config {
-				slack := &SlackReporter{
-					Channel: "my-channel",
-				}
-				return Config{
-					ProwConfig: ProwConfig{
-						SlackReporter: slack,
-					},
-				}
-			},
-			successExpected: true,
-		},
-		{
 			name: "Valid config w/ wildcard slack_reporter_configs - no error",
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
@@ -3406,38 +3392,6 @@ func TestSlackReporterValidation(t *testing.T) {
 				}
 			},
 			successExpected: true,
-		},
-		{
-			name: "Invalid config b/c both slack_reporter and slack_reporter_configs - error",
-			config: func() Config {
-				slack := &SlackReporter{
-					Channel: "my-channel",
-				}
-				slackCfg := map[string]SlackReporter{
-					"*": {
-						Channel: "my-channel",
-					},
-				}
-				return Config{
-					ProwConfig: ProwConfig{
-						SlackReporter:        slack,
-						SlackReporterConfigs: slackCfg,
-					},
-				}
-			},
-			successExpected: false,
-		},
-		{
-			name: "No channel w/ slack_reporter - error",
-			config: func() Config {
-				slack := &SlackReporter{}
-				return Config{
-					ProwConfig: ProwConfig{
-						SlackReporter: slack,
-					},
-				}
-			},
-			successExpected: false,
 		},
 		{
 			name: "No channel w/ slack_reporter_configs - error",

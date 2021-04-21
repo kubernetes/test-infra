@@ -111,17 +111,15 @@ type JobConfig struct {
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
 	// The git sha from which this config was generated
-	ConfigVersionSHA string           `json:"config_version_sha,omitempty"`
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection"`
-	Gerrit           Gerrit           `json:"gerrit"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter"`
-	Horologium       Horologium       `json:"horologium"`
-	// Deprecated: this option will be removed in May 2020.
-	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
+	ConfigVersionSHA     string               `json:"config_version_sha,omitempty"`
+	Tide                 Tide                 `json:"tide,omitempty"`
+	Plank                Plank                `json:"plank,omitempty"`
+	Sinker               Sinker               `json:"sinker,omitempty"`
+	Deck                 Deck                 `json:"deck,omitempty"`
+	BranchProtection     BranchProtection     `json:"branch-protection"`
+	Gerrit               Gerrit               `json:"gerrit"`
+	GitHubReporter       GitHubReporter       `json:"github_reporter"`
+	Horologium           Horologium           `json:"horologium"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
 
@@ -1536,17 +1534,6 @@ func (c *Config) validateComponentConfig() error {
 		if len(validationErrs) > 0 {
 			return utilerrors.NewAggregate(validationErrs)
 		}
-	}
-
-	// TODO(@clarketm): Remove in May 2020
-	if c.SlackReporter != nil {
-		logrus.Warning("slack_reporter will be deprecated on May 2020, and it will be replaced with slack_reporter_configs['*'].")
-
-		if c.SlackReporterConfigs != nil {
-			return errors.New("slack_reporter and slack_reporter_configs['*'] are mutually exclusive")
-		}
-
-		c.SlackReporterConfigs = SlackReporterConfigs{"*": *c.SlackReporter}
 	}
 
 	if c.SlackReporterConfigs != nil {
