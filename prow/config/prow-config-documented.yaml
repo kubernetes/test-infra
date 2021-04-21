@@ -943,16 +943,6 @@ sinker:
     # garbage collected.
     # Defaults to matching MaxPodAge.
     terminated_pod_ttl: 0s
-
-
-# Deprecated: this option will be removed in May 2020.
-slack_reporter:
-    channel: ' '
-    job_states_to_report:
-      - ""
-    job_types_to_report:
-      - ""
-    report_template: ' '
 slack_reporter_configs:
     "":
         channel: ' '
