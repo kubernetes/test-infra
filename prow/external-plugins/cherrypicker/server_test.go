@@ -352,11 +352,11 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
 		t.Fatalf("Adding initial commit: %v", err)
 	}
-	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
-		t.Fatalf("Checking out pull branch: %v", err)
-	}
-	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.6"); err != nil {
-		t.Fatalf("Checking out pull branch: %v", err)
+	expectedBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
+	for _, branch := range expectedBranches {
+		if err := lg.CheckoutNewBranch("foo", "bar", branch); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
 	}
 	if err := lg.CheckoutNewBranch("foo", "bar", "cherry-pick-2-to-release-1.5"); err != nil {
 		t.Fatalf("Checking out existing PR branch: %v", err)
@@ -382,7 +382,7 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 				User: github.User{
 					Login: "approver",
 				},
-				Body: "/cherrypick release-1.5\r",
+				Body: "/cherrypick release-1.5\r\n/cherrypick release-1.8",
 			},
 			{
 				User: github.User{
@@ -473,26 +473,25 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
 
-	if len(ghc.prs) != 2 {
-		t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+	if len(ghc.prs) != len(expectedBranches) {
+		t.Fatalf("Expected %d PRs, got %d", len(expectedBranches), len(ghc.prs))
 	}
 
-	expectedBranches := []string{"release-1.5", "release-1.6"}
+	expectedPrs := make(map[string]string)
+	for _, branch := range expectedBranches {
+		expectedPrs[expectedFn(branch)] = branch
+	}
 	seenBranches := make(map[string]struct{})
 	for _, p := range ghc.prs {
 		pr := prToString(p)
-		if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+		branch, present := expectedPrs[pr]
+		if !present {
 			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n%s", pr, expectedBranches, expectedFn("release-1.5"))
 		}
-		if pr == expectedFn("release-1.5") {
-			seenBranches["release-1.5"] = struct{}{}
-		}
-		if pr == expectedFn("release-1.6") {
-			seenBranches["release-1.6"] = struct{}{}
-		}
+		seenBranches[branch] = struct{}{}
 	}
-	if len(seenBranches) != 2 {
-		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+	if len(seenBranches) != len(expectedBranches) {
+		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", len(expectedBranches), len(seenBranches), seenBranches)
 	}
 }
 

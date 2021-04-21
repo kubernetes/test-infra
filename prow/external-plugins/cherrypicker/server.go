@@ -286,15 +286,13 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	for i := range comments {
 		c := comments[i]
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
-		if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
-			continue
+		for _, match := range cherryPickMatches {
+			targetBranch := strings.TrimSpace(match[1])
+			if requestorToComments[c.User.Login] == nil {
+				requestorToComments[c.User.Login] = make(map[string]*github.IssueComment)
+			}
+			requestorToComments[c.User.Login][targetBranch] = &c
 		}
-		// TODO: Support comments with multiple cherrypick invocations.
-		targetBranch := strings.TrimSpace(cherryPickMatches[0][1])
-		if requestorToComments[c.User.Login] == nil {
-			requestorToComments[c.User.Login] = make(map[string]*github.IssueComment)
-		}
-		requestorToComments[c.User.Login][targetBranch] = &c
 	}
 
 	foundCherryPickComments := len(requestorToComments) != 0
