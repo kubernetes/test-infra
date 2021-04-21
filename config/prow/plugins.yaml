@@ -654,6 +654,16 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes-client
+  repo: python
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-kind
+  org: kubernetes-client
+  repo: python-base
+  prs: true
+  regexp: ^kind/
 
 retitle:
   allow_closed_issues: true
@@ -859,6 +869,16 @@ plugins:
     - welcome
     - wip
     - yuks
+
+  kubernetes-client/python:
+    plugins:
+    - release-note
+    - require-matching-label
+
+  kubernetes-client/python-base:
+    plugins:
+    - release-note
+    - require-matching-label
 
   kubernetes-csi:
     plugins:
