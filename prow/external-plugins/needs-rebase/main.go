@@ -47,17 +47,32 @@ type options struct {
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	logLevel               string
-	hourlyTokens           int
+
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
+	hourlyTokens int
 
 	updatePeriod time.Duration
 
 	webhookSecretFile string
 }
 
+const defaultHourlyTokens = 360
+
 func (o *options) Validate() error {
 	for idx, group := range []flagutil.OptionGroup{&o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return fmt.Errorf("%d: %w", idx, err)
+		}
+	}
+
+	if o.hourlyTokens > 0 {
+		logrus.Warn("--hourly-tokens is deprecated: use --github-hourly-tokens instead")
+		if o.github.ThrottleHourlyTokens > 0 && o.github.ThrottleHourlyTokens != defaultHourlyTokens {
+			// Both options were explicitly specified, use the old form for now
+			o.github.ThrottleHourlyTokens = o.hourlyTokens
+			if o.github.ThrottleAllowBurst > o.github.ThrottleHourlyTokens {
+				o.github.ThrottleAllowBurst = o.github.ThrottleHourlyTokens
+			}
 		}
 	}
 
@@ -73,9 +88,11 @@ func gatherOptions() options {
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
-	fs.IntVar(&o.hourlyTokens, "hourly-tokens", 360, "The number of hourly tokens need-rebase may use")
+	fs.IntVar(&o.hourlyTokens, "hourly-tokens", 0, "The number of hourly tokens need-rebase may use (deprecated: use --github-hourly-tokens instead)")
 
-	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
+	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultHourlyTokens, defaultHourlyTokens))
+
+	for _, group := range []flagutil.OptionGroup{&o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -114,7 +131,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(o.hourlyTokens, o.hourlyTokens)
 
 	server := &Server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
