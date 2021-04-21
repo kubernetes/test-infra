@@ -398,8 +398,12 @@ func (t *throttler) Wait() {
 	start := time.Now()
 	log := logrus.WithFields(logrus.Fields{"client": "github", "throttled": true})
 	defer func() {
-		if waitTime := time.Since(start); waitTime > time.Minute {
-			log.WithField("throttle-duration", waitTime.String()).Warn("Throttled clientside for more than a minute")
+		waitTime := time.Since(start)
+		switch {
+		case waitTime > 15*time.Minute:
+			log.WithField("throttle-duration", waitTime.String()).Warn("Throttled clientside for more than 15 minutes")
+		case waitTime > time.Minute:
+			log.WithField("throttle-duration", waitTime.String()).Debug("Throttled clientside for more than a minute")
 		}
 	}()
 	t.lock.RLock()
