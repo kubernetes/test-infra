@@ -19,18 +19,18 @@ dashboards:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-aks-nightly
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Evaluation profile Kyma Alpha Azure Gardener integration job.
     name: kyma-alpha-integration-evaluation-gardener-azure
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-alpha-integration-evaluation-gardener-azure
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Production profile Kyma Alpha Azure Gardener integration job.
     name: kyma-alpha-integration-production-gardener-azure
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-alpha-integration-production-gardener-azure
   - code_search_url_template:
       url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -47,32 +47,32 @@ dashboards:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-gke-weekly
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Evaluation profile Kyma Azure Gardener integration job.
     name: kyma-integration-evaluation-gardener-azure
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-integration-evaluation-gardener-azure
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma AWS Gardener integration job.
     name: kyma-integration-gardener-aws
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-integration-gardener-aws
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma Azure Gardener integration job.
     name: kyma-integration-gardener-azure
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-integration-gardener-azure
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GCP Gardener integration job.
     name: kyma-integration-gardener-gcp
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-integration-gardener-gcp
   - code_search_url_template:
       url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -89,11 +89,11 @@ dashboards:
       url: https://github.com/kyma-project/test-infra/issues/
     test_group_name: kyma-integration-k3s-compass-dev
   - code_search_url_template:
-      url: https://github.com/kyma-project/test-infra/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Production profile Kyma Azure Gardener integration job.
     name: kyma-integration-production-gardener-azure
     open_bug_template:
-      url: https://github.com/kyma-project/test-infra/issues/
+      url: https://github.com/kyma-project/kyma/issues/
     test_group_name: kyma-integration-production-gardener-azure
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
