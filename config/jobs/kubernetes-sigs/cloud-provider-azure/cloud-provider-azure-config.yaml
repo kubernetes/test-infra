@@ -262,6 +262,52 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
       testgrid-num-columns-recent: '30'
+  - name: pull-cloud-provider-azure-e2e-ccm-capz
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: CecileRobertMichonm # TODO(CecileRobertMichon): change it to 'kubernetes-sigs'
+        repo: cluster-api-provider-azure
+        base_ref: ccm-presubmit-tests # TODO(CecileRobertMichon): change it to 'master'
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+          command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+          args:
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-ccm-e2e
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_CCM
+              value: "true"
+            - name: K8S_AZURE_LOADBALANCE_SKU
+              value: "standard"
+            - name: AZURE_LOADBALANCER_SKU
+              value: "standard"
+    annotations:
+      testgrid-dashboards: provider-azure-cloud-provider-azure
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
     always_run: true
     decorate: true
