@@ -109,6 +109,8 @@ dashboards:
   dashboard_tab:
   - name: ci-daisy-e2e
     test_group_name: ci-daisy-e2e
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com    
     file_bug_template:
@@ -120,6 +122,8 @@ dashboards:
         value: <test-url>
   - name: ci-daisy-e2e-daily
     test_group_name: ci-daisy-e2e-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com       
     file_bug_template:
@@ -131,6 +135,8 @@ dashboards:
         value: <test-url>
   - name: ci-images-import-export-cli-e2e-tests
     test_group_name: ci-images-import-export-cli-e2e-tests
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com   
     file_bug_template:
@@ -142,6 +148,8 @@ dashboards:
         value: <test-url>
   - name: ci-ovf-import-e2e-tests-daily
     test_group_name: ci-ovf-import-e2e-tests-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com
     file_bug_template:
@@ -153,6 +161,8 @@ dashboards:
         value: <test-url>
   - name: ci-ovf-export-e2e-tests-daily
     test_group_name: ci-ovf-export-e2e-tests-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com
     file_bug_template:
@@ -164,6 +174,8 @@ dashboards:
         value: <test-url>
   - name: ci-windows-upgrade-e2e-tests
     test_group_name: ci-windows-upgrade-e2e-tests
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -173,6 +185,8 @@ dashboards:
         value: <test-url>
   - name: ci-v2v-adapt-e2e
     test_group_name: ci-v2v-adapt-e2e
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -189,6 +203,8 @@ dashboards:
   dashboard_tab:
   - name: osconfig-unstable
     test_group_name: osconfig-unstable
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -198,6 +214,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-staging
     test_group_name: osconfig-staging
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -207,6 +225,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-stable
     test_group_name: osconfig-stable
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -216,6 +236,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-head-images
     test_group_name: osconfig-head-images
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
