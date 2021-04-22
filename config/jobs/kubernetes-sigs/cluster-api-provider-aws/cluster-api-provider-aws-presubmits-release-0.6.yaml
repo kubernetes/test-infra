@@ -1,59 +1,56 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-test
+  - name: pull-cluster-api-provider-aws-test-release-0-6
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
         command:
         - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-test
-  - name: pull-cluster-api-provider-aws-build
+      testgrid-tab-name: pr-test-release-0-6
+  - name: pull-cluster-api-provider-aws-build-release-0-6
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
         command:
         - "./scripts/ci-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-build
-  - name: pull-cluster-api-provider-aws-verify
+      testgrid-tab-name: pr-build-release-0-6
+  - name: pull-cluster-api-provider-aws-verify-release-0-6
     always_run: true
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
         command:
         - "make"
         - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: verify
+      testgrid-tab-name: verify-release-0-6
   # conformance test
-  - name: pull-cluster-api-provider-aws-e2e-conformance
+  - name: pull-cluster-api-provider-aws-e2e-conformance-release-0-6
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -80,7 +77,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -101,14 +98,13 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance
+      testgrid-tab-name: pr-conformance-release-0-6
       testgrid-num-columns-recent: '20'
   # conformance test against kubernetes main branch with `kind` + cluster-api-provider-aws
-  - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts
+  - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts-release-0-6
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -124,7 +120,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -143,13 +139,12 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance-k8s-master
+      testgrid-tab-name: pr-conformance-k8s-master-release-0-6
       testgrid-num-columns-recent: '20'
-  - name: pull-cluster-api-provider-aws-e2e
+  - name: pull-cluster-api-provider-aws-e2e-release-0-6
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -165,7 +160,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -184,13 +179,12 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e
+      testgrid-tab-name: pr-e2e-release-0-6
       testgrid-num-columns-recent: '20'
-  - name: pull-cluster-api-provider-aws-e2e-eks
+  - name: pull-cluster-api-provider-aws-e2e-eks-release-0-6
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
-    - ^release-0.7
+    - ^release-0.6
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -206,7 +200,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
@@ -225,5 +219,5 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e-eks
+      testgrid-tab-name: pr-e2e-eks-release-0-6
       testgrid-num-columns-recent: '20'
