@@ -37,12 +37,19 @@ function resizeIframe(e: MessageEvent): void {
     if (!iFrame) {
         return;
     }
-    if (iFrame.contentWindow === e.source) {
-        const height = e.data.height + "px";
-        iFrame.height = height;
-        iFrame.style.height = height;
-        spyglass.contentUpdated();
+    if (iFrame.contentWindow !== e.source) {
+        return;
     }
+    const height = e.data.height + "px";
+    iFrame.height = height;
+    iFrame.style.height = height;
+
+    const row = document.getElementById(e.data.id + '-tr') as HTMLTableRowElement;
+    if (row && row.classList.contains("initial")) {
+      row.classList.remove("initial");
+      row.classList.add("hidden-data");
+    }
+    spyglass.contentUpdated();
 }
 
 window.addEventListener('DOMContentLoaded', addSectionExpanders);

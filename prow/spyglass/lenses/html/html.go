@@ -41,7 +41,7 @@ func (lens Lens) Config() lenses.LensConfig {
 	return lenses.LensConfig{
 		Name:      "html",
 		Title:     "HTML",
-		Priority:  21,
+		Priority:  3,
 		HideTitle: true,
 	}
 }

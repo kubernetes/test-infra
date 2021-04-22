@@ -6,7 +6,7 @@
       <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
     
-    <tr class="">
+    <tr class="initial" id="file.html-tr">
       <td colspan="2" style="border: 0px; padding: 0px;">
         <iframe srcdoc="<div id=&quot;wrapper&quot;><body>Hello world!</body></div><script type=&quot;text/javascript&quot;>
 window.addEventListener(&quot;load&quot;, function(){
