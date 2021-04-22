@@ -486,7 +486,7 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		pr := prToString(p)
 		branch, present := expectedPrs[pr]
 		if !present {
-			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n%s", pr, expectedBranches, expectedFn("release-1.5"))
+			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n", pr, expectedBranches)
 		}
 		seenBranches[branch] = struct{}{}
 	}
