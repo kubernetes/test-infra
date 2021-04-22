@@ -27,12 +27,14 @@ set -o pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
-readonly PROW_SECRET_ACCESSOR_SA="kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com"
-readonly APPS_CONSUME_KUBECONFIG="crier deck hook pipeline prow_controller_manager sinker"
-
 # Specific to Prow instance
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
 GCS_BUCKET="${GCS_BUCKET:-${PROW_INSTANCE_NAME}}"
+
+PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com}"
+PROW_DEPLOYMENT_DIR="${PROW_DEPLOYMENT_DIR:-./config/prow/cluster}"
+GITHUB_FORK_URI="${GITHUB_FORK_URI:-}"
+GITHUB_CLONE_URI="${GITHUB_CLONE_URI:-git@github.com:kubernetes/test-infra}"
 
 # Specific to the build cluster
 TEAM="${TEAM:-}"
@@ -74,13 +76,25 @@ function main() {
 }
 # Prep and check args.
 function parseArgs() {
-  for var in TEAM PROJECT ZONE CLUSTER MACHINE NODECOUNT DISKSIZE FOLDER_ID BILLING_ACCOUNT_ID; do
+  for var in TEAM PROJECT ZONE CLUSTER MACHINE NODECOUNT DISKSIZE FOLDER_ID BILLING_ACCOUNT_ID GITHUB_FORK_URI; do
     if [[ -z "${!var}" ]]; then
       echo "Must specify ${var} environment variable (or specify a default in the script)."
       exit 2
     fi
     echo "${var}=${!var}"
   done
+  if [[ "${PROW_INSTANCE_NAME}" != "k8s-prow" ]]; then
+    if [[ "${PROW_SECRET_ACCESSOR_SA}" == "kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com" ]]; then
+      echo "${PROW_SECRET_ACCESSOR_SA} is k8s-prow specific, must pass in the service account used by ${PROW_INSTANCE_NAME}"
+      exit 2
+    fi
+    if [[ "${PROW_DEPLOYMENT_DIR}" == "./config/prow/cluster" ]]; then
+      read -r -n1 -p "${PROW_DEPLOYMENT_DIR} is k8s-prow specific, are you sure this is the same for ${PROW_INSTANCE_NAME} ? [y/n] "
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 2
+      fi
+    fi
+  fi
 }
 function prompt() {
   local msg="$1" cmd="$2"
@@ -184,11 +198,6 @@ cluster_alias() {
 gsm_secret_name() {
   echo "prow_build_cluster_kubeconfig_$(cluster_alias)"
 }
-ensure_kustomize() {
-  if ! which "kustomize" > /dev/null 2>&1; then
-    GOBIN=$(pwd)/ GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3
-  fi
-}
 
 create_cl() {
   local cluster_alias
@@ -198,25 +207,17 @@ create_cl() {
   local build_cluster_kubeconfig_mount_path="/etc/${cluster_alias}"
   local build_clster_secret_name_in_cluster="kubeconfig-build-${TEAM}"
   cd "${ROOT_DIR}"
-  clone_uri="$(git config --get remote.origin.url)"
-  fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
-  if [[ "${fork}" == "kubernetes/test-infra" ]]; then # This is not a fork
-    echo
-    read -r -n1 -p "Please provide the clone url for your fork: "
-    echo
-    clone_uri="$REPLY"
-    fork="$(echo "${clone_uri}" | gsed -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
-  fi
-
-  local prow_deployment_dir="./config/prow/cluster"
+  local fork
+  fork="$(echo "${GITHUB_FORK_URI}" | "$SED" -e "s;https://github.com/;;" -e "s;git@github.com:;;" -e "s;.git;;")"
+  
   cd "${tempdir}"
-  ensure_kustomize
-  git clone "${clone_uri}" --depth=1 forked-test-infra
+  git clone "${GITHUB_CLONE_URI}" forked-test-infra
   cd forked-test-infra
+  git fetch
 
-  git checkout -b add-build-cluster-secret
+  git checkout -b add-build-cluster-secret-${TEAM}
 
-  cat>>"${prow_deployment_dir}/kubernetes_external_secrets.yaml" <<EOF
+  cat>>"${PROW_DEPLOYMENT_DIR}/kubernetes_external_secrets.yaml" <<EOF
 ---
 apiVersion: kubernetes-client.io/v1
 kind: ExternalSecret
@@ -232,29 +233,33 @@ spec:
     version: latest
 EOF
 
-  git add "${prow_deployment_dir}/kubernetes_external_secrets.yaml"
+  git add "${PROW_DEPLOYMENT_DIR}/kubernetes_external_secrets.yaml"
   git commit -m "Add external secret from build cluster for ${TEAM}"
-  git push origin HEAD
+  git push -f "${GITHUB_FORK_URI}" "HEAD:add-build-cluster-secret-${TEAM}"
 
-  git checkout -b use-build-cluster master
+  git checkout -b use-build-cluster-${TEAM} master
   
-  for app in ${APPS_CONSUME_KUBECONFIG}; do
-    local app_deployment_file="${app}_deployment.yaml"
+  for app_deployment_file in ${PROW_DEPLOYMENT_DIR}/*.yaml; do
+    if ! grep "/etc/kubeconfig/config" "${app_deployment_file}">/dev/null 2>&1; then
+      if ! grep "name: KUBECONFIG" "${app_deployment_file}">/dev/null 2>&1; then
+        continue
+      fi
+    fi
     "${SED}" -i "s;volumeMounts:;volumeMounts:\\
         - mountPath: ${build_cluster_kubeconfig_mount_path}\\
           name: ${cluster_alias}\\
-          readOnly: true;" "${prow_deployment_dir}/${app_deployment_file}"
+          readOnly: true;" "${app_deployment_file}"
 
     "${SED}" -i "s;volumes:;volumes:\\
       - name: ${cluster_alias}\\
         secret:\\
           defaultMode: 420\\
-          secretName: ${build_clster_secret_name_in_cluster};" "${prow_deployment_dir}/${app_deployment_file}"
+          secretName: ${build_clster_secret_name_in_cluster};" "${app_deployment_file}"
 
     # Appends to an existing value doesn't seem to be supported by kustomize, so
     # using sed instead. `&` represents for regex matched part
-    "${SED}" -E -i "s;/etc/kubeconfig/config-[0-9]+;&:${build_cluster_kubeconfig_mount_path}/kubeconfig;" "${prow_deployment_dir}/${app_deployment_file}"
-    git add "${prow_deployment_dir}/${app_deployment_file}"
+    "${SED}" -E -i "s;/etc/kubeconfig/config(-[0-9]+)?;&:${build_cluster_kubeconfig_mount_path}/kubeconfig;" "${app_deployment_file}"
+    git add "${app_deployment_file}"
   done
 
   git commit -m "Add build cluster kubeconfig for ${TEAM}
@@ -263,9 +268,9 @@ Please submit this change after the previous PR was submitted and postsubmit job
 Prow oncall: please don't submit this change until the secret is created successfully, which will be indicated by prow alerts in 2 minutes after the postsubmit job.
 "
 
-  git push origin HEAD
+  git push -f "${GITHUB_FORK_URI}" "HEAD:use-build-cluster-${TEAM}"
   echo
-  echo "Please open https://github.com/${fork}/pull/new/add-build-cluster-secret and https://github.com/${fork}/pull/new/use-build-cluster, creating PRs from both of them and assign to test-infra oncall for approval"
+  echo "Please open https://github.com/${fork}/pull/new/add-build-cluster-secret-${TEAM} and https://github.com/${fork}/pull/new/use-build-cluster-${TEAM}, creating PRs from both of them and assign to test-infra oncall for approval"
   echo
   pause
 }
