@@ -901,29 +901,36 @@ func calculateStorageBuckets(c *Config) sets.String {
 	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
 		if dc.Config != nil && dc.Config.GCSConfiguration != nil && dc.Config.GCSConfiguration.Bucket != "" {
-			knownBuckets.Insert(dc.Config.GCSConfiguration.Bucket)
+			knownBuckets.Insert(stripProviderPrefixFromBucket(dc.Config.GCSConfiguration.Bucket))
 		}
 	}
 	for _, j := range c.Periodics {
 		if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
-			knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+			knownBuckets.Insert(stripProviderPrefixFromBucket(j.DecorationConfig.GCSConfiguration.Bucket))
 		}
 	}
 	for _, jobs := range c.PresubmitsStatic {
 		for _, j := range jobs {
 			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
-				knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+				knownBuckets.Insert(stripProviderPrefixFromBucket(j.DecorationConfig.GCSConfiguration.Bucket))
 			}
 		}
 	}
 	for _, jobs := range c.PostsubmitsStatic {
 		for _, j := range jobs {
 			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
-				knownBuckets.Insert(j.DecorationConfig.GCSConfiguration.Bucket)
+				knownBuckets.Insert(stripProviderPrefixFromBucket(j.DecorationConfig.GCSConfiguration.Bucket))
 			}
 		}
 	}
 	return knownBuckets
+}
+
+func stripProviderPrefixFromBucket(bucket string) string {
+	if split := strings.Split(bucket, "://"); len(split) == 2 {
+		return split[1]
+	}
+	return bucket
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose

@@ -6122,3 +6122,64 @@ func TestHasConfigFor(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateStorageBuckets(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		in       *Config
+		expected sets.String
+	}{
+		{
+			name: "S3 provider prefix gets removed from Plank config",
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			}}}}}},
+			expected: sets.NewString("prow-logs"),
+		},
+		{
+			name: "GS provider prefix gets removed from Plank config",
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "gs://prow-logs"},
+			}}}}}},
+			expected: sets.NewString("prow-logs"),
+		},
+		{
+			name: "No provider prefix, nothing to do",
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "kubernetes-jenkins"},
+			}}}}}},
+			expected: sets.NewString("kubernetes-jenkins"),
+		},
+		{
+			name: "S3 provider prefix gets removed from periodic config",
+			in: &Config{JobConfig: JobConfig{Periodics: []Periodic{{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			}}}}}}},
+			expected: sets.NewString("prow-logs"),
+		},
+		{
+			name: "S3 provider prefix gets removed from presubmit config",
+			in: &Config{JobConfig: JobConfig{PresubmitsStatic: map[string][]Presubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			}}}}}}}},
+			expected: sets.NewString("prow-logs"),
+		},
+		{
+			name: "S3 provider prefix gets removed from postsubmit config",
+			in: &Config{JobConfig: JobConfig{PostsubmitsStatic: map[string][]Postsubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
+				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			}}}}}}}},
+			expected: sets.NewString("prow-logs"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := calculateStorageBuckets(tc.in)
+			if diff := cmp.Diff(tc.expected, actual); diff != "" {
+				t.Errorf("actual differs from expected")
+			}
+		})
+	}
+}
