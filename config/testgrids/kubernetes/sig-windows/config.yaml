@@ -63,9 +63,9 @@ dashboards:
     test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
-  - name: win-1909-containerd-master-integration
-    description: Runs containerd integration & cri-integration tests on Windows (SAC 1909)
-    test_group_name: integration-containerd-windows-sac1909
+  - name: win-2004-containerd-master-integration
+    description: Runs containerd integration & cri-integration tests on Windows (SAC 2004)
+    test_group_name: integration-containerd-windows-sac2004
  
 test_groups:
 # Flannel CNI on Windows test groups
@@ -94,8 +94,8 @@ test_groups:
 - name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
 # Containerd Runtime integration test groups
-- name: integration-containerd-windows-sac1909
-  gcs_prefix: containerd-integration/logs/windows-sac1909
+- name: integration-containerd-windows-sac2004
+  gcs_prefix: containerd-integration/logs/windows-sac2004
   disable_prowjob_analysis: true
  
      
