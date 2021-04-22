@@ -1,4 +1,5 @@
 reviewers:
+- adelina-t
 - benmoss
 - chewong
 - ddebroy
@@ -8,6 +9,7 @@ reviewers:
 - PatrickLang
 - pjh
 approvers:
+- adelina-t
 - benmoss
 - chewong
 - ddebroy
