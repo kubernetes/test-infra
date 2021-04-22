@@ -141,6 +141,7 @@ presubmits:
             cpu: 4
             memory: 9Gi
     annotations:
+      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
@@ -273,6 +274,7 @@ presubmits:
             cpu: 4
             memory: 9Gi
     annotations:
+      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'

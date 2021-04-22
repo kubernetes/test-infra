@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-unit
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: presubmits-kubernetes-blocking
     decorate: true
     cluster: k8s-infra-prow-build

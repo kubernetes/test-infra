@@ -1706,3 +1706,183 @@ presubmits:
             memory: 12Gi
         securityContext:
           privileged: true
+  - always_run: true
+    branches:
+    - release-1.21
+    cluster: k8s-infra-prow-build
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-verify-govet-levee
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - verify
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: govet-levee
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_FILES_REMAKE
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: release-1.21
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-1.21
+        imagePullPolicy: IfNotPresent
+        name: ""
+        resources:
+          limits:
+            cpu: "7"
+            memory: 12Gi
+          requests:
+            cpu: "7"
+            memory: 12Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.21
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    max_concurrency: 8
+    name: pull-kubernetes-conformance-kind-ipv6-parallel
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: ^test/
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          value: "true"
+        - name: IP_FAMILY
+          value: ipv6
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-testimages/krte:v20210329-9b22350-1.21
+        name: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.21
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kubernetes-e2e-kind-ipv6
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: PARALLEL
+          value: "true"
+        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          value: "true"
+        - name: IP_FAMILY
+          value: ipv6
+        image: gcr.io/k8s-testimages/krte:v20210329-9b22350-1.21
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9Gi
+          requests:
+            cpu: "4"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.21
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kubernetes-conformance-kind-ga-only-parallel
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: GA_ONLY
+          value: "true"
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-testimages/krte:v20210329-9b22350-1.21
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9Gi
+          requests:
+            cpu: "4"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.21
+    cluster: k8s-infra-prow-build
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    name: pull-kubernetes-unit
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s
+        command:
+        - runner.sh
+        - bash
+        - -c
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210403-e49d2c6-1.21
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 36Gi
+          requests:
+            cpu: "4"
+            memory: 36Gi

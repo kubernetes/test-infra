@@ -10,6 +10,7 @@ presubmits:
     skip_report: false
     path_alias: k8s.io/kubernetes
     annotations:
+      fork-per-release: "true"
       testgrid-create-test-group: "true"
     labels:
       preset-service-account: "true"
