@@ -79,7 +79,6 @@ release(
     component("statusreconciler", "deployment", "rbac"),
     component("tide", "service", "deployment", "rbac"),
     component("tls-ing", "ingress"),
-    component("tot", "service", "deployment"),  # TODO(fejta): delete tot
     component("trusted_serviceaccounts", MULTI_KIND),
     component("kubernetes_external_secrets", MULTI_KIND),
     component(
