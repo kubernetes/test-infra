@@ -55,6 +55,9 @@ const (
 	// RepoLabel is added in resources created by prow and
 	// carries the repo associated with the job, eg test-infra
 	RepoLabel = "prow.k8s.io/refs.repo"
+	// BaseRefLabel is added in resources created by prow and
+	// carries the base ref associated with the job, eg main
+	BaseRefLabel = "prow.k8s.io/refs.base_ref"
 	// PullLabel is added in resources created by prow and
 	// carries the PR number associated with the job, eg 321.
 	PullLabel = "prow.k8s.io/refs.pull"

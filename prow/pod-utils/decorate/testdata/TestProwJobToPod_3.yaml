@@ -10,6 +10,7 @@ metadata:
     prow.k8s.io/context: job-context
     prow.k8s.io/id: pod
     prow.k8s.io/job: job-name
+    prow.k8s.io/refs.base_ref: base-ref
     prow.k8s.io/refs.org: org-name
     prow.k8s.io/refs.pull: "1"
     prow.k8s.io/refs.repo: repo-name

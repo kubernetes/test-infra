@@ -602,14 +602,42 @@ func TestNewProwJob(t *testing.T) {
 			},
 		},
 		{
+			name: "periodic job with extra refs",
+			spec: prowapi.ProwJobSpec{
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
+				ExtraRefs: []prowapi.Refs{{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "main",
+				}},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
+				kube.ProwJobTypeLabel:  "periodic",
+				kube.OrgLabel:          "org",
+				kube.RepoLabel:         "repo",
+				kube.BaseRefLabel:      "main",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
+			},
+		},
+		{
 			name: "presubmit job",
 			spec: prowapi.ProwJobSpec{
 				Job:     "job",
 				Context: "job-context",
 				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
-					Org:  "org",
-					Repo: "repo",
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "main",
 					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
@@ -623,6 +651,7 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "org",
 				kube.RepoLabel:         "repo",
+				kube.BaseRefLabel:      "main",
 				kube.PullLabel:         "1",
 			},
 			expectedAnnotations: map[string]string{
@@ -637,8 +666,9 @@ func TestNewProwJob(t *testing.T) {
 				Context: "job-context",
 				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
-					Org:  "https://some-gerrit-instance.foo.com",
-					Repo: "some/invalid/repo",
+					Org:     "https://some-gerrit-instance.foo.com",
+					Repo:    "some/invalid/repo",
+					BaseRef: "main",
 					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
@@ -652,6 +682,7 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "some-gerrit-instance.foo.com",
 				kube.RepoLabel:         "repo",
+				kube.BaseRefLabel:      "main",
 				kube.PullLabel:         "1",
 			},
 			expectedAnnotations: map[string]string{
@@ -665,8 +696,9 @@ func TestNewProwJob(t *testing.T) {
 				Context: "job-context",
 				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
-					Org:  "org",
-					Repo: "repo",
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "main",
 					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
@@ -680,6 +712,7 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "org",
 				kube.RepoLabel:         "repo",
+				kube.BaseRefLabel:      "main",
 				kube.PullLabel:         "1",
 			},
 			expectedAnnotations: map[string]string{
@@ -694,8 +727,9 @@ func TestNewProwJob(t *testing.T) {
 				Context: "context-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
 				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
-					Org:  "org",
-					Repo: "repo",
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "main",
 					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
@@ -709,6 +743,7 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "org",
 				kube.RepoLabel:         "repo",
+				kube.BaseRefLabel:      "main",
 				kube.PullLabel:         "1",
 			},
 			expectedAnnotations: map[string]string{

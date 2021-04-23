@@ -118,11 +118,18 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 		annotations[key] = value
 	}
 
-	if spec.Type != prowapi.PeriodicJob && spec.Refs != nil {
-		labels[kube.OrgLabel] = spec.Refs.Org
-		labels[kube.RepoLabel] = spec.Refs.Repo
-		if len(spec.Refs.Pulls) > 0 {
-			labels[kube.PullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+	var refs *prowapi.Refs
+	if spec.Refs != nil {
+		refs = spec.Refs
+	} else if len(spec.ExtraRefs) > 0 {
+		refs = &spec.ExtraRefs[0]
+	}
+	if refs != nil {
+		labels[kube.OrgLabel] = refs.Org
+		labels[kube.RepoLabel] = refs.Repo
+		labels[kube.BaseRefLabel] = refs.BaseRef
+		if len(refs.Pulls) > 0 {
+			labels[kube.PullLabel] = strconv.Itoa(refs.Pulls[0].Number)
 		}
 	}
 
