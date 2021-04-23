@@ -35,6 +35,7 @@ spec:
         properties:
           spec:
             type: object
+            x-kubernetes-preserve-unknown-fields: true
             properties:
               max_concurrency:
                 type: integer
