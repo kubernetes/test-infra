@@ -722,7 +722,7 @@ presets:
     preset-azure-anonymous-pull: "true"
   env:
     - name: REGISTRY
-      value: capzci.azurecr.io
+      value: capzci.azurecr.io/prow
 - labels:
     preset-azure-cred-only: "true"
   env:
