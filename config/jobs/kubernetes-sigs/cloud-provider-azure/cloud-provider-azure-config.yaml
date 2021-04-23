@@ -283,7 +283,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-      - org: CecileRobertMichonm # TODO(CecileRobertMichon): change it to 'kubernetes-sigs'
+      - org: CecileRobertMichon # TODO(CecileRobertMichon): change it to 'kubernetes-sigs'
         repo: cluster-api-provider-azure
         base_ref: ccm-presubmit-tests # TODO(CecileRobertMichon): change it to 'master'
         path_alias: sigs.k8s.io/cluster-api-provider-azure
