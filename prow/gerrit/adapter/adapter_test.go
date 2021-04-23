@@ -408,6 +408,7 @@ func TestProcessChange(t *testing.T) {
 				kube.CreatedByProw:       "true",
 				kube.ProwJobTypeLabel:    "presubmit",
 				kube.ProwJobAnnotation:   "always-runs-all-branches",
+				kube.ContextAnnotation:   "alawys-runa-all-branches",
 				kube.OrgLabel:            "gerrit",
 				kube.RepoLabel:           "test-infra",
 				kube.PullLabel:           "0",

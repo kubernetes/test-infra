@@ -446,9 +446,10 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type:  prowapi.PresubmitJob,
-				Job:   "job-name",
-				Agent: prowapi.KubernetesAgent,
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
+				Agent:   prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
@@ -480,8 +481,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -534,8 +536,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -587,8 +590,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -642,8 +646,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -695,8 +700,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PeriodicJob,
-				Job:  "job-name",
+				Type:    prowapi.PeriodicJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -735,8 +741,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -794,8 +801,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
@@ -863,8 +871,9 @@ func TestProwJobToPod(t *testing.T) {
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
-				Job:  "job-name",
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
 				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
 					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},

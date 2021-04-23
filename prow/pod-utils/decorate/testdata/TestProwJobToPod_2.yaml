@@ -1,11 +1,13 @@
 metadata:
   annotations:
+    prow.k8s.io/context: job-context
     prow.k8s.io/job: job-name
   creationTimestamp: null
   labels:
     created-by-prow: "true"
     needstobe: inherited
     prow.k8s.io/build-id: blabla
+    prow.k8s.io/context: job-context
     prow.k8s.io/id: pod
     prow.k8s.io/job: job-name
     prow.k8s.io/refs.org: org-name

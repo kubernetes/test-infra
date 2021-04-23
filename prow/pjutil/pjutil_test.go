@@ -563,24 +563,28 @@ func TestNewProwJob(t *testing.T) {
 		{
 			name: "periodic job, no extra labels",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PeriodicJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "periodic",
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 		{
 			name: "periodic job, extra labels",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PeriodicJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
 			},
 			labels: map[string]string{
 				"extra": "stuff",
@@ -588,18 +592,21 @@ func TestNewProwJob(t *testing.T) {
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "periodic",
 				"extra":                "stuff",
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 		{
 			name: "presubmit job",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PresubmitJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
@@ -612,6 +619,7 @@ func TestNewProwJob(t *testing.T) {
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "org",
 				kube.RepoLabel:         "repo",
@@ -619,13 +627,15 @@ func TestNewProwJob(t *testing.T) {
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 		{
 			name: "non-github presubmit job",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PresubmitJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
 					Org:  "https://some-gerrit-instance.foo.com",
 					Repo: "some/invalid/repo",
@@ -638,6 +648,7 @@ func TestNewProwJob(t *testing.T) {
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "some-gerrit-instance.foo.com",
 				kube.RepoLabel:         "repo",
@@ -645,12 +656,14 @@ func TestNewProwJob(t *testing.T) {
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		}, {
 			name: "job with name too long to fit in a label",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
-				Type: prowapi.PresubmitJob,
+				Job:     "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+				Context: "job-context",
+				Type:    prowapi.PresubmitJob,
 				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
@@ -663,20 +676,52 @@ func TestNewProwJob(t *testing.T) {
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job-created-by-someone-who-loves-very-very-very-long-names-so-l",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "presubmit",
 				kube.OrgLabel:          "org",
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
 			expectedAnnotations: map[string]string{
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobAnnotation: "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+			},
+		},
+		{
+			name: "job with context too long to fit in a label",
+			spec: prowapi.ProwJobSpec{
+				Job:     "job",
+				Context: "context-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+				Type:    prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org:  "org",
+					Repo: "repo",
+					Pulls: []prowapi.Pull{
+						{Number: 1},
+					},
+				},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "context-created-by-someone-who-loves-very-very-very-long-names",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "org",
+				kube.RepoLabel:         "repo",
+				kube.PullLabel:         "1",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "context-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
 			},
 		},
 		{
 			name: "periodic job, extra labels, extra annotations",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PeriodicJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
 			},
 			labels: map[string]string{
 				"extra": "stuff",
@@ -687,11 +732,13 @@ func TestNewProwJob(t *testing.T) {
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "periodic",
 				"extra":                "stuff",
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				"extraannotation":      "foo",
 			},
 		},
@@ -699,16 +746,19 @@ func TestNewProwJob(t *testing.T) {
 			name: "job with podspec",
 			spec: prowapi.ProwJobSpec{
 				Job:     "job",
+				Context: "job-context",
 				Type:    prowapi.PeriodicJob,
 				PodSpec: &corev1.PodSpec{}, // Needed to catch race
 			},
 			expectedLabels: map[string]string{
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 				kube.ProwJobTypeLabel:  "periodic",
 			},
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 	}
@@ -760,19 +810,22 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 		{
 			name: "job without annotation",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PeriodicJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
 			},
 			annotations: nil,
 			expectedAnnotations: map[string]string{
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 		{
 			name: "job with annotation",
 			spec: prowapi.ProwJobSpec{
-				Job:  "job",
-				Type: prowapi.PeriodicJob,
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
 			},
 			annotations: map[string]string{
 				"annotation": "foo",
@@ -780,6 +833,7 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 			expectedAnnotations: map[string]string{
 				"annotation":           "foo",
 				kube.ProwJobAnnotation: "job",
+				kube.ContextAnnotation: "job-context",
 			},
 		},
 	}
