@@ -218,6 +218,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
+    path_alias: k8s.io/kubernetes
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
