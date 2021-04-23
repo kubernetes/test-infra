@@ -1032,6 +1032,11 @@ repos:
         target: prs
         prowPlugin: require-matching-label
         addedBy: prow
+      - color: e11d21
+        description: Indicates a conformance promotion PR need a 2 week flake-free test run.
+        name: do-not-merge/flake-free-test-needed
+        target: prs
+        addedBy: humans
 
   kubernetes/org:
     labels:
