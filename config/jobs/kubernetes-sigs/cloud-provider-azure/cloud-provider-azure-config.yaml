@@ -135,6 +135,8 @@ presubmits:
         env:
         - name: K8S_AZURE_LOADBALANCE_SKU
           value: "basic"
+        - name: AZURE_LOADBALANCER_SKU
+          value: "basic"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-basic-lb
@@ -196,6 +198,8 @@ presubmits:
           env:
             - name: K8S_AZURE_LOADBALANCE_SKU
               value: "standard"
+            - name: AZURE_LOADBALANCER_SKU
+              value: "standard"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm
@@ -256,6 +260,8 @@ presubmits:
             privileged: true
           env:
             - name: K8S_AZURE_LOADBALANCE_SKU
+              value: "standard"
+            - name: AZURE_LOADBALANCER_SKU
               value: "standard"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
@@ -384,6 +390,8 @@ periodics:
       env:
       - name: K8S_AZURE_LOADBALANCE_SKU
         value: "standard"
+      - name: AZURE_LOADBALANCER_SKU
+        value: "standard"
       securityContext:
         privileged: true
   annotations:
@@ -449,6 +457,8 @@ periodics:
         value: "-ginkgo.focus=autoscaler"
       - name: K8S_AZURE_LOADBALANCE_SKU
         value: "standard"
+      - name: AZURE_LOADBALANCER_SKU
+        value: "standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-autoscaling
@@ -511,6 +521,8 @@ periodics:
       - name: CCM_E2E_ARGS
         value: "-ginkgo.focus=autoscaler"
       - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "standard"
+      - name: AZURE_LOADBALANCER_SKU
         value: "standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
@@ -697,7 +709,8 @@ periodics:
         value: azureuser
       - name: K8S_AZURE_LOADBALANCE_SKU
         value: "basic"
-
+      - name: AZURE_LOADBALANCER_SKU
+        value: "standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-serial
@@ -756,6 +769,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       - name: K8S_AZURE_LOADBALANCE_SKU
+        value: "standard"
+      - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       securityContext:
         privileged: true
