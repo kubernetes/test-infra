@@ -41,6 +41,11 @@ const (
 	// job names can be arbitrarily long, this is added as
 	// an annotation instead of a label.
 	ProwJobAnnotation = "prow.k8s.io/job"
+	// ContextAnnotation is added in resources created by prow and
+	// carries the context of the job that the pod is running. Since
+	// job names can be arbitrarily long, this is added as
+	// an annotation instead of a label.
+	ContextAnnotation = "prow.k8s.io/context"
 	// PlankVersionLabel is added in resources created by prow and
 	// carries the version of prow that decorated this job.
 	PlankVersionLabel = "prow.k8s.io/plank-version"
@@ -50,6 +55,9 @@ const (
 	// RepoLabel is added in resources created by prow and
 	// carries the repo associated with the job, eg test-infra
 	RepoLabel = "prow.k8s.io/refs.repo"
+	// BaseRefLabel is added in resources created by prow and
+	// carries the base ref associated with the job, eg main
+	BaseRefLabel = "prow.k8s.io/refs.base_ref"
 	// PullLabel is added in resources created by prow and
 	// carries the PR number associated with the job, eg 321.
 	PullLabel = "prow.k8s.io/refs.pull"

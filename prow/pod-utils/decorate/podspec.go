@@ -91,30 +91,45 @@ func PodUtilsContainerNames() sets.String {
 //
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
 func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
-	jobNameForLabel := spec.Job
 	log := logrus.WithFields(logrus.Fields{
 		"job": spec.Job,
 		"id":  extraLabels[kube.ProwBuildIDLabel],
 	})
-	if len(jobNameForLabel) > validation.LabelValueMaxLength {
-		// TODO(fejta): consider truncating middle rather than end.
-		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], ".-")
-		log.WithFields(logrus.Fields{
-			"key":       kube.ProwJobAnnotation,
-			"value":     spec.Job,
-			"truncated": jobNameForLabel,
-		}).Info("Cannot use full job name, will truncate.")
-	}
 	labels := map[string]string{
-		kube.CreatedByProw:     "true",
-		kube.ProwJobTypeLabel:  string(spec.Type),
-		kube.ProwJobAnnotation: jobNameForLabel,
+		kube.CreatedByProw:    "true",
+		kube.ProwJobTypeLabel: string(spec.Type),
 	}
-	if spec.Type != prowapi.PeriodicJob && spec.Refs != nil {
-		labels[kube.OrgLabel] = spec.Refs.Org
-		labels[kube.RepoLabel] = spec.Refs.Repo
-		if len(spec.Refs.Pulls) > 0 {
-			labels[kube.PullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+	annotations := map[string]string{}
+	for key, value := range map[string]string{
+		kube.ProwJobAnnotation: spec.Job,
+		kube.ContextAnnotation: spec.Context,
+	} {
+		maybeTruncated := value
+		if len(value) > validation.LabelValueMaxLength {
+			// TODO(fejta): consider truncating middle rather than end.
+			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], ".-")
+			log.WithFields(logrus.Fields{
+				"key":            key,
+				"value":          value,
+				"maybeTruncated": maybeTruncated,
+			}).Info("Cannot use full value, will truncate.")
+		}
+		labels[key] = maybeTruncated
+		annotations[key] = value
+	}
+
+	var refs *prowapi.Refs
+	if spec.Refs != nil {
+		refs = spec.Refs
+	} else if len(spec.ExtraRefs) > 0 {
+		refs = &spec.ExtraRefs[0]
+	}
+	if refs != nil {
+		labels[kube.OrgLabel] = refs.Org
+		labels[kube.RepoLabel] = refs.Repo
+		labels[kube.BaseRefLabel] = refs.BaseRef
+		if len(refs.Pulls) > 0 {
+			labels[kube.PullLabel] = strconv.Itoa(refs.Pulls[0].Number)
 		}
 	}
 
@@ -140,9 +155,6 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 		}
 	}
 
-	annotations := map[string]string{
-		kube.ProwJobAnnotation: spec.Job,
-	}
 	for k, v := range extraAnnotations {
 		annotations[k] = v
 	}
