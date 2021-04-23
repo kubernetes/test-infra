@@ -943,7 +943,7 @@ def generate_presubmits_e2e():
     return [
         presubmit_test(
             container_runtime='docker',
-            k8s_version='1.20',
+            k8s_version='1.21',
             kops_channel='stable',
             name='pull-kops-e2e-kubernetes-aws',
             tab_name='e2e-docker',
@@ -952,7 +952,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             container_runtime='docker',
-            k8s_version='1.20',
+            k8s_version='1.21',
             kops_channel='stable',
             name='pull-kops-e2e-k8s-containerd',
             networking='calico',
@@ -963,7 +963,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             cloud='gce',
             container_runtime='containerd',
-            k8s_version='1.20',
+            k8s_version='1.21',
             kops_channel='stable',
             name='pull-kops-e2e-k8s-gce',
             networking='cilium',
