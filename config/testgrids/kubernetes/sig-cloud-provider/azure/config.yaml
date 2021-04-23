@@ -12,7 +12,6 @@ dashboard_groups:
 - name: provider-azure
   dashboard_names:
     - provider-azure-azuredisk-csi-driver
-    - provider-azure-azuredisk-csi-driver-periodic
     - provider-azure-azurefile-csi-driver
     - provider-azure-blobfuse-csi-driver
     - provider-azure-cloud-provider-azure
@@ -27,7 +26,6 @@ dashboard_groups:
 
 dashboards:
 - name: provider-azure-azuredisk-csi-driver
-- name: provider-azure-azuredisk-csi-driver-periodic
 - name: provider-azure-azurefile-csi-driver
 - name: provider-azure-blobfuse-csi-driver
 - name: provider-azure-cloud-provider-azure
