@@ -280,7 +280,7 @@ func (opts *options) convertToLocal(ctx context.Context, log *logrus.Entry, pj p
 	}
 	// Add args for env vars.
 	for envKey, envVal := range envs {
-		localArgs = append(localArgs, "-e", envKey+":"+envVal)
+		localArgs = append(localArgs, "-e", envKey+"="+envVal)
 	}
 	// Add args for labels.
 	for k, v := range pj.Labels {
