@@ -377,7 +377,8 @@ def build_test(cloud='aws',
     if networking == "cilium":
         # https://github.com/cilium/cilium/issues/10002
         skip_regex += r'|TCP.CLOSE_WAIT'
-
+        # https://github.com/cilium/cilium/issues/15361
+        skip_regex += r'|external.IP.is.not.assigned.to.a.node'
     if skip_override is not None:
         skip_regex = skip_override
 
