@@ -83,7 +83,12 @@ for subdir, dirs, files in os.walk(profile_dir):
         usage = parse_bytes(lines[3].split()[-2])
         if usage > max_usage:
             max_usage = usage
-        for line in lines[5:]:
+        data_index = 0
+        for i in range(len(lines)):
+            if lines[i].split()[0].decode("utf-8") == "flat":
+                data_index = i + 1
+                break
+        for line in lines[data_index:]:
             parts = line.split()
             name = parts[5]
             if name not in dates_by_name:
