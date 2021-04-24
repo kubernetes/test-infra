@@ -942,6 +942,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
+        description: Issues or PR related to Terraform usage
+        name: area/infra/terraform
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PR related to prow, build clusters, migrating jobs
         name: area/prow
         target: both
