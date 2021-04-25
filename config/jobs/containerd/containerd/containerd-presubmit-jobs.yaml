@@ -12,6 +12,7 @@ presubmits:
       description: build artifacts
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
@@ -19,6 +20,9 @@ presubmits:
         - runner.sh
         args:
         - ./test/build.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
 
   - name: pull-containerd-node-e2e
     always_run: true
