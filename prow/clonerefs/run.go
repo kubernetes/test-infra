@@ -268,6 +268,9 @@ func addSSHKeys(paths []string) ([]string, []clone.Command, error) {
 		// that are mounted from a secret, so we need to check which
 		// we have
 		if err := filepath.Walk(keyPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if strings.HasPrefix(info.Name(), "..") {
 				// kubernetes volumes also include files we
 				// should not look be looking into for keys

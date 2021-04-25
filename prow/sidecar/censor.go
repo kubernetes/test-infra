@@ -90,6 +90,9 @@ func (o Options) censor() error {
 
 	for _, item := range o.GcsOptions.Items {
 		if err := filepath.Walk(item, func(absPath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
 			}
@@ -317,6 +320,9 @@ func archive(srcDir, destArchive string) error {
 	}()
 
 	if err := filepath.Walk(srcDir, func(absPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		header, err := tar.FileInfoHeader(info, info.Name())
 		if err != nil {
 			return fmt.Errorf("could not create tar header: %w", err)
@@ -440,6 +446,9 @@ func loadSecrets(paths []string) ([][]byte, error) {
 	var secrets [][]byte
 	for _, path := range paths {
 		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if strings.HasPrefix(info.Name(), "..") {
 				// kubernetes volumes also include files we
 				// should not look be looking into for keys

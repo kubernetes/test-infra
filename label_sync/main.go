@@ -53,8 +53,8 @@ type LabelTarget string
 
 const (
 	prTarget    LabelTarget = "prs"
-	issueTarget             = "issues"
-	bothTarget              = "both"
+	issueTarget LabelTarget = "issues"
+	bothTarget  LabelTarget = "both"
 )
 
 // Label holds declarative data about the label.

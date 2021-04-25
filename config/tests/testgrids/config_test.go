@@ -416,7 +416,7 @@ func TestPresubmitsKubernetesDashboards(t *testing.T) {
 		}
 	}
 	if dashboard == nil {
-		t.Errorf("Missing dashboard: %s", dash)
+		t.Fatalf("Missing dashboard: %s", dash)
 	}
 	testgroups := make(map[string]bool)
 	for _, tab := range dashboard.DashboardTab {

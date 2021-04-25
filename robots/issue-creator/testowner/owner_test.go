@@ -19,6 +19,7 @@ package testowner
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -146,7 +147,7 @@ func TestReloadingOwnerList(t *testing.T) {
 		time.Sleep(5 * time.Millisecond)
 		// Clear file and reset writing offset
 		tempfile.Truncate(0)
-		tempfile.Seek(0, os.SEEK_SET)
+		tempfile.Seek(0, io.SeekStart)
 		writer.Reset(tempfile)
 		_, err = writer.WriteString(tc.csv)
 		if err != nil {

@@ -73,12 +73,11 @@ func TestLaunchProwJob(t *testing.T) {
 					sort.Slice(pjs.Items, func(i, j int) bool {
 						return pjs.Items[i].Status.StartTime.After(pjs.Items[j].Status.StartTime.Time)
 					})
-					for _, pj := range pjs.Items {
-						if lastRun != nil && pj.CreationTimestamp.Before(lastRun) {
+					if len(pjs.Items) > 0 {
+						if lastRun != nil && pjs.Items[0].CreationTimestamp.Before(lastRun) {
 							return false, nil
 						}
-						res = &pj
-						break
+						res = &pjs.Items[0]
 					}
 					return res != nil, nil
 				}); err != nil {

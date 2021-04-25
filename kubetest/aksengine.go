@@ -1188,7 +1188,7 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 	if err := logDumperWindows(); err != nil {
 		// don't log error since logDumperWindows failed is expected on non-Windows cluster
-		//errors = append(errors, err.Error())
+		_ = err
 	}
 	if len(errors) != 0 {
 		return fmt.Errorf(strings.Join(errors, "\n"))

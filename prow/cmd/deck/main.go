@@ -693,7 +693,7 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) error {
 	var localLenses []common.LensWithConfiguration
 	for _, lfc := range cfg().Deck.Spyglass.Lenses {
-		if !strings.HasPrefix(strings.TrimLeft(lfc.RemoteConfig.Endpoint, "http://"), spyglassLocalLensListenerAddr) {
+		if !strings.HasPrefix(strings.TrimPrefix(lfc.RemoteConfig.Endpoint, "http://"), spyglassLocalLensListenerAddr) {
 			continue
 		}
 

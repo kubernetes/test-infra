@@ -299,9 +299,9 @@ func (pa *ConfigAgent) Start(path string, checkUnknownPlugins bool) error {
 	if err := pa.Load(path, checkUnknownPlugins); err != nil {
 		return err
 	}
-	ticker := time.Tick(1 * time.Minute)
+	ticker := time.NewTicker(time.Minute)
 	go func() {
-		for range ticker {
+		for range ticker.C {
 			if err := pa.Load(path, checkUnknownPlugins); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
