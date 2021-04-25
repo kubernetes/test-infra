@@ -200,6 +200,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		{name: "issue comments", args: args{path: "/repos/openshift/aws-account-operator/issues/104/comments"}, want: "/repos/:owner/:repo/issues/:issueId/comments"},
 		{name: "issue labels", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels"}, want: "/repos/:owner/:repo/issues/:issueId/labels"},
 		{name: "issue label", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels/needs-rebase"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
+		{name: "issue label with slash", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels/do-not-merge/hold"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
 		{name: "issue events", args: args{path: "/repos/helm/charts/issues/15756/events"}, want: "/repos/:owner/:repo/issues/:issueId/events"},
 		{name: "issue assignees", args: args{path: "/repos/helm/charts/issues/15756/assignees"}, want: "/repos/:owner/:repo/issues/:issueId/assignees"},
 		{name: "issue reactions", args: args{path: "/repos/kubernetes-sigs/cluster-api-provider-aws/issues/958/reactions"}, want: "/repos/:owner/:repo/issues/:issueId/reactions"},
@@ -435,6 +436,7 @@ func Test_GetSimplifiedPathOrganizations(t *testing.T) {
 		{name: "org invitations", args: args{path: "/organizations/openshift/invitations"}, want: "/organizations/:orgId/invitations"},
 		{name: "org members", args: args{path: "/organizations/openshift/members"}, want: "/organizations/:orgId/members"},
 		{name: "org member", args: args{path: "/organizations/openshift/members/stevekuznetsov"}, want: "/organizations/:orgId/members/:login"},
+		{name: "org memberships", args: args{path: "/organizations/openshift/memberships/stevekuznetsov"}, want: "/organizations/:orgId/memberships/:login"},
 		{name: "org teams", args: args{path: "/organizations/openshift/teams"}, want: "/organizations/:orgId/teams"},
 
 		{name: "org members by ID", args: args{path: "/organizations/792337/members"}, want: "/organizations/:orgId/members"},
