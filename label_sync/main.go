@@ -565,9 +565,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 			}
 		}
 
-		for _, a := range moveActions {
-			actions = append(actions, a)
-		}
+		actions = append(actions, moveActions...)
 	}
 
 	u := RepoUpdates{}

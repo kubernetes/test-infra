@@ -114,8 +114,7 @@ func newClient(o options) (*client, error) {
 }
 
 func newKubeClients(clusterContext string) (ctrlruntimeclient.Client, error) {
-	var loader clientcmd.ClientConfigLoader
-	loader = clientcmd.NewDefaultClientConfigLoadingRules()
+	loader := clientcmd.NewDefaultClientConfigLoadingRules()
 
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		loader, &clientcmd.ConfigOverrides{

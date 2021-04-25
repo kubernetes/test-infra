@@ -391,9 +391,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	if pj.Spec.Refs != nil {
 		refs = append(refs, *pj.Spec.Refs)
 	}
-	for _, r := range pj.Spec.ExtraRefs {
-		refs = append(refs, r)
-	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
 	if len(refs) == 0 { // nothing to clone
 		return nil, nil, nil, nil
 	}

@@ -421,9 +421,7 @@ func TestCloneRefs(t *testing.T) {
 				if tc.pj.Spec.Refs != nil {
 					er = append(er, *tc.pj.Spec.Refs)
 				}
-				for _, r := range tc.pj.Spec.ExtraRefs {
-					er = append(er, r)
-				}
+				er = append(er, tc.pj.Spec.ExtraRefs...)
 				if !equality.Semantic.DeepEqual(refs, er) {
 					t.Errorf("unexpected refs:\n%s", diff.ObjectReflectDiff(er, refs))
 				}

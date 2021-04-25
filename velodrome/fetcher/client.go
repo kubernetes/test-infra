@@ -109,7 +109,7 @@ func (client *Client) limitsCheckAndWait() {
 			sleep = time.Minute
 		}
 		if limits != nil && limits.Core != nil && limits.Core.Remaining < tokenLimit {
-			sleep = limits.Core.Reset.Sub(time.Now())
+			sleep = time.Until(limits.Core.Reset.Time)
 			glog.Warning("RateLimits: reached. Sleeping for ", sleep)
 		}
 	}

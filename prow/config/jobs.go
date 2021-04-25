@@ -551,9 +551,7 @@ func (c *JobConfig) AllStaticPostsubmits(repos []string) []Postsubmit {
 func (c *JobConfig) AllPeriodics() []Periodic {
 	listPeriodic := func(ps []Periodic) []Periodic {
 		var res []Periodic
-		for _, p := range ps {
-			res = append(res, p)
-		}
+		res = append(res, ps...)
 		return res
 	}
 

@@ -19,6 +19,7 @@ linters:
   - misspell
   - ineffassign
   - staticcheck
+  - gosimple
   disable-all: true
 
 issues:

@@ -408,8 +408,7 @@ func (opts *options) resolveRefs(ctx context.Context, volumeMounts map[string]st
 	pj prowapi.ProwJob, container coreapi.Container) (string, error) {
 	var workingDir string
 
-	var readUserInput func(string, string) (string, error)
-	readUserInput = func(path, def string) (string, error) {
+	readUserInput := func(path, def string) (string, error) {
 		fmt.Fprintf(os.Stderr, "local /path/to/%s", path)
 		if def != "" {
 			fmt.Fprintf(os.Stderr, " [%s]", def)

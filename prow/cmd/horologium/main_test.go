@@ -50,11 +50,8 @@ func (fc *fakeCron) SyncConfig(cfg *config.Config) error {
 }
 
 func (fc *fakeCron) QueuedJobs() []string {
-	res := []string{}
-	for _, job := range fc.jobs {
-		res = append(res, job)
-	}
-	fc.jobs = []string{}
+	res := fc.jobs
+	fc.jobs = nil
 	return res
 }
 
