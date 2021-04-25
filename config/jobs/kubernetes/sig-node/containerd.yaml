@@ -43,6 +43,7 @@ periodics:
   interval: 30m
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
@@ -83,6 +84,7 @@ periodics:
   interval: 4h
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
