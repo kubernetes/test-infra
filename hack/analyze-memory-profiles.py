@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script is meant to be used to analyize memory profiles created by the sidecar utility when
-# the sidecar.Options.WriteMemoryProfile option has been set. The tool will write sequential
+# This script is meant to be used to analyze memory profiles created by the Prow binaries when
+# the --profile-memory-usage flag is passed. The interval of profiling can be set with the
+# --memory-profile-interval flag. This tool can also be used on the output of the sidecar utility
+# when the sidecar.Options.WriteMemoryProfile option has been set. The tools will write sequential
 # profiles into a directory, from which this script can load the data, create time series and
 # visualize them.
 

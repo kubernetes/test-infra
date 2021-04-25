@@ -47,6 +47,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -270,7 +271,7 @@ func main() {
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
-	pjutil.ServePProf(o.instrumentation.PProfPort)
+	pprof.Instrument(o.instrumentation)
 
 	// setup config agent, pod log clients etc.
 	configAgent, err := o.config.ConfigAgentWithAdditionals(&config.Agent{}, []func(*config.Config) error{spglassConfigDefaulting})

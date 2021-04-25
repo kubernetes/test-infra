@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -38,7 +39,6 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
@@ -237,7 +237,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	ca, err := o.config.ConfigAgent()
 	if err != nil {

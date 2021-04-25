@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/bugzilla"
@@ -241,7 +242,7 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,

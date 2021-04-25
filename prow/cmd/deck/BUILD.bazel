@@ -146,6 +146,7 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//prow/pjutil/pprof:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/trigger:go_default_library",

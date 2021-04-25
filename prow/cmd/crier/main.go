@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -42,7 +43,6 @@ import (
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
@@ -192,7 +192,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()
 	if err != nil {

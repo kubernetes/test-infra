@@ -25,13 +25,13 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"runtime"
-	"runtime/pprof"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
@@ -75,33 +75,7 @@ func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 // to cloud storage.
 func (o Options) Run(ctx context.Context) (int, error) {
 	if o.WriteMemoryProfile {
-		go func() {
-			logrus.Info("Writing memory profiles.")
-			profileDir, err := ioutil.TempDir("", "heap-profiles-")
-			if err != nil {
-				logrus.WithError(err).Warn("Could not create a directory to store memory profiles.")
-				return
-			}
-			for {
-				select {
-				case <-time.Tick(30 * time.Second):
-					profile, err := ioutil.TempFile(profileDir, "heap-profile-")
-					if err != nil {
-						logrus.WithError(err).Warn("Could not create a file to store a memory profile.")
-						continue
-					}
-					logrus.Info("Writing a memory profile.")
-					runtime.GC() // ensure we have up-to-date data
-					if err := pprof.WriteHeapProfile(profile); err != nil {
-						logrus.WithError(err).Warn("Could not write memory profile.")
-					}
-					logrus.Infof("Wrote memory profile to %s.", profile.Name())
-					if err := profile.Close(); err != nil {
-						logrus.WithError(err).Warn("Could not close file storing memory profile.")
-					}
-				}
-			}
-		}()
+		pprof.WriteMemoryProfiles(flagutil.DefaultMemoryProfileInterval)
 	}
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {

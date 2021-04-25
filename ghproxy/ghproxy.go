@@ -29,6 +29,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/ghproxy/apptokenequalizer"
 	"k8s.io/test-infra/ghproxy/ghcache"
@@ -154,7 +155,7 @@ func main() {
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 	defer interrupts.WaitForGracefulShutdown()
 	metrics.ExposeMetrics("ghproxy", config.PushGateway{
 		Endpoint: o.pushGateway,
