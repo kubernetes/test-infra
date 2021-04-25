@@ -94,16 +94,12 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:           "job-config-path",
 					SupplementalProwConfigsFileName: "_prowconfig.yaml",
 				},
-				pluginConfig:      "/etc/plugins/plugins.yaml",
-				dryRun:            true,
-				gracePeriod:       180 * time.Second,
-				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				webhookSecretFile: "/etc/webhook/hmac",
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				pluginConfig:           "/etc/plugins/plugins.yaml",
+				dryRun:                 true,
+				gracePeriod:            180 * time.Second,
+				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				webhookSecretFile:      "/etc/webhook/hmac",
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

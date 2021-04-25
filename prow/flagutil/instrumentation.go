@@ -44,6 +44,17 @@ type InstrumentationOptions struct {
 	MemoryProfileInterval time.Duration
 }
 
+// DefaultInstrumentationOptions returns an initialized options struct, mostly for use in tests.
+func DefaultInstrumentationOptions() InstrumentationOptions {
+	return InstrumentationOptions{
+		MetricsPort:           DefaultMetricsPort,
+		PProfPort:             DefaultPProfPort,
+		HealthPort:            DefaultHealthPort,
+		ProfileMemory:         false,
+		MemoryProfileInterval: DefaultMemoryProfileInterval,
+	}
+}
+
 // AddFlags injects common options into the given FlagSet.
 func (o *InstrumentationOptions) AddFlags(fs *flag.FlagSet) {
 	fs.IntVar(&o.MetricsPort, "metrics-port", DefaultMetricsPort, "port to serve metrics")

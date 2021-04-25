@@ -41,13 +41,9 @@ func TestOptions(t *testing.T) {
 			name: "works with both private/pub",
 			args: []string{"--tls-cert-file=c", "--tls-private-key-file=k"},
 			expected: &options{
-				cert:       "c",
-				privateKey: "k",
-				instrumentationOptions: prowflagutil.InstrumentationOptions{
-					MetricsPort: prowflagutil.DefaultMetricsPort,
-					PProfPort:   prowflagutil.DefaultPProfPort,
-					HealthPort:  prowflagutil.DefaultHealthPort,
-				},
+				cert:                   "c",
+				privateKey:             "k",
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{

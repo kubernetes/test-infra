@@ -917,12 +917,8 @@ func TestFlags(t *testing.T) {
 					ConfigPath:                      "yo",
 					SupplementalProwConfigsFileName: "_prowconfig.yaml",
 				},
-				dryRun: false,
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				dryRun:                 false,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

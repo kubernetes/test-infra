@@ -35,11 +35,6 @@ func TestOptions(t *testing.T) {
 
 	defaultGerritProjects := make(map[string][]string)
 
-	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
-		MetricsPort: prowflagutil.DefaultMetricsPort,
-		PProfPort:   prowflagutil.DefaultPProfPort,
-		HealthPort:  prowflagutil.DefaultHealthPort,
-	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -72,7 +67,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -95,7 +90,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		//PubSub Reporter
@@ -113,7 +108,7 @@ func TestOptions(t *testing.T) {
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -136,7 +131,7 @@ func TestOptions(t *testing.T) {
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -162,7 +157,7 @@ func TestOptions(t *testing.T) {
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -183,7 +178,7 @@ func TestOptions(t *testing.T) {
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -200,7 +195,7 @@ func TestOptions(t *testing.T) {
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      0.5,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
