@@ -43,8 +43,8 @@ import (
 )
 
 const (
-	statusContext string = "tide"
-	statusInPool         = "In merge pool."
+	statusContext = "tide"
+	statusInPool  = "In merge pool."
 	// statusNotInPool is a format string used when a PR is not in a tide pool.
 	// The '%s' field is populated with the reason why the PR is not in a
 	// tide pool or the empty string if the reason is unknown. See requirementDiff.

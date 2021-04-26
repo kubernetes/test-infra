@@ -93,6 +93,9 @@ const inputDir = "testdata/input"
 func copyTestData(t *testing.T) string {
 	tempDir := t.TempDir()
 	if err := filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		relpath, _ := filepath.Rel(inputDir, path) // this errors when it's not relative, but that's known here
 		dest := filepath.Join(tempDir, relpath)
 		if info.IsDir() {

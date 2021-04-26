@@ -101,11 +101,11 @@ type Action string
 // Constants for various actions the controller might take
 const (
 	Wait         Action = "WAIT"
-	Trigger             = "TRIGGER"
-	TriggerBatch        = "TRIGGER_BATCH"
-	Merge               = "MERGE"
-	MergeBatch          = "MERGE_BATCH"
-	PoolBlocked         = "BLOCKED"
+	Trigger      Action = "TRIGGER"
+	TriggerBatch Action = "TRIGGER_BATCH"
+	Merge        Action = "MERGE"
+	MergeBatch   Action = "MERGE_BATCH"
+	PoolBlocked  Action = "BLOCKED"
 )
 
 // recordableActions is the subset of actions that we keep historical record of.

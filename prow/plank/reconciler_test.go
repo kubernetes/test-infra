@@ -182,12 +182,12 @@ func TestAdd(t *testing.T) {
 
 			go func() {
 				if err := mgr.Start(ctx); err != nil {
-					t.Fatalf("failed to start main mgr: %v", err)
+					t.Errorf("failed to start main mgr: %v", err)
 				}
 			}()
 			go func() {
 				if err := buildMgrs["default"].Start(ctx); err != nil {
-					t.Fatalf("failed to start build mgr: %v", err)
+					t.Errorf("failed to start build mgr: %v", err)
 				}
 			}()
 			if err := singnalOrTimout(prowJobInformerStarted); err != nil {
