@@ -252,6 +252,46 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-ha-control-plane
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+    - org: chewong # TODO(chewong): change it to 'kubernetes-sigs'
+      repo: cluster-api-provider-azure
+      base_ref: upload-build-to-azure # TODO(chewong): change it to 'master'
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+        env:
+        - name: KUBETEST_CONF_PATH
+          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
+        - name: CONFORMANCE_NODES
+          value: "25"
+        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
+          value: "3"
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-ha-control-plane
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 3h
   name: aks-engine-conformance-master
