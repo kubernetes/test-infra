@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -162,6 +163,24 @@ type Tide struct {
 	// starting a new one requires to start new instances of all tests.
 	// Use '*' as key to set this globally. Defaults to true.
 	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+}
+
+func (t *Tide) mergeFrom(additional *Tide) error {
+	if t.MergeType == nil {
+		t.MergeType = additional.MergeType
+		return nil
+	}
+
+	var errs []error
+	for orgOrRepo, mergeMethod := range additional.MergeType {
+		if _, alreadyConfigured := t.MergeType[orgOrRepo]; alreadyConfigured {
+			errs = append(errs, fmt.Errorf("config for org or repo %s passed more than once", orgOrRepo))
+			continue
+		}
+		t.MergeType[orgOrRepo] = mergeMethod
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
 
 func (t *Tide) PrioritizeExistingBatches(repo OrgRepo) bool {

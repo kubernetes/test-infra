@@ -2490,11 +2490,23 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 // defaulting.
 // If you extend this, please also extend HasConfigFor accordingly.
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
-	emptyReference := &ProwConfig{BranchProtection: additional.BranchProtection}
-	if diff := cmp.Diff(additional, emptyReference); diff != "" {
-		return fmt.Errorf("only 'branch-protection' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff)
+	emptyReference := &ProwConfig{
+		BranchProtection: additional.BranchProtection,
+		Tide:             Tide{MergeType: additional.Tide.MergeType},
 	}
-	return pc.BranchProtection.merge(&additional.BranchProtection)
+
+	var errs []error
+	if diff := cmp.Diff(additional, emptyReference); diff != "" {
+		errs = append(errs, fmt.Errorf("only 'branch-protection' and 'tide.merge_method' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
+	}
+	if err := pc.BranchProtection.merge(&additional.BranchProtection); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge branch protection config: %w", err))
+	}
+	if err := pc.Tide.mergeFrom(&additional.Tide); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge tide config: %w", err))
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // ContextDescriptionWithBaseSha is used by the GitHub reporting to store the baseSHA of a context
@@ -2565,6 +2577,14 @@ func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.
 		}
 	}
 
+	for orgOrRepo := range pc.Tide.MergeType {
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
+		}
+	}
+
 	return global, orgs, repos
 }
 
@@ -2572,6 +2592,9 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || isPolicySet(pc.BranchProtection.Policy) {
 		return true
 	}
-	emptyReference := &ProwConfig{BranchProtection: pc.BranchProtection}
+	emptyReference := &ProwConfig{
+		BranchProtection: pc.BranchProtection,
+		Tide:             Tide{MergeType: pc.Tide.MergeType},
+	}
 	return cmp.Diff(pc, emptyReference) != ""
 }

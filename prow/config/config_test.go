@@ -36,6 +36,7 @@ import (
 	fuzz "github.com/google/gofuzz"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -5875,7 +5876,64 @@ branch-protection:
 plank:
   JobURLPrefixDisableAppendStorageProvider: true`,
 			},
-			expectedErrorSubstr: "only 'branch-protection' may be set via additional config, all other fields have no merging logic yet. Diff:",
+			expectedErrorSubstr: "may be set via additional config, all other fields have no merging logic yet. Diff:",
+		},
+		{
+			name: "Additional merge method config gets merged in",
+			supplementalProwConfigs: []string{`
+tide:
+  merge_method:
+    foo/bar: squash`},
+			expectedProwConfig: `branch-protection: {}
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  merge_method:
+    foo/bar: squash
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`,
 		},
 	}
 
@@ -6046,9 +6104,10 @@ func TestHasConfigFor(t *testing.T) {
 		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String)
 	}{
 		{
-			name: "Any non-empty config with empty branchprotection.org property is considered global",
+			name: "Any non-empty config with empty branchprotection and Tide merge_method properties is considered global",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
+				fuzzedConfig.Tide.MergeType = nil
 				return fuzzedConfig, true, nil, nil
 			},
 		},
@@ -6078,6 +6137,22 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 				return result, false, nil, expectRepos
+			},
+		},
+		{
+			name: "Any config that is empty except for tide.merge_method is considered to be for those orgs or repos",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				result := &ProwConfig{Tide: Tide{MergeType: fuzzedConfig.Tide.MergeType}}
+				for orgOrRepo := range result.Tide.MergeType {
+					if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+
+				return result, false, expectOrgs, expectRepos
 			},
 		},
 	}
@@ -6179,6 +6254,121 @@ func TestCalculateStorageBuckets(t *testing.T) {
 			actual := calculateStorageBuckets(tc.in)
 			if diff := cmp.Diff(tc.expected, actual); diff != "" {
 				t.Errorf("actual differs from expected")
+			}
+		})
+	}
+}
+
+func TestProwConfigMergingProperties(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		makeMergeable func(*ProwConfig)
+	}{
+		{
+			name: "Branchprotection config",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{BranchProtection: pc.BranchProtection}
+			},
+		},
+		{
+			name: "Tide merge method",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{Tide: Tide{MergeType: pc.Tide.MergeType}}
+			},
+		},
+	}
+
+	expectedProperties := []struct {
+		name         string
+		verification func(t *testing.T, fuzzedConfig *ProwConfig)
+	}{
+		{
+			name: "Merging into empty config always succeeds and makes the empty config equal to the one that was merged in",
+			verification: func(t *testing.T, fuzzedMergeableConfig *ProwConfig) {
+				newConfig := &ProwConfig{}
+				if err := newConfig.mergeFrom(fuzzedMergeableConfig); err != nil {
+					t.Fatalf("merging fuzzed mergeable config into empty config failed: %v", err)
+				}
+				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig); diff != "" {
+					t.Errorf("after merging config into an empty config, the config that was merged into differs from the one we merged from:\n%s\n", diff)
+				}
+			},
+		},
+		{
+			name: "Merging empty config in always succeeds",
+			verification: func(t *testing.T, fuzzedMergeableConfig *ProwConfig) {
+				if err := fuzzedMergeableConfig.mergeFrom(&ProwConfig{}); err != nil {
+					t.Errorf("merging empty config in failed: %v", err)
+				}
+			},
+		},
+		{
+			name: "Merging a config into itself always fails",
+			verification: func(t *testing.T, fuzzedMergeableConfig *ProwConfig) {
+				if apiequality.Semantic.DeepEqual(fuzzedMergeableConfig, &ProwConfig{}) {
+					return
+				}
+
+				// One exception: A non-nil branchprotection config with only empty policies
+				// can be merged into itself so make sure this can't happen.
+				fuzzedMergeableConfig.BranchProtection.Exclude = []string{"foo"}
+
+				if err := fuzzedMergeableConfig.mergeFrom(fuzzedMergeableConfig); err == nil {
+					serialized, serializeErr := yaml.Marshal(fuzzedMergeableConfig)
+					if serializeErr != nil {
+						t.Fatalf("merging non-empty config into itself did not yield an error and serializing it afterwards failed: %v. Raw object: %+v", serializeErr, fuzzedMergeableConfig)
+					}
+					t.Errorf("merging a config into itself did not produce an error. Serialized config:\n%s", string(serialized))
+				}
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	var i int
+	fuzzer := fuzz.NewWithSeed(seed).
+		// The fuzzer doesn't know what to put into interface fields, so we have to custom handle them.
+		Funcs(
+			// This is not an interface, but it contains an interface type. Handling the interface type
+			// itself makes the bazel-built tests panic with a nullpointer deref but works fine with
+			// go test.
+			func(t *template.Template, _ fuzz.Continue) {
+				*t = *template.New("whatever")
+			},
+			func(*labels.Selector, fuzz.Continue) {},
+			func(p *Policy, c fuzz.Continue) {
+				// Make sure we always have a good sample of non-nil but empty Policies so
+				// we check that they get copied over. Today, the meaning of an empty and
+				// an unset Policy is identical because all the fields are pointers that
+				// will get ignored if unset. However, this might change in the future and
+				// caused flakes when we didn't copy over map entries with an empty Policy,
+				// as an entry with no value and no entry are different things for cmp.Diff.
+				if i%2 == 0 {
+					c.Fuzz(p)
+				}
+				i++
+			},
+		)
+
+	// Do not parallelize, the PRNG used by the fuzzer is not threadsafe
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			for _, propertyTest := range expectedProperties {
+				t.Run(propertyTest.name, func(t *testing.T) {
+
+					for i := 0; i < 100; i++ {
+						fuzzedConfig := &ProwConfig{}
+						fuzzer.Fuzz(fuzzedConfig)
+
+						tc.makeMergeable(fuzzedConfig)
+
+						propertyTest.verification(t, fuzzedConfig)
+					}
+				})
 			}
 		})
 	}
