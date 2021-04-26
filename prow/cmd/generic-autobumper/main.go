@@ -117,12 +117,50 @@ func parseOptions() (*Options, *prcreator.Options, error) {
 	return &o, &pro, nil
 }
 
+func validateOptions(o *Options) error {
+	if len(o.Prefixes) == 0 {
+		return fmt.Errorf("Must have at least one Prefix specified")
+	}
+	if len(o.IncludedConfigPaths) == 0 {
+		return fmt.Errorf("includedConfigPaths is mandatory")
+	}
+	if o.TargetVersion != latestVersion && o.TargetVersion != upstreamVersion &&
+		o.TargetVersion != upstreamStagingVersion && !tagRegexp.MatchString(o.TargetVersion) {
+		logrus.Warnf("Warning: targetVersion is not one of %v so it might not work properly.",
+			[]string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion})
+	}
+	if o.TargetVersion == upstreamVersion {
+		for _, prefix := range o.Prefixes {
+			if prefix.RefConfigFile == "" {
+				return fmt.Errorf("targetVersion can't be %q without refConfigFile for each prefix. %q is missing one", upstreamVersion, prefix.Name)
+			}
+		}
+	}
+	if o.TargetVersion == upstreamStagingVersion {
+		for _, prefix := range o.Prefixes {
+			if prefix.StagingRefConfigFile == "" {
+				return fmt.Errorf("targetVersion can't be %q without stagingRefConfigFile for each prefix. %q is missing one", upstreamStagingVersion, prefix.Name)
+			}
+		}
+	}
+	if (o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion) && o.UpstreamURLBase == "" {
+		o.UpstreamURLBase = defaultUpstreamURLBase
+		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
+	}
+
+	return nil
+}
+
 // UpdateReferences update the references of prow-images and/or boskos-images and/or testimages
 // in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
 // if the file is a yaml file (*.yaml) or extraFiles[file]=true
 func UpdateReferences(o *Options) (map[string]string, error) {
 	logrus.Info("Bumping image references...")
-	filterRegexp := regexp.MustCompile(strings.Join(getAllPrefixes(o.Prefixes), "|"))
+	var allPrefixes []string
+	for _, prefix := range o.Prefixes {
+		allPrefixes = append(allPrefixes, prefix.Prefix)
+	}
+	filterRegexp := regexp.MustCompile(strings.Join(allPrefixes, "|"))
 	imageBumperCli := imagebumper.NewClient()
 	return updateReferences(imageBumperCli, filterRegexp, o)
 }
@@ -138,6 +176,15 @@ type imageBumper interface {
 func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *Options) (map[string]string, error) {
 	var tagPicker func(string, string, string) (string, error)
 	var err error
+	// Check whether the path is under the given path
+	isUnderPath := func(name string, paths []string) bool {
+		for _, p := range paths {
+			if p != "" && strings.HasPrefix(name, p) {
+				return true
+			}
+		}
+		return false
+	}
 	switch o.TargetVersion {
 	case latestVersion:
 		tagPicker = imageBumperCli.FindLatestTag
@@ -194,6 +241,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	return imageBumperCli.GetReplacements(), nil
 }
 
+// used by updateReferences
 func upstreamImageVersionResolver(
 	o *Options, upstreamVersionType string, parse func(upstreamAddress, prefix string) (string, error), imageBumperCli imageBumper) (func(imageHost, imageName, currentTag string) (string, error), error) {
 	upstreamVersions, err := upstreamConfigVersions(upstreamVersionType, o, parse)
@@ -222,6 +270,7 @@ func upstreamImageVersionResolver(
 	}, nil
 }
 
+// used by upstreamImageVersionResolver
 func upstreamConfigVersions(upstreamVersionType string, o *Options, parse func(upstreamAddress, prefix string) (string, error)) (versions map[string]string, err error) {
 	versions = make(map[string]string)
 	var upstreamAddress string
@@ -244,16 +293,7 @@ func upstreamConfigVersions(upstreamVersionType string, o *Options, parse func(u
 	return versions, nil
 }
 
-func findExactMatch(body, prefix string) (string, error) {
-	for _, line := range strings.Split(strings.TrimSuffix(body, "\n"), "\n") {
-		res := imageMatcher.FindStringSubmatch(string(line))
-		if len(res) > 2 && strings.Contains(res[1], prefix) {
-			return res[2], nil
-		}
-	}
-	return "", fmt.Errorf("unable to find match for %s in upstream refConfigFile", prefix)
-}
-
+// used by updateReferences
 func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
 	resp, err := http.Get(upstreamAddress)
 	if err != nil {
@@ -267,16 +307,13 @@ func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading the response body: %w", err)
 	}
-	return findExactMatch(string(body), prefix)
-}
-
-func isUnderPath(name string, paths []string) bool {
-	for _, p := range paths {
-		if p != "" && strings.HasPrefix(name, p) {
-			return true
+	for _, line := range strings.Split(strings.TrimSuffix(string(body), "\n"), "\n") {
+		res := imageMatcher.FindStringSubmatch(string(line))
+		if len(res) > 2 && strings.Contains(res[1], prefix) {
+			return res[2], nil
 		}
 	}
-	return false
+	return "", fmt.Errorf("unable to find match for %s in upstream refConfigFile", prefix)
 }
 
 // getVersionsAndCheckConisistency takes a list of Prefixes and a map of
@@ -309,35 +346,32 @@ func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string)
 	return versions, nil
 }
 
-func getPrefixesString(prefixes []Prefix) string {
-	var res []string
-	for _, prefix := range prefixes {
-		res = append(res, prefix.Name)
-	}
-	return strings.Join(res, ", ")
-}
-
-// isBumpedPrefix takes a prefix and a map of new tags resulted from bumping : the images using those tags
-// and itterates over the map to find if the prefix is found. If it is, this means it has been bumped.
-func isBumpedPrefix(prefix Prefix, versions map[string][]string) (string, bool) {
-	for tag, imageList := range versions {
-		for _, image := range imageList {
-			if strings.HasPrefix(image, prefix.Prefix) {
-				return tag, true
-			}
-		}
-	}
-	return "", false
-}
-
-// makeCommitSummary takes a list of Prefixes and a map of new tags resulted from bumping : the images using those tags
-// and returns a summary of what was bumped for use in the commit message
+// makeCommitSummary takes a list of Prefixes and a map of new tags resulted
+// from bumping : the images using those tags and returns a summary of what was
+// bumped for use in the commit message
 func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
+	var allPrefixes []string
+	for _, prefix := range prefixes {
+		allPrefixes = append(allPrefixes, prefix.Name)
+	}
 	if len(versions) == 0 {
-		return fmt.Sprintf("Update %s images as necessary", getPrefixesString(prefixes))
+		return fmt.Sprintf("Update %s images as necessary", strings.Join(allPrefixes, ", "))
 	}
 	var inconsistentBumps []string
 	var consistentBumps []string
+	// isBumpedPrefix takes a prefix and a map of new tags resulted from bumping
+	// : the images using those tags and itterates over the map to find if the
+	// prefix is found. If it is, this means it has been bumped.
+	isBumpedPrefix := func(prefix Prefix, versions map[string][]string) (string, bool) {
+		for tag, imageList := range versions {
+			for _, image := range imageList {
+				if strings.HasPrefix(image, prefix.Prefix) {
+					return tag, true
+				}
+			}
+		}
+		return "", false
+	}
 	for _, prefix := range prefixes {
 		tag, bumped := isBumpedPrefix(prefix, versions)
 		if !prefix.ConsistentImages && bumped {
@@ -357,57 +391,7 @@ func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 
 }
 
-func getAllPrefixes(prefixList []Prefix) (res []string) {
-	for _, prefix := range prefixList {
-		res = append(res, prefix.Prefix)
-	}
-	return res
-}
-
-func tagFromName(name string) string {
-	parts := strings.Split(name, ":")
-	if len(parts) < 2 {
-		return ""
-	}
-	return parts[1]
-}
-
-func componentFromName(name string) string {
-	s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
-	return s[len(s)-1]
-}
-
-func formatTagDate(d string) string {
-	if len(d) != 8 {
-		return d
-	}
-	// &#x2011; = U+2011 NON-BREAKING HYPHEN, to prevent line wraps.
-	return fmt.Sprintf("%s&#x2011;%s&#x2011;%s", d[0:4], d[4:6], d[6:8])
-}
-
-// commitToRef converts git describe part of a tag to a ref (commit or tag).
-//
-// v0.0.30-14-gdeadbeef => deadbeef
-// v0.0.30 => v0.0.30
-// deadbeef => deadbeef
-func commitToRef(commit string) string {
-	tag, _, commit := imagebumper.DeconstructCommit(commit)
-	if commit != "" {
-		return commit
-	}
-	return tag
-}
-
-func formatVariant(variant string) string {
-	if variant == "" {
-		return ""
-	}
-	if strings.HasPrefix(variant, "-") {
-		variant = variant[1:]
-	}
-	return fmt.Sprintf("(%s)", variant)
-}
-
+// Generate PR summary for github
 func generateSummary(name, repo, prefix string, summarise bool, images map[string]string) string {
 	type delta struct {
 		oldCommit string
@@ -416,6 +400,45 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 		newDate   string
 		variant   string
 		component string
+	}
+	// Extract image tag from image name
+	tagFromName := func(name string) string {
+		parts := strings.Split(name, ":")
+		if len(parts) < 2 {
+			return ""
+		}
+		return parts[1]
+	}
+	// Extract prow component name from image
+	componentFromName := func(name string) string {
+		s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
+		return s[len(s)-1]
+	}
+	formatTagDate := func(d string) string {
+		if len(d) != 8 {
+			return d
+		}
+		// &#x2011; = U+2011 NON-BREAKING HYPHEN, to prevent line wraps.
+		return fmt.Sprintf("%s&#x2011;%s&#x2011;%s", d[0:4], d[4:6], d[6:8])
+	}
+	// commitToRef converts git describe part of a tag to a ref (commit or tag).
+	//
+	// v0.0.30-14-gdeadbeef => deadbeef
+	// v0.0.30 => v0.0.30
+	// deadbeef => deadbeef
+	commitToRef := func(commit string) string {
+		tag, _, commit := imagebumper.DeconstructCommit(commit)
+		if commit != "" {
+			return commit
+		}
+		return tag
+	}
+	// Format variant for PR summary
+	formatVariant := func(variant string) string {
+		if variant == "" {
+			return ""
+		}
+		return fmt.Sprintf("(%s)", strings.TrimPrefix(variant, "-"))
 	}
 	versions := map[string][]delta{}
 	for image, newTag := range images {
@@ -472,6 +495,9 @@ func main() {
 	o, pro, err := parseOptions()
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
+	}
+	if err := validateOptions(o); err != nil {
+		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
 	if err := prcreator.Run(pro, func() (string, string, error) {

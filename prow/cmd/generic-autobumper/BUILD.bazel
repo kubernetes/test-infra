@@ -35,6 +35,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/cmd/generic-autobumper/bumper:all-srcs",
+        "//prow/cmd/generic-autobumper/prcreator:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

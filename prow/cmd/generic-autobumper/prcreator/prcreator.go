@@ -39,13 +39,8 @@ import (
 const (
 	forkRemoteName = "bumper-fork-remote"
 
-	latestVersion          = "latest"
-	upstreamVersion        = "upstream"
-	upstreamStagingVersion = "upstream-staging"
-	tagVersion             = "vYYYYMMDD-deadbeef"
-	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
-	defaultHeadBranchName  = "autobump"
-	defaultOncallGroup     = "testinfra"
+	defaultHeadBranchName = "autobump"
+	defaultOncallGroup    = "testinfra"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -424,8 +419,6 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, sourc
 		logrus.Info(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels, dryrun)
 		return nil
 	}
-	logrus.Error("Never come here")
-	return nil
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %w", err)
