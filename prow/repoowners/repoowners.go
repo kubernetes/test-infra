@@ -52,12 +52,18 @@ type dirOptions struct {
 	AutoApproveUnownedSubfolders bool `json:"auto_approve_unowned_subfolders,omitempty"`
 }
 
+type ContactInfo struct {
+	Email   string `json:"email,omitempty"`
+	SlackID string `json:"slack_id,omitempty"`
+}
+
 // Config holds roles+usernames and labels for a directory considered as a unit of independent code
 type Config struct {
-	Approvers         []string `json:"approvers,omitempty"`
-	Reviewers         []string `json:"reviewers,omitempty"`
-	RequiredReviewers []string `json:"required_reviewers,omitempty"`
-	Labels            []string `json:"labels,omitempty"`
+	Approvers         []string               `json:"approvers,omitempty"`
+	Reviewers         []string               `json:"reviewers,omitempty"`
+	RequiredReviewers []string               `json:"required_reviewers,omitempty"`
+	Labels            []string               `json:"labels,omitempty"`
+	SecurityContacts  map[string]ContactInfo `json:"security_contacts,omitempty"`
 }
 
 // SimpleConfig holds options and Config applied to everything under the containing directory
@@ -244,6 +250,7 @@ type RepoOwners struct {
 	approvers         map[string]map[*regexp.Regexp]sets.String
 	reviewers         map[string]map[*regexp.Regexp]sets.String
 	requiredReviewers map[string]map[*regexp.Regexp]sets.String
+	securityContacts  map[string]map[*regexp.Regexp]map[string]ContactInfo
 	labels            map[string]map[*regexp.Regexp]sets.String
 	options           map[string]dirOptions
 
@@ -486,6 +493,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 		approvers:         make(map[string]map[*regexp.Regexp]sets.String),
 		reviewers:         make(map[string]map[*regexp.Regexp]sets.String),
 		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.String),
+		securityContacts:  make(map[string]map[*regexp.Regexp]map[string]ContactInfo),
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
@@ -625,6 +633,8 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 func LoadSimpleConfig(b []byte) (SimpleConfig, error) {
 	simple := new(SimpleConfig)
 	err := yaml.Unmarshal(b, simple)
+	fmt.Println(string(b))
+	fmt.Println(simple.Config.SecurityContacts)
 	return *simple, err
 }
 
@@ -697,6 +707,15 @@ func NormLogins(logins []string) sets.String {
 	return normed
 }
 
+func normSecurityContacts(contacts map[string]ContactInfo) map[string]ContactInfo {
+	normedSecurityContacts := make(map[string]ContactInfo)
+	for login, contact := range contacts {
+		normedLogin := github.NormLogin(login)
+		normedSecurityContacts[normedLogin] = contact
+	}
+	return normedSecurityContacts
+}
+
 var defaultDirOptions = dirOptions{}
 
 func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
@@ -717,6 +736,13 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
 		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
+	}
+	if len(config.SecurityContacts) > 0 {
+		if o.securityContacts[path] == nil {
+			o.securityContacts[path] = make(map[*regexp.Regexp]map[string]ContactInfo)
+		}
+		// don't check RepoAliases as security_contacts stores individuals' contact info
+		o.securityContacts[path][re] = normSecurityContacts(config.SecurityContacts)
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {

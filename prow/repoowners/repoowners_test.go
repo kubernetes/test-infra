@@ -48,6 +48,10 @@ reviewers:
 - bob
 required_reviewers:
 - chris
+security_contacts:
+  bob:
+    email: bob@bob.com
+    slack_id: U123ABC
 labels:
 - EVERYTHING`),
 		"src/OWNERS": []byte(`approvers:
@@ -114,6 +118,11 @@ func regexpAll(values ...string) map[*regexp.Regexp]sets.String {
 func patternAll(values ...string) map[string]sets.String {
 	// use "" to represent nil and distinguish it from a ".*" regexp (which shouldn't exist).
 	return map[string]sets.String{"": sets.NewString(values...)}
+}
+
+// contactInfoAll is used to construct a default {regexp string -> values} mapping for ".*"
+func contactInfoAll(values map[string]ContactInfo) map[*regexp.Regexp]map[string]ContactInfo {
+	return map[*regexp.Regexp]map[string]ContactInfo{nil: values}
 }
 
 type cacheOptions struct {
@@ -467,6 +476,7 @@ func TestLoadRepoOwnersV2(t *testing.T) {
 
 func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 	t.Parallel()
+	expectedContactInfo := contactInfoAll(map[string]ContactInfo{"bob": ContactInfo{Email: "bob@bob.com", SlackID: "U123ABC"}})
 	tests := []struct {
 		name              string
 		mdEnabled         bool
@@ -477,6 +487,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 		extraBranchesAndFiles map[string]map[string][]byte
 
 		expectedApprovers, expectedReviewers, expectedRequiredReviewers, expectedLabels map[string]map[string]sets.String
+
+		expectedSecurityContacts map[string]map[*regexp.Regexp]map[string]ContactInfo
 
 		expectedOptions  map[string]dirOptions
 		cacheOptions     *cacheOptions
@@ -500,6 +512,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -531,6 +546,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -564,6 +582,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -603,6 +624,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -639,6 +663,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -669,6 +696,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -720,6 +750,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
 				"src/dir":      patternAll("src-code"),
@@ -754,6 +787,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -790,6 +826,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -824,6 +863,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -870,6 +912,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[*regexp.Regexp]map[string]ContactInfo{
+				"":             expectedContactInfo,
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -951,6 +996,11 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			check("reviewers", test.expectedReviewers, ro.reviewers)
 			check("required_reviewers", test.expectedRequiredReviewers, ro.requiredReviewers)
 			check("labels", test.expectedLabels, ro.labels)
+
+			if !reflect.DeepEqual(test.expectedSecurityContacts, ro.securityContacts) {
+				t.Errorf("Expected security_contacts to be:\n%#v\ngot:\n%#v.", test.expectedSecurityContacts, ro.securityContacts)
+			}
+
 			if !reflect.DeepEqual(test.expectedOptions, ro.options) {
 				t.Errorf("Expected options to be:\n%#v\ngot:\n%#v.", test.expectedOptions, ro.options)
 			}
