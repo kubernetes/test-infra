@@ -1,5 +1,5 @@
 periodics:
-- name: ci-aws-ebs-csi-driver-migration-test-latest
+- name: ci-aws-ebs-csi-driver-migration-test
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -24,8 +24,8 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
-    testgrid-tab-name: ci-migration-test-latest
-    description: aws ebs csi driver migration test on latest kubernetes, continuous
+    testgrid-tab-name: ci-migration-test
+    description: aws ebs csi driver migration test, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-unit-test
   decorate: true
@@ -111,7 +111,7 @@ periodics:
     testgrid-tab-name: ci-e2e-test-multi-az
     description: aws ebs csi driver e2e test on mutiple AZs, continuous
     testgrid-num-columns-recent: '30'
-- name: ci-aws-ebs-csi-driver-external-test-latest
+- name: ci-aws-ebs-csi-driver-external-test
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -136,6 +136,6 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
-    testgrid-tab-name: ci-external-test-latest
-    description: kubernetes/kubernetes external test on latest kubernetes, continuous
+    testgrid-tab-name: ci-external-test
+    description: kubernetes/kubernetes external test, continuous
     testgrid-num-columns-recent: '30'
