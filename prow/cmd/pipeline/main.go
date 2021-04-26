@@ -28,7 +28,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -39,9 +41,6 @@ import (
 	pipelineset "k8s.io/test-infra/prow/pipeline/clientset/versioned"
 	pipelineinfo "k8s.io/test-infra/prow/pipeline/informers/externalversions"
 	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
-	"k8s.io/test-infra/prow/pjutil"
-
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 )
 
 type options struct {
@@ -112,7 +111,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()
 	if err != nil {

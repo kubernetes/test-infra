@@ -98,16 +98,12 @@ func Test_gatherOptions(t *testing.T) {
 					ConfigPath:                      "yo",
 					SupplementalProwConfigsFileName: "_prowconfig.yaml",
 				},
-				dryRun:            true,
-				syncThrottle:      800,
-				statusThrottle:    400,
-				maxRecordsPerPool: 1000,
-				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				dryRun:                 true,
+				syncThrottle:           800,
+				statusThrottle:         400,
+				maxRecordsPerPool:      1000,
+				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

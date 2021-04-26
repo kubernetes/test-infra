@@ -26,12 +26,6 @@ import (
 )
 
 func TestOptions(t *testing.T) {
-
-	defaultInstrumentationOptions := prowflagutil.InstrumentationOptions{
-		MetricsPort: prowflagutil.DefaultMetricsPort,
-		PProfPort:   prowflagutil.DefaultPProfPort,
-		HealthPort:  prowflagutil.DefaultHealthPort,
-	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -51,7 +45,7 @@ func TestOptions(t *testing.T) {
 				JobConfigPathFlagName:           "job-config-path",
 				SupplementalProwConfigsFileName: "_prowconfig.yaml",
 			},
-			instrumentationOptions: defaultInstrumentationOptions,
+			instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 		},
 	}, {
 		name: "parse all arguments",
@@ -67,7 +61,7 @@ func TestOptions(t *testing.T) {
 				JobConfigPathFlagName:           "job-config-path",
 				SupplementalProwConfigsFileName: "_prowconfig.yaml",
 			},
-			instrumentationOptions: defaultInstrumentationOptions,
+			instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 		},
 	}}
 	for _, tc := range cases {

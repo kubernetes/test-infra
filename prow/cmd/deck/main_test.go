@@ -815,11 +815,7 @@ func Test_gatherOptions(t *testing.T) {
 				spyglassFilesLocation: "/lenses",
 				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
-				instrumentation: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				instrumentation:       flagutil.DefaultInstrumentationOptions(),
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

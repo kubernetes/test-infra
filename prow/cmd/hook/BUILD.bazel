@@ -55,6 +55,7 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//prow/pjutil/pprof:go_default_library",
         "//prow/pluginhelp/hook:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/bugzilla:go_default_library",

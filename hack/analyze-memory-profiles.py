@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script is meant to be used to analyize memory profiles created by the sidecar utility when
-# the sidecar.Options.WriteMemoryProfile option has been set. The tool will write sequential
+# This script is meant to be used to analyze memory profiles created by the Prow binaries when
+# the --profile-memory-usage flag is passed. The interval of profiling can be set with the
+# --memory-profile-interval flag. This tool can also be used on the output of the sidecar utility
+# when the sidecar.Options.WriteMemoryProfile option has been set. The tools will write sequential
 # profiles into a directory, from which this script can load the data, create time series and
 # visualize them.
 
@@ -83,7 +85,12 @@ for subdir, dirs, files in os.walk(profile_dir):
         usage = parse_bytes(lines[3].split()[-2])
         if usage > max_usage:
             max_usage = usage
-        for line in lines[5:]:
+        data_index = 0
+        for i in range(len(lines)):
+            if lines[i].split()[0].decode("utf-8") == "flat":
+                data_index = i + 1
+                break
+        for line in lines[data_index:]:
             parts = line.split()
             name = parts[5]
             if name not in dates_by_name:

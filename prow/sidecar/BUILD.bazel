@@ -13,7 +13,9 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/entrypoint:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/gcsupload:go_default_library",
+        "//prow/pjutil/pprof:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/pod-utils/wrapper:go_default_library",

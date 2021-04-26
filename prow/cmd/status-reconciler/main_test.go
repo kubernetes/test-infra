@@ -113,15 +113,11 @@ func TestGatherOptions(t *testing.T) {
 					JobConfigPathFlagName:           "job-config-path",
 					SupplementalProwConfigsFileName: "_prowconfig.yaml",
 				},
-				pluginConfig:  "/etc/plugins/plugins.yaml",
-				kubernetes:    flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				tokenBurst:    100,
-				tokensPerHour: 300,
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				pluginConfig:           "/etc/plugins/plugins.yaml",
+				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				tokenBurst:             100,
+				tokensPerHour:          300,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

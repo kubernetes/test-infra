@@ -22,6 +22,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -81,7 +82,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	configAgent, err := o.config.ConfigAgent()

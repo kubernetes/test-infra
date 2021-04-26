@@ -295,12 +295,8 @@ func TestFlags(t *testing.T) {
 					ConfigPath:                      "yo",
 					SupplementalProwConfigsFileName: "_prowconfig.yaml",
 				},
-				dryRun: true,
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				dryRun:                 true,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expected.kubernetes.DeckURI = "http://whatever"
 			if tc.expected != nil {

@@ -31,6 +31,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
@@ -40,7 +41,6 @@ import (
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
@@ -131,7 +131,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
