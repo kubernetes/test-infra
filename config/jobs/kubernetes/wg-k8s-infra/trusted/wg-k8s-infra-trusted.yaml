@@ -99,7 +99,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: '^groups/groups.yaml'
+    run_if_changed: '^groups/'
     branches:
     - ^main$
     annotations:
@@ -141,7 +141,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/"
     branches:
     - ^main$
     annotations:
@@ -165,7 +165,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/"
     branches:
     - ^main$
     annotations:
