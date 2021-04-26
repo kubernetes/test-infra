@@ -205,6 +205,26 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 				return def
 			},
 		},
+		{
+			name: "ingnore interrupts set",
+			provided: &DecorationConfig{
+				UploadIgnoresInterrupts: &truth,
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.UploadIgnoresInterrupts = orig.UploadIgnoresInterrupts
+				return def
+			},
+		},
+		{
+			name: "do not ingnore interrupts ",
+			provided: &DecorationConfig{
+				UploadIgnoresInterrupts: &lies,
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.UploadIgnoresInterrupts = orig.UploadIgnoresInterrupts
+				return def
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

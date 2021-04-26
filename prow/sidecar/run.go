@@ -82,6 +82,8 @@ func (o Options) Run(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
+	entries := o.entries()
+
 	ctx, cancel := context.WithCancel(ctx)
 
 	interrupt := make(chan os.Signal)
@@ -99,17 +101,25 @@ func (o Options) Run(ctx context.Context) (int, error) {
 				// second upload but we can tolerate this as we'd rather get SOME
 				// data into GCS than attempt to cancel these uploads and get none.
 				logrus.Errorf("Received an interrupt: %s, cancelling...", s)
-				cancel()
+
+				// perform pre upload tasks
+				o.preUpload()
+
+				buildLogs := logReaders(entries)
+				metadata := combineMetadata(entries)
+
+				//Peform best-effort upload
+				err := o.doUpload(ctx, spec, false, true, metadata, buildLogs)
+				if err != nil {
+					logrus.Errorf("Failed to perform best-effort upload : %v", err)
+				} else {
+					logrus.Errorf("Best-effort upload was successful")
+				}
 			}
 		case <-ctx.Done():
 		}
 	}()
 
-	if o.DeprecatedWrapperOptions != nil {
-		// This only fires if the prowjob controller and sidecar are at different commits
-		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
-	}
-	entries := o.entries()
 	passed, aborted, failures := wait(ctx, entries)
 
 	cancel()
@@ -120,14 +130,11 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	if o.CensoringOptions != nil {
-		if err := o.censor(); err != nil {
-			logrus.Warnf("Failed to censor data: %v", err)
-		}
-	}
+	o.preUpload()
+
 	buildLogs := logReaders(entries)
 	metadata := combineMetadata(entries)
-	return failures, o.doUpload(spec, passed, aborted, metadata, buildLogs)
+	return failures, o.doUpload(context.Background(), spec, passed, aborted, metadata, buildLogs)
 }
 
 const errorKey = "sidecar-errors"
@@ -187,7 +194,21 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader) error {
+//preUpload peforms steps required before actual upload
+func (o Options) preUpload() {
+	if o.DeprecatedWrapperOptions != nil {
+		// This only fires if the prowjob controller and sidecar are at different commits
+		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
+	}
+
+	if o.CensoringOptions != nil {
+		if err := o.censor(); err != nil {
+			logrus.Warnf("Failed to censor data: %v", err)
+		}
+	}
+}
+
+func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader) error {
 	uploadTargets := make(map[string]gcs.UploadFunc)
 
 	for logName, reader := range logReaders {
@@ -223,7 +244,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewBuffer(finishedData))
 	}
 
-	if err := o.GcsOptions.Run(spec, uploadTargets); err != nil {
+	if err := o.GcsOptions.Run(ctx, spec, uploadTargets); err != nil {
 		return fmt.Errorf("failed to upload to GCS: %v", err)
 	}
 

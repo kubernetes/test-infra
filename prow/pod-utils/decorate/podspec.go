@@ -752,7 +752,9 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, secretVolumeMounts, wrappers...)
+	ignoreInterrupts := pj.Spec.DecorationConfig.UploadIgnoresInterrupts != nil && *pj.Spec.DecorationConfig.UploadIgnoresInterrupts
+
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, ignoreInterrupts, secretVolumeMounts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -803,8 +805,6 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
-	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
-	IgnoreInterrupts = true
 )
 
 func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, secretVolumeMounts []coreapi.VolumeMount, wrappers ...wrapper.Options) (*coreapi.Container, error) {

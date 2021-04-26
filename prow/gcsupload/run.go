@@ -17,6 +17,7 @@ limitations under the License.
 package gcsupload
 
 import (
+	"context"
 	"fmt"
 	"mime"
 	"net/url"
@@ -37,7 +38,7 @@ import (
 // a parameter and will have the prefix prepended
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
-func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
+func (o Options) Run(ctx context.Context, spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
 	logrus.WithField("options", o).Debug("Uploading to blob storage")
 
 	for extension, mediaType := range o.GCSConfiguration.MediaTypes {
@@ -57,12 +58,12 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 	}
 
 	if o.LocalOutputDir == "" {
-		if err := gcs.Upload(o.Bucket, o.StorageClientOptions.GCSCredentialsFile, o.StorageClientOptions.S3CredentialsFile, uploadTargets); err != nil {
+		if err := gcs.Upload(ctx, o.Bucket, o.StorageClientOptions.GCSCredentialsFile, o.StorageClientOptions.S3CredentialsFile, uploadTargets); err != nil {
 			return fmt.Errorf("failed to upload to blob storage: %w", err)
 		}
 		logrus.Info("Finished upload to blob storage")
 	} else {
-		if err := gcs.LocalExport(o.LocalOutputDir, uploadTargets); err != nil {
+		if err := gcs.LocalExport(ctx, o.LocalOutputDir, uploadTargets); err != nil {
 			return fmt.Errorf("failed to copy files to %q: %w", o.LocalOutputDir, err)
 		}
 		logrus.Infof("Finished copying files to %q.", o.LocalOutputDir)
