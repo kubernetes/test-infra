@@ -526,6 +526,50 @@ func TestSyncPendingJobs(t *testing.T) {
 			expectedComplete: true,
 			expectedReport:   true,
 		},
+		{
+			name: "aborted outside of prow",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "needtoretry",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job: "test-job",
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.PendingState,
+				},
+			},
+			builds: map[string]Build{
+				"needtoretry": {Result: pState(aborted), Number: 13},
+			},
+			expectedState:    prowapi.PendingState,
+			expectedEnqueued: true,
+			expectedBuild:    true,
+			expectedReport:   true,
+		},
+		{
+			name: "aborted from prow",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "dontretry",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job: "test-job",
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.AbortedState,
+				},
+			},
+			builds: map[string]Build{
+				"dontretry": {Result: pState(aborted), Number: 14},
+			},
+			expectedURL:      "dontretry/aborted",
+			expectedState:    prowapi.AbortedState,
+			expectedComplete: true,
+			expectedReport:   true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("scenario %q", tc.name)
@@ -539,14 +583,15 @@ func TestSyncPendingJobs(t *testing.T) {
 		fakeProwJobClient := fake.NewSimpleClientset(&tc.pj)
 
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			jc:            fjc,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			cfg:           newFakeConfigAgent(t, 0, nil).Config,
-			totURL:        totServ.URL,
-			lock:          sync.RWMutex{},
-			pendingJobs:   make(map[string]int),
-			clock:         clock.RealClock{},
+			prowJobClient:    fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			jc:               fjc,
+			log:              logrus.NewEntry(logrus.StandardLogger()),
+			cfg:              newFakeConfigAgent(t, 0, nil).Config,
+			totURL:           totServ.URL,
+			lock:             sync.RWMutex{},
+			pendingJobs:      make(map[string]int),
+			retryAbortedJobs: true,
+			clock:            clock.RealClock{},
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
