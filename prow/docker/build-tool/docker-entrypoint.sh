@@ -17,6 +17,8 @@
 set -x
 
 # enale experimental feature of docker manifest 
+jq -n --arg enable enabled '{"experimental":$enable}' > ${HOME}/.docker/config.json
+
 if [ ! -f /etc/docker/daemon.json ]; then
   mkdir -p /etc/docker
   touch /etc/docker/daemon.json
