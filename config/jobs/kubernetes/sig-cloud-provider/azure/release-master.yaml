@@ -245,6 +245,8 @@ presubmits:
         env:
         - name: KUBETEST_CONF_PATH
           value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
+        - name: CONFORMANCE_NODES
+          value: "25"
     annotations:
       testgrid-dashboards: provider-azure-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
