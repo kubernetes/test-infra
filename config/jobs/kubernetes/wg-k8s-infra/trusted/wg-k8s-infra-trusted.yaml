@@ -15,8 +15,7 @@ periodics:
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
-    - name: groups
-      image: golang:1.13
+    - image: golang:1.13
       command:
       - bash
       args:
@@ -44,8 +43,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
-    - name: groups
-      image: gcr.io/k8s-staging-releng/releng-ci:latest
+    - image: gcr.io/k8s-staging-releng/releng-ci:latest
       command:
       - bash
       args:
@@ -112,8 +110,7 @@ postsubmits:
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
-      - name: groups
-        image: golang:1.13
+      - image: golang:1.13
         command:
         - bash
         args:
