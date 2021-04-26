@@ -158,9 +158,14 @@ postsubmits:
         args:
         - -c
         - |
-          gcloud container clusters get-credentials prow-build --project=k8s-infra-prow-build --region=us-central1
-          kubectl --context=gke_k8s-infra-prow-build_us-central1_prow-build \
-            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources
+          cd ./infra/gcp/clusters/projects/k8s-infra-prow-build
+          if [[ -x ./deploy.sh ]]; then
+            ./deploy.sh
+          else
+            gcloud container clusters get-credentials prow-build --project=k8s-infra-prow-build --region=us-central1
+            kubectl --context=gke_k8s-infra-prow-build_us-central1_prow-build \
+              apply -f ./prow-build/resources --recursive
+          fi
   - name: post-k8sio-deploy-prow-build-trusted-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
@@ -182,6 +187,11 @@ postsubmits:
         args:
         - -c
         - |
-          gcloud container clusters get-credentials prow-build-trusted --project=k8s-infra-prow-build-trusted --region=us-central1
-          kubectl --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
-            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources
+          cd ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted
+          if [[ -x ./deploy.sh ]]; then
+            ./deploy.sh
+          else
+            gcloud container clusters get-credentials prow-build-trusted --project=k8s-infra-prow-build-trusted --region=us-central1
+            kubectl --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
+              apply -f ./prow-build-trusted/resources --recursive
+          fi
