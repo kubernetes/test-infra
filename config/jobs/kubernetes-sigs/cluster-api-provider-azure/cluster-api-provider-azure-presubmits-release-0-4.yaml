@@ -60,8 +60,6 @@ presubmits:
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
             value: "Creating a GPU-enabled cluster|.*Windows.*"
-          - name: LOCAL_ONLY
-            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -94,8 +92,6 @@ presubmits:
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
             value: ""
-          - name: LOCAL_ONLY
-            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -129,8 +125,6 @@ presubmits:
             value: ".*Windows.*"
           - name: GINKGO_SKIP
             value: ""
-          - name: LOCAL_ONLY
-            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -163,8 +157,6 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
-          - name: LOCAL_ONLY
-            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
