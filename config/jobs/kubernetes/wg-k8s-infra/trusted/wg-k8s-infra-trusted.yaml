@@ -1,6 +1,6 @@
 periodics:
 - name: ci-k8sio-groups
-  interval: 24h
+  interval: 6h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
