@@ -103,7 +103,7 @@ func (l LabelEvent) Match(eventName, label string) bool {
 
 // Opposite is unlabel
 func (l LabelEvent) Opposite() EventMatcher {
-	return UnlabelEvent{Label: l.Label}
+	return UnlabelEvent(l)
 }
 
 // UnlabelEvent is an "unlabeled" event
@@ -120,7 +120,7 @@ func (u UnlabelEvent) Match(eventName, label string) bool {
 
 // Opposite is label
 func (u UnlabelEvent) Opposite() EventMatcher {
-	return LabelEvent{Label: u.Label}
+	return LabelEvent(u)
 }
 
 // CloseEvent is a "closed" event

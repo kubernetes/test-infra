@@ -886,9 +886,7 @@ func formatVariant(variant string) string {
 	if variant == "" {
 		return ""
 	}
-	if strings.HasPrefix(variant, "-") {
-		variant = variant[1:]
-	}
+	variant = strings.TrimPrefix(variant, "-")
 	return fmt.Sprintf("(%s)", variant)
 }
 

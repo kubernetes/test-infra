@@ -1303,8 +1303,7 @@ func yamlToConfig(path string, nc interface{}) error {
 		}
 	}
 
-	var fix func(*Periodic)
-	fix = func(job *Periodic) {
+	fix := func(job *Periodic) {
 		job.SourcePath = path
 	}
 	for i := range jc.Periodics {

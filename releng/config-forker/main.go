@@ -327,10 +327,8 @@ annotations:
 				v += ", " + "sig-release-job-config-errors"
 			}
 			didDashboards = true
-			break
 		case testgridTabNameAnnotation:
 			v = strings.ReplaceAll(v, "master", version)
-			break
 		case descriptionAnnotation:
 			continue annotations
 		}

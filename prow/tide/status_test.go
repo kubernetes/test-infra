@@ -1053,9 +1053,7 @@ func TestIndexFuncPassingJobs(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var results []string
-			for _, result := range indexFuncPassingJobs(tc.pj) {
-				results = append(results, result)
-			}
+			results = append(results, indexFuncPassingJobs(tc.pj)...)
 			if diff := deep.Equal(tc.expected, results); diff != nil {
 				t.Errorf("expected does not match result, diff: %v", diff)
 			}

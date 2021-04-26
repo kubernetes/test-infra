@@ -263,9 +263,7 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 			continue
 		}
 
-		for _, change := range changes {
-			result[h.instance] = append(result[h.instance], change)
-		}
+		result[h.instance] = append(result[h.instance], changes...)
 	}
 	return result
 }

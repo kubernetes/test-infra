@@ -682,7 +682,7 @@ func prepareGcp(o *options) error {
 				return fmt.Errorf("failed to get latest image from family %q in project %q: %s", o.gcpImageFamily, o.gcpImageProject, err)
 			}
 			latestImage := ""
-			latestImageRegexp := regexp.MustCompile("^name: *(\\S+)")
+			latestImageRegexp := regexp.MustCompile(`^name: *(\S+)`)
 			for _, line := range strings.Split(string(out), "\n") {
 				matches := latestImageRegexp.FindStringSubmatch(line)
 				if len(matches) == 2 {
