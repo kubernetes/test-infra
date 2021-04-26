@@ -925,11 +925,11 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 
 	switch {
 	case len(versions) == 0:
-		return fmt.Sprintf("No %s changes.", name)
+		return fmt.Sprintf("No %s changes.", prefix)
 	case len(versions) == 1 && summarise:
 		for k, v := range versions {
 			s := strings.Split(k, ":")
-			return fmt.Sprintf("%s changes: %s/compare/%s...%s (%s → %s)", name, repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate))
+			return fmt.Sprintf("%s changes: %s/compare/%s...%s (%s → %s)", prefix, repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate))
 		}
 	default:
 		changes := make([]string, 0, len(versions))
@@ -944,7 +944,7 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 				repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate), strings.Join(names, ", ")))
 		}
 		sort.Slice(changes, func(i, j int) bool { return strings.Split(changes[i], "|")[1] < strings.Split(changes[j], "|")[1] })
-		return fmt.Sprintf("Multiple distinct %s changes:\n\nCommits | Dates | Images\n--- | --- | ---\n%s\n", name, strings.Join(changes, "\n"))
+		return fmt.Sprintf("Multiple distinct %s changes:\n\nCommits | Dates | Images\n--- | --- | ---\n%s\n", prefix, strings.Join(changes, "\n"))
 	}
 	panic("unreachable!")
 }

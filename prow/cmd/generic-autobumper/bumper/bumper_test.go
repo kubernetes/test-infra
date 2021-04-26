@@ -1151,7 +1151,7 @@ func TestGenerateSummary(t *testing.T) {
 	afterCommit2 := "4f1234567"
 	beforeDate2 := "20210125"
 	afterDate2 := "20210126"
-	unsummarizedOutHeader := `Multiple distinct Test changes:
+	unsummarizedOutHeader := `Multiple distinct %s changes:
 
 Commits | Dates | Images
 --- | --- | ---`
@@ -1181,7 +1181,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/none",
 			summarize: true,
 			images:    sampleImages,
-			expected:  "No Test changes.",
+			expected:  "No gcr.io/none changes.",
 		},
 		{
 			testName:  "Image not bumped summarized",
@@ -1190,7 +1190,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/none",
 			summarize: true,
 			images:    sampleImages,
-			expected:  "No Test changes.",
+			expected:  "No gcr.io/none changes.",
 		},
 		{
 			testName:  "Image bumped: summarized",
@@ -1199,7 +1199,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/bumped",
 			summarize: true,
 			images:    sampleImages,
-			expected:  fmt.Sprintf("Test changes: github.com/test/repo/compare/%s...%s (%s → %s)", beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate)),
+			expected:  fmt.Sprintf("gcr.io/bumped changes: github.com/test/repo/compare/%s...%s (%s → %s)", beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate)),
 		},
 		{
 			testName:  "Image bumped: not summarized",
@@ -1208,7 +1208,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/bumped",
 			summarize: false,
 			images:    sampleImages,
-			expected:  fmt.Sprintf("%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "bumpName")),
+			expected:  fmt.Sprintf("%s\n%s\n", fmt.Sprintf(unsummarizedOutHeader, "gcr.io/bumped"), fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "bumpName")),
 		},
 		{
 			testName:  "Image bumped: not summarized",
@@ -1217,7 +1217,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/variant",
 			summarize: false,
 			images:    sampleImages,
-			expected:  fmt.Sprintf("%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "name(first), name(second)")),
+			expected:  fmt.Sprintf("%s\n%s\n", fmt.Sprintf(unsummarizedOutHeader, "gcr.io/variant"), fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "name(first), name(second)")),
 		},
 		{
 			testName:  "Image bumped, inconsistent: not summarized",
@@ -1226,7 +1226,7 @@ Commits | Dates | Images
 			prefix:    "gcr.io/inconsistent",
 			summarize: false,
 			images:    sampleImages,
-			expected:  fmt.Sprintf("%s\n%s\n%s\n", unsummarizedOutHeader, fmt.Sprintf(unsummarizedOutLine, beforeCommit2, afterCommit2, formatTagDate(beforeDate2), formatTagDate(afterDate2), "first"), fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "second")),
+			expected:  fmt.Sprintf("%s\n%s\n%s\n", fmt.Sprintf(unsummarizedOutHeader, "gcr.io/inconsistent"), fmt.Sprintf(unsummarizedOutLine, beforeCommit2, afterCommit2, formatTagDate(beforeDate2), formatTagDate(afterDate2), "first"), fmt.Sprintf(unsummarizedOutLine, beforeCommit, afterCommit, formatTagDate(beforeDate), formatTagDate(afterDate), "second")),
 		},
 	}
 	for _, tc := range testCases {
