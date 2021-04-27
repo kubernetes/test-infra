@@ -23,7 +23,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws
@@ -50,7 +50,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-compact
@@ -77,7 +77,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-compact-serial
@@ -104,7 +104,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-compact-upgrade
@@ -131,7 +131,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
@@ -158,7 +158,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-upgrade
@@ -185,7 +185,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-upgrade-rollback
@@ -212,7 +212,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-upgrade-single-node
@@ -239,7 +239,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure
@@ -266,7 +266,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-cilium
@@ -293,7 +293,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-compact
@@ -320,7 +320,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-compact-serial
@@ -347,7 +347,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-compact-upgrade
@@ -374,7 +374,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-serial
@@ -401,7 +401,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-upgrade
@@ -428,7 +428,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-azure-upgrade-single-node
@@ -455,7 +455,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-compact
@@ -482,7 +482,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-compact-serial
@@ -509,7 +509,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-compact-upgrade
@@ -536,7 +536,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-serial
@@ -563,7 +563,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-upgrade
@@ -590,7 +590,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-from-stable-4.7-from-stable-4.6-e2e-aws-upgrade
@@ -617,7 +617,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-compact-upgrade
@@ -644,7 +644,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-ovn-upgrade
@@ -671,7 +671,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-ovn-upgrade-rollback
@@ -698,7 +698,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
@@ -725,7 +725,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade-rollback
@@ -752,7 +752,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-azure-ovn-upgrade
@@ -779,7 +779,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-azure-upgrade
@@ -806,7 +806,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-gcp-ovn-upgrade
@@ -833,7 +833,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-gcp-upgrade
@@ -860,7 +860,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-openstack-upgrade
@@ -887,7 +887,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-ovirt-upgrade
@@ -914,7 +914,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-vsphere-upgrade
@@ -941,7 +941,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-console-aws
@@ -968,7 +968,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-canary
@@ -995,7 +995,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-fips
@@ -1022,7 +1022,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-fips-serial
@@ -1049,7 +1049,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-proxy
@@ -1076,7 +1076,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-single-node
@@ -1103,7 +1103,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-upgrade
@@ -1130,7 +1130,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-workers-rhel7
@@ -1157,7 +1157,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-azure
@@ -1184,7 +1184,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-azure-fips
@@ -1211,7 +1211,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-azure-fips-serial
@@ -1238,7 +1238,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-gcp
@@ -1265,7 +1265,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-gcp-fips
@@ -1292,7 +1292,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-gcp-fips-serial
@@ -1319,7 +1319,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-gcp-libvirt-cert-rotation
@@ -1346,7 +1346,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-gcp-rt
@@ -1373,7 +1373,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-assisted
@@ -1400,7 +1400,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-assisted-ipv6
@@ -1427,7 +1427,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-compact
@@ -1454,7 +1454,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-ovn-dualstack
@@ -1481,7 +1481,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-serial-ipv4
@@ -1508,7 +1508,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-upgrade
@@ -1535,7 +1535,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-virtualmedia
@@ -1562,7 +1562,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
@@ -1589,7 +1589,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-ovirt
@@ -1616,7 +1616,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere
@@ -1643,7 +1643,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-ovn
@@ -1670,7 +1670,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-serial
@@ -1697,7 +1697,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-upi
@@ -1724,7 +1724,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-upi-serial
@@ -1751,7 +1751,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-openshift-ipi-azure-arcconformance
@@ -1778,7 +1778,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
@@ -1805,7 +1805,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-metal-ipi-upgrade
@@ -1832,7 +1832,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.8
@@ -1859,7 +1859,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.8-ppc64le
@@ -1886,7 +1886,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
@@ -1913,7 +1913,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8
@@ -1940,7 +1940,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-csi-4.8
@@ -1967,7 +1967,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-mirrors-4.8
@@ -1994,7 +1994,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-ovn-4.8
@@ -2021,7 +2021,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-upi-4.8
@@ -2048,7 +2048,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-ovn-4.8
@@ -2075,7 +2075,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-azure-serial-4.8
@@ -2102,7 +2102,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-ovn-4.8
@@ -2129,7 +2129,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-serial-4.8
@@ -2156,7 +2156,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-4.8
@@ -2183,7 +2183,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-compact-4.8
@@ -2210,7 +2210,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-serial-4.8
@@ -2237,7 +2237,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-openstack-4.8
@@ -2264,7 +2264,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-openstack-serial-4.8
@@ -2291,7 +2291,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-compact-ppc64le-4.8
@@ -2318,7 +2318,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-compact-s390x-4.8
@@ -2345,7 +2345,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-image-ecosystem-ppc64le-4.8
@@ -2372,7 +2372,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-image-ecosystem-s390x-4.8
@@ -2399,7 +2399,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-jenkins-e2e-ppc64le-4.8
@@ -2426,7 +2426,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-jenkins-e2e-s390x-4.8
@@ -2453,7 +2453,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-ppc64le-4.8
@@ -2480,7 +2480,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-remote-libvirt-s390x-4.8
@@ -2507,7 +2507,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-elasticsearch-operator-e2e-4.8
@@ -2534,7 +2534,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-upgrade-remote-libvirt-ppc64le-4.7-to-4.8
@@ -2561,7 +2561,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-upgrade-remote-libvirt-s390x-4.7-to-4.8
@@ -2588,7 +2588,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-osd-aws-nightly-4.8
@@ -2615,7 +2615,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-osd-gcp-nightly-4.8
@@ -2642,7 +2642,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-calico-4.8
@@ -2669,7 +2669,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-disruptive-4.8
@@ -2696,7 +2696,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-ovn-4.8
@@ -2723,7 +2723,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-sdn-network-stress-4.8
@@ -2750,7 +2750,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.8
@@ -2777,7 +2777,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.5-to-4.6-to-4.7-to-4.8-ci
@@ -2804,7 +2804,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.8
@@ -2831,7 +2831,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.8
@@ -2858,7 +2858,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
-      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.8
