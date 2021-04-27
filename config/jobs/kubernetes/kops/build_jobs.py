@@ -384,6 +384,11 @@ def build_test(cloud='aws',
     if skip_override is not None:
         skip_regex = skip_override
 
+    # TODO(rifelpet): Remove once k8s tags has been created that include
+    #  https://github.com/kubernetes/kubernetes/pull/101443
+    if cloud == 'aws' and k8s_version in ('latest', 'stable', '1.21', '1.22') and skip_regex:
+        skip_regex += r'|Invalid.AWS.KMS.key'
+
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud
@@ -493,6 +498,11 @@ def presubmit_test(cloud='aws',
         kops_image = distro_images[distro]
         kops_ssh_user = distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
+    # TODO(rifelpet): Remove once k8s tags has been created that include
+    #  https://github.com/kubernetes/kubernetes/pull/101443
+        if k8s_version in ('latest', 'stable', '1.21', '1.22'):
+            skip_override += r'|Invalid.AWS.KMS.key'
+
     elif cloud == 'gce':
         kops_image = None
         kops_ssh_user = 'prow'
