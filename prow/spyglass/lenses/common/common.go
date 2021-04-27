@@ -223,7 +223,9 @@ func FetchArtifacts(
 
 	for _, logName := range logsNeeded {
 		art, err := podLogArtifactFetcher.Artifact(ctx, src, logName, sizeLimit)
-		if err != nil {
+		if config.IsNotAllowedBucketError(err) {
+			logrus.Debugf("Failed to fetch pod log: %v", err)
+		} else if err != nil {
 			logrus.Errorf("Failed to fetch pod log: %v", err)
 		} else {
 			arts = append(arts, art)
