@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "stable", "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "alpha", "networking": null}
   - name: pull-kops-e2e-kubernetes-aws
     branches:
     - master
@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=stable --networking=kubenet --container-runtime=docker" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=alpha --networking=kubenet --container-runtime=docker" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -63,13 +63,13 @@ presubmits:
       test.kops.k8s.io/container_runtime: docker
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/k8s_version: '1.21'
-      test.kops.k8s.io/kops_channel: stable
+      test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: ''
       testgrid-dashboards: kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-docker
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "stable", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-containerd
     branches:
     - master
@@ -101,7 +101,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=stable --networking=calico --container-runtime=containerd" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=alpha --networking=calico --container-runtime=containerd" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -129,13 +129,13 @@ presubmits:
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/k8s_version: '1.21'
-      test.kops.k8s.io/kops_channel: stable
+      test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-containerd
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--master-count=3 --zones=eu-central-1a,eu-central-1b,eu-central-1c", "k8s_version": "1.21", "kops_channel": "stable", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--master-count=3 --zones=eu-central-1a,eu-central-1b,eu-central-1c", "k8s_version": "1.21", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-containerd-ha
     branches:
     - master
@@ -167,7 +167,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=stable --networking=calico --container-runtime=containerd --master-count=3 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -196,13 +196,13 @@ presubmits:
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/extra_flags: --master-count=3 --zones=eu-central-1a,eu-central-1b,eu-central-1c
       test.kops.k8s.io/k8s_version: '1.21'
-      test.kops.k8s.io/kops_channel: stable
+      test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-containerd-ha
 
-# {"cloud": "aws", "container_runtime": "crio", "distro": "u2010", "k8s_version": "1.21", "kops_channel": "stable", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "crio", "distro": "u2010", "k8s_version": "1.21", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-crio
     branches:
     - master
@@ -234,7 +234,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-20210415.1' --channel=stable --networking=calico --container-runtime=crio" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-20210415.1' --channel=alpha --networking=calico --container-runtime=crio" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -262,13 +262,13 @@ presubmits:
       test.kops.k8s.io/container_runtime: crio
       test.kops.k8s.io/distro: u2010
       test.kops.k8s.io/k8s_version: '1.21'
-      test.kops.k8s.io/kops_channel: stable
+      test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-distro-u2010, kops-k8s-1.21, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-crio
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "feature_flags": "GoogleCloudBucketACL", "k8s_version": "1.21", "kops_channel": "stable", "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "feature_flags": "GoogleCloudBucketACL", "k8s_version": "1.21", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce
     branches:
     - master
@@ -296,7 +296,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=gce \
-            --create-args="--channel=stable --networking=cilium --container-runtime=containerd" \
+            --create-args="--channel=alpha --networking=cilium --container-runtime=containerd" \
             --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -326,7 +326,7 @@ presubmits:
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/feature_flags: GoogleCloudBucketACL
       test.kops.k8s.io/k8s_version: '1.21'
-      test.kops.k8s.io/kops_channel: stable
+      test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
