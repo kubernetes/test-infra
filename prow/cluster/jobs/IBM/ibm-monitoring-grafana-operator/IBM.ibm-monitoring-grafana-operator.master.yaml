@@ -164,6 +164,7 @@ postsubmits:
     path_alias: github.com/IBM/ibm-monitoring-grafana-operator
     labels:
       preset-ibm-private-repo: "true"
+      preset-service-account: "true"
     spec:
       containers:
       - command:
