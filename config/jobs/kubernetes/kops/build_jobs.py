@@ -310,6 +310,7 @@ distro_images = {
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
+    'u2010': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-*'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
@@ -323,6 +324,7 @@ distros_ssh_user = {
     'rhel8': 'ec2-user',
     'u1804': 'ubuntu',
     'u2004': 'ubuntu',
+    'u2010': 'ubuntu',
 }
 
 ##############
@@ -945,16 +947,16 @@ def generate_presubmits_e2e():
         presubmit_test(
             container_runtime='docker',
             k8s_version='1.21',
-            kops_channel='stable',
+            kops_channel='alpha',
             name='pull-kops-e2e-kubernetes-aws',
             tab_name='e2e-docker',
             always_run=True,
             skip_override=skip_regex,
         ),
         presubmit_test(
-            container_runtime='docker',
+            container_runtime='containerd',
             k8s_version='1.21',
-            kops_channel='stable',
+            kops_channel='alpha',
             name='pull-kops-e2e-k8s-containerd',
             networking='calico',
             tab_name='e2e-containerd',
@@ -962,10 +964,32 @@ def generate_presubmits_e2e():
             skip_override=skip_regex,
         ),
         presubmit_test(
+            container_runtime='containerd',
+            k8s_version='1.21',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-containerd-ha',
+            networking='calico',
+            extra_flags=["--master-count=3", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
+            tab_name='e2e-containerd-ha',
+            always_run=False,
+            skip_override=skip_regex,
+        ),
+        presubmit_test(
+            distro="u2010",
+            networking='calico',
+            container_runtime='crio',
+            k8s_version='1.21',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-crio',
+            tab_name='e2e-crio',
+            always_run=False,
+            skip_override=skip_regex,
+        ),
+        presubmit_test(
             cloud='gce',
             container_runtime='containerd',
             k8s_version='1.21',
-            kops_channel='stable',
+            kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce',
             networking='cilium',
             tab_name='e2e-gce',
