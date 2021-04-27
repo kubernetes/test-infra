@@ -44,7 +44,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable-1.21.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key"
         securityContext:
           privileged: true
         env:
@@ -110,7 +110,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable-1.21.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key"
         securityContext:
           privileged: true
         env:
@@ -176,7 +176,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable-1.21.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key"
         securityContext:
           privileged: true
         env:
@@ -243,7 +243,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable-1.21.txt \
             --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key"
         securityContext:
           privileged: true
         env:

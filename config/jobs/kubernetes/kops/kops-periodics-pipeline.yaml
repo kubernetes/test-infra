@@ -42,7 +42,7 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]"
+          --skip-regex="\[Slow\]|\[Serial\]|Invalid.AWS.KMS.key"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
