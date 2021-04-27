@@ -121,13 +121,7 @@ func main() {
 	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
-	var token string
-	if o.github.TokenPath != "" {
-		token = o.github.TokenPath
-	} else {
-		token = o.github.AppPrivateKeyPath
-	}
-	if err := secretAgent.Start([]string{token}); err != nil {
+	if err := secretAgent.Start(nil); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 

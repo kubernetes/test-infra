@@ -124,6 +124,9 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 		if secretAgent == nil {
 			return nil, fmt.Errorf("cannot store token from %q without a secret agent", o.TokenPath)
 		}
+		if err := secretAgent.Add(o.TokenPath); err != nil {
+			return nil, fmt.Errorf("failed to add GitHub token to secret agent: %w", err)
+		}
 		generatorFunc := secretAgent.GetTokenGenerator(o.TokenPath)
 		generator = &generatorFunc
 	}

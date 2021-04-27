@@ -128,7 +128,7 @@ func main() {
 	}
 
 	agent := &secret.Agent{}
-	if err := agent.Start([]string{o.github.TokenPath}); err != nil {
+	if err := agent.Start(nil); err != nil {
 		logrus.WithError(err).Fatalf("Error starting secret agent %s", o.github.TokenPath)
 	}
 

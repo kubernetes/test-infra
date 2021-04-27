@@ -232,12 +232,9 @@ func main() {
 	}
 	conf := ca.Config()
 
-	var secretAgent *secret.Agent
-	if o.github.TokenPath != "" {
-		secretAgent = &secret.Agent{}
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Failed to start secret agent")
-		}
+	secretAgent := &secret.Agent{}
+	if err := secretAgent.Start(nil); err != nil {
+		logrus.WithError(err).Fatal("Failed to start secret agent")
 	}
 	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
 	if err != nil {
