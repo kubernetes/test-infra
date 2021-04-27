@@ -97,11 +97,6 @@ dashboards:
       description: network gci-gce alpha features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: ubuntu-gce-basic-sctp
-      test_group_name: ci-kubernetes-e2e-ubuntu-gce-basic-sctp
-      description: network ubuntu-gce SCTP support basic e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
