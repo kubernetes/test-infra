@@ -69,7 +69,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-docker
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "stable", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "stable", "networking": "calico"}
   - name: pull-kops-e2e-k8s-containerd
     branches:
     - master
@@ -101,7 +101,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=stable --networking=calico --container-runtime=docker" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210415' --channel=stable --networking=calico --container-runtime=containerd" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -126,7 +126,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/container_runtime: docker
+      test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/k8s_version: '1.21'
       test.kops.k8s.io/kops_channel: stable

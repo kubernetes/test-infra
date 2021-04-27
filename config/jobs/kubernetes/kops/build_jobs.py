@@ -952,7 +952,7 @@ def generate_presubmits_e2e():
             skip_override=skip_regex,
         ),
         presubmit_test(
-            container_runtime='docker',
+            container_runtime='containerd',
             k8s_version='1.21',
             kops_channel='stable',
             name='pull-kops-e2e-k8s-containerd',
