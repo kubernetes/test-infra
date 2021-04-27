@@ -4,10 +4,12 @@ reviewers:
 - amwat
 - awly
 - mikedanese
+- jpbetz
 approvers:
 - amwat
 - awly
 - mikedanese
+- jpbetz
 labels:
 - sig/cloud-provider
 - area/provider/aws
