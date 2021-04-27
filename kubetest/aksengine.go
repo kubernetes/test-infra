@@ -291,10 +291,17 @@ func validateAzureStackCloudProfile() error {
 
 func randomAKSEngineLocation() string {
 	var AzureLocations = []string{
+		"canadacentral",
+		"centralus",
+		"eastus",
+		"eastus2",
+		"francecentral",
+		"northcentralus",
+		"northeurope",
+		"southcentralus",
+		"uksouth",
 		"westeurope",
 		"westus2",
-		"eastus2",
-		"southcentralus",
 	}
 
 	return AzureLocations[rand.Intn(len(AzureLocations))]
