@@ -962,6 +962,17 @@ def generate_presubmits_e2e():
             skip_override=skip_regex,
         ),
         presubmit_test(
+            container_runtime='containerd',
+            k8s_version='1.21',
+            kops_channel='stable',
+            name='pull-kops-e2e-k8s-containerd-ha',
+            networking='calico',
+            extra_flags=["--master-count=3", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
+            tab_name='e2e-containerd-ha',
+            always_run=False,
+            skip_override=skip_regex,
+        ),
+        presubmit_test(
             cloud='gce',
             container_runtime='containerd',
             k8s_version='1.21',
