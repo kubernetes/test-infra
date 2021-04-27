@@ -862,7 +862,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-external-e2e-single-az
     decorate: true
-    always_run: false
+    always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -898,22 +898,15 @@ presubmits:
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Ginkgo specific args
-        - --ginkgo-focus=External.Storage.*disk.csi.azure.com
-        - --ginkgo-skip=\[Disruptive\]|\[Slow\]|\[Feature:VolumeSnapshotDataSource\]
         # Specific test args
         - --test-azure-disk-csi-driver
-        - --run-external-e2e-ginkgo-test
-        - --storage-testdriver-repo-path=test/external-e2e/testdriver.yaml
         securityContext:
           privileged: true
         env:
           - name: ENABLE_TOPOLOGY
             value: "false"
-          - name: KUBERNETES_PROVIDER
-            value: azure
-          - name: KUBERNETES_CONFORMANCE_PROVIDER
-            value: azure
+          - name: EXTERNAL_E2E_TEST
+            value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-external-e2e-single-az
