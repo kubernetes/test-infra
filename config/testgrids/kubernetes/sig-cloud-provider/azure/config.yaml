@@ -16,6 +16,7 @@ dashboard_groups:
     - provider-azure-azurefile-csi-driver
     - provider-azure-blobfuse-csi-driver
     - provider-azure-cloud-provider-azure
+    - provider-azure-cloud-provider-azure-1-20-presubmit
     - provider-azure-dualstack
     - provider-azure-scalability
     - provider-azure-presubmit
@@ -31,6 +32,7 @@ dashboards:
 - name: provider-azure-azurefile-csi-driver
 - name: provider-azure-blobfuse-csi-driver
 - name: provider-azure-cloud-provider-azure
+- name: provider-azure-cloud-provider-azure-1-20-presubmit
 - name: provider-azure-dualstack
 - name: provider-azure-scalability
 - name: provider-azure-presubmit
