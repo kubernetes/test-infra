@@ -1,6 +1,5 @@
-# For more information on these tests (especially how to generate the images),
-# see
-# https://github.com/kubernetes-sigs/multi-tenancy/tree/master/incubator/hnc/hack/prow-e2e
+# For more information on these tests, see
+# https://github.com/kubernetes-sigs/multi-tenancy/tree/master/incubator/hnc/hack/prow-run-e2e.sh.
 #
 # When updating this test, please update the periodics (below) in the same way
 # if applicable.
@@ -10,6 +9,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: wg-multi-tenancy-hnc
       testgrid-tab-name: postsubmit-tests
+      # remove aludwin@google.com once the group is working properly
+      testgrid-alert-email: aludwin@google.com,kubernetes-hnc-dev+alerts@googlegroups.com
     always_run: false
     decorate: true
     decoration_config:
@@ -40,7 +41,8 @@ periodics:
   annotations:
     testgrid-dashboards: wg-multi-tenancy-hnc
     testgrid-tab-name: periodic-e2e-tests
-    testgrid-alert-email: aludwin@google.com # will change to a group when it's stable
+    # remove aludwin@google.com once the group is working properly
+    testgrid-alert-email: aludwin@google.com,kubernetes-hnc-dev+alerts@googlegroups.com
     testgrid-num-failures-to-alert: "1"
   interval: 24h
   always_run: true # Different from the postsubmit; copied from kind periodics
