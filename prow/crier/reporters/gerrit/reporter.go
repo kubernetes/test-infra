@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -64,6 +65,7 @@ var (
 
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
+	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
 }
 
 // Client is a gerrit reporter client
@@ -268,7 +270,18 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		case report.Success == report.Total:
 			vote = lgtm
 		case pj.Spec.Type == v1.PresubmitJob:
+			//https://gerrit-documentation.storage.googleapis.com/Documentation/3.1.4/config-labels.html#label_allowPostSubmit
+			// If presubmit and failure vote -1...
 			vote = lbtm
+
+			change, err := c.gc.GetChange(gerritInstance, gerritID)
+			//TODO(mpherman): In cases where the change was deleted we do not want warn nor report
+			if err != nil {
+				logger.WithError(err).Warnf("Unable to get change from instance %s with id %s", gerritInstance, gerritID)
+			} else if change.Status == client.Merged {
+				// Unless change is already merged. Merged changes should not be voted <0
+				vote = lztm
+			}
 		default:
 			vote = lztm
 		}

@@ -81,6 +81,10 @@ func (f *fgc) SetReview(changeID, revisionID string, input *gerrit.ReviewInput) 
 	return nil, nil, nil
 }
 
+func (f *fgc) GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error) {
+	return nil, nil, nil
+}
+
 func makeStamp(t time.Time) gerrit.Timestamp {
 	return gerrit.Timestamp{Time: t}
 }
