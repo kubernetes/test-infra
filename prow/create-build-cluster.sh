@@ -29,7 +29,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
 # Specific to Prow instance
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
-GCS_BUCKET="${GCS_BUCKET:-${PROW_INSTANCE_NAME}}"
+CONTROL_PLANE_SA="${CONTROL_PLANE_SA:-}"
+GCS_BUCKET="${GCS_BUCKET:-gs://${PROW_INSTANCE_NAME}}"
 
 PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com}"
 PROW_DEPLOYMENT_DIR="${PROW_DEPLOYMENT_DIR:-./config/prow/cluster}"
@@ -69,6 +70,7 @@ fi
 function main() {
   parseArgs "$@"
   prompt "Create project" createProject
+  prompt "Create/ensure GCS job result bucket" ensureBucket
   prompt "Create cluster" createCluster
   prompt "Create a SA and secret for uploading results to GCS" createUploadSASecret
   prompt "Generate kubeconfig credentials for Prow" gencreds
@@ -134,6 +136,21 @@ function createCluster() {
   getClusterCreds
   kubectl create namespace "test-pods"
 }
+
+function createBucket() {
+  gsutil mb -p "${PROJECT}" -b on "${GCS_BUCKET}"
+  gsutil iam ch "serviceAccount:${CONTROL_PLANE_SA}:roles/storage.objectAdmin" "${GCS_BUCKET}"
+}
+
+function ensureBucket() {
+  if ! gsutil ls -p "${PROJECT}" "${GCS_BUCKET}"; then
+    if ! createBucket; then
+      echo "FAILED to create GCS bucket ${GCS_BUCKET}. This is expected if this is a shared default job result bucket."
+      echo "Please press any key to acknowledge and continue."
+      pause
+    fi
+  fi
+}
 function createUploadSASecret() {
   getClusterCreds
   local sa="prow-pod-utils"
@@ -143,12 +160,17 @@ function createUploadSASecret() {
   # Generate private key and attach to the service account.
   gcloud iam service-accounts keys create "sa-key.json" --project="${PROJECT}" --iam-account="${saFull}"
   kubectl create secret generic "service-account" -n "test-pods" --from-file="service-account.json=sa-key.json"
-  echo
-  echo "Please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
-  echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
-  echo
-  echo "Press any key to aknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
-  pause
+
+  # Try to authorize SA to upload to GCS_BUCKET. If this fails, the bucket if probably a shared result bucket and oncall will need to handle.
+  if ! gsutil iam ch "serviceAccount:${saFull}:roles/storage.objectAdmin" "${GCS_BUCKET}"; then
+    echo
+    echo "It doesn't look you have permission to authorize access to this bucket. This is expected for the default job result bucket."
+    echo "If this is a default job result bucket, please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
+    echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
+    echo
+    echo "Press any key to aknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
+    pause
+  fi
 }
 
 origdir="$( pwd -P )"
