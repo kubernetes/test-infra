@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         command:
         - "./scripts/ci-build.sh"
         # docker-in-docker needs privileged mode
@@ -29,7 +29,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -59,7 +59,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -103,7 +103,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

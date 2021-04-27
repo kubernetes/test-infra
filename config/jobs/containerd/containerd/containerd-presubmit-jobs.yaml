@@ -15,7 +15,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         command:
         - runner.sh
         args:
@@ -52,7 +52,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"

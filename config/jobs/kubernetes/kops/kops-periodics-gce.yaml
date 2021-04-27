@@ -33,7 +33,7 @@ periodics:
       - --provider=gce
       - --timeout=140m
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|Services.*functioning.*NodePort|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-kops-gce, kops-gce
     testgrid-days-of-results: "30"
@@ -121,7 +121,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       imagePullPolicy: Always
       resources:
         limits:
