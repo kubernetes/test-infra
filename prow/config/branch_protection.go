@@ -444,11 +444,10 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 //     because any branches not explicitly specified in the configuration will be unprotected.
 func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[string][]Presubmit) {
 	if warnings := c.reposWithDisabledPolicy(); len(warnings) > 0 {
-
-		logger.WithField("repos", strings.Join(warnings, ",")).Warn("The following repos define a policy, but have protect: false")
+		logger.WithField("repos", strings.Join(warnings, ",")).Debug("The following repos define a policy, but have protect: false")
 	}
 	if warnings := c.unprotectedBranches(presubmits); len(warnings) > 0 {
-		logger.WithField("repos", strings.Join(warnings, ",")).Warn("The following repos define a policy or require context(s), but have one or more branches with protect: false")
+		logger.WithField("repos", strings.Join(warnings, ",")).Debug("The following repos define a policy or require context(s), but have one or more branches with protect: false")
 	}
 }
 
