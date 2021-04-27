@@ -930,7 +930,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 		if err != nil {
 			msg := fmt.Sprintf("error rendering spyglass page: %v", err)
 			if shouldLogHTTPErrors(err) {
-				log.WithError(err).Error(msg)
+				log.WithError(err).Warn(msg)
 			}
 			http.Error(w, msg, httpStatusForError(err))
 			return
@@ -1651,7 +1651,8 @@ type httpError struct {
 }
 
 func httpStatusForError(e error) int {
-	if httpErr, ok := e.(httpError); ok {
+	var httpErr httpError
+	if ok := errors.As(e, &httpErr); ok {
 		return httpErr.statusCode
 	}
 	return http.StatusInternalServerError

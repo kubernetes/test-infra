@@ -34,7 +34,7 @@ import (
 func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, error) {
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return []string{}, fmt.Errorf("error parsing src: %v", err)
+		return []string{}, fmt.Errorf("error parsing src: %w", err)
 	}
 	gcsKey := ""
 	switch keyType {
@@ -66,7 +66,7 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 
 	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
-		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
+		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %w", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)

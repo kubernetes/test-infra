@@ -71,7 +71,7 @@ func GetBucket(ctx context.Context, s3Credentials []byte, path string) (*blob.Bu
 
 	bkt, err := blob.OpenBucket(ctx, fmt.Sprintf("%s://%s", storageProvider, bucket))
 	if err != nil {
-		return nil, fmt.Errorf("error opening file bucket: %v", err)
+		return nil, fmt.Errorf("error opening file bucket: %w", err)
 	}
 	return bkt, nil
 }
