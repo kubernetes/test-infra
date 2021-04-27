@@ -9,8 +9,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: wg-multi-tenancy-hnc
       testgrid-tab-name: postsubmit-tests
-      # remove aludwin@google.com once the group is working properly
-      testgrid-alert-email: aludwin@google.com,kubernetes-hnc-dev+alerts@googlegroups.com
+      testgrid-alert-email: kubernetes-hnc-dev+alerts@googlegroups.com
     always_run: false
     decorate: true
     decoration_config:
@@ -41,8 +40,7 @@ periodics:
   annotations:
     testgrid-dashboards: wg-multi-tenancy-hnc
     testgrid-tab-name: periodic-e2e-tests
-    # remove aludwin@google.com once the group is working properly
-    testgrid-alert-email: aludwin@google.com,kubernetes-hnc-dev+alerts@googlegroups.com
+    testgrid-alert-email: kubernetes-hnc-dev+alerts@googlegroups.com
     testgrid-num-failures-to-alert: "1"
   interval: 24h
   always_run: true # Different from the postsubmit; copied from kind periodics
