@@ -249,8 +249,9 @@ func hintFromPodInfo(buf []byte) string {
 			msg = fmt.Sprintf("state: terminated, reason: %q, message: %q", state.Reason, state.Message)
 		} else if state := ic.State.Waiting; state != nil {
 			msg = fmt.Sprintf("state: waiting, reason: %q, message: %q", state.Reason, state.Message)
-		} else if state := ic.State.Running; state != nil { // This shouldn't happen at all, just in case.
-			logrus.WithField("pod", report.Pod.Name).WithField("container", ic.Name).Warning("Init container is running but not ready")
+		} else if state := ic.State.Running; state != nil {
+			// Yes this is weird, but it did happened https://github.com/kubernetes/test-infra/issues/21985
+			msg = "state: running"
 		}
 		msgs = append(msgs, fmt.Sprintf("Init container %s not ready: (%s)", ic.Name, msg))
 	}
