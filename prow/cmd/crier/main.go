@@ -201,7 +201,7 @@ func main() {
 	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{}); err != nil {
+	if err := secretAgent.Start(nil); err != nil {
 		logrus.WithError(err).Fatal("unable to start secret agent")
 	}
 

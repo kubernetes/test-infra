@@ -260,10 +260,8 @@ func validate(o options) error {
 			return errors.New("cannot verify OWNERS file presence without a GitHub token")
 		}
 		secretAgent := &secret.Agent{}
-		if o.github.TokenPath != "" {
-			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				return fmt.Errorf("error starting secrets agent: %w", err)
-			}
+		if err := secretAgent.Start(nil); err != nil {
+			return fmt.Errorf("error starting secrets agent: %w", err)
 		}
 
 		githubClient, err := o.github.GitHubClient(secretAgent, false)

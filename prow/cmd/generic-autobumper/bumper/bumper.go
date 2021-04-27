@@ -314,7 +314,7 @@ func Run(o *Options) error {
 	if o.SkipPullRequest {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
 	} else if o.Gerrit == nil {
-		if err := sa.Start([]string{o.GitHubToken}); err != nil {
+		if err := sa.Start(nil); err != nil {
 			return fmt.Errorf("failed to start secrets agent: %w", err)
 		}
 

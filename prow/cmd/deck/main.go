@@ -381,8 +381,8 @@ func main() {
 		// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
 		// presubmits dynamically which we need for the PR history page.
 		secretAgent := &secret.Agent{}
-		if o.github.TokenPath != "" {
-			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+		if o.github.TokenPath != "" || o.github.AppID != "" {
+			if err := secretAgent.Start(nil); err != nil {
 				logrus.WithError(err).Fatal("Error starting secrets agent.")
 			}
 			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)

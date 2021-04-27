@@ -29,9 +29,10 @@ import (
 
 func TestGetOptions(t *testing.T) {
 	defArgs := map[string][]string{
-		"--hmac-path": {"/fake/hmac-file"},
-		"--hook-url":  {"https://not-a-url"},
-		"--repo":      {"fake-org/fake-repo"},
+		"--hmac-path":         {"/fake/hmac-file"},
+		"--hook-url":          {"https://not-a-url"},
+		"--repo":              {"fake-org/fake-repo"},
+		"--github-token-path": {"./testdata/token"},
 	}
 	cases := []struct {
 		name     string

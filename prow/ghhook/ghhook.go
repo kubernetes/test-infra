@@ -87,12 +87,8 @@ func GetOptions(fs *flag.FlagSet, args []string) (*Options, error) {
 	}
 
 	agent := &secret.Agent{}
-	// If it's not using the default github token path, start the secret agent.
-	// TODO: check if the token path is empty instead, after the DefaultGitHubTokenPath is deprecated.
-	if o.GitHubOptions.TokenPath != flagutil.DefaultGitHubTokenPath {
-		if err := agent.Start([]string{o.GitHubOptions.TokenPath}); err != nil {
-			return nil, fmt.Errorf("error starting secret agent %s: %v", o.GitHubOptions.TokenPath, err)
-		}
+	if err := agent.Start(nil); err != nil {
+		return nil, fmt.Errorf("error starting secret agent: %w", err)
 	}
 	o.GitHubHookClient, err = o.GitHubOptions.GitHubClient(agent, !o.Confirm)
 	if err != nil {
