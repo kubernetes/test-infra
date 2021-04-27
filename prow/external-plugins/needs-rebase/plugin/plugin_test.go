@@ -172,7 +172,8 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 
 		mergeable bool
 		labels    []string
-		state     githubql.PullRequestState
+		state     string
+		merged    bool
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -187,21 +188,21 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -211,7 +212,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -220,13 +221,14 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			name:      "merged pr is ignored",
 			pr:        pr(),
 			mergeable: false,
-			state:     githubql.PullRequestStateMerged,
+			state:     github.PullRequestStateClosed,
+			merged:    true,
 		},
 		{
 			name:      "closed pr is ignored",
 			pr:        pr(),
 			mergeable: false,
-			state:     githubql.PullRequestStateClosed,
+			state:     github.PullRequestStateClosed,
 		},
 	}
 
@@ -236,8 +238,8 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			ice := &github.IssueCommentEvent{}
 			if tc.pr != nil {
 				ice.Issue.PullRequest = &struct{}{}
-				tc.pr.Merged = tc.state == githubql.PullRequestStateMerged
-				tc.pr.State = string(tc.state)
+				tc.pr.Merged = tc.merged
+				tc.pr.State = tc.state
 			}
 			if err := HandleIssueCommentEvent(logrus.WithField("plugin", PluginName), fake, ice); err != nil {
 				t.Fatalf("error handling issue comment event: %v", err)
@@ -257,7 +259,8 @@ func TestHandlePullRequestEvent(t *testing.T) {
 
 		mergeable bool
 		labels    []string
-		state     githubql.PullRequestState
+		state     string
+		merged    bool
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -268,19 +271,19 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "mergeable no-op",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -289,18 +292,19 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
-			state:     githubql.PullRequestStateOpen,
+			state:     github.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 		{
-			name:  "merged pr is ignored",
-			state: githubql.PullRequestStateMerged,
+			name:   "merged pr is ignored",
+			merged: true,
+			state:  github.PullRequestStateClosed,
 		},
 		{
 			name:  "closed pr is ignored",
-			state: githubql.PullRequestStateClosed,
+			state: github.PullRequestStateClosed,
 		},
 	}
 
@@ -315,8 +319,8 @@ func TestHandlePullRequestEvent(t *testing.T) {
 						Owner: github.User{Login: "org"},
 					},
 				},
-				Merged: tc.state == githubql.PullRequestStateMerged,
-				State:  string(tc.state),
+				Merged: tc.merged,
+				State:  tc.state,
 				Number: 5,
 			},
 		}

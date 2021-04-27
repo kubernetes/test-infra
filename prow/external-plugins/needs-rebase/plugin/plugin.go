@@ -92,7 +92,7 @@ func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.Is
 // label needs to be added or removed. It depends on GitHub mergeability check
 // to decide the need for a rebase.
 func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
-	if pr.State != string(githubql.PullRequestStateOpen) {
+	if pr.State != github.PullRequestStateOpen {
 		return nil
 	}
 	// Before checking mergeability wait a few seconds to give github a chance to calculate it.

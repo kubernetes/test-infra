@@ -243,6 +243,11 @@ type PullRequestEvent struct {
 	GUID string
 }
 
+const (
+	PullRequestStateOpen   = "open"
+	PullRequestStateClosed = "closed"
+)
+
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
 	ID                 int               `json:"id"`
