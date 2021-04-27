@@ -872,6 +872,28 @@ func (d *Deck) Validate() error {
 	return nil
 }
 
+type notAllowedBucketError struct {
+	err error
+}
+
+func (ne notAllowedBucketError) Error() string {
+	return fmt.Sprintf("bucket not in allowed list; you may allow it by including it in `deck.additional_allowed_buckets`: %s", ne.err.Error())
+}
+
+func (notAllowedBucketError) Is(err error) bool {
+	_, ok := err.(notAllowedBucketError)
+	return ok
+}
+
+// NotAllowedBucketError wraps an error and return a notAllowedBucketError error
+func NotAllowedBucketError(err error) error {
+	return &notAllowedBucketError{err: err}
+}
+
+func IsNotAllowedBucketError(err error) bool {
+	return errors.Is(err, notAllowedBucketError{})
+}
+
 // ValidateStorageBucket validates a storage bucket (unless the `Deck.SkipStoragePathValidation` field is true).
 // The bucket name must be included in any of the following:
 //    1) Any job's `.DecorationConfig.GCSConfiguration.Bucket` (except jobs defined externally via InRepoConfig)
@@ -883,7 +905,7 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 	}
 
 	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
-		return fmt.Errorf("bucket %q not in allowed list (%v); you may allow it by including it in `deck.additional_allowed_buckets`", bucketName, c.Deck.AllKnownStorageBuckets.List())
+		return NotAllowedBucketError(fmt.Errorf("bucket %q not in allowed list (%v)", bucketName, c.Deck.AllKnownStorageBuckets.List()))
 	}
 	return nil
 }

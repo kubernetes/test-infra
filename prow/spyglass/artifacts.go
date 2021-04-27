@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
@@ -54,7 +55,11 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	// Don't care errors that are not supposed logged as http errors, for example
 	// context cancelled error due to user cancelled request.
 	if err != nil && err != context.Canceled {
-		logrus.WithError(err).Warn("error retrieving artifact names from gcs storage")
+		if config.IsNotAllowedBucketError(err) {
+			logrus.WithError(err).Debug("error retrieving artifact names from gcs storage")
+		} else {
+			logrus.WithError(err).Warn("error retrieving artifact names from gcs storage")
+		}
 	}
 
 	artifactNamesSet := sets.NewString(artifactNames...)
