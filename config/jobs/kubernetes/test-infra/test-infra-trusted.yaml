@@ -877,7 +877,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210427-e4ab4d8c8f
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210428-8cb5499f53
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -900,6 +900,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow-for-auto-deploy
+    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '1' # We want to know if this one fails even once. If this fails we do not auto-deploy
     description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
 - cron: "30 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
@@ -911,7 +913,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210427-e4ab4d8c8f
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210428-8cb5499f53
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -934,6 +936,8 @@ periodics:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prow
     description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
+    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '3'
 - cron: "06 14-22 * * 1-5"  # Run every hour at 7:06-15:06 PST (14:06 UTC) Mon-Fri
   name: ci-test-infra-autobump-prowjobs
   cluster: test-infra-trusted
@@ -944,7 +948,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210427-e4ab4d8c8f
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210428-8cb5499f53
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -967,6 +971,8 @@ periodics:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prowjobs
     description: runs experiment/autobumper to create/update a PR that bumps prowjobs to the latest RC
+    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '3'
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
