@@ -10,14 +10,14 @@
 
 linux_builders: &linux_builders
   agents:
-    - "agent_count=8"
-    - "capable_of_building=platform"
-    - "environment=production"
-    - "permission_set=builder"
-    - "platform=linux"
-    - "machine_type=single"
-    - "queue=${CI_LINUX_BUILDER_QUEUE:-v4-20-12-01-150523-bk18037-34f04b9e-d}"
-    - "scaler_version=2"
+    agent_count: 8
+    capable_of_building: "platform"
+    environment: "production"
+    permission_set: "builder"
+    platform: "linux"
+    machine_type: "single"
+    queue: "${CI_LINUX_BUILDER_QUEUE:-v4-20-12-01-150523-bk18037-34f04b9e-d}"
+    scaler_version: 2
 
 steps:
   - label: "Prow Unit Tests"
