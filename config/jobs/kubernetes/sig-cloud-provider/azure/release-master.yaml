@@ -225,9 +225,9 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-    - org: chewong # TODO(chewong): change it to 'kubernetes-sigs'
+    - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: upload-build-to-azure # TODO(chewong): change it to 'master'
+      base_ref: master
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -263,9 +263,9 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-    - org: chewong # TODO(chewong): change it to 'kubernetes-sigs'
+    - org: jackfrancis #TODO change back to kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: upload-build-to-azure # TODO(chewong): change it to 'master'
+      base_ref: capz-ha-control-plane-tests #TODO change back to master
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
