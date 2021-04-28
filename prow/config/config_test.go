@@ -2073,7 +2073,6 @@ presubmits:
       - image: alpine`,
 			expectError: false,
 		},
-
 		{
 			name:       "one postsubmit, ok",
 			prowConfig: ``,
@@ -2404,6 +2403,21 @@ in_repo_config:
 					len(c.InRepoConfig.AllowedClusters["*"]) != 1 ||
 					c.InRepoConfig.AllowedClusters["*"][0] != kube.DefaultClusterAlias {
 					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one global entry to allow the buildcluster, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters respects explicit empty default",
+			prowConfig: `
+in_repo_config:
+  allowed_clusters:
+    "*": []
+`,
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 1 ||
+					len(c.InRepoConfig.AllowedClusters["*"]) != 0 {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain no global entry, was %v", c.InRepoConfig.AllowedClusters)
 				}
 				return nil
 			},
