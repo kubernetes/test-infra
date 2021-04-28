@@ -892,13 +892,13 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "tide overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com"},
+			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}},
 			expectedURL: "tide.com",
 		},
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
 			expectedURL: "tide.com",
 		},
 		{

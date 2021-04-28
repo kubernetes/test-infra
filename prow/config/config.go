@@ -1943,6 +1943,17 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
 	}
 
+	if len(c.Tide.TargetURLs) > 0 && c.Tide.TargetURL != "" {
+		return fmt.Errorf("tide.target_url and tide.target_urls are mutually exclusive")
+	}
+
+	if c.Tide.TargetURLs == nil {
+		c.Tide.TargetURLs = map[string]string{}
+	}
+	if c.Tide.TargetURL != "" {
+		c.Tide.TargetURLs["*"] = c.Tide.TargetURL
+	}
+
 	if c.Tide.PRStatusBaseURLs == nil {
 		c.Tide.PRStatusBaseURLs = map[string]string{}
 	}
