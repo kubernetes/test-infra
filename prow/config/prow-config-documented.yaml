@@ -103,6 +103,11 @@ branch-protection:
                                 users:
                                   - ""
 
+                            # Unmanaged makes us not manage the branchprotection.
+                            # Careful: Contrary to all other settings, this can _not_ be overridden
+                            # on a lower level and is always inherited.
+                            unmanaged: false
+
                     # Admins overrides whether protections apply to admins if set.
                     enforce_admins: false
 
@@ -151,6 +156,11 @@ branch-protection:
                         users:
                           - ""
 
+                    # Unmanaged makes us not manage the branchprotection.
+                    # Careful: Contrary to all other settings, this can _not_ be overridden
+                    # on a lower level and is always inherited.
+                    unmanaged: false
+
             # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
             required_linear_history: false
 
@@ -187,6 +197,11 @@ branch-protection:
                   - ""
                 users:
                   - ""
+
+            # Unmanaged makes us not manage the branchprotection.
+            # Careful: Contrary to all other settings, this can _not_ be overridden
+            # on a lower level and is always inherited.
+            unmanaged: false
 
     # Protect overrides whether branch protection is enabled if set.
     protect: false
@@ -232,6 +247,11 @@ branch-protection:
           - ""
         users:
           - ""
+
+    # Unmanaged makes us not manage the branchprotection.
+    # Careful: Contrary to all other settings, this can _not_ be overridden
+    # on a lower level and is always inherited.
+    unmanaged: false
 
 
 # The git sha from which this config was generated

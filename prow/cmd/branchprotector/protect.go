@@ -185,6 +185,10 @@ func (p *protector) configureBranches() {
 // protect protects branches specified in the presubmit and branch-protection config sections.
 func (p *protector) protect() {
 	bp := p.cfg.BranchProtection
+	if bp.Policy.Unmanaged != nil && *bp.Policy.Unmanaged {
+		logrus.Warn("Branchprotection has global unmanaged: true, will not do anything")
+		return
+	}
 
 	// Scan the branch-protection configuration
 	for orgName := range bp.Orgs {
@@ -223,6 +227,10 @@ func (p *protector) protect() {
 
 // UpdateOrg updates all repos in the org with the specified defaults
 func (p *protector) UpdateOrg(orgName string, org config.Org) error {
+	if org.Policy.Unmanaged != nil && *org.Policy.Unmanaged {
+		return nil
+	}
+
 	var repos []string
 	if org.Protect != nil {
 		// Strongly opinionated org, configure every repo in the org.
@@ -262,6 +270,9 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 // UpdateRepo updates all branches in the repo with the specified defaults
 func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo) error {
 	p.completedRepos[orgName+"/"+repoName] = true
+	if repo.Policy.Unmanaged != nil && *repo.Policy.Unmanaged {
+		return nil
+	}
 
 	githubRepo, err := p.client.GetRepo(orgName, repoName)
 	if err != nil {
@@ -380,6 +391,9 @@ func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, 
 
 // UpdateBranch updates the branch with the specified configuration
 func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool, authorizedCollaborators, authorizedTeams []string) error {
+	if branch.Unmanaged != nil && *branch.Unmanaged {
+		return nil
+	}
 	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic[orgName+"/"+repo])
 	if err != nil {
 		return fmt.Errorf("get policy: %v", err)
