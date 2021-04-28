@@ -46,7 +46,8 @@ const (
 	// The path to mount the kubectl default config files to the container.
 	kubectlDefaultConfigMountPath = "/root/.kube"
 	// The default GOPATH in the container.
-	defaultGOPATH = "/go"
+	// To be consistent with https://github.com/kubernetes/test-infra/blob/19829768bb8ff2a9bb8de76e4dbcc1e520aaeb18/prow/pod-utils/decorate/podspec.go#L52
+	defaultGOPATH = "/home/prow/go"
 )
 
 var baseArgs = []string{"docker", "run", "--rm=true"}
