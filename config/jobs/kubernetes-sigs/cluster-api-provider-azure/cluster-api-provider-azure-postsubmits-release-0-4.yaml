@@ -23,8 +23,6 @@ postsubmits:
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
             value: ""
-          - name: LOCAL_ONLY
-            value: "false"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

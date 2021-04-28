@@ -723,6 +723,8 @@ presets:
   env:
     - name: REGISTRY
       value: capzci.azurecr.io
+    - name: LOCAL_ONLY
+      value: "false"
 - labels:
     preset-azure-cred-only: "true"
   env:
