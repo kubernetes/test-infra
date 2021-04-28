@@ -3,7 +3,7 @@ presets:
     preset-ci-gce-device-plugin-gpu: "true"
   env:
   - name: KUBE_GCE_NODE_IMAGE
-    value: gke-1134-gke-rc5-cos-69-10895-138-0-v190320-pre-nvda-gpu
+    value: cos-stable-89-16108-403-22
   - name: KUBE_GCE_NODE_PROJECT
     value: gke-node-images
   - name: NODE_ACCELERATORS
