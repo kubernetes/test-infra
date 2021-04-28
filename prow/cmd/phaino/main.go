@@ -67,7 +67,7 @@ func gatherOptions() options {
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
 	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
 	fs.StringVar(&o.gopath, "gopath", defaultGOPATH, "The GOPATH that is used in the container. "+
-		"Default is /go, need to be changed if the repository depends on GOPATH and it's is set to a different value in the container.")
+		"Default is /home/prow/go, need to be changed if the repository depends on GOPATH and it's is set to a different value in the container.")
 
 	fs.StringSliceVar(&o.skippedVolumesMounts, "skip-volume-mounts", []string{}, "Volume mount names that are not needed")
 	fs.StringToStringVar(&o.extraVolumesMounts, "extra-volume-mounts", map[string]string{}, "Extra volume mounts")
