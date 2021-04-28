@@ -1189,6 +1189,14 @@ func TestHttpStatusForError(t *testing.T) {
 			},
 			expectedStatus: http.StatusGone,
 		},
+		{
+			name: "httpError_wrapped",
+			input: fmt.Errorf("wrapped error: %w", httpError{
+				error:      errors.New("some error message"),
+				statusCode: http.StatusGone,
+			}),
+			expectedStatus: http.StatusGone,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(nested *testing.T) {
