@@ -13,14 +13,14 @@ linux_builders: &linux_builders
     agent_count: 8
     capable_of_building: "platform"
     environment: "production"
+    machine_type: "single"
+    node_stability: "${CI_NODE_STABILITY:-interruptible}"
     permission_set: "builder"
     platform: "linux"
-    machine_type: "single"
     queue: "${CI_LINUX_BUILDER_QUEUE:-v4-21-03-18-120314-bk21025-ebc798f2}"
     scaler_version: 2
-    node_stability: "${CI_NODE_STABILITY:-interruptible}"
 
 steps:
   - label: "Prow Unit Tests"
-    command: "improbable/run_dockerized_tests.sh"
     <<: *linux_builders
+    command: "improbable/run_dockerized_tests.sh"
