@@ -2,10 +2,12 @@ presets:
 - labels:
     preset-ci-gce-device-plugin-gpu: "true"
   env:
+  # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
+  # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
   - name: KUBE_GCE_NODE_IMAGE
-    value: gke-1134-gke-rc5-cos-69-10895-138-0-v190320-pre-nvda-gpu
+    value: cos-85-13310-1041-9
   - name: KUBE_GCE_NODE_PROJECT
-    value: gke-node-images
+    value: cos-cloud
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-k80,count=2
 
