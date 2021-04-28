@@ -120,7 +120,7 @@ This command runs the ProwJob [`pull-test-infra-yamllint`](https://github.com/ku
 ```
 You may also need to set the `CONFIG_PATH` and `JOB_CONFIG_PATH` environmental variables:
 ```sh
-CONFIG_PATH=(realpath ../config/prow/config.yaml) JOB_CONFIG_PATH=(realpath ../config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml) ...
+CONFIG_PATH=$(realpath ../config/prow/config.yaml) JOB_CONFIG_PATH=$(realpath ../config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml) ...
 ```
 
 ##### Modifying pj-on-kind.sh for special scenarios
