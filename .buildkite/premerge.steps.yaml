@@ -16,8 +16,9 @@ linux_builders: &linux_builders
     permission_set: "builder"
     platform: "linux"
     machine_type: "single"
-    queue: "${CI_LINUX_BUILDER_QUEUE:-v4-20-12-01-150523-bk18037-34f04b9e-d}"
+    queue: "${CI_LINUX_BUILDER_QUEUE:-v4-21-03-18-120314-bk21025-ebc798f2}"
     scaler_version: 2
+    node_stability: "${CI_NODE_STABILITY:-interruptible}"
 
 steps:
   - label: "Prow Unit Tests"
