@@ -26,6 +26,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -107,6 +108,7 @@ const (
 	verifyOwnersFilePresence                      = "verify-owners-presence"
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
+	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
 )
 
 var defaultWarnings = []string{
@@ -125,6 +127,7 @@ var defaultWarnings = []string{
 	unknownFieldsWarning,
 	validateClusterFieldWarning,
 	validateSupplementalProwConfigOrgRepoHirarchy,
+	validateUnmanagedBranchConfigHasNoSubconfig,
 }
 
 var expensiveWarnings = []string{
@@ -367,6 +370,12 @@ func validate(o options) error {
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
 		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
 			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./")))
+		}
+	}
+
+	if o.warningEnabled(validateUnmanagedBranchConfigHasNoSubconfig) {
+		if err := validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(cfg.BranchProtection); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
@@ -1218,6 +1227,54 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 	}))
 
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(bp config.BranchProtection) error {
+	var errs []error
+	if bp.Unmanaged != nil && *bp.Unmanaged {
+		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) {
+			errs = append(errs, errors.New("branch protection is globally set to unmanaged, but has configuration"))
+		}
+		for org := range bp.Orgs {
+			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s", org))
+		}
+	}
+	for orgName, orgConfig := range bp.Orgs {
+		if orgConfig.Unmanaged != nil && *orgConfig.Unmanaged {
+			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) {
+				errs = append(errs, fmt.Errorf("branch protection config for org %s is set to unmanaged, but it defines settings", orgName))
+			}
+			for repo := range orgConfig.Repos {
+				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s", orgName, repo, orgName))
+			}
+		}
+
+		for repoName, repoConfig := range orgConfig.Repos {
+			if repoConfig.Unmanaged != nil && *repoConfig.Unmanaged {
+				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) {
+					errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is set to unmanaged, but it defines settings", orgName, repoName))
+				}
+
+				for branchName := range repoConfig.Branches {
+					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s", orgName, repoName, branchName))
+				}
+
+			}
+
+			for branchName, branchConfig := range repoConfig.Branches {
+				if branchConfig.Unmanaged != nil && *branchConfig.Unmanaged && doesUnmanagedBranchprotectionPolicyHaveSettings(branchConfig.Policy) {
+					errs = append(errs, fmt.Errorf("branch protection config for branch %s in repo %s/%s is set to unmanaged but defines settings", branchName, orgName, repoName))
+				}
+			}
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func doesUnmanagedBranchprotectionPolicyHaveSettings(p config.Policy) bool {
+	emptyRef := config.Policy{Unmanaged: p.Unmanaged}
+	return !reflect.DeepEqual(p, emptyRef)
 }
 
 func prefixWithAndIfNeeded(s string, needsAnd bool) string {

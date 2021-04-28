@@ -1764,3 +1764,95 @@ func testfs(path, data string) fstest.MapFS {
 		path: &fstest.MapFile{Data: []byte(data)},
 	}
 }
+
+func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T) {
+	t.Parallel()
+	bpConfigWithSettingsOnAllLayers := func(m ...func(*config.BranchProtection)) config.BranchProtection {
+		cfg := config.BranchProtection{
+			Policy: config.Policy{Exclude: []string{"some-regex"}},
+			Orgs: map[string]config.Org{
+				"my-org": {
+					Policy: config.Policy{Exclude: []string{"some-regex"}},
+					Repos: map[string]config.Repo{
+						"my-repo": {
+							Policy: config.Policy{Exclude: []string{"some-regex"}},
+							Branches: map[string]config.Branch{
+								"my-branch": {
+									Policy: config.Policy{Exclude: []string{"some-regex"}},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		for _, modify := range m {
+			modify(&cfg)
+		}
+
+		return cfg
+	}
+
+	testCases := []struct {
+		name   string
+		config config.BranchProtection
+
+		expectedErrorMsg string
+	}{
+		{
+			name: "Empty config, no error",
+		},
+		{
+			name: "Globally disabled, errors for global and org config",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				bp.Unmanaged = utilpointer.BoolPtr(true)
+			}),
+
+			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org]`,
+		},
+		{
+			name: "Org-level disabled, errors for org policy and repos",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"] = p
+			}),
+
+			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org]`,
+		},
+
+		{
+			name: "Repo-level disabled, errors for repo policy and branches",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"].Repos["my-repo"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"] = p
+			}),
+
+			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch]`,
+		},
+
+		{
+			name: "Branch-level disabled, errors for branch policy",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
+			}),
+
+			expectedErrorMsg: `branch protection config for branch my-branch in repo my-org/my-repo is set to unmanaged but defines settings`,
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(tc.config)
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if tc.expectedErrorMsg != errMsg {
+			t.Errorf("expected error message\n%s\ngot error message\n%s", tc.expectedErrorMsg, errMsg)
+		}
+	}
+}

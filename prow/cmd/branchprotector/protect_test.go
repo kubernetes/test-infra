@@ -24,6 +24,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"sigs.k8s.io/yaml"
 
@@ -1162,6 +1163,87 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "Global unmanaged: true makes us not do anything",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  unmanaged: true
+  orgs:
+    cfgdef:
+      repos:
+        repo1:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+`,
+		},
+		{
+			name:     "Org-level unmanaged: true makes us ignore everything in that org",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  orgs:
+    cfgdef:
+      unmanaged: true
+      repos:
+        repo1:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+`,
+		},
+		{
+			name:     "Repo-level unmanaged: true makes us ignore everything in that repo",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  orgs:
+    cfgdef:
+      repos:
+        repo1:
+          unmanaged: true
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+        repo2:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              protect: true
+              required_status_checks:
+                contexts:
+                - foo
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{Contexts: []string{"foo"}},
+						EnforceAdmins:        &no,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -1223,7 +1305,7 @@ branch-protection:
 			switch {
 			case len(actual) != len(tc.expected):
 				t.Errorf("%+v %+v", cfg.BranchProtection, actual)
-				t.Errorf("actual updates %v != expected %v", actual, tc.expected)
+				t.Errorf("actual updates differ from expected: %s", cmp.Diff(actual, tc.expected))
 			default:
 				for _, a := range actual {
 					found := false

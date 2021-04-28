@@ -30,6 +30,10 @@ import (
 // Policy for the config/org/repo/branch.
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
+	// Unmanaged makes us not manage the branchprotection.
+	// Careful: Contrary to all other settings, this can _not_ be overridden
+	// on a lower level and is always inherited.
+	Unmanaged *bool `json:"unmanaged,omitempty"`
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
 	// RequiredStatusChecks configures github contexts
@@ -160,6 +164,7 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 // Apply returns a policy that merges the child into the parent
 func (p Policy) Apply(child Policy) Policy {
 	return Policy{
+		Unmanaged:                  selectBool(p.Unmanaged, child.Unmanaged),
 		Protect:                    selectBool(p.Protect, child.Protect),
 		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
 		Admins:                     selectBool(p.Admins, child.Admins),
