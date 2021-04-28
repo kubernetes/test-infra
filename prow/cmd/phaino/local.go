@@ -45,9 +45,9 @@ const (
 	kubeconfigEnvKey = "KUBECONFIG"
 	// The path to mount the kubectl default config files to the container.
 	kubectlDefaultConfigMountPath = "/root/.kube"
-	// The default GOPATH in the container.
+	// The default code mount path in the container.
 	// To be consistent with https://github.com/kubernetes/test-infra/blob/19829768bb8ff2a9bb8de76e4dbcc1e520aaeb18/prow/pod-utils/decorate/podspec.go#L52
-	defaultGOPATH = "/home/prow/go"
+	defaultCodeMountpath = "/home/prow/go/src"
 )
 
 var baseArgs = []string{"docker", "run", "--rm=true"}
@@ -418,7 +418,6 @@ func (opts *options) resolveRefs(ctx context.Context, volumeMounts map[string]st
 		return scanln(ctx)
 	}
 
-	goSrcPath := filepath.Join(opts.gopath, "src")
 	var refs []prowapi.Refs
 	if pj.Spec.Refs != nil {
 		refs = append(refs, *pj.Spec.Refs)
@@ -426,7 +425,7 @@ func (opts *options) resolveRefs(ctx context.Context, volumeMounts map[string]st
 	refs = append(refs, pj.Spec.ExtraRefs...)
 	for _, ref := range refs {
 		repoPath := pathAlias(ref)
-		dest := filepath.Join(goSrcPath, repoPath)
+		dest := filepath.Join(opts.codeMountPath, repoPath)
 		// The repo hasn't been mounted.
 		if _, ok := opts.extraVolumesMounts[dest]; !ok {
 			repo, err := readRepo(repoPath, readUserInput)
