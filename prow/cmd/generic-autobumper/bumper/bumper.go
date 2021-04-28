@@ -100,6 +100,8 @@ type Options struct {
 	GitName string `yaml:"gitName"`
 	// The email to use on the git commit. Only required when GitName is specified and SkipPullRequest is false. If not specified, uses values from the user associated with the access token.
 	GitEmail string `yaml:"gitEmail"`
+	// AssignTo specifies who to assign the created PR to. Takes precedence over onCallAddress and onCallGroup if set.
+	AssignTo string `json:"assign_to"`
 	// The oncall address where we can get the JSON file that stores the current oncall information.
 	OncallAddress string `yaml:"onCallAddress"`
 	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
@@ -367,7 +369,7 @@ func Run(o *Options) error {
 			o.GitHubBaseBranch = repo.DefaultBranch
 		}
 
-		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	} else {
@@ -957,7 +959,10 @@ func generatePRBody(images map[string]string, assignment string, prefixes []Pref
 	return body + assignment + "\n"
 }
 
-func getAssignment(oncallAddress, oncallGroup string) string {
+func getAssignment(assignTo, oncallAddress, oncallGroup string) string {
+	if assignTo != "" {
+		return "/cc @" + assignTo
+	}
 	if oncallAddress == "" {
 		return ""
 	}

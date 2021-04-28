@@ -435,6 +435,7 @@ func TestIsUnderPath(t *testing.T) {
 func TestGetAssignment(t *testing.T) {
 	cases := []struct {
 		description          string
+		assignTo             string
 		oncallURL            string
 		oncallGroup          string
 		oncallServerResponse string
@@ -489,6 +490,11 @@ func TestGetAssignment(t *testing.T) {
 			oncallServerResponse: `{"Oncall":{"testinfra":""}}`,
 			expectResKeyword:     "Nobody",
 		},
+		{
+			description:      "AssignTo takes precedence over oncall setings",
+			assignTo:         "some-user",
+			expectResKeyword: "/cc @some-user",
+		},
 	}
 
 	for _, tc := range cases {
@@ -502,7 +508,7 @@ func TestGetAssignment(t *testing.T) {
 				tc.oncallURL = testServer.URL
 			}
 
-			res := getAssignment(tc.oncallURL, tc.oncallGroup)
+			res := getAssignment(tc.assignTo, tc.oncallURL, tc.oncallGroup)
 			if !strings.Contains(res, tc.expectResKeyword) {
 				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
 			}
