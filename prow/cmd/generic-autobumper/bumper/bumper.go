@@ -355,7 +355,7 @@ func Run(o *Options) error {
 			}
 		}
 
-		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
+		if err := MakeGitCommit(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
