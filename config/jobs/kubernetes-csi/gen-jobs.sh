@@ -47,7 +47,7 @@ latest_stable_k8s_version="1.20"
 hostpath_driver_version="v1.6.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210312-67f589a-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -61,6 +61,16 @@ external-resizer
 external-snapshotter
 livenessprobe
 node-driver-registrar
+"
+
+# All kubernetes-csi repos for which want to define pull tests for
+# the csi-release-tools repo. Ideally, this list should represent
+# different ways of using csi-release-tools (for example, single image
+# vs. multiple images per repo).
+csi_release_tools_repos="
+csi-test
+external-provisioner
+external-snapshotter
 "
 
 # kubernetes-csi repos which only need to be tested against at most a
@@ -703,4 +713,58 @@ for kubernetes in $k8s_versions master; do
 $(resources_for_kubernetes "$actual")
 EOF
     done
+done
+
+for repo in $csi_release_tools_repos; do
+    cat >>"$base/csi-release-tools/csi-release-tools-config.yaml" <<EOF
+  - name: $(job_name "pull" "release-tools" "$repo" "" "")
+    always_run: true
+    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    decorate: true
+    skip_report: false
+    extra_refs:
+    - org: kubernetes-csi
+      repo: $repo
+      base_ref: master
+      workdir: false
+      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/$repo
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-release-tools-in-$repo
+      description: Kubernetes-CSI pull job in repo csi-release-tools for $repo, using deployment $latest_stable_k8s_version on Kubernetes $latest_stable_k8s_version
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: ${dind_image}
+        command:
+        - runner.sh
+        args:
+        - ./pull-test.sh # provided by csi-release-tools
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "$latest_stable_k8s_version.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "$(use_bazel "$latest_stable_k8s_version")"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "$latest_stable_k8s_version"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "$hostpath_driver_version"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "$latest_stable_k8s_version" "")
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes "$latest_stable_k8s_version")
+EOF
 done
