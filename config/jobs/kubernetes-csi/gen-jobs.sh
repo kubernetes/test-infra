@@ -745,11 +745,6 @@ for repo in $csi_release_tools_repos; do
         args:
         - ./pull-test.sh # provided by csi-release-tools
         env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$latest_stable_k8s_version.0"
         - name: CSI_PROW_USE_BAZEL
@@ -762,6 +757,8 @@ for repo in $csi_release_tools_repos; do
           value: $(snapshotter_version "$latest_stable_k8s_version" "")
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/$repo
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
