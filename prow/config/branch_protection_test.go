@@ -20,16 +20,9 @@ import (
 	"reflect"
 	"sort"
 	"testing"
-	"time"
 
-	"github.com/google/go-cmp/cmp"
-	fuzz "github.com/google/gofuzz"
-	"github.com/mohae/deepcopy"
-
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	utilpointer "k8s.io/utils/pointer"
-	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -1218,88 +1211,5 @@ func TestUnprotectedBranches(t *testing.T) {
 				t.Errorf("actual branch warnings %+v != expected %+v", branchWarns, tc.expectedBranchWarns)
 			}
 		})
-	}
-}
-
-// TestBranchProtectionMergeMergesAnythingWithoutAnError verifies that merging any
-// BranchProtection into an empty Branchprotection succeeds and that the resulting
-// Branchprotection is equal to the one we merged from.
-func TestBranchProtectionMergeMergesAnythingWithoutAnError(t *testing.T) {
-	t.Parallel()
-	seed := time.Now().UnixNano()
-	// Print the seed so failures can easily be reproduced
-	t.Logf("Seed: %d", seed)
-	var i int
-	fuzzer := fuzz.NewWithSeed(seed).Funcs(func(p *Policy, c fuzz.Continue) {
-		// Make sure we always have a good sample of non-nil but empty Policies so
-		// we check that they get copied over. Today, the meaning of an empty and
-		// an unset Policy is identical because all the fields are pointers that
-		// will get ignored if unset. However, this might change in the future and
-		// caused flakes when we didn't copy over map entries with an empty Policy,
-		// as an entry with no value and no entry are different things for cmp.Diff.
-		if i%2 == 0 {
-			c.Fuzz(p)
-		}
-		i++
-	})
-	for i := 0; i < 100; i++ {
-		fuzzedBP := &BranchProtection{}
-		fuzzer.Fuzz(fuzzedBP)
-
-		mergedBP := &BranchProtection{}
-		if err := mergedBP.merge(fuzzedBP); err != nil {
-			t.Fatalf("failed to merge branchprotection: %v", err)
-		}
-
-		if diff := cmp.Diff(mergedBP, fuzzedBP); diff != "" {
-			t.Errorf("after merging the fuzzed BP, the merged and the fuzzed BP still differ: %s", diff)
-		}
-	}
-}
-
-// TestBranchprotectionMergeErrorsOnConflicts verifies that merging any non-empty BranchProtectionConfig
-// into itself errors.
-func TestBranchprotectionMergeErrorsOnConflicts(t *testing.T) {
-	t.Parallel()
-	seed := time.Now().UnixNano()
-	// Print the seed so failures can easily be reproduced
-	t.Logf("Seed: %d", seed)
-	fuzzer := fuzz.NewWithSeed(seed)
-	for i := 0; i < 100; i++ {
-		fuzzedBP := &BranchProtection{}
-		fuzzer.Fuzz(fuzzedBP)
-
-		if err := fuzzedBP.merge(fuzzedBP); err == nil && !apiequality.Semantic.DeepEqual(fuzzedBP, &BranchProtection{}) {
-			serialized, serializeErr := yaml.Marshal(fuzzedBP)
-			if serializeErr != nil {
-				t.Fatalf("merging non-empty branchproteciton config into itself did not yield an error and serializing it afterwards failed: %v. Raw object: %+v", serializeErr, fuzzedBP)
-			}
-			t.Fatalf("merging non-empty branchproteciton config into itself did not yield an error; Serialized config:\n%s", string(serialized))
-		}
-
-	}
-}
-
-// TestBranchprotectionMergeRemainsUnchangedWhenMergingEmptyIn verifies that when merging
-// any empty BranchProtectionConfig into a non-empty BranchProtectionConfig does not result
-// in changes to the latter.
-func TestBranchprotectionMergeRemainsUnchangedWhenMergingEmptyIn(t *testing.T) {
-	t.Parallel()
-	seed := time.Now().UnixNano()
-	// Print the seed so failures can easily be reproduced
-	t.Logf("Seed: %d", seed)
-	fuzzer := fuzz.NewWithSeed(seed)
-	for i := 0; i < 100; i++ {
-		fuzzedBP := &BranchProtection{}
-		fuzzer.Fuzz(fuzzedBP)
-
-		fuzzedBPDeepCopy := deepcopy.Copy(fuzzedBP)
-		if err := fuzzedBP.merge(&BranchProtection{}); err != nil {
-			t.Fatalf("failed to merge branchprotection: %v", err)
-		}
-
-		if diff := cmp.Diff(fuzzedBPDeepCopy, fuzzedBP); diff != "" {
-			t.Errorf("after merging the the empty BP, the merged and the fuzzed BP differ: %s", diff)
-		}
 	}
 }

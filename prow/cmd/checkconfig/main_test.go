@@ -1677,14 +1677,20 @@ sinker:
 branch-protection:
   orgs:
     my-org:
-      protect: true`
+      protect: true
+tide:
+  merge_method:
+    my-org: squash`
 	const validRepoConfig = `
 branch-protection:
   orgs:
     my-org:
       repos:
         my-repo:
-          protect: true`
+          protect: true
+tide:
+  merge_method:
+    my-org/my-repo: squash`
 
 	tests := []struct {
 		name string
