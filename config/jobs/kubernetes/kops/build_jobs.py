@@ -650,6 +650,7 @@ def generate_misc():
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         # A special test for JWKS
@@ -694,6 +695,7 @@ def generate_misc():
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-ci",
@@ -706,7 +708,7 @@ def generate_misc():
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
                                 f"--image={u2004_arm}"],
-                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler', # pylint: disable=line-too-long
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
@@ -761,6 +763,7 @@ def generate_misc():
                                 "--master-size=m6g.large",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
                                 f"--image={u2004_arm}"],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-grid-scenario-cilium10-amd64",
