@@ -1267,7 +1267,8 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		nc.InRepoConfig.AllowedClusters = map[string][]string{}
 	}
 
-	if len(nc.InRepoConfig.AllowedClusters["*"]) == 0 {
+	// Respect `"*": []`, which disabled default global cluster
+	if nc.InRepoConfig.AllowedClusters["*"] == nil {
 		nc.InRepoConfig.AllowedClusters["*"] = []string{kube.DefaultClusterAlias}
 	}
 
