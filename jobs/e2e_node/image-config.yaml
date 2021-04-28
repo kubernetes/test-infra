@@ -6,7 +6,7 @@ images:
     image: ubuntu-gke-2004-1-20-v20210401 # docker 19.03.8 / containerd 1.4.3
     project: ubuntu-os-gke-cloud
   cos-stable1:
-    image_family: cos-85-lts
+    image_family: cos-89-lts
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
   cos-stable2:
