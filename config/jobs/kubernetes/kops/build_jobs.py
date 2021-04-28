@@ -386,7 +386,7 @@ def build_test(cloud='aws',
 
     # TODO(rifelpet): Remove once k8s tags has been created that include
     #  https://github.com/kubernetes/kubernetes/pull/101443
-    if cloud == 'aws' and k8s_version in ('latest', 'stable', '1.21', '1.22') and skip_regex:
+    if cloud == 'aws' and k8s_version in ('ci', 'latest', 'stable', '1.21', '1.22') and skip_regex:
         skip_regex += r'|Invalid.AWS.KMS.key'
 
     suffix = ""
@@ -500,7 +500,7 @@ def presubmit_test(cloud='aws',
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
     # TODO(rifelpet): Remove once k8s tags has been created that include
     #  https://github.com/kubernetes/kubernetes/pull/101443
-        if k8s_version in ('latest', 'stable', '1.21', '1.22'):
+        if k8s_version in ('ci', 'latest', 'stable', '1.21', '1.22'):
             skip_override += r'|Invalid.AWS.KMS.key'
 
     elif cloud == 'gce':
