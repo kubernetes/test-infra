@@ -33,7 +33,7 @@ volumes that the Prow Job may require.
 * `--print` the command that runs each job without running it
 * `--privileged` jobs are allowed to run instead of rejected
 * `--timeout=10m` controls how long to allow jobs to run before interrupting them
-* `--gopath=/go` provides the GOPATH that is used in the container
+* `--code-mount-path=/go` changes the path where code is mounted in the container
 * `--skip-volume-mounts=volume1,volume2` includes the unwanted volume mounts that are defined in the job spec
 * `--extra-volume-mounts=/go/src/k8s.io/test-infra=/Users/xyz/k8s-test-infra` includes the extra volume mounts needed for the container. Key is the mount path and value is the local path
 * `--skip-envs=env1,env2` includes the unwanted env vars that are defined in the job spec
@@ -48,7 +48,7 @@ it's desired to save the prompts, use the following tricks instead:
 
 - If the repo needs to be cloned under GOPATH, use:
   ```
-  --gopath=/whatever/go/src # Controls where source code is cloned in container
+  --code-mount-path==/whatever/go/src # Controls where source code is mounted in container
   --extra-volume-mounts=/whatever/go/src/k8s.io/test-infra=/Users/xyz/k8s-test-infra
   ```
 - If job requires mounting kubeconfig, assume the mount is named `kubeconfig`,use:

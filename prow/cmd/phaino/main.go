@@ -38,13 +38,14 @@ import (
 )
 
 type options struct {
-	keepGoing    bool
-	printCmd     bool
-	priv         bool
-	timeout      time.Duration
-	totalTimeout time.Duration
-	grace        time.Duration
-	gopath       string
+	keepGoing     bool
+	printCmd      bool
+	priv          bool
+	timeout       time.Duration
+	totalTimeout  time.Duration
+	grace         time.Duration
+	gopath        string
+	codeMountPath string
 
 	skippedVolumesMounts []string
 	extraVolumesMounts   map[string]string
@@ -66,9 +67,10 @@ func gatherOptions() options {
 	fs.DurationVar(&o.timeout, "timeout", time.Hour, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
 	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
-	fs.StringVar(&o.gopath, "gopath", defaultGOPATH, "The GOPATH that is used in the container. "+
-		"Default is /home/prow/go, need to be changed if the repository depends on GOPATH and it's is set to a different value in the container.")
-
+	fs.StringVar(&o.gopath, "gopath", "", "The path that is used in the container. "+
+		"Default is /home/prow/go/src, need to be changed if the repository depends on absolute code mount path it's is set to a different value in the container.")
+	fs.StringVar(&o.codeMountPath, "code-mount-path", "", "The GOPATH that is used in the container. "+
+		"Default is /home/prow/go/src, need to be changed if the repository depends on absolute code mount path it's is set to a different value in the container.")
 	fs.StringSliceVar(&o.skippedVolumesMounts, "skip-volume-mounts", []string{}, "Volume mount names that are not needed")
 	fs.StringToStringVar(&o.extraVolumesMounts, "extra-volume-mounts", map[string]string{}, "Extra volume mounts")
 	fs.StringSliceVar(&o.skippedEnvVars, "skip-envs", []string{}, "Env names that are not needed to be set")
@@ -81,6 +83,16 @@ func gatherOptions() options {
 
 	fs.Parse(os.Args[1:])
 	o.jobs = fs.Args()
+	if len(o.gopath) > 0 {
+		if len(o.codeMountPath) > 0 {
+			logrus.Fatal("--gopath and --code-mount-path are mutually exclusive")
+		}
+		o.codeMountPath = o.gopath
+	}
+	// If none of gopath and code-mount-path was set, use default
+	if len(o.codeMountPath) == 0 {
+		o.codeMountPath = defaultCodeMountpath
+	}
 	return o
 }
 
