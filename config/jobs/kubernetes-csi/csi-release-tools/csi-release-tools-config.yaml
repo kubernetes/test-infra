@@ -32,3 +32,156 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
+  - name: pull-kubernetes-csi-release-tools-csi-test
+    always_run: true
+    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    decorate: true
+    skip_report: false
+    extra_refs:
+    - org: kubernetes-csi
+      repo: csi-test
+      base_ref: master
+      workdir: false
+      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/csi-test
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-release-tools-in-csi-test
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.20 on Kubernetes 1.20
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        command:
+        - runner.sh
+        args:
+        - ./pull-test.sh # provided by csi-release-tools
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.20"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.6.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
+  - name: pull-kubernetes-csi-release-tools-external-provisioner
+    always_run: true
+    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    decorate: true
+    skip_report: false
+    extra_refs:
+    - org: kubernetes-csi
+      repo: external-provisioner
+      base_ref: master
+      workdir: false
+      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-release-tools-in-external-provisioner
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.20 on Kubernetes 1.20
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        command:
+        - runner.sh
+        args:
+        - ./pull-test.sh # provided by csi-release-tools
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.20"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.6.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
+  - name: pull-kubernetes-csi-release-tools-external-snapshotter
+    always_run: true
+    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    decorate: true
+    skip_report: false
+    extra_refs:
+    - org: kubernetes-csi
+      repo: external-snapshotter
+      base_ref: master
+      workdir: false
+      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-release-tools-in-external-snapshotter
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.20 on Kubernetes 1.20
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+        command:
+        - runner.sh
+        args:
+        - ./pull-test.sh # provided by csi-release-tools
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.20"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.6.0"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
