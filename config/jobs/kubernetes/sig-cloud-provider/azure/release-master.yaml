@@ -282,9 +282,9 @@ presubmits:
             memory: "4Gi"
         env:
         - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
+          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance.yaml
         - name: CONFORMANCE_NODES
-          value: "25"
+          value: "1"
         - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
           value: "3"
     annotations:
