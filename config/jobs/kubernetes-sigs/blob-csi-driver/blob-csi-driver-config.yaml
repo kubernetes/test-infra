@@ -244,3 +244,55 @@ presubmits:
       testgrid-tab-name: pull-blob-csi-driver-e2e-proxy
       description: "Run E2E tests for Azure Blob Storage CSI driver based on blobfuse-proxy"
       testgrid-num-columns-recent: '30'
+  - name: pull-blob-csi-driver-external-e2e
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/blob-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/linux.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --test-blob-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
+        securityContext:
+          privileged: true
+        env:
+          - name: EXTERNAL_E2E_TEST
+            value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
+      testgrid-tab-name: pr-blob-csi-driver-external-e2e
+      description: "Run External E2E tests for Azure Blob Storage CSI driver."
+      testgrid-num-columns-recent: '30'
