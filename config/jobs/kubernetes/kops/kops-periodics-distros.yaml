@@ -415,7 +415,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210326.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210421.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -607,7 +607,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-stable-2765.2.2-hvm' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='075585003325/Flatcar-stable-2765.2.3-hvm' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --validation-wait=20m \
