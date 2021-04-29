@@ -78,10 +78,10 @@ func TestGatherOptions(t *testing.T) {
 			ghoptions.Validate(false)
 			expected := &options{
 				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					ConfigPath:                      "yo",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				dryRun:                   true,
 				github:                   ghoptions,

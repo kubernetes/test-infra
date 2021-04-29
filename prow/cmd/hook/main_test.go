@@ -89,10 +89,10 @@ func Test_gatherOptions(t *testing.T) {
 			expected := &options{
 				port: 8888,
 				config: configflagutil.ConfigOptions{
-					ConfigPath:                      "yo",
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPath:                            "yo",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				pluginConfig:           "/etc/plugins/plugins.yaml",
 				dryRun:                 true,

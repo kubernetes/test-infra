@@ -5817,7 +5817,10 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 		if err := os.Mkdir(dir, 0755); err != nil {
 			t.Fatalf("failed to create dir %s for supplemental prow config: %v", dir, err)
 		}
-		if err := ioutil.WriteFile(filepath.Join(dir, "_prowconfig.yaml"), []byte(cfg), 0644); err != nil {
+
+		// use a random prefix for the file to make sure that the loading correctly loads all supplemental configs with the
+		// right suffix.
+		if err := ioutil.WriteFile(filepath.Join(dir, strconv.Itoa(time.Now().Nanosecond())+"_prowconfig.yaml"), []byte(cfg), 0644); err != nil {
 			t.Fatalf("failed to write supplemental prow config: %v", err)
 		}
 	}

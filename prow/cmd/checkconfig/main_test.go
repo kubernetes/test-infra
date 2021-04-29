@@ -1278,11 +1278,11 @@ func TestOptions(t *testing.T) {
 			},
 			expectedOptions: &options{
 				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					ConfigPath:                      "prow/config.yaml",
-					JobConfigPath:                   "config/jobs/org/job.yaml",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "prow/config.yaml",
+					JobConfigPath:                         "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				pluginConfig:    "prow/plugins/plugin.yaml",
 				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
@@ -1304,11 +1304,11 @@ func TestOptions(t *testing.T) {
 			expectedOptions: &options{
 				pluginConfig: "prow/plugins/plugin.yaml",
 				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					ConfigPath:                      "prow/config.yaml",
-					JobConfigPath:                   "config/jobs/org/job.yaml",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "prow/config.yaml",
+					JobConfigPath:                         "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				prowYAMLRepoName: "my/repo",
 				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",

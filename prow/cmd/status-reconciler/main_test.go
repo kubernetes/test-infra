@@ -108,10 +108,10 @@ func TestGatherOptions(t *testing.T) {
 			expected := &options{
 				dryRun: true,
 				config: configflagutil.ConfigOptions{
-					ConfigPath:                      "yo",
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPath:                            "yo",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				pluginConfig:           "/etc/plugins/plugins.yaml",
 				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
