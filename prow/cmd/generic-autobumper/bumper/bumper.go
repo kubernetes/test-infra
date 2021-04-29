@@ -786,6 +786,54 @@ func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout,
 func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	logrus.Info("Making git commit...")
 
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
+		return fmt.Errorf("failed to add remote: %w", err)
+	}
+	// Stash changes and create a branch the commit will live
+	if err := Call(stdout, stderr, gitCmd, "stash"); err != nil {
+		return fmt.Errorf("failed to git stash: %w", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "checkout", "-b", remoteBranch); err != nil {
+		return fmt.Errorf("failed to git stash: %w", err)
+	}
+	// Checkout most recent bump PR
+	fetchStderr := &bytes.Buffer{}
+	// Construct rebasePR branch name from remote Branch so they will never be the same
+	rebasedPR := remoteBranch + "REBASE"
+	needToDiff := true
+	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
+		logrus.Info("fetchStderr is : ", fetchStderr.String())
+		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
+			return fmt.Errorf("failed to fetch from fork: %w", err)
+		} else {
+			needToDiff = false
+		}
+	} else {
+		if err := Call(stdout, stderr, gitCmd, "checkout", "FETCH_HEAD"); err != nil {
+			return fmt.Errorf("failed to git checkout most recent PR: %w", err)
+		}
+		// Rebase the changes so they are aligned with HEAD
+		if err := Call(stdout, stderr, gitCmd, "rebase", remoteBranch); err != nil {
+			logrus.Info("Failure while rebasing most recent PR. Possible merge conflicts. Attempting rebase abort")
+			if err := Call(stdout, stderr, gitCmd, "rebase", "--abort"); err != nil {
+				return fmt.Errorf("failed to rebase most recent PR and unable to abort: %w", err)
+			}
+			// Just push changes anyway
+			needToDiff = false
+		}
+		if err := Call(stdout, stderr, gitCmd, "switch", "-c", rebasedPR); err != nil {
+			return fmt.Errorf("failed to rebase most recent PR: %w", err)
+		}
+	}
+
+	// Go back to our branch and reapply changes
+	if err := Call(stdout, stderr, gitCmd, "checkout", remoteBranch); err != nil {
+		return fmt.Errorf("failed to git stash: %w", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "stash", "apply"); err != nil {
+		return fmt.Errorf("failed to git stash: %w", err)
+	}
+	// Commit changes
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
 		return fmt.Errorf("failed to git add: %w", err)
 	}
@@ -799,31 +847,20 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
-		return fmt.Errorf("failed to add remote: %w", err)
-	}
-	fetchStderr := &bytes.Buffer{}
-	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
-		logrus.Info("fetchStderr is : ", fetchStderr.String())
-		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
-			return fmt.Errorf("failed to fetch from fork: %w", err)
-		}
-	} else {
-		var err error
-		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
-		if err != nil {
-			return fmt.Errorf("failed to get remote tree ref: %w", err)
-		}
-	}
-
-	localTreeRef, err := getTreeRef(stderr, "HEAD")
-	if err != nil {
-		return fmt.Errorf("failed to get local tree ref: %w", err)
-	}
 
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
-	if localTreeRef != remoteTreeRef {
+	var diff string
+	var err error
+	if needToDiff {
+		diff, err = getDiff(rebasedPR)
+		if err != nil {
+			return fmt.Errorf("Failed to get diff: %w", err)
+		}
+	} else {
+		// needToDiff is false because we know the push needs to happen. Make diff != "" so we push
+		diff = "NOT EMPTY"
+	}
+	if diff != "" {
 		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
 			return err
 		}
@@ -985,18 +1022,6 @@ func getAssignment(oncallAddress, oncallGroup string) string {
 		return "/cc @" + curtOncall
 	}
 	return noOncallMsg
-}
-
-func getTreeRef(stderr io.Writer, refname string) (string, error) {
-	revParseStdout := &bytes.Buffer{}
-	if err := Call(revParseStdout, stderr, gitCmd, "rev-parse", refname+":"); err != nil {
-		return "", fmt.Errorf("failed to parse ref: %w", err)
-	}
-	fields := strings.Fields(revParseStdout.String())
-	if n := len(fields); n < 1 {
-		return "", errors.New("got no otput when trying to rev-parse")
-	}
-	return fields[0], nil
 }
 
 func buildPushRef(branch string, reviewers, cc []string) string {
