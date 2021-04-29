@@ -87,81 +87,81 @@ func (af *fileArrayFlag) Set(value string) error {
 // Options is the options for autobumper operations.
 type Options struct {
 	// The target GitHub org name where the autobump PR will be created. Only required when SkipPullRequest is false.
-	GitHubOrg string `yaml:"gitHubOrg"`
+	GitHubOrg string `json:"gitHubOrg"`
 	// The target GitHub repo name where the autobump PR will be created. Only required when SkipPullRequest is false.
-	GitHubRepo string `yaml:"gitHubRepo"`
+	GitHubRepo string `json:"gitHubRepo"`
 	// The name of the branch in the target GitHub repo on which the autobump PR will be based.  If not specified, will be autodetected via GitHub API.
-	GitHubBaseBranch string `yaml:"gitHubBaseBranch"`
+	GitHubBaseBranch string `json:"gitHubBaseBranch"`
 	// The GitHub username to use. If not specified, uses values from the user associated with the access token.
-	GitHubLogin string `yaml:"gitHubLogin"`
+	GitHubLogin string `json:"gitHubLogin"`
 	// The path to the GitHub token file. Only required when SkipPullRequest is false.
-	GitHubToken string `yaml:"gitHubToken"`
+	GitHubToken string `json:"gitHubToken"`
 	// The name to use on the git commit. Only required when GitEmail is specified and SkipPullRequest is false. If not specified, uses values from the user associated with the access token
-	GitName string `yaml:"gitName"`
+	GitName string `json:"gitName"`
 	// The email to use on the git commit. Only required when GitName is specified and SkipPullRequest is false. If not specified, uses values from the user associated with the access token.
-	GitEmail string `yaml:"gitEmail"`
+	GitEmail string `json:"gitEmail"`
 	// AssignTo specifies who to assign the created PR to. Takes precedence over onCallAddress and onCallGroup if set.
 	AssignTo string `json:"assign_to"`
 	// The oncall address where we can get the JSON file that stores the current oncall information.
-	OncallAddress string `yaml:"onCallAddress"`
+	OncallAddress string `json:"onCallAddress"`
 	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
-	OncallGroup string `yaml:"onCallGroup"`
+	OncallGroup string `json:"onCallGroup"`
 	// Whether to skip creating the pull request for this bump.
-	SkipPullRequest bool `yaml:"skipPullRequest"`
+	SkipPullRequest bool `json:"skipPullRequest"`
 	// Information needed to do a gerrit bump. Do not include if doing github bump
-	Gerrit *Gerrit `yaml:"gerrit"`
+	Gerrit *Gerrit `json:"gerrit"`
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
 	// Images will be bumped based off images located at the address using this URL and the refConfigFile or stagingRefConigFile for each Prefix.
-	UpstreamURLBase string `yaml:"upstreamURLBase"`
+	UpstreamURLBase string `json:"upstreamURLBase"`
 	// The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
-	IncludedConfigPaths []string `yaml:"includedConfigPaths"`
+	IncludedConfigPaths []string `json:"includedConfigPaths"`
 	// The config paths to be excluded in this bump, in which only .yaml files will be considered.
-	ExcludedConfigPaths []string `yaml:"excludedConfigPaths"`
+	ExcludedConfigPaths []string `json:"excludedConfigPaths"`
 	// The extra non-yaml file to be considered in this bump.
-	ExtraFiles []string `yaml:"extraFiles"`
+	ExtraFiles []string `json:"extraFiles"`
 	// The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
-	TargetVersion string `yaml:"targetVersion"`
+	TargetVersion string `json:"targetVersion"`
 	// The name used in the address when creating remote. This should be the same name as the fork. If fork does not exist this will be the name of the fork that is created.
 	// If it is not the same as the fork, the robot will change the name of the fork to this. Format will be git@github.com:{GitLogin}/{RemoteName}.git
-	RemoteName string `yaml:"remoteName"`
+	RemoteName string `json:"remoteName"`
 	// The name of the branch that will be used when creating the pull request. If unset, defaults to "autobump".
-	HeadBranchName string `yaml:"headBranchName"`
+	HeadBranchName string `json:"headBranchName"`
 	// Optional list of labels to add to the bump PR
-	Labels []string `yaml:"labels"`
+	Labels []string `json:"labels"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
-	Prefixes []Prefix `yaml:"prefixes"`
+	Prefixes []Prefix `json:"prefixes"`
 }
 
 // Information needed for gerrit bump
 type Gerrit struct {
 	// Unique tag in commit messages to identify a Gerrit bump CR. Required if using gerrit
-	AutobumpPRIdentifier string `yaml:"autobumpPRIdentifier"`
+	AutobumpPRIdentifier string `json:"autobumpPRIdentifier"`
 	// Gerrit CR Author. Only Required if using gerrit
-	Author string `yaml:"author"`
+	Author string `json:"author"`
 	// Email account associated with gerrit author. Only required if using gerrit.
-	Email string `yaml:"email"`
+	Email string `json:"email"`
 	// The path to the Gerrit httpcookie file. Only Required if using gerrit
-	CookieFile string `yaml:"cookieFile"`
+	CookieFile string `json:"cookieFile"`
 	// The path to the hosted Gerrit repo
-	HostRepo string `yaml:"hostRepo"`
+	HostRepo string `json:"hostRepo"`
 }
 
 // Prefix is the information needed for each prefix being bumped.
 type Prefix struct {
 	// Name of the tool being bumped
-	Name string `yaml:"name"`
+	Name string `json:"name"`
 	// The image prefix that the autobumper should look for
-	Prefix string `yaml:"prefix"`
+	Prefix string `json:"prefix"`
 	// File that is looked at to determine current upstream image when bumping to upstream. Required only if targetVersion is "upstream"
-	RefConfigFile string `yaml:"refConfigFile"`
+	RefConfigFile string `json:"refConfigFile"`
 	// File that is looked at to determine current upstream staging image when bumping to upstream staging. Required only if targetVersion is "upstream-staging"
-	StagingRefConfigFile string `yaml:"stagingRefConfigFile"`
+	StagingRefConfigFile string `json:"stagingRefConfigFile"`
 	// The repo where the image source resides for the images with this prefix. Used to create the links to see comparisons between images in the PR summary.
-	Repo string `yaml:"repo"`
+	Repo string `json:"repo"`
 	// Whether or not the format of the PR summary for this prefix should be summarised.
-	Summarise bool `yaml:"summarise"`
+	Summarise bool `json:"summarise"`
 	// Whether the prefix tags should be consistent after the bump
-	ConsistentImages bool `yaml:"consistentImages"`
+	ConsistentImages bool `json:"consistentImages"`
 }
 
 // GitAuthorOptions is specifically to read the author info for a commit
