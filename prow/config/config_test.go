@@ -2449,6 +2449,65 @@ in_repo_config:
 				return nil
 			},
 		},
+		{
+			name: "tide global target_url respected",
+			prowConfig: `
+tide:
+  target_url: https://global.tide.com
+`,
+			verify: func(c *Config) error {
+				orgRepo := OrgRepo{Org: "org", Repo: "repo"}
+				if got, expected := c.Tide.GetTargetURL(orgRepo), "https://global.tide.com"; got != expected {
+					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				return nil
+			},
+		},
+		{
+			name: "tide target_url and target_urls conflict",
+			prowConfig: `
+tide:
+  target_url: https://global.tide.com
+  target_urls:
+    "org": https://org.tide.com
+`,
+			expectError: true,
+		},
+		{
+			name: "tide specific target_urls respected",
+			prowConfig: `
+tide:
+  target_urls:
+    "*": https://star.tide.com
+    "org": https://org.tide.com
+    "org/repo": https://repo.tide.com
+`,
+			verify: func(c *Config) error {
+				orgRepo := OrgRepo{Org: "other-org", Repo: "other-repo"}
+				if got, expected := c.Tide.GetTargetURL(orgRepo), "https://star.tide.com"; got != expected {
+					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				orgRepo = OrgRepo{Org: "org", Repo: "other-repo"}
+				if got, expected := c.Tide.GetTargetURL(orgRepo), "https://org.tide.com"; got != expected {
+					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				orgRepo = OrgRepo{Org: "org", Repo: "repo"}
+				if got, expected := c.Tide.GetTargetURL(orgRepo), "https://repo.tide.com"; got != expected {
+					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				return nil
+			},
+		},
+		{
+			name: "tide no target_url specified returns empty string",
+			verify: func(c *Config) error {
+				orgRepo := OrgRepo{Org: "org", Repo: "repo"}
+				if got, expected := c.Tide.GetTargetURL(orgRepo), ""; got != expected {
+					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {

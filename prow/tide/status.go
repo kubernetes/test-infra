@@ -328,9 +328,10 @@ func retestingStatus(retested []string) string {
 // the administrative Prow overview.
 func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideURL := c.Tide.TargetURL; tideURL != "" {
+	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+	if tideURL := c.Tide.GetTargetURL(orgRepo); tideURL != "" {
 		link = tideURL
-	} else if baseURL := c.Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
+	} else if baseURL := c.Tide.GetPRStatusBaseURL(orgRepo); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")

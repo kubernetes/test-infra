@@ -104,6 +104,11 @@ type Tide struct {
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
 
+	// TargetURLs is a map from "*", <org>, or <org/repo> to the URL for the tide status contexts.
+	// The most specific key that matches will be used.
+	// This field is mutually exclusive with TargetURL.
+	TargetURLs map[string]string `json:"target_urls,omitempty"`
+
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
@@ -236,11 +241,23 @@ func (t *Tide) MergeCommitTemplate(repo OrgRepo) TideMergeCommitTemplate {
 func (t *Tide) GetPRStatusBaseURL(repo OrgRepo) string {
 	if byOrgRepo, ok := t.PRStatusBaseURLs[repo.String()]; ok {
 		return byOrgRepo
-	} else if byOrg, ok := t.PRStatusBaseURLs[repo.Org]; ok {
+	}
+	if byOrg, ok := t.PRStatusBaseURLs[repo.Org]; ok {
 		return byOrg
 	}
 
 	return t.PRStatusBaseURLs["*"]
+}
+
+func (t *Tide) GetTargetURL(repo OrgRepo) string {
+	if byOrgRepo, ok := t.TargetURLs[repo.String()]; ok {
+		return byOrgRepo
+	}
+	if byOrg, ok := t.TargetURLs[repo.Org]; ok {
+		return byOrg
+	}
+
+	return t.TargetURLs["*"]
 }
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
