@@ -484,7 +484,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -531,7 +531,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -583,7 +583,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -637,7 +637,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -688,7 +688,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

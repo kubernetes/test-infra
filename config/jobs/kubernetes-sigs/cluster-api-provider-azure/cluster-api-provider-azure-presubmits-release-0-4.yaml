@@ -10,7 +10,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -27,7 +27,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -51,7 +51,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -83,7 +83,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -116,7 +116,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -150,7 +150,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -174,7 +174,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "make"
@@ -200,7 +200,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -232,7 +232,7 @@ presubmits:
       - ^release-0.4$
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -263,7 +263,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.18
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.18
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-release-0-4

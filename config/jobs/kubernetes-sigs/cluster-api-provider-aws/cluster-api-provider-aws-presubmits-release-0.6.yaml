@@ -10,7 +10,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -23,7 +23,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -39,7 +39,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
         command:
         - "make"
         - "verify"
@@ -77,7 +77,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -120,7 +120,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -160,7 +160,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -200,7 +200,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.19
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.19
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"

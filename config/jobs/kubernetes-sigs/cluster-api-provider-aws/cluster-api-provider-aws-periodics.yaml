@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-go-canary
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -57,7 +57,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-go-canary
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -99,7 +99,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-go-canary
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -148,7 +148,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-go-canary
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -191,7 +191,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-go-canary
         command:
           - runner.sh
           - bash

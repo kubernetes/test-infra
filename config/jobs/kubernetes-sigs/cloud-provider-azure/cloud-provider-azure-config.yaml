@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
         command:
         - runner.sh
         - kubetest
@@ -100,7 +100,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
         command:
         - runner.sh
         - kubetest
@@ -163,7 +163,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
           command:
             - runner.sh
             - kubetest
@@ -226,7 +226,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
           command:
             - runner.sh
             - kubetest
@@ -290,7 +290,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
           command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -324,7 +324,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         command:
         - runner.sh
         args:
@@ -357,7 +357,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -420,7 +420,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -485,7 +485,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -550,7 +550,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -608,7 +608,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -667,7 +667,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -737,7 +737,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -800,7 +800,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -858,7 +858,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -916,7 +916,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-1.21
       command:
       - runner.sh
       - kubetest
@@ -972,7 +972,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - kubetest
@@ -1035,7 +1035,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       command:
       - runner.sh
       - kubetest

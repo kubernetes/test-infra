@@ -84,7 +84,7 @@ periodic_template = """
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -123,7 +123,7 @@ presubmit_template = """
       serviceAccountName: k8s-kops-test
       {%- endif %}
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         imagePullPolicy: Always
         command:
         - runner.sh
