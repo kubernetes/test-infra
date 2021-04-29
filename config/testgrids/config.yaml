@@ -72,10 +72,6 @@ test_groups:
   num_columns_recent: 3
   num_failures_to_alert: 1
 
-# Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
-- name: canonical-kubernetes-e2e-gce
-  gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
-
 # CRI-O
 - name: test_pull_request_crio_e2e_fedora
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
@@ -89,19 +85,6 @@ dashboards:
 - name: vmware-conformance
 - name: vmware-conformance-cloud-provider
 - name: vmware-cluster-api-provider-vsphere
-
-- name: canonical-ubuntu1-k8sbeta
-- name: canonical-ubuntu1-k8sstable1
-- name: canonical-ubuntu1-k8sstable2
-- name: canonical-ubuntu1-k8sstable3
-- name: canonical-ubuntu2-k8sbeta
-- name: canonical-ubuntu2-k8sstable1
-- name: canonical-ubuntu2-k8sstable2
-- name: canonical-ubuntu2-k8sstable3
-- name: canonical-cdk
-  dashboard_tab:
-  - name: cdk-gce-node
-    test_group_name: canonical-kubernetes-e2e-gce
 
 - name: google-aws
 - name: google-gce
@@ -278,18 +261,6 @@ dashboards:
 #
 
 dashboard_groups:
-- name: canonical
-  dashboard_names:
-  - canonical-ubuntu1-k8sbeta
-  - canonical-ubuntu1-k8sstable1
-  - canonical-ubuntu1-k8sstable2
-  - canonical-ubuntu1-k8sstable3
-  - canonical-ubuntu2-k8sbeta
-  - canonical-ubuntu2-k8sstable1
-  - canonical-ubuntu2-k8sstable2
-  - canonical-ubuntu2-k8sstable3
-  - canonical-cdk
-
 - name: google
   dashboard_names:
   - google-aws
