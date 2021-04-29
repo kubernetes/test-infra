@@ -912,10 +912,10 @@ func TestFlags(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:              "config-path",
-					JobConfigPathFlagName:           "job-config-path",
-					ConfigPath:                      "yo",
-					SupplementalProwConfigsFileName: "_prowconfig.yaml",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
