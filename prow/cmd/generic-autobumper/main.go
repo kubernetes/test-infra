@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/test-infra/prow/cmd/generic-autobumper/bumper"
 
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 func parseOptions() (*bumper.Options, error) {
@@ -43,8 +43,7 @@ func parseOptions() (*bumper.Options, error) {
 		return nil, fmt.Errorf("Failed to read in config file, %s", config)
 	}
 
-	err = yaml.UnmarshalStrict(data, &o)
-	if err != nil {
+	if err := yaml.UnmarshalStrict(data, &o); err != nil {
 		return nil, fmt.Errorf("Failed to parse yaml file, %s", err)
 	}
 
