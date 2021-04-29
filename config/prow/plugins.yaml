@@ -664,6 +664,31 @@ require_matching_label:
   repo: python-base
   prs: true
   regexp: ^kind/
+- missing_label: needs-triage
+  org: kubernetes
+  repo: ingress-nginx
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If Ingress contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-kind
+  org: kubernetes
+  repo: ingress-nginx
+  issues: true
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-priority
+  org: kubernetes
+  repo: ingress-nginx
+  issues: true
+  prs: true
+  regexp: ^priority/
+
 
 retitle:
   allow_closed_issues: true
