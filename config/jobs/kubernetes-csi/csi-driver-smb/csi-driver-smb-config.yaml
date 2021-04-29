@@ -265,3 +265,53 @@ presubmits:
       testgrid-tab-name: pull-csi-driver-smb-e2e-windows
       description: "Run Windows E2E tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-external-e2e
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-location=eastus2
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        # Specific test args
+        - --test-csi-driver-smb
+        securityContext:
+          privileged: true
+        env:
+          - name: EXTERNAL_E2E_TEST
+            value: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-smb-external-e2e
+      description: "Run External E2E tests for SMB CSI driver on VMAS cluster."
+      testgrid-num-columns-recent: '30'
