@@ -2098,14 +2098,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -2466,8 +2466,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
   name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
-  name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.6-to-4.7-ci
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.7
   name: release-openshift-origin-installer-e2e-azure-compact-4.7
