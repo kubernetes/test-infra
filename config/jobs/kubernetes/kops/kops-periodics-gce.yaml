@@ -105,7 +105,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=cilium" \
+          --create-args="--channel=alpha" \
           --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
@@ -133,11 +133,11 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --channel=alpha --networking=cilium --cloud gce
+    test.kops.k8s.io/extra_flags: --channel=alpha
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-kubetest2
