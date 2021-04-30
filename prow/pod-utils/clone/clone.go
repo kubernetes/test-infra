@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"os"
 	"os/exec"
 	"path"
 	"strconv"
@@ -344,6 +345,7 @@ func (c cloneCommand) run() (string, string, error) {
 	cmd := exec.Command(c.command, c.args...)
 	cmd.Dir = c.dir
 	cmd.Env = append(cmd.Env, c.env...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = &output
 	cmd.Stderr = &output
 	err := cmd.Run()
