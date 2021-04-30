@@ -477,6 +477,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
