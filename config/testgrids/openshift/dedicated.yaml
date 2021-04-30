@@ -1,4 +1,8 @@
 test_groups:
+- name: osde2e-stage-aws-conformance-default
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-conformance-default
+  column_header:
+  - configuration_value: cluster-version
 - name: osde2e-int-aws-e2e-upgrade-to-latest-z
   gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-latest-z
   column_header:
