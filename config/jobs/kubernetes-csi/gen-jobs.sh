@@ -719,7 +719,7 @@ for repo in $csi_release_tools_repos; do
     cat >>"$base/csi-release-tools/csi-release-tools-config.yaml" <<EOF
   - name: $(job_name "pull" "release-tools" "$repo" "" "")
     always_run: true
-    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
     skip_report: false
     extra_refs:

@@ -34,7 +34,7 @@ presubmits:
             cpu: 2000m
   - name: pull-kubernetes-csi-release-tools-csi-test
     always_run: true
-    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
     skip_report: false
     extra_refs:
@@ -82,7 +82,7 @@ presubmits:
             cpu: 2000m
   - name: pull-kubernetes-csi-release-tools-external-provisioner
     always_run: true
-    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
     skip_report: false
     extra_refs:
@@ -130,7 +130,7 @@ presubmits:
             cpu: 2000m
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
     always_run: true
-    optional: false # cannot be required because updates in csi-release-tools may include breaking changes
+    optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
     skip_report: false
     extra_refs:
