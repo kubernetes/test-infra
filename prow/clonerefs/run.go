@@ -17,6 +17,7 @@ limitations under the License.
 package clonerefs
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -83,6 +84,16 @@ func (o *Options) createRecords() []clone.Record {
 		oauthToken = token
 	}
 
+	// Print md5 sum of cookiefile for debugging purpose
+	if len(o.CookiePath) > 0 {
+		l := logrus.WithField("http-cookiefile", o.CookiePath)
+		f, err := ioutil.ReadFile(o.CookiePath)
+		if err != nil {
+			l.WithError(err).Warn("Cannot read http cookiefile")
+		} else {
+			l.WithField("md5sum", fmt.Sprintf("%x", md5.Sum(f))).Debug("Http cookiefile md5 sum")
+		}
+	}
 	if p := needsGlobalCookiePath(o.CookiePath, o.GitRefs...); p != "" {
 		cmd, err := configureGlobalCookiefile(p)
 		rec.Commands = append(rec.Commands, cmd)
