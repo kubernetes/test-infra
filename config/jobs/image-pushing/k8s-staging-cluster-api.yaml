@@ -263,6 +263,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
   decorate: true
   decoration_config:
     timeout: 3h
