@@ -258,11 +258,18 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
     testgrid-tab-name: cluster-api-provider-openstack-push-images-nightly
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+
+##
+## This Job is a temporary solution that builds the machine images using image-builder repository
+## and packer. this is not the image for CAPG manager.
+## This should be replaced in the future with the work from https://github.com/kubernetes-sigs/image-builder/pull/445
+##
 - name: cluster-api-provider-gcp-build-image-nightly
   cluster: k8s-infra-prow-build-trusted
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
   decorate: true
   decoration_config:
     timeout: 3h
