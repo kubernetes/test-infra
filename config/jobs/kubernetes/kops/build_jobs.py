@@ -985,7 +985,7 @@ def generate_presubmits_e2e():
             extra_flags=["--master-count=3", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
             tab_name='e2e-containerd-ha',
             always_run=False,
-            skip_override=skip_regex,
+            skip_override=skip_regex+'|Multi-AZ',
         ),
         presubmit_test(
             distro="u2010",
