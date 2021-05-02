@@ -287,7 +287,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
         env:
           # TODO(dims): reuse this project for now to test this job.
           # need to create a separate project.
