@@ -85,7 +85,6 @@ presubmits:
             --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-kubetest2 \
             --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
-            --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.20/latest-ci.txt \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
             --test=kops \
             -- \
