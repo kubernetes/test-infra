@@ -296,8 +296,8 @@ periodics:
           - name: "SKIP_CLEANUP"
             value: "true"
         command:
-          - /home/prow/go/src/sigs.k8s.io/cluster-api-provider-gcp/scripts/ci-e2e.sh
-        args:
+          - "runner.sh"
+          - "scripts/ci-e2e.sh"
           - "--verbose"
           - "--build-image-only"
         # we need privileged mode in order to do docker in docker
