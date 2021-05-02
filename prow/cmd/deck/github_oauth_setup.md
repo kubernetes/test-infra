@@ -69,6 +69,7 @@ The following steps will show you how to set up an OAuth app.
       ```yaml
       - --github-oauth-config-file=/etc/githuboauth/secret
       - --oauth-url=/github-login
+      - --cookie-secret=/etc/cookie/secret
       ```
       Note that the `--oauth-url` should eventually be changed to a boolean as described 
       in [#13804](https://github.com/kubernetes/test-infra/issues/13804).
