@@ -65,7 +65,6 @@ presubmits:
               - --aksengine-ccm
               - --aksengine-cnm
               - --aksengine-deploy-custom-k8s
-              - --aksengine-location=westus2
               - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
               - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
               - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
@@ -123,7 +122,6 @@ presubmits:
               - --aksengine-ccm
               - --aksengine-cnm
               - --aksengine-deploy-custom-k8s
-              - --aksengine-location=westus2
               - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
               - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-basic-lb.json
               - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
@@ -186,7 +184,6 @@ presubmits:
               - --aksengine-ccm
               - --aksengine-cnm
               - --aksengine-deploy-custom-k8s
-              - --aksengine-location=westus2
               - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
               - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
               - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
@@ -249,7 +246,6 @@ presubmits:
               - --aksengine-ccm
               - --aksengine-cnm
               - --aksengine-deploy-custom-k8s
-              - --aksengine-location=westus2
               - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
               - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
               - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
