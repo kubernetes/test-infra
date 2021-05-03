@@ -310,6 +310,7 @@ distro_images = {
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
+    'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*'), # pylint: disable=line-too-long
     'u2010': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-*'), # pylint: disable=line-too-long
 }
 
@@ -324,6 +325,7 @@ distros_ssh_user = {
     'rhel8': 'ec2-user',
     'u1804': 'ubuntu',
     'u2004': 'ubuntu',
+    'u2004arm64': 'ubuntu',
     'u2010': 'ubuntu',
 }
 
@@ -363,7 +365,7 @@ def build_test(cloud='aws',
 
 
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
-    if networking == "cilium" and distro not in ["u2004", "deb10", "rhel8"]:
+    if networking == "cilium" and distro not in ["u2004", "u2004arm64", "deb10", "rhel8"]:
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -640,16 +642,14 @@ def generate_grid():
 # kops-periodics-misc2.yaml #
 #############################
 def generate_misc():
-    u2004_arm = distro_images['u2004'].replace('amd64', 'arm64')
     results = [
         # A one-off scenario testing arm64
         build_test(name_override="kops-grid-scenario-arm64",
                    cloud="aws",
-                   distro="u2004",
+                   distro="u2004arm64",
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large",
-                                f"--image={u2004_arm}"],
+                                "--master-size=m6g.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
@@ -688,39 +688,39 @@ def generate_misc():
         build_test(name_override="kops-aws-misc-arm64-release",
                    k8s_version="latest",
                    container_runtime="containerd",
+                   distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large",
-                                f"--image={u2004_arm}"],
+                                "--master-size=m6g.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-ci",
                    k8s_version="ci",
                    container_runtime="containerd",
+                   distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large",
-                                f"--image={u2004_arm}"],
+                                "--master-size=m6g.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
                    k8s_version="ci",
                    container_runtime="containerd",
+                   distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large",
-                                f"--image={u2004_arm}"],
+                                "--master-size=m6g.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
@@ -755,14 +755,13 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-cilium10-arm64",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
+                   distro="u2004arm64",
                    kops_channel="alpha",
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
-                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0",
-                                f"--image={u2004_arm}"],
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc0"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
@@ -800,6 +799,7 @@ def generate_distros():
                        skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
                        )
         )
+    # pprint.pprint(results)
     return results
 
 #######################################
