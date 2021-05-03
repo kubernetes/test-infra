@@ -48,7 +48,7 @@ latest_stable_k8s_version="1.20" # TODO: bump to 1.21 after testing a pull job
 hostpath_driver_version="v1.6.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210418-e5f251e-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -256,8 +256,12 @@ expand_tests () {
 pull_optional() {
     local tests="$1"
     local kubernetes="$2"
+    local deployment_suffix="$3"
 
-    if [ "$tests" == "alpha" ]; then
+    # https://github.com/kubernetes-csi/csi-driver-host-path/pull/282 has not been merged yet,
+    # therefore pull jobs which depend on the new deployment flavors have to be optional.
+    # TODO: remove this check once merged.
+    if [ "$tests" == "alpha" ] || [ "$deployment_suffix" ] ; then
         echo "true"
     elif [ "$kubernetes" == "$experimental_k8s_version" ]; then
         # New k8s versions may require updates to kind or release-tools.
@@ -345,6 +349,14 @@ use_bazel() (
     fi
 )
 
+additional_deployment_suffices () (
+    local repo="$1"
+
+    case "$repo" in
+        csi-driver-host-path) echo "-test";;
+    esac
+)
+
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
     cat >"$base/$repo/$repo-config.yaml" <<EOF
@@ -354,24 +366,25 @@ presubmits:
   kubernetes-csi/$repo:
 EOF
 
-    for tests in non-alpha alpha; do
-        for deployment in $deployment_versions; do
-            for kubernetes in $k8s_versions; do
-                # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
-                # cluster we only do it for those cases where the deployment matches the Kubernetes version.
-                # Once we have more than two supported Kubernetes releases we should limit this to the most
-                # recent two.
-                #
-                # Periodic jobs need to test the full matrix.
-                if [ "$kubernetes" = "$deployment" ]; then
-                    # Alpha jobs only run on the latest version
-                    if [ "$tests" != "alpha" ] || [ "$kubernetes" = "$latest_stable_k8s_version" ]; then
-                        # These required jobs test the binary built from the PR against
-                        # older, stable hostpath driver deployments and Kubernetes versions
-                        cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
+    for deployment_suffix in "" $(additional_deployment_suffices "$repo"); do
+        for tests in non-alpha alpha; do
+            for deployment in $deployment_versions; do
+                for kubernetes in $k8s_versions; do
+                    # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
+                    # cluster we only do it for those cases where the deployment matches the Kubernetes version.
+                    # Once we have more than two supported Kubernetes releases we should limit this to the most
+                    # recent two.
+                    #
+                    # Periodic jobs need to test the full matrix.
+                    if [ "$kubernetes" = "$deployment" ]; then
+                        # Alpha jobs only run on the latest version
+                        if [ "$tests" != "alpha" ] || [ "$kubernetes" = "$latest_stable_k8s_version" ]; then
+                            # These required jobs test the binary built from the PR against
+                            # older, stable hostpath driver deployments and Kubernetes versions
+                            cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests" "$kubernetes")
+    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -379,7 +392,7 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    $(annotations "      " "pull" "$repo" "$tests" "$deployment" "$kubernetes")
+    $(annotations "      " "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -400,6 +413,8 @@ EOF
           value: "$(use_bazel "$kubernetes")"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: "$deployment_suffix"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -411,16 +426,16 @@ EOF
           privileged: true
 $(resources_for_kubernetes "$kubernetes")
 EOF
+                        fi
                     fi
-                fi
-            done # end kubernetes
+                done # end kubernetes
 
 
-            # These optional jobs test the binary built from the PR against
-            # older, stable hostpath driver deployments and Kubernetes master
-            if [ "$tests" != "alpha" ] || [ "$deployment" = "$latest_stable_k8s" ]; then
-                cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: $(job_name "pull" "$repo" "$tests" "$deployment" master)
+                # These optional jobs test the binary built from the PR against
+                # older, stable hostpath driver deployments and Kubernetes master
+                if [ "$tests" != "alpha" ] || [ "$deployment" = "$latest_stable_k8s" ]; then
+                    cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" master)
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -433,7 +448,7 @@ EOF
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
-    $(annotations "      " "pull" "$repo" "$tests" "$deployment" master)
+    $(annotations "      " "pull" "$repo" "$tests" "$deployment$deployment_suffix" master)
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -449,6 +464,8 @@ EOF
           value: "$(use_bazel "latest")"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: "$deployment_suffix"
         - name: CSI_SNAPSHOTTER_VERSION
           value: $(snapshotter_version "latest" "")
         - name: CSI_PROW_TESTS
@@ -458,9 +475,10 @@ EOF
           privileged: true
 $(resources_for_kubernetes master)
 EOF
-            fi
-        done # end deployment
-    done # end tests
+                fi
+            done # end deployment
+        done # end tests
+    done # end deployment_suffix
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "unit")
@@ -593,31 +611,32 @@ cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 periodics:
 EOF
 
-for tests in non-alpha alpha; do
-    for deployment in $deployment_versions; do
-        for kubernetes in $deployment_versions master; do # these tests run against top of release-1.X instead of a specific release version
-            if [ "$tests" = "alpha" ]; then
-                # No version skew testing of alpha features, deployment has to match Kubernetes.
-                if ! echo "$kubernetes" | grep -q "^$deployment"; then
-                    continue
+for deployment_suffix in "" "-test"; do
+    for tests in non-alpha alpha; do
+        for deployment in $deployment_versions; do
+            for kubernetes in $deployment_versions master; do # these tests run against top of release-1.X instead of a specific release version
+                if [ "$tests" = "alpha" ]; then
+                    # No version skew testing of alpha features, deployment has to match Kubernetes.
+                    if ! echo "$kubernetes" | grep -q "^$deployment"; then
+                        continue
+                    fi
+                    # Alpha testing is only done on the latest stable version or
+                    # master
+                    if [ "$kubernetes" != "$latest_stable_k8s_minor_version" ] && [ "$kubernetes" != "master" ]; then
+                        continue
+                    fi
                 fi
-                # Alpha testing is only done on the latest stable version or
-                # master
-                if [ "$kubernetes" != "$latest_stable_k8s_minor_version" ] && [ "$kubernetes" != "master" ]; then
-                    continue
-                fi
-            fi
 
-            # Skip generating tests where the k8s version is lower than the deployment version
-            # because we do not support running newer deployments and sidecars on older kubernetes releases.
-            # The recommended Kubernetes version can be found in each kubernetes-csi sidecar release.
-            if [[ $kubernetes < $deployment ]]; then
-                continue
-            fi
-            actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
-            cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
+                # Skip generating tests where the k8s version is lower than the deployment version
+                # because we do not support running newer deployments and sidecars on older kubernetes releases.
+                # The recommended Kubernetes version can be found in each kubernetes-csi sidecar release.
+                if [[ $kubernetes < $deployment ]]; then
+                    continue
+                fi
+                actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
+                cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: $(job_name "ci" "" "$tests" "$deployment" "$kubernetes")
+  name: $(job_name "ci" "" "$tests" "$deployment$deployment_suffix" "$kubernetes")
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -628,7 +647,7 @@ for tests in non-alpha alpha; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "$(if [ "$kubernetes" = "master" ]; then echo true; else echo false; fi)"
     preset-kind-volume-mounts: "true"
-  $(annotations "    " "ci" "" "$tests" "$deployment" "$kubernetes")
+  $(annotations "    " "ci" "" "$tests" "$deployment$deployment_suffix" "$kubernetes")
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
@@ -648,6 +667,8 @@ for tests in non-alpha alpha; do
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
         value: "kubernetes-$deployment"
+      - name: CSI_PROW_DEPLOYMENT_SUFFIX
+        value: "$deployment_suffix"
       - name: CSI_PROW_TESTS
         value: "$(expand_tests "$tests")"
       # docker-in-docker needs privileged mode
@@ -655,6 +676,7 @@ for tests in non-alpha alpha; do
         privileged: true
 $(resources_for_kubernetes "$actual")
 EOF
+            done
         done
     done
 done
@@ -662,21 +684,22 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in $k8s_versions master; do
-    # master -> latest
-    actual="${kubernetes/master/latest}"
-    # 1.20 -> 1.20.0
-    actual="$(echo "$actual" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)$/\1.\2.0/')"
+for deployment_suffix in "" "-test"; do
+    for kubernetes in $k8s_versions master; do
+        # master -> latest
+        actual="${kubernetes/master/latest}"
+        # 1.20 -> 1.20.0
+        actual="$(echo "$actual" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)$/\1.\2.0/')"
 
-    for tests in non-alpha alpha; do
-        # Alpha with latest sidecars only on master.
-        if [ "$tests" = "alpha" ] && [ "$kubernetes" != "master" ]; then
-            continue
-        fi
-        alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
-        cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
+        for tests in non-alpha alpha; do
+            # Alpha with latest sidecars only on master.
+            if [ "$tests" = "alpha" ] && [ "$kubernetes" != "master" ]; then
+                continue
+            fi
+            alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
+            cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
+  name: $(job_name "ci" "" "$tests" "canary$deployment_suffix" "$kubernetes")
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -687,7 +710,7 @@ for kubernetes in $k8s_versions master; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
-  $(annotations "    " "ci" "" "$tests" "canary" "$kubernetes")
+  $(annotations "    " "ci" "" "$tests" "canary$deployment_suffix" "$kubernetes")
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
@@ -706,6 +729,8 @@ for kubernetes in $k8s_versions master; do
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
+      - name: CSI_PROW_DEPLOYMENT_SUFFIX
+        value: "$deployment_suffix"
       - name: CSI_SNAPSHOTTER_VERSION
         value: $(snapshotter_version "$actual" "canary")
       # ... but the RBAC rules only when testing on master.
@@ -720,6 +745,7 @@ for kubernetes in $k8s_versions master; do
         privileged: true
 $(resources_for_kubernetes "$actual")
 EOF
+        done
     done
 done
 
