@@ -637,7 +637,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210426-51fd28e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
         command:
         - make
         args:
