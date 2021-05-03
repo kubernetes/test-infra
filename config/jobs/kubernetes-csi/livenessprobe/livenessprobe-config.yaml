@@ -309,7 +309,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.21.0"
         - name: CSI_PROW_USE_BAZEL
-          value: "true"
+          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.21"
         - name: CSI_PROW_DRIVER_VERSION

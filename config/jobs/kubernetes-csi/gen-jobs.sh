@@ -283,7 +283,9 @@ pull_alwaysrun() {
 #
 #   where X,Y, and Z are any number.
 #
-# Partial versions (1.2, release-1.2) work as well.
+# Partial versions (1.2, release-1.2) work as well as long as both
+# arguments use the same format.
+#
 # The follow substrings are stripped before version comparison:
 #   - "v"
 #   - "release-"
@@ -302,6 +304,8 @@ function version_gt() {
     greaterVersion=${greaterVersion#"v"};
     test "$(printf '%s' "$versions" | sort -V | head -n 1)" != "$greaterVersion"
 }
+
+
 
 
 snapshotter_version() {
@@ -327,16 +331,19 @@ snapshotter_version() {
     fi
 }
 
-use_bazel() {
+use_bazel() (
     local kubernetes="$1"
 
+    # Strip z from x.y.z, version_gt does not handle it when comparing against 1.20.
+    kubernetes="$(echo "$kubernetes" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)\.[0-9]*$/\1.\2/')"
+
     # Kubernetes 1.21 removed support for building with Bazel.
-    if version_gt "$kubernetes" "1.21"; then
+    if version_gt "$kubernetes" "1.20"; then
         echo "false"
     else
         echo "true"
     fi
-}
+)
 
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
