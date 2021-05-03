@@ -32,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: needs-rebase
-        image: gcr.io/k8s-prow/needs-rebase:v20210502-ba10239e8c
+        image: gcr.io/k8s-prow/needs-rebase:v20210503-a87938f58b
         imagePullPolicy: Always
         args:
         - --dry-run=false
