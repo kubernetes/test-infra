@@ -27,21 +27,22 @@ k8s_versions="
 1.18
 1.19
 1.20
+1.21
 "
 
 # All the deployment versions we're testing.
-# Must have a deploy/kubernetes-<version> dir in csi-driver-host-path
 deployment_versions="
 1.18
 1.19
 1.20
+1.21
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version=""
+experimental_k8s_version="1.21"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.20"
+latest_stable_k8s_version="1.20" # TODO: bump to 1.21 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
 hostpath_driver_version="v1.6.0"
