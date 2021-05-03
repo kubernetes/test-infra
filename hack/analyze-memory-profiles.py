@@ -22,14 +22,15 @@
 # visualize them.
 
 import os
+import pathlib
 import subprocess
 import sys
 from datetime import datetime
 
-from matplotlib.font_manager import FontProperties
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from matplotlib.font_manager import FontProperties
 
 if len(sys.argv) != 2:
     print("[ERROR] Expected the directory containing profiles as the only argument.")
@@ -37,6 +38,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 profile_dir = sys.argv[1]
+
 
 def parse_bytes(value):
     # we will either see a raw number or one with a suffix
@@ -56,15 +58,18 @@ def parse_bytes(value):
     return float(value[:-2]) * multiple
 
 
-dates_by_name = {}
-flat_usage_over_time = {}
-cumulative_usage_over_time = {}
+overall_name = "overall".encode("utf-8")
+dates_by_name = {overall_name: []}
+flat_usage_over_time = {overall_name: []}
+cumulative_usage_over_time = {overall_name: []}
 max_usage = 0
 
 for subdir, dirs, files in os.walk(profile_dir):
     for file in files:
+        full_path = os.path.join(subdir, file)
+        date = datetime.fromtimestamp(pathlib.Path(full_path).stat().st_mtime)
         output = subprocess.run(
-            ["go", "tool", "pprof", "-top", "-inuse_space", os.path.join(subdir, file)],
+            ["go", "tool", "pprof", "-top", "-inuse_space", full_path],
             check=True, stdout=subprocess.PIPE
         )
         # The output of go tool pprof will look like:
@@ -78,10 +83,6 @@ for subdir, dirs, files in os.walk(profile_dir):
         #
         # We want to parse all of the lines after the header and metadata.
         lines = output.stdout.splitlines()
-        date = datetime.strptime(
-            lines[2].decode("utf-8").replace("am", "AM").replace("pm", "PM"),
-            "Time: %b %d, %Y at %H:%M%p (%Z)"
-        )
         usage = parse_bytes(lines[3].split()[-2])
         if usage > max_usage:
             max_usage = usage
@@ -90,6 +91,8 @@ for subdir, dirs, files in os.walk(profile_dir):
             if lines[i].split()[0].decode("utf-8") == "flat":
                 data_index = i + 1
                 break
+        flat_overall = 0
+        cumulative_overall = 0
         for line in lines[data_index:]:
             parts = line.split()
             name = parts[5]
@@ -98,10 +101,17 @@ for subdir, dirs, files in os.walk(profile_dir):
             dates_by_name[name].append(date)
             if name not in flat_usage_over_time:
                 flat_usage_over_time[name] = []
-            flat_usage_over_time[name].append(parse_bytes(parts[0]))
+            flat_usage = parse_bytes(parts[0])
+            flat_usage_over_time[name].append(flat_usage)
+            flat_overall += flat_usage
             if name not in cumulative_usage_over_time:
                 cumulative_usage_over_time[name] = []
-            cumulative_usage_over_time[name].append(parse_bytes(parts[3]))
+            cumulative_usage = parse_bytes(parts[3])
+            cumulative_usage_over_time[name].append(cumulative_usage)
+            cumulative_overall += cumulative_usage
+        dates_by_name[overall_name].append(date)
+        flat_usage_over_time[overall_name].append(flat_overall)
+        cumulative_usage_over_time[overall_name].append(cumulative_overall)
 
 plt.rcParams.update({'font.size': 22})
 fig = plt.figure(figsize=(30, 18))
@@ -112,10 +122,13 @@ for name in dates_by_name:
     values = flat_usage_over_time[name]
     # we only want to show the top couple callsites, or our legend gets noisy
     if max(values) > 0.01 * max_usage:
-        ax.plot_date(dates, values, label=name.decode("utf-8"), linestyle='solid')
+        ax.plot_date(dates, values,
+                     label="{} (max: {:,.0f}MB)".format(name.decode("utf-8"), max(values) / (1024 * 1024)),
+                     linestyle='solid')
     else:
         ax.plot_date(dates, values, linestyle='solid')
 ax.set_yscale('log')
+ax.set_ylim(bottom=10*1024*1024)
 formatter = ticker.FuncFormatter(lambda y, pos: '{:,.0f}'.format(y / (1024 * 1024)) + 'MB')
 ax.yaxis.set_major_formatter(formatter)
 plt.xlabel("Time")
@@ -131,10 +144,13 @@ for name in dates_by_name:
     values = cumulative_usage_over_time[name]
     # we only want to show the top couple callsites, or our legend gets noisy
     if max(values) > 0.01 * max_usage:
-        ax.plot_date(dates, values, label=name.decode("utf-8"), linestyle='solid')
+        ax.plot_date(dates, values,
+                     label="{} (max: {:,.0f}MB)".format(name.decode("utf-8"), max(values) / (1024 * 1024)),
+                     linestyle='solid')
     else:
         ax.plot_date(dates, values, linestyle='solid')
 ax.set_yscale('log')
+ax.set_ylim(bottom=10*1024*1024)
 ax.yaxis.set_major_formatter(formatter)
 plt.xlabel("Time")
 plt.ylabel("Cumulative Space In Use (bytes)")
