@@ -143,22 +143,8 @@ presubmits:
       containers:
       - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210104-g81a8d5cd8@sha256:bfd55f589ea998f961825a9d09158d766cf621d1b8fc5d8c905aba07d9794e08
         command:
-        - /bin/bash
-        - -c
-        - "GIT_COMMIT=${PULL_PULL_SHA} make cover"
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ingress-nginx-codecov-token
-              key: ingress-nginx-codecov-token
-    volumes:
-    - name: ingress-nginx-codecov-token
-      secret:
-        secretName: ingress-nginx-codecov-token
-        items:
-        - key: ingress-nginx-codecov-token
-          path: ingress-nginx-codecov-token
+        - make
+        - test
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test
