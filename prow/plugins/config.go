@@ -30,9 +30,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-
+	"github.com/google/go-cmp/cmp"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/kube"
@@ -111,6 +111,7 @@ type Golint struct {
 	MinimumConfidence *float64 `json:"minimum_confidence,omitempty"`
 }
 
+// Plugins maps orgOrRepo to plugins
 type Plugins map[string]OrgPlugins
 
 type OrgPlugins struct {
@@ -1765,4 +1766,41 @@ type Override struct {
 	// AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
 	// members of which are allowed to override contexts
 	AllowedGitHubTeams map[string][]string `json:"allowed_github_teams,omitempty"`
+}
+
+func (c *Configuration) mergeFrom(other *Configuration) error {
+	var errs []error
+	if diff := cmp.Diff(other, &Configuration{Plugins: other.Plugins}); diff != "" {
+		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
+	}
+
+	if c.Plugins == nil {
+		c.Plugins = Plugins{}
+	}
+	if err := c.Plugins.mergeFrom(&other.Plugins); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .plugins from supplemental config: %w", err))
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func (p *Plugins) mergeFrom(other *Plugins) error {
+	if other == nil {
+		return nil
+	}
+	if len(*p) == 0 {
+		*p = *other
+		return nil
+	}
+
+	var errs []error
+	for orgOrRepo, config := range *other {
+		if _, ok := (*p)[orgOrRepo]; ok {
+			errs = append(errs, fmt.Errorf("found duplicate config for plugins.%s", orgOrRepo))
+			continue
+		}
+		(*p)[orgOrRepo] = config
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
