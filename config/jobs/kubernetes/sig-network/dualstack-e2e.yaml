@@ -36,7 +36,6 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -87,7 +86,6 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -138,7 +136,6 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -190,7 +187,6 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -244,7 +240,6 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -301,7 +296,6 @@ presubmits:
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
-        - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -355,7 +349,6 @@ presubmits:
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
-        - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz

@@ -108,7 +108,6 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.17
-        - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -156,7 +155,6 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.17
-        - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
