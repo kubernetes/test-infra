@@ -49,6 +49,45 @@ var (
 	imageMatcher = regexp.MustCompile(`(?s)^.+image:(.+):(v[a-zA-Z0-9_.-]+)`)
 )
 
+var _ prcreator.PRHandler = &client{}
+
+type client struct {
+	o        *Options
+	images   map[string]string
+	versions map[string][]string
+}
+
+// Changes returns a slice of functions, each one does some stuff, and
+// returns commit message for the changes
+func (c *client) Changes() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			var err error
+			c.images, err = UpdateReferences(c.o)
+			if err != nil {
+				return "", fmt.Errorf("failed to update image references: %w", err)
+			}
+
+			c.versions, err = getVersionsAndCheckConsistency(c.o.Prefixes, c.images)
+			if err != nil {
+				return "", err
+			}
+
+			var body string
+			for _, prefix := range c.o.Prefixes {
+				body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, c.images) + "\n\n"
+			}
+
+			return body, nil
+		},
+	}
+}
+
+// PRTitleBody returns the body of the PR, this function runs after each commit
+func (c *client) PRTitleBody() (string, string, error) {
+	return makeCommitSummary(c.o.Prefixes, c.versions), "", nil
+}
+
 // Options is the options for autobumper operations.
 type Options struct {
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
@@ -64,6 +103,8 @@ type Options struct {
 	TargetVersion string `yaml:"targetVersion"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
+	// Whether to skip creating the pull request for this bump.
+	SkipPullRequest bool `yaml:"skipPullRequest"`
 }
 
 // Prefix is the information needed for each prefix being bumped.
@@ -87,11 +128,11 @@ type Prefix struct {
 func parseOptions() (*Options, *prcreator.Options, error) {
 	var config string
 	var labelsOverride []string
-	var dryrun bool
+	var skipPullRequest bool
 
 	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
-	flag.BoolVar(&dryrun, "dryrun", false, "Dryrun creating PR or not.")
+	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
 	flag.Parse()
 
 	var o Options
@@ -101,19 +142,19 @@ func parseOptions() (*Options, *prcreator.Options, error) {
 		return nil, nil, fmt.Errorf("Failed to read in config file, %s", config)
 	}
 
-	err = yaml.UnmarshalStrict(data, &o)
+	err = yaml.Unmarshal(data, &o)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
 	}
 
-	if err := yaml.UnmarshalStrict(data, &pro); err != nil {
+	if err := yaml.Unmarshal(data, &pro); err != nil {
 		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
 	}
 
 	if labelsOverride != nil {
 		pro.Labels = labelsOverride
 	}
-	pro.Dryrun = dryrun
+	pro.SkipPullRequest = skipPullRequest
 	return &o, &pro, nil
 }
 
@@ -500,24 +541,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
-	if err := prcreator.Run(pro, func() (string, string, error) {
-		images, err := UpdateReferences(o)
-		if err != nil {
-			return "", "", fmt.Errorf("failed to update image references: %w", err)
-		}
-
-		versions, err := getVersionsAndCheckConsistency(o.Prefixes, images)
-		if err != nil {
-			return "", "", err
-		}
-
-		var body string
-		for _, prefix := range o.Prefixes {
-			body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, images) + "\n\n"
-		}
-
-		return makeCommitSummary(o.Prefixes, versions), body, nil
-	}); err != nil {
+	if err := prcreator.Run(pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }

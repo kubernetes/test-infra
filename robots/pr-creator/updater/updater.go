@@ -51,7 +51,8 @@ func EnsurePR(org, repo, title, body, source, branch, headBranch string, allowMo
 	return EnsurePRWithLabels(org, repo, title, body, source, branch, headBranch, allowMods, gc, nil)
 }
 
-func EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, queryTokensString string, allowMods bool, gc ensureClient) (*int, error) {
+func EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, queryTokensString string,
+	allowMods bool, gc ensureClient) (*int, error) {
 	n, err := updatePRWithQueryTokens(org, repo, title, body, queryTokensString, gc)
 	if err != nil {
 		return nil, fmt.Errorf("update error: %v", err)
@@ -93,7 +94,8 @@ func updatePRWithQueryTokens(org, repo, title, body, queryTokensString string, g
 	return &n, nil
 }
 
-func EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
+func EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch string,
+	allowMods bool, gc ensureClient, labels []string) (*int, error) {
 	n, err := EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, "head:"+headBranch, allowMods, gc)
 	if err != nil {
 		return n, err

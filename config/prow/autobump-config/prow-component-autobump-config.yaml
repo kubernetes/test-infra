@@ -1,6 +1,8 @@
 ---
-gitHubLogin: "k8s-ci-robot"
-gitHubToken: "/etc/github-token/oauth"
+# TODO(chaodaiG): Restore this before pushing
+gitHubLogin: "chaodaiG"
+# TODO(chaodaiG): Restore this before pushing
+gitHubToken: "/Users/chaodai/.secrets/repo-all-scope-github-token-01292019"
 gitName: "Kubernetes Prow Robot"
 gitEmail: "k8s.ci.robot@gmail.com"
 onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"

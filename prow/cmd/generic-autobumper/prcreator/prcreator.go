@@ -48,6 +48,22 @@ const (
 	gitCmd = "git"
 )
 
+// PRHandler is the interface implemented by consumer of prcreator, for
+// manipulating the repo, and provides commit messages, PR title and body.
+type PRHandler interface {
+	// Changes returns a slice of functions, each one does some stuff, and
+	// returns commit message for the changes
+	Changes() []func() (string, error)
+	// PRTitleBody returns the body of the PR, this function runs after each commit
+	PRTitleBody() (string, string, error)
+}
+
+type scmHandler interface {
+	commit() error
+	push() error
+	createPR() error
+}
+
 type fileArrayFlag []string
 
 func (af *fileArrayFlag) String() string {
@@ -100,8 +116,6 @@ type Options struct {
 	HeadBranchName string `yaml:"headBranchName"`
 	// Optional list of labels to add to the bump PR
 	Labels []string `yaml:"labels"`
-	// Dryrun skips PR creation
-	Dryrun bool `yaml:"dryrun"`
 }
 
 // Information needed for gerrit bump
@@ -119,6 +133,9 @@ type Gerrit struct {
 }
 
 // GitAuthorOptions is specifically to read the author info for a commit
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 type GitAuthorOptions struct {
 	GitName  string
 	GitEmail string
@@ -192,10 +209,8 @@ func validateOptions(o *Options) error {
 			return fmt.Errorf("GerritCookieFile is required when skipPullRequest is false and Gerrit is true")
 		}
 	}
-	if !o.SkipPullRequest {
-		if o.HeadBranchName == "" {
-			o.HeadBranchName = defaultHeadBranchName
-		}
+	if o.HeadBranchName == "" {
+		o.HeadBranchName = defaultHeadBranchName
 	}
 	if o.OncallGroup == "" {
 		o.OncallGroup = defaultOncallGroup
@@ -204,8 +219,11 @@ func validateOptions(o *Options) error {
 	return nil
 }
 
-// Run is the entrypoint which will update Prow config files based on the provided options.
-func Run(o *Options, updateFunc func() (string, string, error)) error {
+// Run is the entrypoint which will update Prow config files based on the
+// provided options.
+//
+// updateFunc: a function that returns commit message and error
+func Run(o *Options, prh PRHandler) error {
 	if err := validateOptions(o); err != nil {
 		return fmt.Errorf("error validating options: %w", err)
 	}
@@ -214,28 +232,14 @@ func Run(o *Options, updateFunc func() (string, string, error)) error {
 		return fmt.Errorf("failed to change to root dir: %w", err)
 	}
 
-	summary, body, err := updateFunc()
-	if err != nil {
-		return fmt.Errorf("failed to update image references: %w", err)
-	}
-
-	changed, err := HasChanges()
-	if err != nil {
-		return fmt.Errorf("error occurred when checking changes: %w", err)
-	}
-
-	if !changed {
-		logrus.Info("no images updated, exiting ...")
-		return nil
-	}
-
 	var sa secret.Agent
 
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 	if o.SkipPullRequest {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
-	} else if o.Gerrit == nil {
+	}
+	if o.Gerrit == nil {
 		if err := sa.Start([]string{o.GitHubToken}); err != nil {
 			return fmt.Errorf("failed to start secrets agent: %w", err)
 		}
@@ -277,10 +281,38 @@ func Run(o *Options, updateFunc func() (string, string, error)) error {
 			}
 		}
 
-		if err := MakeGitCommit(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, stdout, stderr, summary, o.Dryrun); err != nil {
+		// Make change, commit and push
+		for _, f := range prh.Changes() {
+			msg, err := f()
+			if err != nil {
+				return fmt.Errorf("failed to process provided function: %w", err)
+			}
+
+			changed, err := HasChanges()
+			if err != nil {
+				return fmt.Errorf("error occurred when checking changes: %w", err)
+			}
+
+			if !changed {
+				// TODO(chaodaiG): decide how to handle this with multiple commits
+				logrus.Info("Nothing changed, exiting ...")
+				return nil
+			}
+
+			if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
+				return fmt.Errorf("failed git commit: %w", err)
+			}
+		}
+
+		if err := gitPush(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName),
+			o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
+		summary, body, err := prh.PRTitleBody()
+		if err != nil {
+			return fmt.Errorf("failed creating PR summary and body: %w", err)
+		}
 		if o.GitHubBaseBranch == "" {
 			repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 			if err != nil {
@@ -288,8 +320,9 @@ func Run(o *Options, updateFunc func() (string, string, error)) error {
 			}
 			o.GitHubBaseBranch = repo.DefaultBranch
 		}
-
-		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.Dryrun); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo,
+			getAssignment(o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch,
+			o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	} else {
@@ -311,20 +344,40 @@ func Run(o *Options, updateFunc func() (string, string, error)) error {
 			return fmt.Errorf("Failed to create CR: %w", err)
 		}
 
-		err = gerritCommitandPush(summary, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-		// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
-		if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
-			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
-			changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
-			if subErr != nil {
-				return subErr
+		// Make change, commit and push
+		for _, f := range prh.Changes() {
+			msg, err := f()
+			if err != nil {
+				return fmt.Errorf("failed to process provided function: %w", err)
+			}
 
+			changed, err := HasChanges()
+			if err != nil {
+				return fmt.Errorf("error occurred when checking changes: %w", err)
 			}
-			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
-				return fmt.Errorf("unable to call git reset: %v", err)
+
+			if !changed {
+				// TODO(chaodaiG): decide how to handle this with multiple commits
+				logrus.Info("Nothing changed, exiting ...")
+				return nil
 			}
-			err = gerritCommitandPush(summary, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+
+			err = gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+			// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
+			if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
+				logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
+				changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
+				if subErr != nil {
+					return subErr
+
+				}
+				if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
+					return fmt.Errorf("unable to call git reset: %v", err)
+				}
+				err = gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+			}
 		}
+
 		if err != nil {
 			return err
 		}
@@ -359,6 +412,10 @@ func cdToRootDir() error {
 	return os.Chdir(d)
 }
 
+// Call wraps around exec Command and Run
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	(&logrus.Logger{
 		Out:       stderr,
@@ -380,6 +437,10 @@ type Censor interface {
 	Censor(content []byte) []byte
 }
 
+// HideSecretsWriter censors secrets
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 type HideSecretsWriter struct {
 	Delegate io.Writer
 	Censor   Censor
@@ -405,14 +466,19 @@ func updatePRWithLabels(gc github.Client, org, repo string, extraLineInPRBody, l
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
-// with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch"
+// with "title" and "body" of PR matching author and headBranch from "source" to
+// "baseBranch"
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, dryrun bool) error {
 	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil, dryrun)
 }
 
 // UpdatePullRequestWithLabels updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch" with labels
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, labels []string, dryrun bool) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch,
+	headBranch string, allowMods bool, labels []string, dryrun bool) error {
 	logrus.Info("Creating or updating PR...")
 	if dryrun {
 		logrus.Info("[Dryrun] ensure PR with:")
@@ -429,6 +495,9 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, sourc
 }
 
 // HasChanges checks if the current git repo contains any changes
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func HasChanges() (bool, error) {
 	args := []string{"status", "--porcelain"}
 	logrus.WithField("cmd", gitCmd).WithField("args", args).Info("running command ...")
@@ -455,15 +524,28 @@ func makeGerritCommit(summary, commitTag, changeId string) string {
 
 // GitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, dryrun bool) error {
 	return GitCommitSignoffAndPush(remote, remoteBranch, name, email, message, stdout, stderr, false, dryrun)
 }
 
 // GitCommitSignoffAndPush runs a sequence of git commands to commit with optional signoff for the commit.
 // The "name", "email", and "message" are used for git-commit command
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool, dryrun bool) error {
 	logrus.Info("Making git commit...")
 
+	if err := gitCommit(name, email, message, stdout, stderr, signoff); err != nil {
+		return err
+	}
+	return gitPush(remote, remoteBranch, stdout, stderr, dryrun)
+}
+
+func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
 		return fmt.Errorf("failed to git add: %w", err)
 	}
@@ -477,6 +559,10 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
 	}
+	return nil
+}
+
+func gitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
 		return fmt.Errorf("failed to add remote: %w", err)
 	}
@@ -518,6 +604,9 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 }
 
 // GitPush push the changes to the given remote and branch.
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string) error {
 	logrus.Info("Pushing to remote...")
 	gc := GitCommand{
@@ -625,7 +714,6 @@ func gerritNoOpChange(changeID string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-
 }
 
 func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stderr io.Writer) error {
