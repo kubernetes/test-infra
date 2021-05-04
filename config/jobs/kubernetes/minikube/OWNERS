@@ -1,6 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+  - sig-cluster-lifecycle-leads
   - tstromberg
   - afbjorklund
   - sharifelgamal
@@ -11,8 +12,11 @@ reviewers:
   - ilya-zuyev
   - prezha	
 approvers:
+  - sig-cluster-lifecycle-leads
   - tstromberg
   - afbjorklund
   - sharifelgamal
   - medyagh
   - ilya-zuyev
+labels:
+- sig/cluster-lifecycle
