@@ -22,9 +22,9 @@ This is performed by prow service/build clusters maintainer.
    and  `kubernetes-external-secrets_service.yaml` under
    [`config/prow/cluster`](/config/prow/cluster). The deployment file assumes
    using the same service account name as used in step #1
-
-TODO(chaodaiG): recommend use of postsubmit deploy job for managing the
-deployment once this PR is merged.
+2. [Optional but recommended] Create postsubmit deploy job for managing the
+   deployment, for example
+   [post-test-infra-deploy-prow](https://github.com/kubernetes/test-infra/blob/8716584a87c11b3ac4596d4199a00eaa4ce659a0/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L95).
 
 ## Usage (Prow clients)
 
