@@ -122,6 +122,9 @@ type FakeClient struct {
 	// Maps repo name to the list of hooks
 	RepoHooks map[string][]github.Hook
 
+	// A map of invitation id to user repository invitations
+	UserRepoInvitations map[int]github.UserRepoInvitation
+
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
 
@@ -158,14 +161,15 @@ func NewFakeClient() *FakeClient {
 		CommitMap:    make(map[string][]github.RepositoryCommit),
 		RemoteFiles:  make(map[string]map[string]string),
 
-		RepoProjects:       make(map[string][]github.Project),
-		ProjectColumnsMap:  make(map[string][]github.ProjectColumn),
-		ColumnCardsMap:     make(map[int][]github.ProjectCard),
-		ColumnIDMap:        make(map[string]map[int]string),
-		OrgRepoIssueLabels: make(map[string][]github.Label),
-		OrgProjects:        make(map[string][]github.Project),
-		OrgHooks:           make(map[string][]github.Hook),
-		RepoHooks:          make(map[string][]github.Hook),
+		RepoProjects:        make(map[string][]github.Project),
+		ProjectColumnsMap:   make(map[string][]github.ProjectColumn),
+		ColumnCardsMap:      make(map[int][]github.ProjectCard),
+		ColumnIDMap:         make(map[string]map[int]string),
+		OrgRepoIssueLabels:  make(map[string][]github.Label),
+		OrgProjects:         make(map[string][]github.Project),
+		OrgHooks:            make(map[string][]github.Hook),
+		RepoHooks:           make(map[string][]github.Hook),
+		UserRepoInvitations: make(map[int]github.UserRepoInvitation),
 	}
 }
 
@@ -987,5 +991,23 @@ func (f *FakeClient) CreatePullRequestReviewComment(owner, repo string, number i
 	f.PullRequestReviewCommentID++
 	f.PullRequestReviewCommentsAdded = append(f.PullRequestReviewCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, rc.Body))
 	f.PullRequestReviewComments[number] = append(f.PullRequestReviewComments[number], rc)
+	return nil
+}
+
+func (f *FakeClient) ListCurrentUserRepoInvitations() ([]github.UserRepoInvitation, error) {
+	var ret []github.UserRepoInvitation
+	for _, inv := range f.UserRepoInvitations {
+		ret = append(ret, inv)
+	}
+
+	return ret, nil
+}
+
+func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
+	if _, ok := f.UserRepoInvitations[invitationID]; !ok {
+		return fmt.Errorf("couldn't find invitation id: %d", invitationID)
+	}
+
+	delete(f.UserRepoInvitations, invitationID)
 	return nil
 }
