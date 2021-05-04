@@ -18,6 +18,7 @@ package releasenote
 
 import (
 	"fmt"
+	"k8s.io/test-infra/prow/labels"
 	"regexp"
 	"strconv"
 	"strings"
@@ -36,14 +37,6 @@ const (
 	PluginName = "release-note"
 )
 const (
-	// ReleaseNoteLabelNeeded defines the label used when a missing release-note label is blocking the
-	// merge.
-	ReleaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
-	releaseNote               = "release-note"
-	releaseNoteNone           = "release-note-none"
-	releaseNoteActionRequired = "release-note-action-required"
-	deprecationLabel          = "kind/deprecation"
-
 	releaseNoteFormat            = `Adding the "%s" label because no release-note block was detected, please follow our [release note process](https://git.k8s.io/community/contributors/guide/release-notes.md) to remove it.`
 	parentReleaseNoteFormat      = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 	releaseNoteDeprecationFormat = `Adding the "%s" label and removing any existing "%s" label because there is a "%s" label on the PR.`
@@ -52,19 +45,19 @@ const (
 )
 
 var (
-	releaseNoteBody            = fmt.Sprintf(releaseNoteFormat, ReleaseNoteLabelNeeded)
-	parentReleaseNoteBody      = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
-	releaseNoteDeprecationBody = fmt.Sprintf(releaseNoteDeprecationFormat, ReleaseNoteLabelNeeded, releaseNoteNone, deprecationLabel)
+	releaseNoteBody            = fmt.Sprintf(releaseNoteFormat, labels.ReleaseNoteLabelNeeded)
+	parentReleaseNoteBody      = fmt.Sprintf(parentReleaseNoteFormat, labels.ReleaseNote, labels.ReleaseNoteActionRequired)
+	releaseNoteDeprecationBody = fmt.Sprintf(releaseNoteDeprecationFormat, labels.ReleaseNoteLabelNeeded, labels.ReleaseNoteNone, labels.DeprecationLabel)
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
 	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
 
 	allRNLabels = []string{
-		releaseNoteNone,
-		releaseNoteActionRequired,
-		ReleaseNoteLabelNeeded,
-		releaseNote,
+		labels.ReleaseNoteNone,
+		labels.ReleaseNoteActionRequired,
+		labels.ReleaseNoteLabelNeeded,
+		labels.ReleaseNote,
 	}
 
 	releaseNoteRe               = regexp.MustCompile(`(?mi)^/release-note\s*$`)
@@ -79,17 +72,17 @@ func init() {
 
 func helpProvider(_ *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The releasenote plugin implements a release note process that uses a markdown 'release-note' code block to associate a release note with a pull request. Until the 'release-note' block in the pull request body is populated the PR will be assigned the '` + ReleaseNoteLabelNeeded + `' label.
+		Description: `The releasenote plugin implements a release note process that uses a markdown 'release-note' code block to associate a release note with a pull request. Until the 'release-note' block in the pull request body is populated the PR will be assigned the '` + labels.ReleaseNoteLabelNeeded + `' label.
 <br>There are three valid types of release notes that can replace this label:
-<ol><li>PRs with a normal release note in the 'release-note' block are given the label '` + releaseNote + `'.</li>
-<li>PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
-<li>PRs that contain 'action required' in their 'release-note' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
+<ol><li>PRs with a normal release note in the 'release-note' block are given the label '` + labels.ReleaseNote + `'.</li>
+<li>PRs that have a release note of 'none' in the block are given the label '` + labels.ReleaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
+<li>PRs that contain 'action required' in their 'release-note' block are given the label '` + labels.ReleaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
 ` + "To use the plugin, in the pull request body text:\n\n```release-note\n<release note content>\n```",
 	}
 	// NOTE: the other two commands re deprecated, so we're not documenting them
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/release-note-none",
-		Description: "Adds the '" + releaseNoteNone + `' label to indicate that the PR does not warrant a release note. This is deprecated and ideally <a href="https://git.k8s.io/community/contributors/guide/release-notes.md">the release note process</a> should be followed in the PR body instead.`,
+		Description: "Adds the '" + labels.ReleaseNoteNone + `' label to indicate that the PR does not warrant a release note. This is deprecated and ideally <a href="https://git.k8s.io/community/contributors/guide/release-notes.md">the release note process</a> should be followed in the PR body instead.`,
 		WhoCanUse:   "PR Authors and Org Members.",
 		Examples:    []string{"/release-note-none"},
 	})
@@ -125,23 +118,23 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 	var nl string
 	switch {
 	case releaseNoteRe.MatchString(ic.Comment.Body):
-		nl = releaseNote
+		nl = labels.ReleaseNote
 	case releaseNoteNoneRe.MatchString(ic.Comment.Body):
-		nl = releaseNoteNone
+		nl = labels.ReleaseNoteNone
 	case releaseNoteActionRequiredRe.MatchString(ic.Comment.Body):
-		nl = releaseNoteActionRequired
+		nl = labels.ReleaseNoteActionRequired
 	default:
 		return nil
 	}
 
 	// Emit deprecation warning for /release-note and /release-note-action-required.
-	if nl == releaseNote || nl == releaseNoteActionRequired {
+	if nl == labels.ReleaseNote || nl == labels.ReleaseNoteActionRequired {
 		format := "the `/%s` and `/%s` commands have been deprecated.\nPlease edit the `release-note` block in the PR body text to include the release note. If the release note requires additional action include the string `action required` in the release note. For example:\n````\n```release-note\nSome release note with action required.\n```\n````"
-		resp := fmt.Sprintf(format, releaseNote, releaseNoteActionRequired)
+		resp := fmt.Sprintf(format, labels.ReleaseNote, labels.ReleaseNoteActionRequired)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	// Only allow authors and org members to add labels.
+	// Only allow authors and org members to add currentLabels.
 	isMember, err := gc.IsMember(ic.Repo.Owner.Login, ic.Comment.User.Login)
 	if err != nil {
 		return err
@@ -151,44 +144,44 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 
 	if !isMember && !isAuthor {
 		format := "you can only set the release note label to %s if you are the PR author or an org member."
-		resp := fmt.Sprintf(format, releaseNoteNone)
+		resp := fmt.Sprintf(format, labels.ReleaseNoteNone)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	// Don't allow the /release-note-none command if the release-note block contains a valid release note.
 	blockNL := determineReleaseNoteLabel(ic.Issue.Body, labelsSet(ic.Issue.Labels))
-	if blockNL == releaseNote || blockNL == releaseNoteActionRequired {
+	if blockNL == labels.ReleaseNote || blockNL == labels.ReleaseNoteActionRequired {
 		format := "you can only set the release note label to %s if the release-note block in the PR body text is empty or \"none\"."
-		resp := fmt.Sprintf(format, releaseNoteNone)
+		resp := fmt.Sprintf(format, labels.ReleaseNoteNone)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	// Don't allow /release-note-none command if the PR has a 'kind/deprecation'
 	// label.
-	if ic.Issue.HasLabel(deprecationLabel) {
+	if ic.Issue.HasLabel(labels.DeprecationLabel) {
 		format := "you can not set the release note label to \"%s\" because the PR has the label \"%s\"."
-		resp := fmt.Sprintf(format, releaseNoteNone, deprecationLabel)
+		resp := fmt.Sprintf(format, labels.ReleaseNoteNone, labels.DeprecationLabel)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	if !ic.Issue.HasLabel(releaseNoteNone) {
-		if err := gc.AddLabel(org, repo, number, releaseNoteNone); err != nil {
+	if !ic.Issue.HasLabel(labels.ReleaseNoteNone) {
+		if err := gc.AddLabel(org, repo, number, labels.ReleaseNoteNone); err != nil {
 			return err
 		}
 	}
 
-	labels := sets.String{}
+	currentLabels := sets.String{}
 	for _, label := range ic.Issue.Labels {
-		labels.Insert(label.Name)
+		currentLabels.Insert(label.Name)
 	}
-	// Remove all other release-note-* labels if necessary.
+	// Remove all other release-note-* currentLabels if necessary.
 	return removeOtherLabels(
 		func(l string) error {
 			return gc.RemoveLabel(org, repo, number, l)
 		},
-		releaseNoteNone,
+		labels.ReleaseNoteNone,
 		allRNLabels,
-		labels,
+		currentLabels,
 	)
 }
 
@@ -249,14 +242,14 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	var comments []github.IssueComment
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body, prLabels)
 
-	if labelToAdd == ReleaseNoteLabelNeeded {
+	if labelToAdd == labels.ReleaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, prLabels, nil)
 		}
 
-		if prLabels.Has(deprecationLabel) {
-			if !prLabels.Has(ReleaseNoteLabelNeeded) {
+		if prLabels.Has(labels.DeprecationLabel) {
+			if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
 				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteDeprecationBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
@@ -268,8 +261,8 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %v", org, repo, pr.Number, err)
 			}
 			if containsNoneCommand(comments) {
-				labelToAdd = releaseNoteNone
-			} else if !prLabels.Has(ReleaseNoteLabelNeeded) {
+				labelToAdd = labels.ReleaseNoteNone
+			} else if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
 				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
@@ -337,9 +330,9 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 	format := "Failed to remove the label %q from %s/%s#%d."
-	if prLabels.Has(ReleaseNoteLabelNeeded) {
-		if err := gc.RemoveLabel(org, repo, pr.Number, ReleaseNoteLabelNeeded); err != nil {
-			log.WithError(err).Errorf(format, ReleaseNoteLabelNeeded, org, repo, pr.Number)
+	if prLabels.Has(labels.ReleaseNoteLabelNeeded) {
+		if err := gc.RemoveLabel(org, repo, pr.Number, labels.ReleaseNoteLabelNeeded); err != nil {
+			log.WithError(err).Errorf(format, labels.ReleaseNoteLabelNeeded, org, repo, pr.Number)
 		}
 	}
 }
@@ -349,23 +342,23 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 func determineReleaseNoteLabel(body string, prLabels sets.String) string {
 	composedReleaseNote := strings.ToLower(strings.TrimSpace(getReleaseNote(body)))
 	hasNoneNoteInPRBody := noneRe.MatchString(composedReleaseNote)
-	hasDeprecationLabel := prLabels.Has(deprecationLabel)
+	hasDeprecationLabel := prLabels.Has(labels.DeprecationLabel)
 
 	switch {
 	case composedReleaseNote == "" && hasDeprecationLabel:
-		return ReleaseNoteLabelNeeded
-	case composedReleaseNote == "" && prLabels.Has(releaseNoteNone):
-		return releaseNoteNone
+		return labels.ReleaseNoteLabelNeeded
+	case composedReleaseNote == "" && prLabels.Has(labels.ReleaseNoteNone):
+		return labels.ReleaseNoteNone
 	case composedReleaseNote == "":
-		return ReleaseNoteLabelNeeded
+		return labels.ReleaseNoteLabelNeeded
 	case hasNoneNoteInPRBody && hasDeprecationLabel:
-		return ReleaseNoteLabelNeeded
+		return labels.ReleaseNoteLabelNeeded
 	case hasNoneNoteInPRBody:
-		return releaseNoteNone
+		return labels.ReleaseNoteNone
 	case strings.Contains(composedReleaseNote, actionRequiredNote):
-		return releaseNoteActionRequired
+		return labels.ReleaseNoteActionRequired
 	default:
-		return releaseNote
+		return labels.ReleaseNote
 	}
 }
 
@@ -380,7 +373,7 @@ func getReleaseNote(body string) string {
 }
 
 func releaseNoteAlreadyAdded(prLabels sets.String) bool {
-	return prLabels.HasAny(releaseNote, releaseNoteActionRequired, releaseNoteNone)
+	return prLabels.HasAny(labels.ReleaseNote, labels.ReleaseNoteActionRequired, labels.ReleaseNoteNone)
 }
 
 func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comment bool) bool {
@@ -405,8 +398,8 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 			log.WithError(err).Errorf("Failed to list labels on PR #%d (parent of #%d).", parent, pr.Number)
 			continue
 		}
-		if !github.HasLabel(releaseNote, parentLabels) &&
-			!github.HasLabel(releaseNoteActionRequired, parentLabels) {
+		if !github.HasLabel(labels.ReleaseNote, parentLabels) &&
+			!github.HasLabel(labels.ReleaseNoteActionRequired, parentLabels) {
 			notelessParents = append(notelessParents, "#"+strconv.Itoa(parent))
 		}
 	}
@@ -416,13 +409,13 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 		return false
 	}
 
-	if comment && !prLabels.Has(ReleaseNoteLabelNeeded) {
+	if comment && !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
 		comment := plugins.FormatResponse(
 			pr.PullRequest.User.Login,
 			parentReleaseNoteBody,
 			fmt.Sprintf("The following parent PRs have neither the %q nor the %q labels: %s.",
-				releaseNote,
-				releaseNoteActionRequired,
+				labels.ReleaseNote,
+				labels.ReleaseNoteActionRequired,
 				strings.Join(notelessParents, ", "),
 			),
 		)

@@ -591,7 +591,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
 			plugin{name: bugzilla.PluginName, label: labels.InvalidBug, matcher: forbids},
 			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
-			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
+			plugin{name: releasenote.PluginName, label: labels.ReleaseNoteLabelNeeded, matcher: forbids},
 			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
 			plugin{name: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
 			plugin{name: needsrebase.PluginName, label: labels.NeedsRebase, external: true, matcher: forbids},
