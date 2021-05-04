@@ -31,7 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	imagebumper "k8s.io/test-infra/experiment/image-bumper/bumper"
-	"k8s.io/test-infra/prow/cmd/generic-autobumper/prcreator"
+	"k8s.io/test-infra/prow/cmd/generic-autobumper/bumper"
 
 	"sigs.k8s.io/yaml"
 )
@@ -49,7 +49,7 @@ var (
 	imageMatcher = regexp.MustCompile(`(?s)^.+image:(.+):(v[a-zA-Z0-9_.-]+)`)
 )
 
-var _ prcreator.PRHandler = &client{}
+var _ bumper.PRHandler = (*client)(nil)
 
 type client struct {
 	o        *Options
@@ -103,8 +103,6 @@ type Options struct {
 	TargetVersion string `yaml:"targetVersion"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []Prefix `yaml:"prefixes"`
-	// Whether to skip creating the pull request for this bump.
-	SkipPullRequest bool `yaml:"skipPullRequest"`
 }
 
 // Prefix is the information needed for each prefix being bumped.
@@ -125,7 +123,7 @@ type Prefix struct {
 	ConsistentImages bool `yaml:"consistentImages"`
 }
 
-func parseOptions() (*Options, *prcreator.Options, error) {
+func parseOptions() (*Options, *bumper.Options, error) {
 	var config string
 	var labelsOverride []string
 	var skipPullRequest bool
@@ -136,7 +134,7 @@ func parseOptions() (*Options, *prcreator.Options, error) {
 	flag.Parse()
 
 	var o Options
-	var pro prcreator.Options
+	var pro bumper.Options
 	data, err := ioutil.ReadFile(config)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to read in config file, %s", config)
@@ -217,15 +215,7 @@ type imageBumper interface {
 func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *Options) (map[string]string, error) {
 	var tagPicker func(string, string, string) (string, error)
 	var err error
-	// Check whether the path is under the given path
-	isUnderPath := func(name string, paths []string) bool {
-		for _, p := range paths {
-			if p != "" && strings.HasPrefix(name, p) {
-				return true
-			}
-		}
-		return false
-	}
+
 	switch o.TargetVersion {
 	case latestVersion:
 		tagPicker = imageBumperCli.FindLatestTag
@@ -400,19 +390,6 @@ func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
 	}
 	var inconsistentBumps []string
 	var consistentBumps []string
-	// isBumpedPrefix takes a prefix and a map of new tags resulted from bumping
-	// : the images using those tags and itterates over the map to find if the
-	// prefix is found. If it is, this means it has been bumped.
-	isBumpedPrefix := func(prefix Prefix, versions map[string][]string) (string, bool) {
-		for tag, imageList := range versions {
-			for _, image := range imageList {
-				if strings.HasPrefix(image, prefix.Prefix) {
-					return tag, true
-				}
-			}
-		}
-		return "", false
-	}
 	for _, prefix := range prefixes {
 		tag, bumped := isBumpedPrefix(prefix, versions)
 		if !prefix.ConsistentImages && bumped {
@@ -442,45 +419,6 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 		variant   string
 		component string
 	}
-	// Extract image tag from image name
-	tagFromName := func(name string) string {
-		parts := strings.Split(name, ":")
-		if len(parts) < 2 {
-			return ""
-		}
-		return parts[1]
-	}
-	// Extract prow component name from image
-	componentFromName := func(name string) string {
-		s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
-		return s[len(s)-1]
-	}
-	formatTagDate := func(d string) string {
-		if len(d) != 8 {
-			return d
-		}
-		// &#x2011; = U+2011 NON-BREAKING HYPHEN, to prevent line wraps.
-		return fmt.Sprintf("%s&#x2011;%s&#x2011;%s", d[0:4], d[4:6], d[6:8])
-	}
-	// commitToRef converts git describe part of a tag to a ref (commit or tag).
-	//
-	// v0.0.30-14-gdeadbeef => deadbeef
-	// v0.0.30 => v0.0.30
-	// deadbeef => deadbeef
-	commitToRef := func(commit string) string {
-		tag, _, commit := imagebumper.DeconstructCommit(commit)
-		if commit != "" {
-			return commit
-		}
-		return tag
-	}
-	// Format variant for PR summary
-	formatVariant := func(variant string) string {
-		if variant == "" {
-			return ""
-		}
-		return fmt.Sprintf("(%s)", strings.TrimPrefix(variant, "-"))
-	}
 	versions := map[string][]delta{}
 	for image, newTag := range images {
 		if !strings.HasPrefix(image, prefix) {
@@ -507,11 +445,11 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 
 	switch {
 	case len(versions) == 0:
-		return fmt.Sprintf("No %s changes.", name)
+		return fmt.Sprintf("No %s changes.", prefix)
 	case len(versions) == 1 && summarise:
 		for k, v := range versions {
 			s := strings.Split(k, ":")
-			return fmt.Sprintf("%s changes: %s/compare/%s...%s (%s → %s)", name, repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate))
+			return fmt.Sprintf("%s changes: %s/compare/%s...%s (%s → %s)", prefix, repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate))
 		}
 	default:
 		changes := make([]string, 0, len(versions))
@@ -526,7 +464,7 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 				repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate), strings.Join(names, ", ")))
 		}
 		sort.Slice(changes, func(i, j int) bool { return strings.Split(changes[i], "|")[1] < strings.Split(changes[j], "|")[1] })
-		return fmt.Sprintf("Multiple distinct %s changes:\n\nCommits | Dates | Images\n--- | --- | ---\n%s\n", name, strings.Join(changes, "\n"))
+		return fmt.Sprintf("Multiple distinct %s changes:\n\nCommits | Dates | Images\n--- | --- | ---\n%s\n", prefix, strings.Join(changes, "\n"))
 	}
 	panic("unreachable!")
 }
@@ -541,7 +479,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
-	if err := prcreator.Run(pro, &client{o: o}); err != nil {
+	if err := bumper.Run(pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }
