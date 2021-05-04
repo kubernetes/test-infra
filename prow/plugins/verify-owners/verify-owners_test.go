@@ -88,6 +88,52 @@ reviewers:
 labels:
 - lgtm
 `),
+	"slackDisplayNameInSecContacts": []byte(`approvers:
+- jdoe
+reviewers:
+- alice
+- bob
+security_contacts:
+  alice:
+    email: foo@bar.com
+    slack_id: alice
+`),
+	"slackIDInSecContacts": []byte(`approvers:
+- jdoe
+reviewers:
+- alice
+- bob
+security_contacts:
+  alice:
+    email: foo@bar.com
+    slack_id: U123ABC
+`),
+	"EmailOnlyInSecContacts": []byte(`approvers:
+- jdoe
+reviewers:
+- alice
+- bob
+security_contacts:
+  alice:
+    email: foo@bar.com
+`),
+	"slackIDOnlyInSecContacts": []byte(`approvers:
+- jdoe
+reviewers:
+- alice
+- bob
+security_contacts:
+  alice:
+    slack_id: U123ABC
+`),
+	"EmptyEntryInSecContacts": []byte(`approvers:
+- jdoe
+reviewers:
+- alice
+- bob
+security_contacts:
+  alice: {}
+`),
 	"invalidLabelsFilters": []byte(`filters:
   ".*":
     approvers:
@@ -442,6 +488,36 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			filesChangedAfterPR: []string{"OWNERS_ALIASES"},
 			addedContent:        "toBeAddedAlias",
 			shouldLabel:         false,
+		},
+		{
+			name:         "security_contacts includes slack display name instead of id",
+			filesChanged: []string{"OWNERS"},
+			ownersFile:   "slackDisplayNameInSecContacts",
+			shouldLabel:  true,
+		},
+		{
+			name:         "security_contacts includes slack id",
+			filesChanged: []string{"OWNERS"},
+			ownersFile:   "slackIDInSecContacts",
+			shouldLabel:  false,
+		},
+		{
+			name:         "security_contacts includes email only",
+			filesChanged: []string{"OWNERS"},
+			ownersFile:   "EmailOnlyInSecContacts",
+			shouldLabel:  false,
+		},
+		{
+			name:         "security_contacts includes Slack ID only",
+			filesChanged: []string{"OWNERS"},
+			ownersFile:   "slackIDOnlyInSecContacts",
+			shouldLabel:  false,
+		},
+		{
+			name:         "security_contacts has empty contact info",
+			filesChanged: []string{"OWNERS"},
+			ownersFile:   "EmptyEntryInSecContacts",
+			shouldLabel:  true,
 		},
 	}
 	lg, c, err := clients()

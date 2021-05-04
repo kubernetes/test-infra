@@ -367,6 +367,7 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 	var reviewers []string
 	var approvers []string
 	var labels []string
+	var securityContacts map[string]repoowners.ContactInfo
 
 	// by default we bind errors to line 1
 	lineNumber := 1
@@ -404,12 +405,16 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 			reviewers = append(reviewers, config.Reviewers...)
 			approvers = append(approvers, config.Approvers...)
 			labels = append(labels, config.Labels...)
+			for user, contactInfo := range config.SecurityContacts {
+				securityContacts[user] = contactInfo
+			}
 		}
 	} else {
 		// it's a SimpleConfig
 		reviewers = simple.Config.Reviewers
 		approvers = simple.Config.Approvers
 		labels = simple.Config.Labels
+		securityContacts = simple.Config.SecurityContacts
 	}
 	// Check labels against ban list
 	if sets.NewString(labels...).HasAny(bannedLabels...) {
@@ -425,6 +430,30 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 			fmt.Sprintf("No approvers defined in this root directory %s file.", filenames.Owners),
 		}, nil
 	}
+
+	// validate security contacts
+	slackRe := regexp.MustCompile(`[UW][A-Z0-9]+`)
+	for user, contactInfo := range securityContacts {
+		if &contactInfo == nil {
+			return &messageWithLine{
+				lineNumber,
+				fmt.Sprintf("security_contact %s has no contact details", user),
+			}, nil
+		}
+		if contactInfo.Email == "" && contactInfo.SlackID == "" {
+			return &messageWithLine{
+				lineNumber,
+				fmt.Sprintf("security_contact %s requires non-empty email or Slack ID", user),
+			}, nil
+		}
+		if len(contactInfo.SlackID) > 0 && slackRe.MatchString(contactInfo.SlackID) == false {
+			return &messageWithLine{
+				lineNumber,
+				fmt.Sprintf("security_contact %s's Slack ID does not match the expected format", user),
+			}, nil
+		}
+	}
+
 	owners := append(reviewers, approvers...)
 	return nil, owners
 }
