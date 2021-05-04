@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -999,6 +1000,10 @@ func (f *FakeClient) ListCurrentUserRepoInvitations() ([]github.UserRepoInvitati
 	for _, inv := range f.UserRepoInvitations {
 		ret = append(ret, inv)
 	}
+
+	sort.Slice(ret, func(p, q int) bool {
+		return ret[p].InvitationID < ret[q].InvitationID
+	})
 
 	return ret, nil
 }

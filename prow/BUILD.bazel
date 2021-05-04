@@ -28,6 +28,7 @@ prow_push(
             "hmac",
             "horologium",
             "initupload",
+            "invitations-accepter",
             "jenkins-operator",
             "mkpj",
             "mkpod",
