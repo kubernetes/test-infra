@@ -131,8 +131,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: K8S_AZURE_LOADBALANCE_SKU
-          value: "basic"
         - name: AZURE_LOADBALANCER_SKU
           value: "basic"
     annotations:
@@ -193,8 +191,6 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: K8S_AZURE_LOADBALANCE_SKU
-              value: "standard"
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
     annotations:
@@ -255,8 +251,6 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: K8S_AZURE_LOADBALANCE_SKU
-              value: "standard"
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
     annotations:
@@ -301,8 +295,6 @@ presubmits:
           env:
             - name: TEST_CCM
               value: "true"
-            - name: K8S_AZURE_LOADBALANCE_SKU
-              value: "standard"
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
     annotations:
@@ -383,8 +375,6 @@ periodics:
       - --test-ccm
       - --ginkgo-parallel=30
       env:
-      - name: K8S_AZURE_LOADBALANCE_SKU
-        value: "standard"
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       securityContext:
@@ -449,8 +439,6 @@ periodics:
       env:
       - name: CCM_E2E_ARGS
         value: "-ginkgo.focus=autoscaler"
-      - name: K8S_AZURE_LOADBALANCE_SKU
-        value: "standard"
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
   annotations:
@@ -513,8 +501,6 @@ periodics:
       env:
       - name: CCM_E2E_ARGS
         value: "-ginkgo.focus=autoscaler"
-      - name: K8S_AZURE_LOADBALANCE_SKU
-        value: "standard"
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
   annotations:
@@ -697,8 +683,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private # Requires preset-k8s-ssh label
       - name: KUBE_SSH_USER
         value: azureuser
-      - name: K8S_AZURE_LOADBALANCE_SKU
-        value: "basic"
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
   annotations:
@@ -757,8 +741,6 @@ periodics:
       - --test-ccm
       - --ginkgo-parallel=30
       env:
-      - name: K8S_AZURE_LOADBALANCE_SKU
-        value: "standard"
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       securityContext:
