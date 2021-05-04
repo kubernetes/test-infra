@@ -262,42 +262,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     exempt_branches:
-        release-1.18:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
-        release-1.19:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
-        release-1.20:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
-        release-1.21:
-            - cpanato # Release Manager
-            - feiskyer # Release Manager
-            - hasheddan # subproject owner / Release Manager
-            - idealhack # Release Manager
-            - puerco # Release Manager
-            - saschagrunert # subproject owner / Release Manager
-            - justaugustus # subproject owner / Release Manager
-            - xmudrii # Release Manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -313,19 +277,15 @@ slack:
   - repos:
     - kubernetes/sig-release
     channels:
-    - sig-release
+    - release-management
     exempt_users:
     - k8s-ci-robot
   - repos:
     - kubernetes/release
     channels:
-    - sig-release
+    - release-management
     exempt_users:
     - k8s-ci-robot
-    exempt_branches:
-        prototype:
-            - justaugustus # k8s-infra prototype Branch Manager
-            - tpepper # k8s-infra prototype Branch Manager
   - repos:
     - kubernetes/k8s.io
     channels:
