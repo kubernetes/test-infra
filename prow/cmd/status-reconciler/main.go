@@ -136,7 +136,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, nil, "", false); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 

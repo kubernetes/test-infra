@@ -106,7 +106,7 @@ func main() {
 	}
 
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Start(o.pluginConfig, false); err != nil {
+	if err := pa.Start(o.pluginConfig, nil, "", false); err != nil {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
 
