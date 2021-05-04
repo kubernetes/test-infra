@@ -286,10 +286,6 @@ slack:
     - release-management
     exempt_users:
     - k8s-ci-robot
-    exempt_branches:
-        prototype:
-            - justaugustus # k8s-infra prototype Branch Manager
-            - tpepper # k8s-infra prototype Branch Manager
   - repos:
     - kubernetes/k8s.io
     channels:
