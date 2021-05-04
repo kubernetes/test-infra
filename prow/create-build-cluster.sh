@@ -25,12 +25,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-
 # Specific to Prow instance
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
 CONTROL_PLANE_SA="${CONTROL_PLANE_SA:-}"
-GCS_BUCKET="${GCS_BUCKET:-gs://${PROW_INSTANCE_NAME}}"
 
 PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com}"
 PROW_DEPLOYMENT_DIR="${PROW_DEPLOYMENT_DIR:-./config/prow/cluster}"
@@ -42,6 +39,7 @@ TEAM="${TEAM:-}"
 PROJECT="${PROJECT:-${PROW_INSTANCE_NAME}-build-${TEAM}}"
 ZONE="${ZONE:-us-west1-b}"
 CLUSTER="${CLUSTER:-${PROJECT}}"
+GCS_BUCKET="${GCS_BUCKET:-gs://${PROJECT}}"
 
 # Only needed for creating cluster
 MACHINE="${MACHINE:-n1-standard-8}"
@@ -67,12 +65,26 @@ if ! (${SED} --version 2>&1 | grep -q GNU); then
   return 1
 fi
 
+# Create temp dir to work in and clone k/t-i
+
+origdir="$( pwd -P )"
+tempdir="$( mktemp -d )"
+echo
+echo "Temporary files produced are stored at: ${tempdir}"
+echo
+cd "${tempdir}"
+git clone https://github.com/kubernetes/test-infra --depth=1
+cd "${origdir}"
+
+ROOT_DIR="${tempdir}/test-infra"
+
 function main() {
   parseArgs "$@"
   prompt "Create project" createProject
   prompt "Create/ensure GCS job result bucket" ensureBucket
   prompt "Create cluster" createCluster
-  prompt "Create a SA and secret for uploading results to GCS" createUploadSASecret
+  prompt "Create a service account for uploading results to GCS" createUploadSA
+  prompt "Generate necessary core Prow configuration" genConfig
   prompt "Generate kubeconfig credentials for Prow" gencreds
   echo "All done!"
 }
@@ -151,15 +163,26 @@ function ensureBucket() {
     fi
   fi
 }
-function createUploadSASecret() {
+function createUploadSA() {
   getClusterCreds
-  local sa="prow-pod-utils"
+  local sa="prowjob-default-sa"
   local saFull="${sa}@${PROJECT}.iam.gserviceaccount.com"
-  # Create a service account for uploading to GCS.
-  gcloud beta iam service-accounts create "${sa}" --project="${PROJECT}" --description="SA for Prow's pod utilities to use to upload job results to GCS." --display-name="Prow Pod Utilities"
-  # Generate private key and attach to the service account.
-  gcloud iam service-accounts keys create "sa-key.json" --project="${PROJECT}" --iam-account="${saFull}"
-  kubectl create secret generic "service-account" -n "test-pods" --from-file="service-account.json=sa-key.json"
+  # Create a GCP service account for uploading to GCS
+  gcloud beta iam service-accounts create "${sa}" --project="${PROJECT}" --description="Default SA for ProwJobs to use to upload job results to GCS." --display-name="ProwJob default SA"
+  # Ensure workload identity is enabled on the cluster
+  "${ROOT_DIR}/workload-identity/enable-workload-identity.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}"
+  # Create a k8s service account to associate with the GCP service account
+  kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    iam.gke.io/gcp-service-account: ${saFull}
+  name: ${sa}
+  namespace: test-pods
+EOF
+  echo "Binding GCP service account with k8s service account via workload identity. Propagation and validation may take a few minutes..."
+  "${ROOT_DIR}/workload-identity/bind-service-accounts.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}" test-pods "${sa}" "${saFull}"
 
   # Try to authorize SA to upload to GCS_BUCKET. If this fails, the bucket if probably a shared result bucket and oncall will need to handle.
   if ! gsutil iam ch "serviceAccount:${saFull}:roles/storage.objectAdmin" "${GCS_BUCKET}"; then
@@ -168,16 +191,29 @@ function createUploadSASecret() {
     echo "If this is a default job result bucket, please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
     echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
     echo
-    echo "Press any key to aknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
+    echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
     pause
   fi
 }
 
-origdir="$( pwd -P )"
-tempdir="$( mktemp -d )"
-echo
-echo "Temporary files produced are stored at: ${tempdir}"
-echo
+function genConfig() {
+  # TODO: Automatically inject this into config.yaml at the same time as kubeconfig credential setup (which auto creates a CL we can include this in).
+  echo
+  echo "The following changes should be made to the Prow instance's config.yaml file (Probably located at ${PROW_DEPLOYMENT_DIR}/../config.yaml)."
+  echo
+  echo "Append the following entry to the end of the slice at field 'plank.default_decoration_config_entries': "
+  cat <<EOF
+  - cluster: $(cluster_alias)
+    config:
+      gcs_configuration:
+        bucket: "${GCS_BUCKET#"gs://"}"
+      default_service_account_name: "prowjob-default-sa" # Use workload identity
+      gcs_credentials_secret: ""                         # rather than service account key secret
+EOF
+  echo
+  echo "Press any key to acknowledge... This doesn't need to be merged to continue this script, but it needs to be done before configuring jobs for the cluster."
+  pause
+}
 
 # generate a JWT kubeconfig file that we can merge into prow's kubeconfig secret so that Prow can schedule pods
 function gencreds() {
@@ -185,9 +221,7 @@ function gencreds() {
   local clusterAlias="$(cluster_alias)"
   local outfile="${OUT_FILE}"
 
-  cd "${tempdir}"
-  git clone https://github.com/kubernetes/test-infra --depth=1
-  cd test-infra
+  cd "${ROOT_DIR}"
   go run ./gencred --context="$(kubectl config current-context)" --name="${clusterAlias}" --output="${origdir}/${outfile}" || (
     echo "gencred failed:" >&2
     cat "$origdir/$outfile" >&2
