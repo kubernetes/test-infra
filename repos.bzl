@@ -1973,8 +1973,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/google/gofuzz",
-        sum = "h1:Hsa8mG0dQ46ij8Sl2AYJDUv1oA9/d6Vk+3LG99Oe02g=",
-        version = "v1.1.0",
+        sum = "h1:VcIYpAGBae3Z6BVncE0OnTE/ZjlDXqtYhOZky88neLM=",
+        version = "v1.2.1-0.20210504230335-f78f29fc09ea",
     )
 
     go_repository(
