@@ -9,7 +9,7 @@ presubmits:
       timeout: 3h
     path_alias: k8s.io/kubernetes
     branches:
-    - master
+    - release-1.19
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.19
         command:
         - runner.sh
         - kubetest
@@ -41,8 +41,8 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.21
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_19.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
@@ -51,10 +51,7 @@ presubmits:
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-windows-dockershim
-      testgrid-num-columns-recent: '30'
+
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
@@ -64,7 +61,7 @@ presubmits:
       timeout: 3h
     path_alias: k8s.io/kubernetes
     branches:
-    - master
+    - release-1.19
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -75,7 +72,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.19
         command:
         - runner.sh
         - kubetest
@@ -96,8 +93,8 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.21
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
+        - --aksengine-orchestratorRelease=1.19
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_19.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
@@ -106,10 +103,7 @@ presubmits:
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-windows-containerd
-      testgrid-num-columns-recent: '30'
+
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim
     decorate: true
     decoration_config:
@@ -119,7 +113,7 @@ presubmits:
     run_if_changed: 'azure.*\.go$'
     path_alias: k8s.io/kubernetes
     branches:
-    - master
+    - release-1.19
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -133,7 +127,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.19
         command:
         - runner.sh
         - kubetest
@@ -154,7 +148,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
@@ -168,10 +162,7 @@ presubmits:
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim
-      testgrid-num-columns-recent: '30'
+
   - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
     decorate: true
     decoration_config:
@@ -181,7 +172,7 @@ presubmits:
     run_if_changed: 'azure.*\.go$'
     path_alias: k8s.io/kubernetes
     branches:
-    - master
+    - release-1.19
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -230,7 +221,3 @@ presubmits:
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
-      testgrid-num-columns-recent: '30'

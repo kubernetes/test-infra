@@ -37,7 +37,9 @@ generate_presubmit_annotations() {
 EOF
 }
 
-readonly kubekins_e2e_image="gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1"
+# we need to define the full image URL so it can be autobumped
+tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master"
+kubekins_e2e_image="${tmp/\-master/}"
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
@@ -266,7 +268,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -313,7 +315,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -365,7 +367,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -419,7 +421,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -470,7 +472,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
