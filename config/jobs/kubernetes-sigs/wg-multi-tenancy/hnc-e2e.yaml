@@ -1,10 +1,10 @@
 # For more information on these tests, see
-# https://github.com/kubernetes-sigs/multi-tenancy/tree/master/incubator/hnc/hack/prow-run-e2e.sh.
+# https://github.com/kubernetes-sigs/hierarchical-namespaces/tree/master/hack/prow-run-e2e.sh.
 #
 # When updating this test, please update the periodics (below) in the same way
 # if applicable.
 postsubmits:
-  kubernetes-sigs/multi-tenancy:
+  kubernetes-sigs/hierarchical-namespaces:
   - name: hnc-postsubmit-test
     annotations:
       testgrid-dashboards: wg-multi-tenancy-hnc
@@ -15,8 +15,8 @@ postsubmits:
     decoration_config:
       timeout: 1h
     max_concurrency: 5 # No idea what this should be for HNC
-    path_alias: sigs.k8s.io/multi-tenancy
-    run_if_changed: "incubator/hnc/.*"
+    path_alias: sigs.k8s.io/hierarchical-namespaces
+    run_if_changed: ".*"
     labels:
       preset-kind-volume-mounts: "true"
       preset-dind-enabled: "true"
@@ -24,7 +24,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/krte:v20210418-e5f251e-master
         # workdir appears to be the base of the cloned repo
-        command: ["wrapper.sh", "incubator/hnc/hack/prow-run-e2e.sh"]
+        command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
         securityContext:
           privileged: true # Required for docker-in-docker
         resources:
@@ -54,13 +54,13 @@ periodics:
     # For periodics, the first repo is the workdir:
     # https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md#writing-a-prowjob-that-uses-pod-utilities
   - org: kubernetes-sigs
-    repo: multi-tenancy
+    repo: hierarchical-namespaces
     base_ref: master
-    path_alias: sigs.k8s.io/multi-tenancy
+    path_alias: sigs.k8s.io/hierarchical-namespaces
   spec:
     containers:
     - image: gcr.io/k8s-testimages/krte:v20210418-e5f251e-master
-      command: ["wrapper.sh", "incubator/hnc/hack/prow-run-e2e.sh"]
+      command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker
       resources:
