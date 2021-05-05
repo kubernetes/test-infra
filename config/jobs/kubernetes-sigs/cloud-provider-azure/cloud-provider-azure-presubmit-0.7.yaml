@@ -131,8 +131,6 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: K8S_AZURE_LOADBALANCE_SKU
-                value: "basic"
               - name: AZURE_LOADBALANCER_SKU
                 value: "basic"
       annotations:
@@ -193,8 +191,6 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: K8S_AZURE_LOADBALANCE_SKU
-                value: "standard"
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
       annotations:
@@ -255,8 +251,6 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: K8S_AZURE_LOADBALANCE_SKU
-                value: "standard"
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
       annotations:
