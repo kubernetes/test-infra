@@ -129,6 +129,7 @@ lgtm:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/k8s-container-image-promoter
