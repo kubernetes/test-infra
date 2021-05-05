@@ -46,14 +46,14 @@ func TestOptions_Validate(t *testing.T) {
 				config: configflagutil.ConfigOptions{
 					ConfigPath: "dummy",
 				},
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				github: flagutil.GitHubOptions{TokenPath: "fake", ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "no config",
 			opt: options{
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				github: flagutil.GitHubOptions{TokenPath: "fake", ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: true,
 		},
@@ -63,19 +63,33 @@ func TestOptions_Validate(t *testing.T) {
 				config: configflagutil.ConfigOptions{
 					ConfigPath: "dummy",
 				},
+				github: flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
 		},
 		{
-			name: "override default tokens allowed",
+			name: "legacy override default tokens allowed only when new-style options are default)",
 			opt: options{
 				config: configflagutil.ConfigOptions{
 					ConfigPath: "dummy",
 				},
 				tokens:     5000,
 				tokenBurst: 200,
+				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
+		},
+		{
+			name: "legacy override default tokens not allowed with new-style options",
+			opt: options{
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
+				tokens:     5000,
+				tokenBurst: 200,
+				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens + 100, ThrottleAllowBurst: defaultBurst + 10},
+			},
+			expectedErr: true,
 		},
 	}
 
