@@ -121,16 +121,15 @@ func TestOptions(t *testing.T) {
 			args: []string{"--config-path=foo", "--fix-team-members"},
 		},
 		{
-			name: "allow disabled throttle",
+			name: "allow legacy disabled throttle",
 			args: []string{"--config-path=foo", "--tokens=0"},
 			expected: &options{
-				config:        "foo",
-				minAdmins:     defaultMinAdmins,
-				requireSelf:   true,
-				maximumDelta:  defaultDelta,
-				tokensPerHour: 0,
-				tokenBurst:    defaultBurst,
-				logLevel:      "info",
+				config:       "foo",
+				minAdmins:    defaultMinAdmins,
+				requireSelf:  true,
+				maximumDelta: defaultDelta,
+				tokenBurst:   defaultBurst,
+				logLevel:     "info",
 			},
 		},
 		{
@@ -180,18 +179,20 @@ func TestOptions(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		var actual options
-		err := actual.parseArgs(flags, tc.args)
-		actual.github = flagutil.GitHubOptions{}
-		switch {
-		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to return an error", tc.name)
-		case err != nil && tc.expected != nil:
-			t.Errorf("%s: unexpected error: %v", tc.name, err)
-		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: got incorrect options: %v", tc.name, cmp.Diff(actual, *tc.expected))
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actual options
+			err := actual.parseArgs(flags, tc.args)
+			actual.github = flagutil.GitHubOptions{}
+			switch {
+			case err == nil && tc.expected == nil:
+				t.Errorf("%s: failed to return an error", tc.name)
+			case err != nil && tc.expected != nil:
+				t.Errorf("%s: unexpected error: %v", tc.name, err)
+			case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
+				t.Errorf("%s: got incorrect options: %v", tc.name, cmp.Diff(actual, *tc.expected, cmp.AllowUnexported(options{}, flagutil.Strings{}, flagutil.GitHubOptions{})))
+			}
+		})
 	}
 }
 
