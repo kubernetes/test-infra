@@ -1220,7 +1220,7 @@ func TestVerifyOwnersPresence(t *testing.T) {
 func TestOptions(t *testing.T) {
 
 	var defaultGitHubOptions flagutil.GitHubOptions
-	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AddCustomizedFlags(flag.NewFlagSet("", flag.ContinueOnError), throttlerDefaults)
 	defaultGitHubOptions.AllowAnonymous = true
 
 	StringsFlag := func(vals []string) flagutil.Strings {
