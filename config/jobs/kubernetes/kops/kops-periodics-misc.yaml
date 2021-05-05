@@ -51,7 +51,7 @@ periodics:
       command:
       - runner.sh
       args:
-      - ./tests/e2e/scenarios/upgrade/run-test
+      - ./tests/e2e/scenarios/k8s-upgrade/run-test.sh
       env:
       - name: CLOUD_PROVIDER
         value: aws
@@ -68,3 +68,49 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-upgrade
+- interval: 2h
+  name: e2e-kops-aws-misc-kops-upgrade
+  always_run: false
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/kops-upgrade/run-test.sh
+      - v1.20.0 # kops version
+      - v1.20.6 # k8s version
+      env:
+      - name: CLOUD_PROVIDER
+        value: aws
+      - name: CLUSTER_NAME
+        value: e2e-f9b0e6b3f9-a6ae4.test-cncf-aws.k8s.io
+      - name: KOPS_STATE_STORE
+        value: s3://k8s-kops-prow
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
+    testgrid-days-of-results: "30"
+    testgrid-tab-name: kops-aws-kops-upgrade
