@@ -17,6 +17,9 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-test-release-0-6
   - name: pull-cluster-api-provider-aws-build-release-0-6
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.6
     always_run: true
     optional: false
     decorate: true
