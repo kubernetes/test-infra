@@ -29,23 +29,20 @@ func TestGitHubOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name                    string
 		in                      *GitHubOptions
-		expectedTokenPath       string
 		expectedGraphqlEndpoint string
 		expectedErr             bool
 	}{
 		{
-			name:                    "when no endpoints, sets github token path and graphql endpoint",
+			name:                    "when no endpoints, sets graphql endpoint",
 			in:                      &GitHubOptions{},
-			expectedTokenPath:       DefaultGitHubTokenPath,
 			expectedGraphqlEndpoint: github.DefaultGraphQLEndpoint,
 			expectedErr:             false,
 		},
 		{
-			name: "when empty endpoint, sets github token path and graphql endpoint",
+			name: "when empty endpoint, sets graphql endpoint",
 			in: &GitHubOptions{
 				endpoint: NewStrings(""),
 			},
-			expectedTokenPath:       DefaultGitHubTokenPath,
 			expectedGraphqlEndpoint: github.DefaultGraphQLEndpoint,
 			expectedErr:             false,
 		},
@@ -66,9 +63,6 @@ func TestGitHubOptions_Validate(t *testing.T) {
 			}
 			if !testCase.expectedErr && err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-			}
-			if testCase.expectedTokenPath != testCase.in.TokenPath {
-				t.Errorf("%s: unexpected token path", testCase.name)
 			}
 			if testCase.expectedGraphqlEndpoint != testCase.in.graphqlEndpoint {
 				t.Errorf("%s: unexpected graphql endpoint", testCase.name)
