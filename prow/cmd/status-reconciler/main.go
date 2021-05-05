@@ -56,8 +56,10 @@ type options struct {
 	storage                   prowflagutil.StorageClientOptions
 	instrumentationOptions    prowflagutil.InstrumentationOptions
 
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
 	tokenBurst    int
 	tokensPerHour int
+
 	// statusURI where Status-reconciler stores last known state, i.e. configuration.
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
@@ -77,9 +79,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.addedPresubmitDenylistAll, "denylist-all", "Org or org/repo to ignore reconciling, set more than once to add more.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "[Will be deprecated after May 2021] Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.instrumentationOptions, &o.config} {
+	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable). DEPRECATED: use --github-hourly-tokens")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
+	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -87,6 +90,17 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
+	if o.tokensPerHour > 0 {
+		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
+		if o.github.ThrottleHourlyTokens > 0 && o.github.ThrottleHourlyTokens != defaultTokens {
+			// Both options were explicitly specified, use the old form for now
+			o.github.ThrottleHourlyTokens = o.tokensPerHour
+			if o.github.ThrottleAllowBurst > o.github.ThrottleHourlyTokens {
+				o.github.ThrottleAllowBurst = o.github.ThrottleHourlyTokens
+			}
+		}
+	}
+
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
@@ -143,9 +157,6 @@ func main() {
 	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
-	}
-	if o.tokensPerHour > 0 {
-		githubClient.Throttle(o.tokensPerHour, o.tokenBurst)
 	}
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
