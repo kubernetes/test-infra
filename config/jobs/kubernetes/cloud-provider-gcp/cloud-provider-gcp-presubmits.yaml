@@ -54,3 +54,20 @@ presubmits:
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
           kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down;
+  - name: cloud-provider-gcp-verify-all
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210412-176e4b6-master
+          command:
+            - runner.sh
+            - ./tools/verify-all.sh
