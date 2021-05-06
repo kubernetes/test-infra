@@ -15,7 +15,7 @@ prow_image(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/experiment/invitations-accepter",
+    importpath = "k8s.io/test-infra/prow/cmd/invitations-accepter",
     visibility = ["//visibility:private"],
     deps = [
         "//prow/config/secret:go_default_library",
