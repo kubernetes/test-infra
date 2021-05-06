@@ -17,6 +17,7 @@ limitations under the License.
 package plugins
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -184,11 +185,11 @@ type Agent struct {
 }
 
 // NewAgent bootstraps a new config.Agent struct from the passed dependencies.
-func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, githubOrg string, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
 	logger = logger.WithField("plugin", plugin)
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
-	gitHubClient := clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)
+	gitHubClient := &githubV4OrgAddingWrapper{org: githubOrg, Client: clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)}
 	return Agent{
 		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
@@ -492,4 +493,13 @@ func NewMetrics() *Metrics {
 	return &Metrics{
 		ConfigMapGauges: configMapSizeGauges,
 	}
+}
+
+type githubV4OrgAddingWrapper struct {
+	org string
+	github.Client
+}
+
+func (c *githubV4OrgAddingWrapper) Query(ctx context.Context, q interface{}, args map[string]interface{}) error {
+	return c.QueryWithGitHubAppsSupport(ctx, q, args, c.org)
 }

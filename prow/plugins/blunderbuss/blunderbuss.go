@@ -131,18 +131,9 @@ type repoownersClient interface {
 	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
-type githubV4OrgAddingWrapper struct {
-	org string
-	github.Client
-}
-
-func (c *githubV4OrgAddingWrapper) Query(ctx context.Context, q interface{}, args map[string]interface{}) error {
-	return c.QueryWithGitHubAppsSupport(ctx, q, args, c.org)
-}
-
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
-		&githubV4OrgAddingWrapper{org: pre.Repo.Owner.Login, Client: pc.GitHubClient},
+		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
 		pc.PluginConfig.Blunderbuss,
@@ -172,7 +163,7 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 
 func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleGenericComment(
-		&githubV4OrgAddingWrapper{org: ce.Repo.Owner.Login, Client: pc.GitHubClient},
+		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
 		pc.PluginConfig.Blunderbuss,
