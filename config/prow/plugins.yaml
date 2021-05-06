@@ -1032,6 +1032,10 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/hierarchical-namespaces:
+    plugins:
+    - milestone
+
   containerd/cri:
     plugins:
     - assign
