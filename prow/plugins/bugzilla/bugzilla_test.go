@@ -1837,6 +1837,10 @@ func TestBugIDFromTitle(t *testing.T) {
 			title:       "Bug 34: Revert: \"Bug 12: Revert default\"",
 			expectedNum: 34,
 		},
+		{
+			title:       "Bug  34: A title with multiple whitespaces between Bug and number",
+			expectedNum: 34,
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.title, func(t *testing.T) {

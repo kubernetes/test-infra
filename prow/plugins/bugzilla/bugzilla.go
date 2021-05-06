@@ -39,7 +39,7 @@ import (
 )
 
 var (
-	titleMatch           = regexp.MustCompile(`(?i)Bug ([0-9]+):`)
+	titleMatch           = regexp.MustCompile(`(?i)Bug\s+([0-9]+):`)
 	refreshCommandMatch  = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
 	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
 	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
