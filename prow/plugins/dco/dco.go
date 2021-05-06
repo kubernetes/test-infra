@@ -205,7 +205,7 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	// Get default branch for repo to construct link to CONTRIBUTING.md (default: master)
 	repoObj, err := gc.GetRepo(org, repo)
-	var defaultBranch = "master"
+	defaultBranch := "master"
 	if err != nil {
 		l.Debugf("Error retrieving repo to find default branch: %v", err)
 	} else {
