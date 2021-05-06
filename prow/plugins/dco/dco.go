@@ -113,6 +113,7 @@ type gitHubClient interface {
 	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 }
 
 type commentPruner interface {
@@ -202,7 +203,18 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 // takeAction will take appropriate action on the pull request according to its
 // current state.
 func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
-	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
+	// Get default branch for repo to construct link to CONTRIBUTING.md (default: master)
+	repoObj, err := gc.GetRepo(org, repo)
+	var defaultBranch = "master"
+	if err != nil {
+		l.Debugf("Error retrieving repo to find default branch: %v", err)
+	} else {
+		defaultBranch = repoObj.Repo.DefaultBranch
+		if defaultBranch == "" {
+			defaultBranch = "master"
+		}
+	}
+	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/%s/CONTRIBUTING.md", org, repo, defaultBranch)
 
 	signedOff := len(commitsMissingDCO) == 0
 
