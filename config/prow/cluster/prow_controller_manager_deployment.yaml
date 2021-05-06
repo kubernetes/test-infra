@@ -34,7 +34,7 @@ spec:
       serviceAccountName: prow-controller-manager
       containers:
       - name: prow-controller-manager
-        image: gcr.io/k8s-prow/prow-controller-manager:v20210506-a3602616e2
+        image: gcr.io/k8s-prow/prow-controller-manager:v20210506-5c14a376fa
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
