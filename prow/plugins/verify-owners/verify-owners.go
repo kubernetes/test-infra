@@ -116,6 +116,7 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type commentPruner interface {
