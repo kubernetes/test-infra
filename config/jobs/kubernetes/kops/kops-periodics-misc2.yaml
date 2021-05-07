@@ -68,7 +68,7 @@ periodics:
     testgrid-tab-name: kops-grid-scenario-arm64
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
-- name: e2e-kops-grid-scenario-public-jwks
+- name: e2e-kops-grid-scenario-service-account-iam
   cron: '53 4 * * *'
   labels:
     preset-service-account: "true"
@@ -132,7 +132,7 @@ periodics:
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-public-jwks
+    testgrid-tab-name: kops-grid-scenario-service-account-iam
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager

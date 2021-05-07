@@ -183,7 +183,7 @@ run_hourly = [
 ]
 
 run_daily = [
-    'kops-grid-scenario-public-jwks',
+    'kops-grid-scenario-service-account-iam',
     'kops-grid-scenario-arm64',
     'kops-grid-scenario-aws-cloud-controller-manager',
     'kops-grid-scenario-serial-test-for-timeout',
@@ -654,7 +654,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A special test for JWKS
-        build_test(name_override="kops-grid-scenario-public-jwks",
+        build_test(name_override="kops-grid-scenario-service-account-iam",
                    cloud="aws",
                    distro="u2004",
                    feature_flags=["UseServiceAccountIAM"],
