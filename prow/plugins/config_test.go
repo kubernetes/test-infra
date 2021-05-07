@@ -21,11 +21,14 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-
-	"k8s.io/apimachinery/pkg/util/sets"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	fuzz "github.com/google/gofuzz"
+
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
@@ -1518,5 +1521,143 @@ orgA/repoB:
 	err := p.UnmarshalJSON(badPluginsYaml)
 	if err == nil {
 		t.Error("expected unmarshal error but didn't get one")
+	}
+}
+
+func TestConfigMergingProperties(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		makeMergeable func(*Configuration)
+	}{
+		{
+			name: "Plugins config",
+			makeMergeable: func(c *Configuration) {
+				*c = Configuration{Plugins: c.Plugins}
+			},
+		},
+	}
+
+	expectedProperties := []struct {
+		name         string
+		verification func(t *testing.T, fuzzedConfig *Configuration)
+	}{
+		{
+			name: "Merging into empty config always succeeds and makes the empty config equal to the one that was merged in",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				newConfig := &Configuration{}
+				if err := newConfig.mergeFrom(fuzzedMergeableConfig); err != nil {
+					t.Fatalf("merging fuzzed mergeable config into empty config failed: %v", err)
+				}
+				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig); diff != "" {
+					t.Errorf("after merging config into an empty config, the config that was merged into differs from the one we merged from:\n%s\n", diff)
+				}
+			},
+		},
+		{
+			name: "Merging empty config in always succeeds",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				if err := fuzzedMergeableConfig.mergeFrom(&Configuration{}); err != nil {
+					t.Errorf("merging empty config in failed: %v", err)
+				}
+			},
+		},
+		{
+			name: "Merging a config into itself always fails",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				if apiequality.Semantic.DeepEqual(fuzzedMergeableConfig, &Configuration{}) {
+					return
+				}
+
+				if err := fuzzedMergeableConfig.mergeFrom(fuzzedMergeableConfig); err == nil {
+					serialized, serializeErr := yaml.Marshal(fuzzedMergeableConfig)
+					if serializeErr != nil {
+						t.Fatalf("merging non-empty config into itself did not yield an error and serializing it afterwards failed: %v. Raw object: %+v", serializeErr, fuzzedMergeableConfig)
+					}
+					t.Errorf("merging a config into itself did not produce an error. Serialized config:\n%s", string(serialized))
+				}
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, propertyTest := range expectedProperties {
+				propertyTest := propertyTest
+				t.Run(propertyTest.name, func(t *testing.T) {
+					t.Parallel()
+
+					for i := 0; i < 100; i++ {
+						fuzzedConfig := &Configuration{}
+						fuzzer.Fuzz(fuzzedConfig)
+
+						tc.makeMergeable(fuzzedConfig)
+
+						propertyTest.verification(t, fuzzedConfig)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestPluginsMergeFrom(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name string
+
+		from *Plugins
+		to   *Plugins
+
+		expected       *Plugins
+		expectedErrMsg string
+	}{
+		{
+			name: "Merging for two different repos succeeds",
+
+			from: &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+			to:   &Plugins{"org/repo-2": OrgPlugins{Plugins: []string{"wip"}}},
+
+			expected: &Plugins{
+				"org/repo-1": OrgPlugins{Plugins: []string{"wip"}},
+				"org/repo-2": OrgPlugins{Plugins: []string{"wip"}},
+			},
+		},
+		{
+			name: "Merging the same repo fails",
+
+			from: &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+			to:   &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+
+			expectedErrMsg: "found duplicate config for plugins.org/repo-1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %s", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expexcted config differs from actual: %s", diff)
+			}
+		})
 	}
 }

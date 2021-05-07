@@ -20,7 +20,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -252,7 +255,7 @@ func NewFakeConfigAgent() ConfigAgent {
 // the file can't be read or the configuration is invalid.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
+func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -260,6 +263,39 @@ func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 	np := &Configuration{}
 	if err := yaml.Unmarshal(b, np); err != nil {
 		return err
+	}
+
+	var errs []error
+	for _, supplementalPluginConfigDir := range supplementalPluginConfigDirs {
+		if err := filepath.Walk(supplementalPluginConfigDir, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() || !strings.HasSuffix(path, supplementalPluginConfigFileSuffix) {
+				return nil
+			}
+
+			data, err := ioutil.ReadFile(path)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
+				return nil
+			}
+
+			cfg := &Configuration{}
+			if err := yaml.Unmarshal(data, cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to unmarshal %s: %w", path, err))
+				return nil
+			}
+
+			if err := np.mergeFrom(cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to merge config from %s into main config: %w", path, err))
+			}
+
+			return nil
+
+		}); err != nil {
+			errs = append(errs, fmt.Errorf("failed to walk %s: %w", supplementalPluginConfigDir, err))
+		}
 	}
 
 	if err := np.Validate(); err != nil {
@@ -296,14 +332,14 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 // then start returns the error. Future errors will halt updates but not stop.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Start(path string, checkUnknownPlugins bool) error {
-	if err := pa.Load(path, checkUnknownPlugins); err != nil {
+func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
+	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
 		return err
 	}
 	ticker := time.NewTicker(time.Minute)
 	go func() {
 		for range ticker.C {
-			if err := pa.Load(path, checkUnknownPlugins); err != nil {
+			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}

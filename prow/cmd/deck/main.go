@@ -283,7 +283,7 @@ func main() {
 	var pluginAgent *plugins.ConfigAgent
 	if o.pluginConfig != "" {
 		pluginAgent = &plugins.ConfigAgent{}
-		if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
+		if err := pluginAgent.Start(o.pluginConfig, nil, "", false); err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 	} else {

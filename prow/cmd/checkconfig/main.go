@@ -247,7 +247,7 @@ func validate(o options) error {
 	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
+		if err := pluginAgent.Load(o.pluginConfig, nil, "", true); err != nil {
 			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()

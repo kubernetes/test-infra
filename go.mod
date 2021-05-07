@@ -49,7 +49,7 @@ require (
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.5.2
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/gofuzz v1.1.0
+	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/mux v1.7.4
