@@ -164,6 +164,17 @@ type Prefix struct {
 	ConsistentImages bool `json:"consistentImages"`
 }
 
+// PRHandler is the interface implemented by consumer of prcreator, for
+// manipulating the repo, and provides commit messages, PR title and body.
+type PRHandler interface {
+	// Changes returns a slice of functions, each one does some stuff, and
+	// returns commit message for the changes
+	Changes() []func() (string, error)
+	// PRTitleBody returns the body of the PR, this function runs after all
+	// changes have been executed
+	PRTitleBody() (string, string, error)
+}
+
 // GitAuthorOptions is specifically to read the author info for a commit
 type GitAuthorOptions struct {
 	GitName  string
@@ -412,8 +423,154 @@ func Run(o *Options) error {
 	return nil
 }
 
+// Run2 is the entrypoint which will update Prow config files based on the
+// provided options.
+//
+// updateFunc: a function that returns commit message and error
+func Run2(o *Options, prh PRHandler) error {
+	if err := validateOptions(o); err != nil {
+		return fmt.Errorf("error validating options: %w", err)
+	}
+
+	if o.SkipPullRequest {
+		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
+	}
+	if o.Gerrit == nil {
+		return processGitHub(o, prh)
+	}
+	return processGerrit(o, prh)
+}
+
+func processGitHub(o *Options, prh PRHandler) error {
+	var sa secret.Agent
+
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+	if err := sa.Start([]string{o.GitHubToken}); err != nil {
+		return fmt.Errorf("failed to start secrets agent: %w", err)
+	}
+
+	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+
+	// Make change, commit and push
+	for _, f := range prh.Changes() {
+		msg, err := f()
+		if err != nil {
+			return fmt.Errorf("failed to process provided function: %w", err)
+		}
+
+		changed, err := HasChanges()
+		if err != nil {
+			return fmt.Errorf("error occurred when checking changes: %w", err)
+		}
+
+		if !changed {
+			// TODO(chaodaiG): decide how to handle this with multiple commits
+			logrus.Info("Nothing changed, exiting ...")
+			continue
+		}
+
+		if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
+			return fmt.Errorf("failed git commit: %w", err)
+		}
+	}
+
+	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName),
+		o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("failed to push changes to the remote branch: %w", err)
+	}
+
+	summary, body, err := prh.PRTitleBody()
+	if err != nil {
+		return fmt.Errorf("failed creating PR summary and body: %w", err)
+	}
+	if o.GitHubBaseBranch == "" {
+		repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
+		if err != nil {
+			return fmt.Errorf("failed to detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
+		}
+		o.GitHubBaseBranch = repo.DefaultBranch
+	}
+	if err := updatePRWithLabels2(gc, o.GitHubOrg, o.GitHubRepo,
+		getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin,
+		o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("failed to create the PR: %w", err)
+	}
+	return nil
+}
+
+func processGerrit(o *Options, prh PRHandler) error {
+	var sa secret.Agent
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+
+	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
+		return fmt.Errorf("unable to load cookiefile: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
+		return fmt.Errorf("unable to set username: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
+		return fmt.Errorf("unable to set password: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
+		return fmt.Errorf("unable to add upstream remote: %v", err)
+	}
+	changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
+	if err != nil {
+		return fmt.Errorf("Failed to create CR: %w", err)
+	}
+
+	// Make change, commit and push
+	for _, f := range prh.Changes() {
+		msg, err := f()
+		if err != nil {
+			return fmt.Errorf("failed to process provided function: %w", err)
+		}
+
+		changed, err := HasChanges()
+		if err != nil {
+			return fmt.Errorf("error occurred when checking changes: %w", err)
+		}
+
+		if !changed {
+			// TODO(chaodaiG): decide how to handle this with multiple commits
+			logrus.Info("Nothing changed, exiting ...")
+			continue
+		}
+
+		if err = gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr); err != nil {
+			// If failed to push because a closed PR already exists with this
+			// change ID (the PR was abandoned). Hash the ID again and try one
+			// more time.
+			if !strings.Contains(err.Error(), "failed to push some refs") || !strings.Contains(err.Error(), "closed") {
+				return err
+			}
+			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
+			if changeId, err = getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId); err != nil {
+				return err
+			}
+			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
+				return fmt.Errorf("unable to call git reset: %v", err)
+			}
+			return gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+		}
+	}
+	return nil
+}
+
 func gerritCommitandPush(prefixes []Prefix, versions map[string][]string, autobumpId, changeId string, reviewers, cc []string, stdout, stderr io.Writer) error {
 	msg := makeGerritCommit(prefixes, versions, autobumpId, changeId)
+
+	// TODO(mpherman): Add reviewers to CreateCR
+	if err := createCR(msg, "master", changeId, reviewers, cc, stdout, stderr); err != nil {
+		return fmt.Errorf("Failled to create the CR: %w", err)
+	}
+	return nil
+}
+
+func gerritCommitandPush2(summary, autobumpId, changeId string, reviewers, cc []string, stdout, stderr io.Writer) error {
+	msg := makeGerritCommit2(summary, autobumpId, changeId)
 
 	// TODO(mpherman): Add reviewers to CreateCR
 	if err := createCR(msg, "master", changeId, reviewers, cc, stdout, stderr); err != nil {
@@ -480,15 +637,24 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
 	return updatePRWithLabels(gc, org, repo, images, extraLineInPRBody, login, baseBranch, headBranch, allowMods, prefixes, versions, nil)
 }
+func UpdatePR2(gc github.Client, org, repo string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, summary, body string) error {
+	return updatePRWithLabels2(gc, org, repo, extraLineInPRBody, login, baseBranch, headBranch, allowMods, summary, body, nil, false)
+}
 func updatePRWithLabels(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string, labels []string) error {
 	summary := makeCommitSummary(prefixes, versions)
 	return UpdatePullRequestWithLabels(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), login+":"+headBranch, baseBranch, headBranch, allowMods, labels)
+}
+func updatePRWithLabels2(gc github.Client, org, repo string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, summary, body string, labels []string, dryrun bool) error {
+	return UpdatePullRequestWithLabels2(gc, org, repo, summary, generatePRBody2(body, extraLineInPRBody), login+":"+headBranch, baseBranch, headBranch, allowMods, labels, dryrun)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch"
 func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool) error {
 	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil)
+}
+func UpdatePullRequest2(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, dryrun bool) error {
+	return UpdatePullRequestWithLabels2(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil, dryrun)
 }
 
 // UpdatePullRequestWithLabels updates with github client "gc" the PR of github repo org/repo
@@ -500,6 +666,21 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, sourc
 		return fmt.Errorf("failed to ensure PR exists: %w", err)
 	}
 
+	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, baseBranch, title)
+	return nil
+}
+func UpdatePullRequestWithLabels2(gc github.Client, org, repo, title, body, source, baseBranch,
+	headBranch string, allowMods bool, labels []string, dryrun bool) error {
+	logrus.Info("Creating or updating PR...")
+	if dryrun {
+		logrus.Info("[Dryrun] ensure PR with:")
+		logrus.Info(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels, dryrun)
+		return nil
+	}
+	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
+	if err != nil {
+		return fmt.Errorf("failed to ensure PR exists: %w", err)
+	}
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, baseBranch, title)
 	return nil
 }
@@ -772,15 +953,24 @@ func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, 
 	summary := makeCommitSummary(prefixes, versions)
 	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr)
 }
+func MakeGitCommit2(remote, remoteBranch, name, email string, stdout, stderr io.Writer, summary string, dryrun bool) error {
+	return GitCommitAndPush2(remote, remoteBranch, name, email, summary, stdout, stderr, dryrun)
+}
 
 func makeGerritCommit(prefixes []Prefix, versions map[string][]string, commitTag, changeId string) string {
 	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", makeCommitSummary(prefixes, versions), commitTag, changeId)
+}
+func makeGerritCommit2(summary, commitTag, changeId string) string {
+	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", summary, commitTag, changeId)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
 func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	return GitCommitSignoffAndPush(remote, remoteBranch, name, email, message, stdout, stderr, false)
+}
+func GitCommitAndPush2(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, dryrun bool) error {
+	return GitCommitSignoffAndPush2(remote, remoteBranch, name, email, message, stdout, stderr, false, dryrun)
 }
 
 // GitCommitSignoffAndPush runs a sequence of git commands to commit with optional signoff for the commit.
@@ -833,6 +1023,69 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 		logrus.Info("Not pushing as up-to-date remote branch already exists")
 	}
 
+	return nil
+}
+func GitCommitSignoffAndPush2(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool, dryrun bool) error {
+	logrus.Info("Making git commit...")
+
+	if err := gitCommit(name, email, message, stdout, stderr, signoff); err != nil {
+		return err
+	}
+	return gitPush(remote, remoteBranch, stdout, stderr, dryrun)
+}
+func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
+	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
+		return fmt.Errorf("failed to git add: %w", err)
+	}
+	commitArgs := []string{"commit", "-m", message}
+	if name != "" && email != "" {
+		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
+	}
+	if signoff {
+		commitArgs = append(commitArgs, "--signoff")
+	}
+	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
+		return fmt.Errorf("failed to git commit: %w", err)
+	}
+	return nil
+}
+
+func gitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
+		return fmt.Errorf("failed to add remote: %w", err)
+	}
+	fetchStderr := &bytes.Buffer{}
+	var remoteTreeRef string
+	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
+		logrus.Info("fetchStderr is : ", fetchStderr.String())
+		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
+			return fmt.Errorf("failed to fetch from fork: %w", err)
+		}
+	} else {
+		var err error
+		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
+		if err != nil {
+			return fmt.Errorf("failed to get remote tree ref: %w", err)
+		}
+	}
+	localTreeRef, err := getTreeRef(stderr, "HEAD")
+	if err != nil {
+		return fmt.Errorf("failed to get local tree ref: %w", err)
+	}
+
+	if dryrun {
+		logrus.Info("[Dryrun] Skip git push with: ")
+		logrus.Info(forkRemoteName, remoteBranch, stdout, stderr, "")
+		return nil
+	}
+	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
+	if localTreeRef != remoteTreeRef {
+		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
+			return err
+		}
+	} else {
+		logrus.Info("Not pushing as up-to-date remote branch already exists")
+	}
 	return nil
 }
 
@@ -956,6 +1209,9 @@ func generatePRBody(images map[string]string, assignment string, prefixes []Pref
 	for _, prefix := range prefixes {
 		body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, images) + "\n\n"
 	}
+	return body + assignment + "\n"
+}
+func generatePRBody2(body, assignment string) string {
 	return body + assignment + "\n"
 }
 
