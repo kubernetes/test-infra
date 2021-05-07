@@ -657,7 +657,7 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-public-jwks",
                    cloud="aws",
                    distro="u2004",
-                   feature_flags=["UseServiceAccountIAM", "PublicJWKS"],
+                   feature_flags=["UseServiceAccountIAM"],
                    extra_flags=['--api-loadbalancer-type=public'],
                    extra_dashboards=['kops-misc']),
 
