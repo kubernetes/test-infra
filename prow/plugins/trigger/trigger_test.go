@@ -346,6 +346,16 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: false,
 			expectedReason:  (notMember | notSecondaryMember).String(),
 		},
+		{
+			name:            "Self as bot is trusted",
+			user:            "k8s-ci-robot",
+			expectedTrusted: true,
+		},
+		{
+			name:            "Self as app is trusted",
+			user:            "k8s-ci-robot[bot]",
+			expectedTrusted: true,
+		},
 	}
 
 	for _, tc := range testcases {

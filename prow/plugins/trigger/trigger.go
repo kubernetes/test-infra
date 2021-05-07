@@ -160,8 +160,7 @@ type githubClient interface {
 
 type trustedPullRequestClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	IsMember(org, user string) (bool, error)
-	IsCollaborator(org, repo, user string) (bool, error)
+	trustedUserClient
 }
 
 type prowJobClient interface {
@@ -185,6 +184,7 @@ type Client struct {
 type trustedUserClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 func getClient(pc plugins.Agent) Client {
@@ -223,6 +223,15 @@ type TrustedUserResponse struct {
 func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
 	errorResponse := TrustedUserResponse{IsTrusted: false}
 	okResponse := TrustedUserResponse{IsTrusted: true}
+
+	selfChecker, err := ghc.BotUserChecker()
+	if err != nil {
+		return errorResponse, fmt.Errorf("failed to check if comment came from myself: %w", err)
+	}
+	// Trust thyself
+	if selfChecker(user) {
+		return okResponse, nil
+	}
 
 	// First check if user is a collaborator, assuming this is allowed
 	if !onlyOrgMembers {

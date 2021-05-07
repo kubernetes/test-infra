@@ -113,6 +113,7 @@ type gitHubClient interface {
 	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type commentPruner interface {
