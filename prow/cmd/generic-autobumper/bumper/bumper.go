@@ -170,7 +170,8 @@ type PRHandler interface {
 	// Changes returns a slice of functions, each one does some stuff, and
 	// returns commit message for the changes
 	Changes() []func() (string, error)
-	// PRTitleBody returns the body of the PR, this function runs after each commit
+	// PRTitleBody returns the body of the PR, this function runs after all
+	// changes have been executed
 	PRTitleBody() (string, string, error)
 }
 
@@ -431,118 +432,128 @@ func Run2(o *Options, prh PRHandler) error {
 		return fmt.Errorf("error validating options: %w", err)
 	}
 
-	var sa secret.Agent
-
-	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 	if o.SkipPullRequest {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
 	}
 	if o.Gerrit == nil {
-		if err := sa.Start([]string{o.GitHubToken}); err != nil {
-			return fmt.Errorf("failed to start secrets agent: %w", err)
-		}
+		return processGitHub(o, prh)
+	}
+	return processGerrit(o, prh)
+}
 
-		gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+func processGitHub(o *Options, prh PRHandler) error {
+	var sa secret.Agent
 
-		// Make change, commit and push
-		for _, f := range prh.Changes() {
-			msg, err := f()
-			if err != nil {
-				return fmt.Errorf("failed to process provided function: %w", err)
-			}
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+	if err := sa.Start([]string{o.GitHubToken}); err != nil {
+		return fmt.Errorf("failed to start secrets agent: %w", err)
+	}
 
-			changed, err := HasChanges()
-			if err != nil {
-				return fmt.Errorf("error occurred when checking changes: %w", err)
-			}
+	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 
-			if !changed {
-				// TODO(chaodaiG): decide how to handle this with multiple commits
-				logrus.Info("Nothing changed, exiting ...")
-				return nil
-			}
-
-			if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
-				return fmt.Errorf("failed git commit: %w", err)
-			}
-		}
-
-		if err := gitPush(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName),
-			o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
-			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
-		}
-
-		summary, body, err := prh.PRTitleBody()
+	// Make change, commit and push
+	for _, f := range prh.Changes() {
+		msg, err := f()
 		if err != nil {
-			return fmt.Errorf("failed creating PR summary and body: %w", err)
+			return fmt.Errorf("failed to process provided function: %w", err)
 		}
-		if o.GitHubBaseBranch == "" {
-			repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
-			if err != nil {
-				return fmt.Errorf("failed to detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
-			}
-			o.GitHubBaseBranch = repo.DefaultBranch
-		}
-		if err := updatePRWithLabels2(gc, o.GitHubOrg, o.GitHubRepo,
-			getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin,
-			o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
-			return fmt.Errorf("failed to create the PR: %w", err)
-		}
-	} else {
-		if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
-			return fmt.Errorf("unable to load cookiefile: %v", err)
-		}
-		if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
-			return fmt.Errorf("unable to set username: %v", err)
-		}
-		if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
-			return fmt.Errorf("unable to set password: %v", err)
-		}
-		if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
-			return fmt.Errorf("unable to add upstream remote: %v", err)
-		}
-		changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
+
+		changed, err := HasChanges()
 		if err != nil {
-			return fmt.Errorf("Failed to create CR: %w", err)
+			return fmt.Errorf("error occurred when checking changes: %w", err)
 		}
 
-		// Make change, commit and push
-		for _, f := range prh.Changes() {
-			msg, err := f()
-			if err != nil {
-				return fmt.Errorf("failed to process provided function: %w", err)
-			}
+		if !changed {
+			// TODO(chaodaiG): decide how to handle this with multiple commits
+			logrus.Info("Nothing changed, exiting ...")
+			continue
+		}
 
-			changed, err := HasChanges()
-			if err != nil {
-				return fmt.Errorf("error occurred when checking changes: %w", err)
-			}
+		if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
+			return fmt.Errorf("failed git commit: %w", err)
+		}
+	}
 
-			if !changed {
-				// TODO(chaodaiG): decide how to handle this with multiple commits
-				logrus.Info("Nothing changed, exiting ...")
-				return nil
-			}
+	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName),
+		o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("failed to push changes to the remote branch: %w", err)
+	}
 
-			err = gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-			// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
-			if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
-				logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
-				changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
-				if subErr != nil {
-					return subErr
+	summary, body, err := prh.PRTitleBody()
+	if err != nil {
+		return fmt.Errorf("failed creating PR summary and body: %w", err)
+	}
+	if o.GitHubBaseBranch == "" {
+		repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
+		if err != nil {
+			return fmt.Errorf("failed to detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
+		}
+		o.GitHubBaseBranch = repo.DefaultBranch
+	}
+	if err := updatePRWithLabels2(gc, o.GitHubOrg, o.GitHubRepo,
+		getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin,
+		o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("failed to create the PR: %w", err)
+	}
+	return nil
+}
 
-				}
-				if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
-					return fmt.Errorf("unable to call git reset: %v", err)
-				}
-				err = gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-			}
-			if err != nil {
+func processGerrit(o *Options, prh PRHandler) error {
+	var sa secret.Agent
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+
+	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
+		return fmt.Errorf("unable to load cookiefile: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
+		return fmt.Errorf("unable to set username: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
+		return fmt.Errorf("unable to set password: %v", err)
+	}
+	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
+		return fmt.Errorf("unable to add upstream remote: %v", err)
+	}
+	changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
+	if err != nil {
+		return fmt.Errorf("Failed to create CR: %w", err)
+	}
+
+	// Make change, commit and push
+	for _, f := range prh.Changes() {
+		msg, err := f()
+		if err != nil {
+			return fmt.Errorf("failed to process provided function: %w", err)
+		}
+
+		changed, err := HasChanges()
+		if err != nil {
+			return fmt.Errorf("error occurred when checking changes: %w", err)
+		}
+
+		if !changed {
+			// TODO(chaodaiG): decide how to handle this with multiple commits
+			logrus.Info("Nothing changed, exiting ...")
+			continue
+		}
+
+		if err = gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr); err != nil {
+			// If failed to push because a closed PR already exists with this
+			// change ID (the PR was abandoned). Hash the ID again and try one
+			// more time.
+			if !strings.Contains(err.Error(), "failed to push some refs") || !strings.Contains(err.Error(), "closed") {
 				return err
 			}
-
+			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
+			if changeId, err = getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId); err != nil {
+				return err
+			}
+			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
+				return fmt.Errorf("unable to call git reset: %v", err)
+			}
+			return gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
 		}
 	}
 	return nil
