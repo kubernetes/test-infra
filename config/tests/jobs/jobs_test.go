@@ -354,13 +354,10 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
 	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
-	const kubekinsImage = "gcr.io/k8s-testimages/kubekins-e2e"
 
 	for _, c := range spec.Containers {
-		if !strings.HasPrefix(c.Image, imagePushingImage+":") &&
-			!strings.HasPrefix(c.Image, kubekinsImage+":") {
-			return fmt.Errorf("must use a pinned version of %s or %s",
-				imagePushingImage, kubekinsImage)
+		if !strings.HasPrefix(c.Image, imagePushingImage+":") {
+			return fmt.Errorf("must use a pinned version of %s", imagePushingImage)
 		}
 	}
 
