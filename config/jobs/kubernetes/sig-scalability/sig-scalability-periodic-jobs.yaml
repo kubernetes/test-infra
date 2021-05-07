@@ -949,6 +949,7 @@ periodics:
       - --gcp-nodes=102
       - --provider=gce
       - --test=false
+      - --env=LOG_DUMP_EXTRA_FILES=containers/worker*
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
