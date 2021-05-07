@@ -67,7 +67,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM,PublicJWKS", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-public-jwks
   cron: '53 4 * * *'
   labels:
@@ -97,7 +97,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210430' --channel=alpha --networking=kubenet --container-runtime=docker --api-loadbalancer-type=public" \
-          --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM,PublicJWKS \
+          --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -125,7 +125,7 @@ periodics:
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public
-    test.kops.k8s.io/feature_flags: UseServiceAccountIAM,PublicJWKS
+    test.kops.k8s.io/feature_flags: UseServiceAccountIAM
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
