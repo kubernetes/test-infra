@@ -6,7 +6,6 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/generic-autobumper/bumper",
     visibility = ["//visibility:public"],
     deps = [
-        "//experiment/image-bumper/bumper:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/github:go_default_library",
         "//robots/pr-creator/updater:go_default_library",
@@ -33,9 +32,5 @@ go_test(
     srcs = ["bumper_test.go"],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
-    deps = [
-        "//prow/config/secret:go_default_library",
-        "@com_github_google_go_cmp//cmp:go_default_library",
-        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-    ],
+    deps = ["//prow/config/secret:go_default_library"],
 )

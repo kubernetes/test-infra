@@ -24,18 +24,13 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
-	imagebumper "k8s.io/test-infra/experiment/image-bumper/bumper"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/robots/pr-creator/updater"
@@ -44,13 +39,8 @@ import (
 const (
 	forkRemoteName = "bumper-fork-remote"
 
-	latestVersion          = "latest"
-	upstreamVersion        = "upstream"
-	upstreamStagingVersion = "upstream-staging"
-	tagVersion             = "vYYYYMMDD-deadbeef"
-	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
-	defaultHeadBranchName  = "autobump"
-	defaultOncallGroup     = "testinfra"
+	defaultHeadBranchName = "autobump"
+	defaultOncallGroup    = "testinfra"
 
 	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
 	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
@@ -58,10 +48,15 @@ const (
 	gitCmd = "git"
 )
 
-var (
-	tagRegexp    = regexp.MustCompile("v[0-9]{8}-[a-f0-9]{6,9}")
-	imageMatcher = regexp.MustCompile(`(?s)^.+image:(.+):(v[a-zA-Z0-9_.-]+)`)
-)
+// PRHandler is the interface implemented by consumer of prcreator, for
+// manipulating the repo, and provides commit messages, PR title and body.
+type PRHandler interface {
+	// Changes returns a slice of functions, each one does some stuff, and
+	// returns commit message for the changes
+	Changes() []func() (string, error)
+	// PRTitleBody returns the body of the PR, this function runs after each commit
+	PRTitleBody() (string, string, error)
+}
 
 type fileArrayFlag []string
 
@@ -110,17 +105,6 @@ type Options struct {
 	SkipPullRequest bool `json:"skipPullRequest"`
 	// Information needed to do a gerrit bump. Do not include if doing github bump
 	Gerrit *Gerrit `json:"gerrit"`
-	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
-	// Images will be bumped based off images located at the address using this URL and the refConfigFile or stagingRefConigFile for each Prefix.
-	UpstreamURLBase string `json:"upstreamURLBase"`
-	// The config paths to be included in this bump, in which only .yaml files will be considered. By default all files are included.
-	IncludedConfigPaths []string `json:"includedConfigPaths"`
-	// The config paths to be excluded in this bump, in which only .yaml files will be considered.
-	ExcludedConfigPaths []string `json:"excludedConfigPaths"`
-	// The extra non-yaml file to be considered in this bump.
-	ExtraFiles []string `json:"extraFiles"`
-	// The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
-	TargetVersion string `json:"targetVersion"`
 	// The name used in the address when creating remote. This should be the same name as the fork. If fork does not exist this will be the name of the fork that is created.
 	// If it is not the same as the fork, the robot will change the name of the fork to this. Format will be git@github.com:{GitLogin}/{RemoteName}.git
 	RemoteName string `json:"remoteName"`
@@ -128,8 +112,6 @@ type Options struct {
 	HeadBranchName string `json:"headBranchName"`
 	// Optional list of labels to add to the bump PR
 	Labels []string `json:"labels"`
-	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
-	Prefixes []Prefix `json:"prefixes"`
 }
 
 // Information needed for gerrit bump
@@ -146,25 +128,10 @@ type Gerrit struct {
 	HostRepo string `json:"hostRepo"`
 }
 
-// Prefix is the information needed for each prefix being bumped.
-type Prefix struct {
-	// Name of the tool being bumped
-	Name string `json:"name"`
-	// The image prefix that the autobumper should look for
-	Prefix string `json:"prefix"`
-	// File that is looked at to determine current upstream image when bumping to upstream. Required only if targetVersion is "upstream"
-	RefConfigFile string `json:"refConfigFile"`
-	// File that is looked at to determine current upstream staging image when bumping to upstream staging. Required only if targetVersion is "upstream-staging"
-	StagingRefConfigFile string `json:"stagingRefConfigFile"`
-	// The repo where the image source resides for the images with this prefix. Used to create the links to see comparisons between images in the PR summary.
-	Repo string `json:"repo"`
-	// Whether or not the format of the PR summary for this prefix should be summarised.
-	Summarise bool `json:"summarise"`
-	// Whether the prefix tags should be consistent after the bump
-	ConsistentImages bool `json:"consistentImages"`
-}
-
 // GitAuthorOptions is specifically to read the author info for a commit
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 type GitAuthorOptions struct {
 	GitName  string
 	GitEmail string
@@ -210,9 +177,6 @@ func (gc GitCommand) getCommand() string {
 }
 
 func validateOptions(o *Options) error {
-	if len(o.Prefixes) == 0 {
-		return fmt.Errorf("Must have at least one Prefix specified")
-	}
 	if !o.SkipPullRequest && o.Gerrit == nil {
 		if o.GitHubToken == "" {
 			return fmt.Errorf("gitHubToken is mandatory when skipPullRequest is false or unspecified")
@@ -241,36 +205,8 @@ func validateOptions(o *Options) error {
 			return fmt.Errorf("GerritCookieFile is required when skipPullRequest is false and Gerrit is true")
 		}
 	}
-	if len(o.IncludedConfigPaths) == 0 {
-		return fmt.Errorf("includedConfigPaths is mandatory")
-	}
-	if o.TargetVersion != latestVersion && o.TargetVersion != upstreamVersion &&
-		o.TargetVersion != upstreamStagingVersion && !tagRegexp.MatchString(o.TargetVersion) {
-		logrus.Warnf("Warning: targetVersion is not one of %v so it might not work properly.",
-			[]string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion})
-	}
-	if o.TargetVersion == upstreamVersion {
-		for _, prefix := range o.Prefixes {
-			if prefix.RefConfigFile == "" {
-				return fmt.Errorf("targetVersion can't be %q without refConfigFile for each prefix. %q is missing one", upstreamVersion, prefix.Name)
-			}
-		}
-	}
-	if o.TargetVersion == upstreamStagingVersion {
-		for _, prefix := range o.Prefixes {
-			if prefix.StagingRefConfigFile == "" {
-				return fmt.Errorf("targetVersion can't be %q without stagingRefConfigFile for each prefix. %q is missing one", upstreamStagingVersion, prefix.Name)
-			}
-		}
-	}
-	if (o.TargetVersion == upstreamVersion || o.TargetVersion == upstreamStagingVersion) && o.UpstreamURLBase == "" {
-		o.UpstreamURLBase = defaultUpstreamURLBase
-		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
-	}
-	if !o.SkipPullRequest {
-		if o.HeadBranchName == "" {
-			o.HeadBranchName = defaultHeadBranchName
-		}
+	if o.HeadBranchName == "" {
+		o.HeadBranchName = defaultHeadBranchName
 	}
 	if o.OncallGroup == "" {
 		o.OncallGroup = defaultOncallGroup
@@ -279,8 +215,11 @@ func validateOptions(o *Options) error {
 	return nil
 }
 
-// Run is the entrypoint which will update Prow config files based on the provided options.
-func Run(o *Options) error {
+// Run is the entrypoint which will update Prow config files based on the
+// provided options.
+//
+// updateFunc: a function that returns commit message and error
+func Run(o *Options, prh PRHandler) error {
 	if err := validateOptions(o); err != nil {
 		return fmt.Errorf("error validating options: %w", err)
 	}
@@ -289,33 +228,14 @@ func Run(o *Options) error {
 		return fmt.Errorf("failed to change to root dir: %w", err)
 	}
 
-	images, err := UpdateReferences(o)
-	if err != nil {
-		return fmt.Errorf("failed to update image references: %w", err)
-	}
-
-	changed, err := HasChanges()
-	if err != nil {
-		return fmt.Errorf("error occurred when checking changes: %w", err)
-	}
-
-	if !changed {
-		logrus.Info("no images updated, exiting ...")
-		return nil
-	}
-
-	versions, err := getVersionsAndCheckConsistency(o.Prefixes, images)
-	if err != nil {
-		return err
-	}
-
 	var sa secret.Agent
 
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 	if o.SkipPullRequest {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
-	} else if o.Gerrit == nil {
+	}
+	if o.Gerrit == nil {
 		if err := sa.Start([]string{o.GitHubToken}); err != nil {
 			return fmt.Errorf("failed to start secrets agent: %w", err)
 		}
@@ -357,10 +277,38 @@ func Run(o *Options) error {
 			}
 		}
 
-		if err := MakeGitCommit(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
+		// Make change, commit and push
+		for _, f := range prh.Changes() {
+			msg, err := f()
+			if err != nil {
+				return fmt.Errorf("failed to process provided function: %w", err)
+			}
+
+			changed, err := HasChanges()
+			if err != nil {
+				return fmt.Errorf("error occurred when checking changes: %w", err)
+			}
+
+			if !changed {
+				// TODO(chaodaiG): decide how to handle this with multiple commits
+				logrus.Info("Nothing changed, exiting ...")
+				return nil
+			}
+
+			if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
+				return fmt.Errorf("failed git commit: %w", err)
+			}
+		}
+
+		if err := gitPush(fmt.Sprintf("git@github.com:%s/%s.git", o.GitHubLogin, o.RemoteName),
+			o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
 			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
 		}
 
+		summary, body, err := prh.PRTitleBody()
+		if err != nil {
+			return fmt.Errorf("failed creating PR summary and body: %w", err)
+		}
 		if o.GitHubBaseBranch == "" {
 			repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 			if err != nil {
@@ -368,8 +316,9 @@ func Run(o *Options) error {
 			}
 			o.GitHubBaseBranch = repo.DefaultBranch
 		}
-
-		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
+		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo,
+			getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin,
+			o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
 			return fmt.Errorf("failed to create the PR: %w", err)
 		}
 	} else {
@@ -391,29 +340,49 @@ func Run(o *Options) error {
 			return fmt.Errorf("Failed to create CR: %w", err)
 		}
 
-		err = gerritCommitandPush(o.Prefixes, versions, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-		// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
-		if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
-			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
-			changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
-			if subErr != nil {
-				return subErr
+		// Make change, commit and push
+		for _, f := range prh.Changes() {
+			msg, err := f()
+			if err != nil {
+				return fmt.Errorf("failed to process provided function: %w", err)
+			}
 
+			changed, err := HasChanges()
+			if err != nil {
+				return fmt.Errorf("error occurred when checking changes: %w", err)
 			}
-			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
-				return fmt.Errorf("unable to call git reset: %v", err)
+
+			if !changed {
+				// TODO(chaodaiG): decide how to handle this with multiple commits
+				logrus.Info("Nothing changed, exiting ...")
+				return nil
 			}
-			err = gerritCommitandPush(o.Prefixes, versions, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-		}
-		if err != nil {
-			return err
+
+			err = gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+			// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
+			if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
+				logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
+				changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
+				if subErr != nil {
+					return subErr
+
+				}
+				if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
+					return fmt.Errorf("unable to call git reset: %v", err)
+				}
+				err = gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
+			}
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 	return nil
 }
 
-func gerritCommitandPush(prefixes []Prefix, versions map[string][]string, autobumpId, changeId string, reviewers, cc []string, stdout, stderr io.Writer) error {
-	msg := makeGerritCommit(prefixes, versions, autobumpId, changeId)
+func gerritCommitandPush(summary, autobumpId, changeId string, reviewers, cc []string, stdout, stderr io.Writer) error {
+	msg := makeGerritCommit(summary, autobumpId, changeId)
 
 	// TODO(mpherman): Add reviewers to CreateCR
 	if err := createCR(msg, "master", changeId, reviewers, cc, stdout, stderr); err != nil {
@@ -439,6 +408,10 @@ func cdToRootDir() error {
 	return os.Chdir(d)
 }
 
+// Call wraps around exec Command and Run
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	(&logrus.Logger{
 		Out:       stderr,
@@ -460,6 +433,10 @@ type Censor interface {
 	Censor(content []byte) []byte
 }
 
+// HideSecretsWriter censors secrets
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 type HideSecretsWriter struct {
 	Delegate io.Writer
 	Censor   Censor
@@ -477,24 +454,33 @@ func (w HideSecretsWriter) Write(content []byte) (int, error) {
 // with headBranch from "source" to "baseBranch"
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" and "extraLineInPRBody" are used to generate commit summary and body of the PR
-func UpdatePR(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string) error {
-	return updatePRWithLabels(gc, org, repo, images, extraLineInPRBody, login, baseBranch, headBranch, allowMods, prefixes, versions, nil)
+func UpdatePR(gc github.Client, org, repo string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, summary, body string) error {
+	return updatePRWithLabels(gc, org, repo, extraLineInPRBody, login, baseBranch, headBranch, allowMods, summary, body, nil, false)
 }
-func updatePRWithLabels(gc github.Client, org, repo string, images map[string]string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, prefixes []Prefix, versions map[string][]string, labels []string) error {
-	summary := makeCommitSummary(prefixes, versions)
-	return UpdatePullRequestWithLabels(gc, org, repo, summary, generatePRBody(images, extraLineInPRBody, prefixes), login+":"+headBranch, baseBranch, headBranch, allowMods, labels)
+func updatePRWithLabels(gc github.Client, org, repo string, extraLineInPRBody, login, baseBranch, headBranch string, allowMods bool, summary, body string, labels []string, dryrun bool) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, summary, generatePRBody(body, extraLineInPRBody), login+":"+headBranch, baseBranch, headBranch, allowMods, labels, dryrun)
 }
 
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
-// with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch"
-func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool) error {
-	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil)
+// with "title" and "body" of PR matching author and headBranch from "source" to
+// "baseBranch"
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
+func UpdatePullRequest(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, dryrun bool) error {
+	return UpdatePullRequestWithLabels(gc, org, repo, title, body, source, baseBranch, headBranch, allowMods, nil, dryrun)
 }
 
 // UpdatePullRequestWithLabels updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching author and headBranch from "source" to "baseBranch" with labels
-func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, labels []string) error {
+func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, source, baseBranch,
+	headBranch string, allowMods bool, labels []string, dryrun bool) error {
 	logrus.Info("Creating or updating PR...")
+	if dryrun {
+		logrus.Info("[Dryrun] ensure PR with:")
+		logrus.Info(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels, dryrun)
+		return nil
+	}
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %w", err)
@@ -504,206 +490,10 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, sourc
 	return nil
 }
 
-func getAllPrefixes(prefixList []Prefix) (res []string) {
-	for _, prefix := range prefixList {
-		res = append(res, prefix.Prefix)
-	}
-	return res
-}
-
-// UpdateReferences update the references of prow-images and/or boskos-images and/or testimages
-// in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
-// if the file is a yaml file (*.yaml) or extraFiles[file]=true
-func UpdateReferences(o *Options) (map[string]string, error) {
-	logrus.Info("Bumping image references...")
-	filterRegexp := regexp.MustCompile(strings.Join(getAllPrefixes(o.Prefixes), "|"))
-	imageBumperCli := imagebumper.NewClient()
-	return updateReferences(imageBumperCli, filterRegexp, o)
-}
-
-type imageBumper interface {
-	FindLatestTag(imageHost, imageName, currentTag string) (string, error)
-	UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error), path string, imageFilter *regexp.Regexp) error
-	GetReplacements() map[string]string
-	AddToCache(image, newTag string)
-	TagExists(imageHost, imageName, currentTag string) (bool, error)
-}
-
-func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *Options) (map[string]string, error) {
-	var tagPicker func(string, string, string) (string, error)
-	var err error
-	switch o.TargetVersion {
-	case latestVersion:
-		tagPicker = imageBumperCli.FindLatestTag
-	case upstreamVersion, upstreamStagingVersion:
-		tagPicker, err = upstreamImageVersionResolver(o, o.TargetVersion, parseUpstreamImageVersion, imageBumperCli)
-		if err != nil {
-			return nil, fmt.Errorf("failed to resolve the %s image version: %w", o.TargetVersion, err)
-		}
-	default:
-		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return o.TargetVersion, nil }
-	}
-
-	updateFile := func(name string) error {
-		logrus.Infof("Updating file %s", name)
-		if err := imageBumperCli.UpdateFile(tagPicker, name, filterRegexp); err != nil {
-			return fmt.Errorf("failed to update the file: %w", err)
-		}
-		return nil
-	}
-	updateYAMLFile := func(name string) error {
-		if strings.HasSuffix(name, ".yaml") && !isUnderPath(name, o.ExcludedConfigPaths) {
-			return updateFile(name)
-		}
-		return nil
-	}
-
-	// Updated all .yaml files under the included config paths but not under excluded config paths.
-	for _, path := range o.IncludedConfigPaths {
-		info, err := os.Stat(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get the file info for %q", path)
-		}
-		if info.IsDir() {
-			err := filepath.Walk(path, func(subpath string, info os.FileInfo, err error) error {
-				return updateYAMLFile(subpath)
-			})
-			if err != nil {
-				return nil, fmt.Errorf("failed to update yaml files under %q: %w", path, err)
-			}
-		} else {
-			if err := updateYAMLFile(path); err != nil {
-				return nil, fmt.Errorf("failed to update the yaml file %q: %w", path, err)
-			}
-		}
-	}
-
-	// Update the extra files in any case.
-	for _, file := range o.ExtraFiles {
-		if err := updateFile(file); err != nil {
-			return nil, fmt.Errorf("failed to update the extra file %q: %w", file, err)
-		}
-	}
-
-	return imageBumperCli.GetReplacements(), nil
-}
-
-func upstreamImageVersionResolver(
-	o *Options, upstreamVersionType string, parse func(upstreamAddress, prefix string) (string, error), imageBumperCli imageBumper) (func(imageHost, imageName, currentTag string) (string, error), error) {
-	upstreamVersions, err := upstreamConfigVersions(upstreamVersionType, o, parse)
-	if err != nil {
-		return nil, err
-	}
-
-	return func(imageHost, imageName, currentTag string) (string, error) {
-		imageFullPath := imageHost + "/" + imageName + ":" + currentTag
-		for prefix, version := range upstreamVersions {
-			if strings.HasPrefix(imageFullPath, prefix) {
-				exists, err := imageBumperCli.TagExists(imageHost, imageName, version)
-				if err != nil {
-					return "", err
-				}
-				if exists {
-					imageBumperCli.AddToCache(imageFullPath, version)
-					return version, nil
-				} else {
-					imageBumperCli.AddToCache(imageFullPath, currentTag)
-					return "", fmt.Errorf("Unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
-				}
-			}
-		}
-		return currentTag, nil
-	}, nil
-}
-
-func upstreamConfigVersions(upstreamVersionType string, o *Options, parse func(upstreamAddress, prefix string) (string, error)) (versions map[string]string, err error) {
-	versions = make(map[string]string)
-	var upstreamAddress string
-	for _, prefix := range o.Prefixes {
-		if upstreamVersionType == upstreamVersion {
-			upstreamAddress = o.UpstreamURLBase + "/" + prefix.RefConfigFile
-		} else if upstreamVersionType == upstreamStagingVersion {
-			upstreamAddress = o.UpstreamURLBase + "/" + prefix.StagingRefConfigFile
-		} else {
-			return nil, fmt.Errorf("unsupported upstream version type: %s, must be one of %v",
-				upstreamVersionType, []string{upstreamVersion, upstreamStagingVersion})
-		}
-		version, err := parse(upstreamAddress, prefix.Prefix)
-		if err != nil {
-			return nil, err
-		}
-		versions[prefix.Prefix] = version
-	}
-
-	return versions, nil
-}
-
-func findExactMatch(body, prefix string) (string, error) {
-	for _, line := range strings.Split(strings.TrimSuffix(body, "\n"), "\n") {
-		res := imageMatcher.FindStringSubmatch(string(line))
-		if len(res) > 2 && strings.Contains(res[1], prefix) {
-			return res[2], nil
-		}
-	}
-	return "", fmt.Errorf("unable to find match for %s in upstream refConfigFile", prefix)
-}
-
-func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
-	resp, err := http.Get(upstreamAddress)
-	if err != nil {
-		return "", fmt.Errorf("error sending GET request to %q: %w", upstreamAddress, err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("HTTP error %d (%q) fetching upstream config file", resp.StatusCode, resp.Status)
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("error reading the response body: %w", err)
-	}
-	return findExactMatch(string(body), prefix)
-}
-
-func isUnderPath(name string, paths []string) bool {
-	for _, p := range paths {
-		if p != "" && strings.HasPrefix(name, p) {
-			return true
-		}
-	}
-	return false
-}
-
-// getVersionsAndCheckConisistency takes a list of Prefixes and a map of
-// all the images found in the code before the bump : their versions after the bump
-// For example {"gcr.io/k8s-prow/test1:tag": "newtag", "gcr.io/k8s-prow/test2:tag": "newtag"},
-// and returns a map of new versions resulted from bumping : the images using those versions.
-// It will error if one of the Prefixes was bumped inconsistently when it was not supposed to
-func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, error) {
-	// Key is tag, value is full image.
-	versions := map[string][]string{}
-	consistencyChecker := map[string]string{}
-	for _, prefix := range prefixes {
-		for k, v := range images {
-			if strings.HasPrefix(k, prefix.Prefix) {
-				found, ok := consistencyChecker[prefix.Prefix]
-				if ok && (found != v) && prefix.ConsistentImages {
-					return nil, fmt.Errorf("%q was supposed to be bumped consistntly but was not", prefix.Name)
-				} else if !ok {
-					consistencyChecker[prefix.Prefix] = v
-				}
-
-				//Only add bumped images to the new versions map
-				if !strings.Contains(k, v) {
-					versions[v] = append(versions[v], k)
-				}
-
-			}
-		}
-	}
-	return versions, nil
-}
-
 // HasChanges checks if the current git repo contains any changes
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func HasChanges() (bool, error) {
 	args := []string{"status", "--porcelain"}
 	logrus.WithField("cmd", gitCmd).WithField("args", args).Info("running command ...")
@@ -715,79 +505,43 @@ func HasChanges() (bool, error) {
 	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
 
-func getPrefixesString(prefixes []Prefix) string {
-	var res []string
-	for _, prefix := range prefixes {
-		res = append(res, prefix.Name)
-	}
-	return strings.Join(res, ", ")
-}
-
-// isBumpedPrefix takes a prefix and a map of new tags resulted from bumping : the images using those tags
-// and itterates over the map to find if the prefix is found. If it is, this means it has been bumped.
-func isBumpedPrefix(prefix Prefix, versions map[string][]string) (string, bool) {
-	for tag, imageList := range versions {
-		for _, image := range imageList {
-			if strings.HasPrefix(image, prefix.Prefix) {
-				return tag, true
-			}
-		}
-	}
-	return "", false
-}
-
-// makeCommitSummary takes a list of Prefixes and a map of new tags resulted from bumping : the images using those tags
-// and returns a summary of what was bumped for use in the commit message
-func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
-	if len(versions) == 0 {
-		return fmt.Sprintf("Update %s images as necessary", getPrefixesString(prefixes))
-	}
-	var inconsistentBumps []string
-	var consistentBumps []string
-	for _, prefix := range prefixes {
-		tag, bumped := isBumpedPrefix(prefix, versions)
-		if !prefix.ConsistentImages && bumped {
-			inconsistentBumps = append(inconsistentBumps, prefix.Name)
-		} else if prefix.ConsistentImages && bumped {
-			consistentBumps = append(consistentBumps, fmt.Sprintf("%s to %s", prefix.Name, tag))
-		}
-	}
-	var msgs []string
-	if len(consistentBumps) != 0 {
-		msgs = append(msgs, strings.Join(consistentBumps, ", "))
-	}
-	if len(inconsistentBumps) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%s as needed", strings.Join(inconsistentBumps, ", ")))
-	}
-	return fmt.Sprintf("Update %s", strings.Join(msgs, " and "))
-
-}
-
 // MakeGitCommit runs a sequence of git commands to
 // commit and push the changes the "remote" on "remoteBranch"
 // "name" and "email" are used for git-commit command
 // "images" contains the tag replacements that have been made which is returned from "updateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
-func MakeGitCommit(remote, remoteBranch, name, email string, prefixes []Prefix, stdout, stderr io.Writer, versions map[string][]string) error {
-	summary := makeCommitSummary(prefixes, versions)
-	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr)
+func MakeGitCommit(remote, remoteBranch, name, email string, stdout, stderr io.Writer, summary string, dryrun bool) error {
+	return GitCommitAndPush(remote, remoteBranch, name, email, summary, stdout, stderr, dryrun)
 }
 
-func makeGerritCommit(prefixes []Prefix, versions map[string][]string, commitTag, changeId string) string {
-	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", makeCommitSummary(prefixes, versions), commitTag, changeId)
+func makeGerritCommit(summary, commitTag, changeId string) string {
+	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", summary, commitTag, changeId)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
 // The "name", "email", and "message" are used for git-commit command
-func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
-	return GitCommitSignoffAndPush(remote, remoteBranch, name, email, message, stdout, stderr, false)
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
+func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, dryrun bool) error {
+	return GitCommitSignoffAndPush(remote, remoteBranch, name, email, message, stdout, stderr, false, dryrun)
 }
 
 // GitCommitSignoffAndPush runs a sequence of git commands to commit with optional signoff for the commit.
 // The "name", "email", and "message" are used for git-commit command
-func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool) error {
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
+func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer, signoff bool, dryrun bool) error {
 	logrus.Info("Making git commit...")
 
+	if err := gitCommit(name, email, message, stdout, stderr, signoff); err != nil {
+		return err
+	}
+	return gitPush(remote, remoteBranch, stdout, stderr, dryrun)
+}
+
+func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
 		return fmt.Errorf("failed to git add: %w", err)
 	}
@@ -801,6 +555,10 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %w", err)
 	}
+	return nil
+}
+
+func gitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
 		return fmt.Errorf("failed to add remote: %w", err)
 	}
@@ -824,6 +582,11 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 		return fmt.Errorf("failed to get local tree ref: %w", err)
 	}
 
+	if dryrun {
+		logrus.Info("[Dryrun] Skip git push with: ")
+		logrus.Info(forkRemoteName, remoteBranch, stdout, stderr, "")
+		return nil
+	}
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
 	if localTreeRef != remoteTreeRef {
 		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
@@ -837,6 +600,9 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 }
 
 // GitPush push the changes to the given remote and branch.
+//
+// Keeping for backward compatibility reason:
+// https://github.com/kubernetes/test-infra/pull/21952#issuecomment-829562870
 func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string) error {
 	logrus.Info("Pushing to remote...")
 	gc := GitCommand{
@@ -850,112 +616,7 @@ func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir s
 	return nil
 }
 
-func tagFromName(name string) string {
-	parts := strings.Split(name, ":")
-	if len(parts) < 2 {
-		return ""
-	}
-	return parts[1]
-}
-
-func componentFromName(name string) string {
-	s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
-	return s[len(s)-1]
-}
-
-func formatTagDate(d string) string {
-	if len(d) != 8 {
-		return d
-	}
-	// &#x2011; = U+2011 NON-BREAKING HYPHEN, to prevent line wraps.
-	return fmt.Sprintf("%s&#x2011;%s&#x2011;%s", d[0:4], d[4:6], d[6:8])
-}
-
-// commitToRef converts git describe part of a tag to a ref (commit or tag).
-//
-// v0.0.30-14-gdeadbeef => deadbeef
-// v0.0.30 => v0.0.30
-// deadbeef => deadbeef
-func commitToRef(commit string) string {
-	tag, _, commit := imagebumper.DeconstructCommit(commit)
-	if commit != "" {
-		return commit
-	}
-	return tag
-}
-
-func formatVariant(variant string) string {
-	if variant == "" {
-		return ""
-	}
-	variant = strings.TrimPrefix(variant, "-")
-	return fmt.Sprintf("(%s)", variant)
-}
-
-func generateSummary(name, repo, prefix string, summarise bool, images map[string]string) string {
-	type delta struct {
-		oldCommit string
-		newCommit string
-		oldDate   string
-		newDate   string
-		variant   string
-		component string
-	}
-	versions := map[string][]delta{}
-	for image, newTag := range images {
-		if !strings.HasPrefix(image, prefix) {
-			continue
-		}
-		if strings.HasSuffix(image, ":"+newTag) {
-			continue
-		}
-		oldDate, oldCommit, oldVariant := imagebumper.DeconstructTag(tagFromName(image))
-		newDate, newCommit, _ := imagebumper.DeconstructTag(newTag)
-		oldCommit = commitToRef(oldCommit)
-		newCommit = commitToRef(newCommit)
-		k := oldCommit + ":" + newCommit
-		d := delta{
-			oldCommit: oldCommit,
-			newCommit: newCommit,
-			oldDate:   oldDate,
-			newDate:   newDate,
-			variant:   formatVariant(oldVariant),
-			component: componentFromName(image),
-		}
-		versions[k] = append(versions[k], d)
-	}
-
-	switch {
-	case len(versions) == 0:
-		return fmt.Sprintf("No %s changes.", prefix)
-	case len(versions) == 1 && summarise:
-		for k, v := range versions {
-			s := strings.Split(k, ":")
-			return fmt.Sprintf("%s changes: %s/compare/%s...%s (%s → %s)", prefix, repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate))
-		}
-	default:
-		changes := make([]string, 0, len(versions))
-		for k, v := range versions {
-			s := strings.Split(k, ":")
-			names := make([]string, 0, len(v))
-			for _, d := range v {
-				names = append(names, d.component+d.variant)
-			}
-			sort.Strings(names)
-			changes = append(changes, fmt.Sprintf("%s/compare/%s...%s | %s&nbsp;&#x2192;&nbsp;%s | %s",
-				repo, s[0], s[1], formatTagDate(v[0].oldDate), formatTagDate(v[0].newDate), strings.Join(names, ", ")))
-		}
-		sort.Slice(changes, func(i, j int) bool { return strings.Split(changes[i], "|")[1] < strings.Split(changes[j], "|")[1] })
-		return fmt.Sprintf("Multiple distinct %s changes:\n\nCommits | Dates | Images\n--- | --- | ---\n%s\n", prefix, strings.Join(changes, "\n"))
-	}
-	panic("unreachable!")
-}
-
-func generatePRBody(images map[string]string, assignment string, prefixes []Prefix) (body string) {
-	body = ""
-	for _, prefix := range prefixes {
-		body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, images) + "\n\n"
-	}
+func generatePRBody(body, assignment string) string {
 	return body + assignment + "\n"
 }
 
@@ -1052,7 +713,6 @@ func gerritNoOpChange(changeID string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-
 }
 
 func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stderr io.Writer) error {
