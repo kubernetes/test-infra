@@ -599,16 +599,16 @@ distro_options = [
 ]
 
 k8s_versions = [
-    #"latest", # disabled until we're ready to test 1.21
-    "1.18",
+    #"latest", # disabled until we're ready to test 1.22
     "1.19",
-    "1.20"
+    "1.20",
+    "1.21",
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.19",
     "1.20",
+    "1.21",
 ]
 
 container_runtimes = [
