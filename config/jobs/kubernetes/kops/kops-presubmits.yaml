@@ -288,7 +288,7 @@ presubmits:
         - --kops-args=--container-runtime=containerd --networking=calico
         - --kops-priority-path=/home/prow/go/src/k8s.io/kops/kubernetes/platforms/linux/amd64
         - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key
         - --timeout=55m
         # docker-in-docker needs privileged mode
         securityContext:
