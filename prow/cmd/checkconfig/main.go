@@ -188,7 +188,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlags(flag)
+	o.github.AddCustomizedFlags(flag, flagutil.ThrottlerDefaults(3000, 100))
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
@@ -271,7 +271,6 @@ func validate(o options) error {
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
-		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
 		// 404s are expected to happen, no point in retrying
 		githubClient.SetMax404Retries(0)
 

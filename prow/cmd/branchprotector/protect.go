@@ -47,9 +47,12 @@ type options struct {
 	config             configflagutil.ConfigOptions
 	confirm            bool
 	verifyRestrictions bool
-	tokens             int
-	tokenBurst         int
-	github             flagutil.GitHubOptions
+
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
+	tokens     int
+	tokenBurst int
+
+	github flagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
@@ -59,6 +62,17 @@ func (o *options) Validate() error {
 
 	if err := o.config.Validate(!o.confirm); err != nil {
 		return err
+	}
+
+	if o.tokens > 0 {
+		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
+		if o.github.ThrottleHourlyTokens > 0 && o.github.ThrottleHourlyTokens != defaultTokens {
+			// Both options were explicitly specified, use the old form for now
+			o.github.ThrottleHourlyTokens = o.tokens
+			if o.github.ThrottleAllowBurst > o.github.ThrottleHourlyTokens {
+				o.github.ThrottleAllowBurst = o.github.ThrottleHourlyTokens
+			}
+		}
 	}
 
 	return nil
@@ -72,7 +86,7 @@ func gatherOptions() options {
 	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	o.config.AddFlags(fs)
-	o.github.AddFlags(fs)
+	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -121,7 +135,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(o.tokens, o.tokenBurst)
 
 	p := protector{
 		client:             githubClient,
