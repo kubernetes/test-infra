@@ -100,11 +100,11 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-ipv6-canary
     test_group_name: pull-kubernetes-e2e-kind-ipv6-canary
     base_options: width=10
-  - name: pull-kubernetes-e2e-kind-dual-canary
-    test_group_name: pull-kubernetes-e2e-kind-dual-canary
+  - name: pull-kubernetes-e2e-kind-dual
+    test_group_name: pull-kubernetes-e2e-kind-dual
     base_options: width=10
-  - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
-    test_group_name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+  - name: pull-kubernetes-e2e-kind-ipvs-dual
+    test_group_name: pull-kubernetes-e2e-kind-ipvs-dual
     base_options: width=10
   - name: pull-kubernetes-e2e-aks-engine-conformance
     test_group_name: pull-kubernetes-e2e-aks-engine-conformance

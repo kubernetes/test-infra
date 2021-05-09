@@ -32,6 +32,7 @@ jobs:
   - pull-kubernetes-e2e-gce-100-performance
   - pull-kubernetes-e2e-gce-ubuntu-containerd
   - pull-kubernetes-e2e-kind
+  - pull-kubernetes-e2e-kind-dual
   - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
   - pull-kubernetes-node-crio-e2e
