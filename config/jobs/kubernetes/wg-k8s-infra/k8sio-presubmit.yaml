@@ -33,3 +33,18 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify.sh
+  - name: k8sio-k8s-resources-verify
+    annotations:
+      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-num-failures-to-alert: '1'
+      testgrid-alert-email: ameukam@gmail.com
+      testgrid-tab-name: k8sio-k8s-resources-verify
+    decorate: true
+    path_alias: k8s.io/k8s.io
+    run_if_changed: '\.yaml$'
+    spec:
+      containers:
+      - image: openpolicyagent/conftest:latest
+        args:
+        - test
+        - -p policies/ */*.yaml
