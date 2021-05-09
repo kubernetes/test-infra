@@ -663,7 +663,9 @@ func (c *Client) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 
 	for builds := range buildChan {
 		for id, build := range builds {
-			jenkinsBuilds[id] = build
+			if _, ok := jenkinsBuilds[id]; !ok {
+				jenkinsBuilds[id] = build
+			}
 		}
 	}
 
@@ -736,7 +738,9 @@ func (c *Client) GetBuilds(job string) (map[string]Build, error) {
 		if prowJobID == "" {
 			continue
 		}
-		jenkinsBuilds[prowJobID] = jb
+		if _, ok := jenkinsBuilds[prowJobID]; !ok {
+			jenkinsBuilds[prowJobID] = jb
+		}
 	}
 	return jenkinsBuilds, nil
 }
