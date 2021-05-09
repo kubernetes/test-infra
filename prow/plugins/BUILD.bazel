@@ -87,6 +87,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/plugins/approve:all-srcs",
+        "//prow/plugins/approve2:all-srcs",
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",

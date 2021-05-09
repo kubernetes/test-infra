@@ -20,6 +20,7 @@ package pluginimports
 // any hook binary.
 import (
 	_ "k8s.io/test-infra/prow/plugins/approve" // Import all enabled plugins.
+	_ "k8s.io/test-infra/prow/plugins/approve2"
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/blockade"
 	_ "k8s.io/test-infra/prow/plugins/blunderbuss"

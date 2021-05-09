@@ -49,6 +49,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
+	"k8s.io/test-infra/prow/plugins/approve2"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
 	"k8s.io/test-infra/prow/plugins/bugzilla"
@@ -584,6 +585,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 	configs := []plugin{
 		{name: lgtm.PluginName, label: labels.LGTM, matcher: requires},
 		{name: approve.PluginName, label: labels.Approved, matcher: requires},
+		{name: approve2.PluginName, label: labels.Approved, matcher: requires},
 	}
 	if includeForbidden {
 		configs = append(configs,
@@ -920,7 +922,7 @@ func validateManagedWebhooks(cfg *config.Config) error {
 }
 
 func pluginsWithOwnersFile() string {
-	return strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", ")
+	return strings.Join([]string{approve.PluginName, approve2.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", ")
 }
 
 func orgReposUsingOwnersFile(cfg *plugins.Configuration) *orgRepoConfig {
@@ -929,9 +931,10 @@ func orgReposUsingOwnersFile(cfg *plugins.Configuration) *orgRepoConfig {
 	// the `approve', `blunderbuss' and `owners-label' plugins
 	// are enabled
 	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName, false)
+	approve2Config := enabledOrgReposForPlugin(cfg, approve2.PluginName, false)
 	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName, false)
 	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName, false)
-	return approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	return approveConfig.union(approve2Config).union(blunderbussConfig).union(ownersLabelConfig)
 }
 
 type FileInRepoExistsChecker interface {

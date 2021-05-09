@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/plugins/approve:go_default_library",
+        "//prow/plugins/approve2:go_default_library",
         "//prow/plugins/assign:go_default_library",
         "//prow/plugins/blockade:go_default_library",
         "//prow/plugins/blunderbuss:go_default_library",

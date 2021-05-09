@@ -21,6 +21,7 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/approve:go_default_library",
+        "//prow/plugins/approve2:go_default_library",
         "//prow/plugins/blockade:go_default_library",
         "//prow/plugins/blunderbuss:go_default_library",
         "//prow/plugins/bugzilla:go_default_library",
