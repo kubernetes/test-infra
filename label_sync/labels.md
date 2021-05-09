@@ -339,9 +339,9 @@ larger set of contributors to apply/remove them.
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
 | <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
 | <a id="area/e2e-test-framework" href="#area/e2e-test-framework">`area/e2e-test-framework`</a> | Issues or PRs related to refactoring the kubernetes e2e test framework| label | |
-| <a id="area/hyperkube" href="#area/hyperkube">`area/hyperkube`</a> | Issues or PRs related to the hyperkube subproject| label | |
 | <a id="area/network-policy" href="#area/network-policy">`area/network-policy`</a> | Issues or PRs related to Network Policy subproject| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
+| <a id="deprecated/hyperkube" href="#deprecated/hyperkube">`deprecated/hyperkube`</a> | Issues or PRs related to the hyperkube subproject <br><br> This was previously `area/hyperkube`, | label | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 

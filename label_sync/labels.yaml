@@ -997,11 +997,13 @@ repos:
         name: area/e2e-test-framework
         target: both
         addedBy: label
-      - color: 0052cc
+      - color: e11d21
         description: Issues or PRs related to the hyperkube subproject
-        name: area/hyperkube
+        name: deprecated/hyperkube
         target: both
         addedBy: label
+        previously:
+          - name: area/hyperkube
       - color: 0052cc
         description: Issues or PRs related to Network Policy subproject
         name: area/network-policy
