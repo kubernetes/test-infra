@@ -2670,14 +2670,25 @@ func (c *client) AssignIssue(org, repo string, number int, logins []string) erro
 
 	assigned := make(map[string]bool)
 	var i Issue
-	_, err := c.request(&request{
+	httpStatusCode, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
 		org:         org,
 		requestBody: map[string][]string{"assignees": logins},
-		exitCodes:   []int{201},
+		exitCodes:   []int{http.StatusCreated}, //201
 	}, &i)
 	if err != nil {
+		var reqErr requestError
+		if errors.As(err, &reqErr) && (httpStatusCode == http.StatusUnprocessableEntity) {
+			var altClientErr AlternativeClientError
+			if errors.As(reqErr.ClientError, &altClientErr) && altClientErr.Message == "Validation Failed" && altClientErr.Errors != nil &&
+				len(altClientErr.Errors) == 1 && altClientErr.Errors[0] == "Could not add assignees: Validation failed: Assignee has already been taken" {
+				c.logger.WithFields(logrus.Fields{
+					"org": org, "repo": repo, "number": number, "users": logins, "httpStatusCode": httpStatusCode, "altClientErr": altClientErr,
+				}).Debug("User was already assigned")
+				return nil
+			}
+		}
 		return err
 	}
 	for _, assignee := range i.Assignees {

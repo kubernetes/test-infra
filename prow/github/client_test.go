@@ -1115,6 +1115,59 @@ func TestAssignIssue(t *testing.T) {
 	}
 }
 
+func TestAssignIssue422Other(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+
+		altClientErr := &AlternativeClientError{
+			Message: "Some Other failure",
+			Errors:  []string{"error 1"},
+		}
+		b, err := json.Marshal(&altClientErr)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusUnprocessableEntity)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err == nil {
+		t.Errorf("Did not get expected error")
+	}
+}
+
+func TestAssignIssue422AlreadyAssigned(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+
+		altClientErr := &AlternativeClientError{
+			Message:          "Validation Failed",
+			Errors:           []string{"Could not add assignees: Validation failed: Assignee has already been taken"},
+			DocumentationURL: "https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue",
+		}
+		b, err := json.Marshal(&altClientErr)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusUnprocessableEntity)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+}
+
 func TestUnassignIssue(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
