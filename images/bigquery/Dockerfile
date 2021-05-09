@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install influxdb==5.2.2 google-cloud-bigquery==0.24.0 ruamel.yaml==0.16
+RUN pip3 install --no-cache-dir influxdb==5.2.2 google-cloud-bigquery==0.24.0 ruamel.yaml==0.16
 
 ENV GCLOUD_VERSION 265.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
