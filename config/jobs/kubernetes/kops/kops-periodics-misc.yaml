@@ -150,13 +150,13 @@ periodics:
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       - name: KOPS_VERSION_A
-        value: 1.18.3
+        value: v1.18.3
       - name: KOPS_VERSION_B
-        value: 1.19.2
+        value: v1.19.2
       - name: K8S_VERSION_A
-        value: 1.18.18
+        value: v1.18.18
       - name: K8S_VERSION_B
-        value: 1.18.18
+        value: v1.18.18
       securityContext:
         privileged: true
       resources:
@@ -202,13 +202,13 @@ periodics:
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       - name: KOPS_VERSION_A
-        value: 1.19.2
+        value: v1.19.2
       - name: KOPS_VERSION_B
-        value: 1.20.0
+        value: v1.20.0
       - name: K8S_VERSION_A
-        value: 1.19.10
+        value: v1.19.10
       - name: K8S_VERSION_B
-        value: 1.20.6
+        value: v1.20.6
       securityContext:
         privileged: true
       resources:
