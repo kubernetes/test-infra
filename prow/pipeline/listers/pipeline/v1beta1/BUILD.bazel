@@ -3,19 +3,21 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "clustertask.go",
         "doc.go",
-        "register.go",
+        "expansion_generated.go",
+        "pipeline.go",
+        "pipelinerun.go",
+        "task.go",
+        "taskrun.go",
     ],
-    importpath = "k8s.io/test-infra/prow/pipeline/clientset/versioned/scheme",
+    importpath = "k8s.io/test-infra/prow/pipeline/listers/pipeline/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1alpha1:go_default_library",
         "@com_github_tektoncd_pipeline//pkg/apis/pipeline/v1beta1:go_default_library",
-        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
-        "@io_k8s_apimachinery//pkg/runtime:go_default_library",
-        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
-        "@io_k8s_apimachinery//pkg/runtime/serializer:go_default_library",
-        "@io_k8s_apimachinery//pkg/util/runtime:go_default_library",
+        "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
+        "@io_k8s_apimachinery//pkg/labels:go_default_library",
+        "@io_k8s_client_go//tools/cache:go_default_library",
     ],
 )
 
