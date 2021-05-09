@@ -330,40 +330,43 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
+# XXX Temporarily disabled during the transition to `security_contacts` in `OWNERS`
+# See: https://github.com/kubernetes/security/issues/56
+#
 # periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
-- name: periodic-secping
-  interval: 24h
-  decorate: true
-  annotations:
-    testgrid-dashboards: sig-testing-fejtabot
-    description: files bugs for SECURITY_CONTACTS
-    testgrid-tab-name: periodic-secping
-  extra_refs:
-  - base_ref: master
-    org: jessfraz
-    repo: secping
-  - org: fejta
-    repo: go-github
-    base_ref: master
-    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
-  spec:
-    containers:
-    - command:
-      - go
-      - run
-      - .
-      - -d
-      - --confirm
-      - --token-path=/etc/token/bot-github-token
-      - --skip-emails
-      image: golang:1.11
-      volumeMounts:
-      - name: token
-        mountPath: /etc/token
-      env:
-      - name: GO111MODULE
-        value: "on"
-    volumes:
-    - name: token
-      secret:
-        secretName: fejta-bot-token
+# - name: periodic-secping
+#   interval: 24h
+#   decorate: true
+#   annotations:
+#     testgrid-dashboards: sig-testing-fejtabot
+#     description: files bugs for SECURITY_CONTACTS
+#     testgrid-tab-name: periodic-secping
+#   extra_refs:
+#   - base_ref: master
+#     org: jessfraz
+#     repo: secping
+#   - org: fejta
+#     repo: go-github
+#     base_ref: master
+#     path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
+#   spec:
+#     containers:
+#     - command:
+#       - go
+#       - run
+#       - .
+#       - -d
+#       - --confirm
+#       - --token-path=/etc/token/bot-github-token
+#       - --skip-emails
+#       image: golang:1.11
+#       volumeMounts:
+#       - name: token
+#         mountPath: /etc/token
+#       env:
+#       - name: GO111MODULE
+#         value: "on"
+#     volumes:
+#     - name: token
+#       secret:
+#         secretName: fejta-bot-token
