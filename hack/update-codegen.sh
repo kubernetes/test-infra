@@ -173,6 +173,16 @@ gen-spyglass-bindata(){
   cd -
 }
 
+gen-configtree() {
+  clean prow/plugins '*_configtree.go'
+  echo "Generating configtree files..." >&2
+  # uses https://github.com/cheekybits/genny
+  "$go_sdk/bin/go" get github.com/cheekybits/genny
+  ${GOPATH}/bin/genny -in=./prow/plugins/configtree_template.go -out=./prow/plugins/zz_generated_approve_configtree.go gen "Gen=Approve"
+  sed -i '1,4d' ./prow/plugins/zz_generated_approve_configtree.go
+  copyfiles "./prow/plugins" "*.go"
+}
+
 export GO111MODULE=off
 ensure-in-gopath
 old=${GOCACHE:-}
@@ -189,4 +199,5 @@ gen-client
 gen-lister
 gen-informer
 gen-spyglass-bindata
+gen-configtree
 export GO111MODULE=on

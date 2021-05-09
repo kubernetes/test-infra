@@ -60,23 +60,7 @@ func TestPluginConfig(t *testing.T) {
 	}
 	pa.Set(np)
 
-	orgs := map[string]bool{}
-	repos := map[string]bool{}
-	for _, config := range pa.Config().Approve {
-		for _, entry := range config.Repos {
-			if strings.Contains(entry, "/") {
-				if repos[entry] {
-					t.Errorf("The repo %q is duplicated in the 'approve' plugin configuration.", entry)
-				}
-				repos[entry] = true
-			} else {
-				if orgs[entry] {
-					t.Errorf("The org %q is duplicated in the 'approve' plugin configuration.", entry)
-				}
-				orgs[entry] = true
-			}
-		}
-	}
+	// no need to check for duplicates as the ConfigTree uses maps
 }
 
 func newTestComment(user, body string) github.IssueComment {
@@ -1293,10 +1277,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 					LinkURL: test.githubLinkURL,
 				},
 				&plugins.Approve{
-					Repos:               []string{"org/repo"},
 					RequireSelfApproval: &rsa,
-					IssueRequired:       test.needsIssue,
-					LgtmActsAsApprove:   test.lgtmActsAsApprove,
+					IssueRequired:       &test.needsIssue,
+					LgtmActsAsApprove:   &test.lgtmActsAsApprove,
 					IgnoreReviewState:   &irs,
 					CommandHelpLink:     "https://go.k8s.io/bot-commands",
 					PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
@@ -1568,17 +1551,14 @@ func TestHandleGenericComment(t *testing.T) {
 				Host:   "github.com",
 			},
 		}
-		config := &plugins.Configuration{}
-		config.Approve = append(config.Approve, plugins.Approve{
-			Repos:             []string{test.commentEvent.Repo.Owner.Login},
-			LgtmActsAsApprove: test.lgtmActsAsApprove,
-		})
 		err := handleGenericComment(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
 			githubConfig,
-			config,
+			&plugins.Approve{
+				LgtmActsAsApprove: &test.lgtmActsAsApprove,
+			},
 			&test.commentEvent,
 		)
 
@@ -1787,19 +1767,16 @@ func TestHandleReview(t *testing.T) {
 				Host:   "github.com",
 			},
 		}
-		config := &plugins.Configuration{}
 		irs := !test.reviewActsAsApprove
-		config.Approve = append(config.Approve, plugins.Approve{
-			Repos:             []string{test.reviewEvent.Repo.Owner.Login},
-			LgtmActsAsApprove: test.lgtmActsAsApprove,
-			IgnoreReviewState: &irs,
-		})
 		err := handleReview(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
 			githubConfig,
-			config,
+			&plugins.Approve{
+				LgtmActsAsApprove: &test.lgtmActsAsApprove,
+				IgnoreReviewState: &irs,
+			},
 			&test.reviewEvent,
 		)
 
@@ -1943,7 +1920,7 @@ func TestHandlePullRequest(t *testing.T) {
 					Host:   "github.com",
 				},
 			},
-			&plugins.Configuration{},
+			&plugins.Approve{},
 			&test.prEvent,
 		)
 
@@ -1985,13 +1962,9 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name: "All configs enabled",
 			config: &plugins.Configuration{
-				Approve: []plugins.Approve{
-					{
-						Repos:               []string{"org2/repo"},
-						IssueRequired:       true,
-						RequireSelfApproval: &[]bool{true}[0],
-						LgtmActsAsApprove:   true,
-						IgnoreReviewState:   &[]bool{true}[0],
+				Approve: plugins.ApproveConfigTree{
+					Orgs: map[string]plugins.ApproveOrg{
+						"org2": {},
 					},
 				},
 			},
