@@ -99,6 +99,15 @@ func TestHandle(t *testing.T) {
 			MissingLabel:   "needs-cat",
 			MissingComment: "Meow?",
 		},
+		// comment on kind/feature label over k/k repo (issues)
+		{
+			Org:             "k8s",
+			Repo:            "k8s",
+			Issues:          true,
+			Re:              regexp.MustCompile(`^kind/feature$`),
+			MatchingComment: "create KEPs!",
+			MissingLabel:    "needs-kind",
+		},
 	}
 
 	tcs := []struct {
@@ -238,6 +247,34 @@ func TestHandle(t *testing.T) {
 			initialLabels:   []string{labels.LGTM, "needs-sig", "wg/foo"},
 			expectedAdded:   sets.NewString("needs-cat"),
 			expectedRemoved: sets.NewString("needs-sig"),
+			expectComment:   true,
+		},
+		{
+			name: "comment on kind/feature label on issue",
+			event: &event{
+				org:  "k8s",
+				repo: "k8s",
+			},
+			initialLabels: []string{"kind/feature", "kind/bug", "sig/foo"},
+			expectComment: true,
+		},
+		{
+			name: "don't comment on kind/feature labels on PRs",
+			event: &event{
+				org:    "k8s",
+				repo:   "k8s",
+				branch: "main",
+			},
+			initialLabels: []string{"kind/feature", "sig/foo"},
+		},
+		{
+			name: "remove needs-kind label and add comment on issue",
+			event: &event{
+				org:  "k8s",
+				repo: "k8s",
+			},
+			initialLabels:   []string{"sig/foo", "needs-kind", "kind/feature"},
+			expectedRemoved: sets.NewString("needs-kind"),
 			expectComment:   true,
 		},
 	}
