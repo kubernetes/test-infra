@@ -483,3 +483,26 @@ periodics:
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
+- name: periodic-release-verify-install-packages
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: verify-install-packages
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools-centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-installed-debs
+  rerun_auth_config:
+    github_team_ids:
+      - 2241179 # release-managers
+
