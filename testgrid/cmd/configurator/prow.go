@@ -43,6 +43,7 @@ const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-h
 const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const testgridInCellMetric = "testgrid-in-cell-metric"
+const testGridDisableProwJobAnalysis = "testgrid-disable-prowjob-analysis"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -166,6 +167,14 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 
 	if stm, ok := j.Annotations[testgridInCellMetric]; ok {
 		testGroup.ShortTextMetric = stm
+	}
+
+	if dpa, ok := j.Annotations[testGridDisableProwJobAnalysis]; ok {
+		dpaBool, err := strconv.ParseBool(dpa)
+		if err != nil {
+			return fmt.Errorf("%s value %q in not a valid boolean", testGridDisableProwJobAnalysis, dpa)
+		}
+		testGroup.DisableProwjobAnalysis = dpaBool
 	}
 
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
