@@ -1,0 +1,84 @@
+postsubmits:
+  kubernetes/kubernetes:
+    - name: post-kubernetes-push-e2e-alpine-auth-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/alpine\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-auth-img
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-auth-img-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the alpine image.
+            - name: WHAT
+              value: "alpine"
+            - name: REGISTRY
+              value: gcr.io/k8s-staging-e2e-test-auth-img
+    - name: post-kubernetes-push-e2e-windows-nanoserver-auth-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/windows-nanoserver\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-img
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-img-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the windows-nanoserver image.
+            - name: WHAT
+              value: "windows-nanoserver"
+            - name: REGISTRY
+              value: gcr.io/k8s-staging-e2e-test-auth-img
