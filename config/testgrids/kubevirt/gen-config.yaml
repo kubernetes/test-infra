@@ -12,7 +12,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/csi-driver/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-csi-driver-e2e-k8s-1.20
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -21,7 +21,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-check-tests-for-flakes
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -30,7 +30,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.17
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -39,8 +39,17 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.17-rook-ceph-nonroot'
+    name: pull-kubevirt-e2e-k8s-1.17-rook-ceph-nonroot
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.17-rook-ceph-nonroot
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.18'
@@ -48,7 +57,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.18
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -57,8 +66,17 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.19
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.19-nonroot'
+    name: pull-kubevirt-e2e-k8s-1.19-nonroot
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.19-nonroot
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.19-operator'
@@ -66,8 +84,17 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.19-operator
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.19-sig-compute'
+    name: pull-kubevirt-e2e-k8s-1.19-sig-compute
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.19-sig-compute
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.19-sig-network'
@@ -75,7 +102,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.19-sig-network
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -84,7 +111,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.19-sig-storage
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -93,7 +120,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -102,7 +129,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20-cgroupsv2
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -111,8 +138,17 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20-operator
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.20-rook-ceph'
+    name: pull-kubevirt-e2e-k8s-1.20-rook-ceph
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.20-rook-ceph
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.20-sig-compute'
@@ -120,7 +156,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20-sig-compute
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -129,7 +165,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20-sig-network
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -138,8 +174,44 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-k8s-1.20-sig-storage
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.21-operator'
+    name: pull-kubevirt-e2e-k8s-1.21-operator
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.21-operator
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.21-sig-compute'
+    name: pull-kubevirt-e2e-k8s-1.21-sig-compute
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.21-sig-compute
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.21-sig-network'
+    name: pull-kubevirt-e2e-k8s-1.21-sig-network
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.21-sig-network
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-k8s-1.21-sig-storage'
+    name: pull-kubevirt-e2e-k8s-1.21-sig-storage
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-k8s-1.21-sig-storage
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-kind-1.17-sriov'
@@ -147,8 +219,17 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-kind-1.17-sriov
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: pull-kubevirt-e2e-kind-1.17-sriov-nonroot'
+    name: pull-kubevirt-e2e-kind-1.17-sriov-nonroot
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-kubevirt-e2e-kind-1.17-sriov-nonroot
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: pull-kubevirt-e2e-windows2016'
@@ -156,7 +237,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-e2e-windows2016
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -165,7 +246,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-kubevirt-unit-test
   name: kubevirt-presubmits
 - dashboard_tab:
@@ -176,7 +257,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.19-sig-compute
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -185,7 +266,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.19-sig-network
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -194,7 +275,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.19-sig-storage
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -203,7 +284,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -212,7 +293,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20-cgroupsv2
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -221,7 +302,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20-operator
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -230,7 +311,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20-sig-compute
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -239,7 +320,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20-sig-network
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -248,8 +329,44 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-1.20-sig-storage
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-1.21-operator'
+    name: periodic-kubevirt-e2e-k8s-1.21-operator
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: periodic-kubevirt-e2e-k8s-1.21-operator
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-1.21-sig-compute'
+    name: periodic-kubevirt-e2e-k8s-1.21-sig-compute
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: periodic-kubevirt-e2e-k8s-1.21-sig-compute
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-1.21-sig-network'
+    name: periodic-kubevirt-e2e-k8s-1.21-sig-network
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: periodic-kubevirt-e2e-k8s-1.21-sig-network
+  - code_search_url_template:
+      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-1.21-sig-storage'
+    name: periodic-kubevirt-e2e-k8s-1.21-sig-storage
+    open_bug_template:
+      url: https://github.com/kubevirt/kubevirt/issues/
+    open_test_template:
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: periodic-kubevirt-e2e-k8s-1.21-sig-storage
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: periodic-kubevirt-e2e-k8s-latest'
@@ -257,7 +374,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-latest
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -266,17 +383,8 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-prev
-  - code_search_url_template:
-      url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: periodic-kubevirt-e2e-k8s-prev-prev'
-    name: periodic-kubevirt-e2e-k8s-prev-prev
-    open_bug_template:
-      url: https://github.com/kubevirt/kubevirt/issues/
-    open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: periodic-kubevirt-e2e-k8s-prev-prev
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: periodic-kubevirt-e2e-k8s-prev-prev-rook-ceph'
@@ -284,7 +392,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-prev-prev-rook-ceph
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -293,7 +401,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-e2e-k8s-prev-prev-sriov
   - code_search_url_template:
       url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
@@ -302,7 +410,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kubevirt/kubevirt/issues/
     open_test_template:
-      url: https://prow.apps.ovirt.org/view/gs/<gcs_prefix>/<changelist>
+      url: https://prow.ci.kubevirt.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-kubevirt-push-nightly-conformance
   name: kubevirt-periodics
 test_groups:
@@ -334,14 +442,23 @@ test_groups:
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-1.20-sig-storage
   name: periodic-kubevirt-e2e-k8s-1.20-sig-storage
 - days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-1.21-operator
+  name: periodic-kubevirt-e2e-k8s-1.21-operator
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-1.21-sig-compute
+  name: periodic-kubevirt-e2e-k8s-1.21-sig-compute
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-1.21-sig-network
+  name: periodic-kubevirt-e2e-k8s-1.21-sig-network
+- days_of_results: 60
+  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-1.21-sig-storage
+  name: periodic-kubevirt-e2e-k8s-1.21-sig-storage
+- days_of_results: 60
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-latest
   name: periodic-kubevirt-e2e-k8s-latest
 - days_of_results: 60
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev
   name: periodic-kubevirt-e2e-k8s-prev
-- days_of_results: 60
-  gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev-prev
-  name: periodic-kubevirt-e2e-k8s-prev-prev
 - days_of_results: 60
   gcs_prefix: kubevirt-prow/logs/periodic-kubevirt-e2e-k8s-prev-prev-rook-ceph
   name: periodic-kubevirt-e2e-k8s-prev-prev-rook-ceph
@@ -362,14 +479,23 @@ test_groups:
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17-rook-ceph
   name: pull-kubevirt-e2e-k8s-1.17-rook-ceph
   num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.17-rook-ceph-nonroot
+  name: pull-kubevirt-e2e-k8s-1.17-rook-ceph-nonroot
+  num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.18
   name: pull-kubevirt-e2e-k8s-1.18
   num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19
   name: pull-kubevirt-e2e-k8s-1.19
   num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19-nonroot
+  name: pull-kubevirt-e2e-k8s-1.19-nonroot
+  num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19-operator
   name: pull-kubevirt-e2e-k8s-1.19-operator
+  num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19-sig-compute
+  name: pull-kubevirt-e2e-k8s-1.19-sig-compute
   num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.19-sig-network
   name: pull-kubevirt-e2e-k8s-1.19-sig-network
@@ -386,6 +512,9 @@ test_groups:
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20-operator
   name: pull-kubevirt-e2e-k8s-1.20-operator
   num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20-rook-ceph
+  name: pull-kubevirt-e2e-k8s-1.20-rook-ceph
+  num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20-sig-compute
   name: pull-kubevirt-e2e-k8s-1.20-sig-compute
   num_columns_recent: 20
@@ -395,8 +524,23 @@ test_groups:
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.20-sig-storage
   name: pull-kubevirt-e2e-k8s-1.20-sig-storage
   num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.21-operator
+  name: pull-kubevirt-e2e-k8s-1.21-operator
+  num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.21-sig-compute
+  name: pull-kubevirt-e2e-k8s-1.21-sig-compute
+  num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.21-sig-network
+  name: pull-kubevirt-e2e-k8s-1.21-sig-network
+  num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-k8s-1.21-sig-storage
+  name: pull-kubevirt-e2e-k8s-1.21-sig-storage
+  num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-kind-1.17-sriov
   name: pull-kubevirt-e2e-kind-1.17-sriov
+  num_columns_recent: 20
+- gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-kind-1.17-sriov-nonroot
+  name: pull-kubevirt-e2e-kind-1.17-sriov-nonroot
   num_columns_recent: 20
 - gcs_prefix: kubevirt-prow/pr-logs/directory/pull-kubevirt-e2e-windows2016
   name: pull-kubevirt-e2e-windows2016
