@@ -49,6 +49,45 @@ var (
 	imageMatcher = regexp.MustCompile(`(?s)^.+image:(.+):(v[a-zA-Z0-9_.-]+)`)
 )
 
+var _ bumper.PRHandler = (*client)(nil)
+
+type client struct {
+	o        *Options
+	images   map[string]string
+	versions map[string][]string
+}
+
+// Changes returns a slice of functions, each one does some stuff, and
+// returns commit message for the changes
+func (c *client) Changes() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			var err error
+			c.images, err = UpdateReferences(c.o)
+			if err != nil {
+				return "", fmt.Errorf("failed to update image references: %w", err)
+			}
+
+			c.versions, err = getVersionsAndCheckConsistency(c.o.Prefixes, c.images)
+			if err != nil {
+				return "", err
+			}
+
+			var body string
+			for _, prefix := range c.o.Prefixes {
+				body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, c.images) + "\n\n"
+			}
+
+			return body, nil
+		},
+	}
+}
+
+// PRTitleBody returns the body of the PR, this function runs after each commit
+func (c *client) PRTitleBody() (string, string, error) {
+	return makeCommitSummary(c.o.Prefixes, c.versions), "", nil
+}
+
 // Options is the options for autobumper operations.
 type Options struct {
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
@@ -84,31 +123,40 @@ type Prefix struct {
 	ConsistentImages bool `yaml:"consistentImages"`
 }
 
-func parseOptions() (*bumper.Options, error) {
+func parseOptions() (*Options, *bumper.Options, error) {
 	var config string
 	var labelsOverride []string
+	var skipPullRequest bool
 
 	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
+	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
 	flag.Parse()
 
-	var o bumper.Options
+	var o Options
+	var pro bumper.Options
 	data, err := ioutil.ReadFile(config)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read in config file, %s", config)
+		return nil, nil, fmt.Errorf("Failed to read in config file, %s", config)
 	}
 
-	if err := yaml.UnmarshalStrict(data, &o); err != nil {
-		return nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+	err = yaml.Unmarshal(data, &o)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+	}
+
+	if err := yaml.Unmarshal(data, &pro); err != nil {
+		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
 	}
 
 	if labelsOverride != nil {
-		o.Labels = labelsOverride
+		pro.Labels = labelsOverride
 	}
-	return &o, nil
+	pro.SkipPullRequest = skipPullRequest
+	return &o, &pro, nil
 }
 
-func validateOptions(o *bumper.Options) error {
+func validateOptions(o *Options) error {
 	if len(o.Prefixes) == 0 {
 		return fmt.Errorf("Must have at least one Prefix specified")
 	}
@@ -422,12 +470,16 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 }
 
 func main() {
-	o, err := parseOptions()
+	logrus.SetLevel(logrus.DebugLevel)
+	o, pro, err := parseOptions()
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
 	}
+	if err := validateOptions(o); err != nil {
+		logrus.WithError(err).Fatalf("Failed validating flags")
+	}
 
-	if err := bumper.Run(o); err != nil {
+	if err := bumper.Run2(pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }
