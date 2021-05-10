@@ -74,7 +74,7 @@ func (af *fileArrayFlag) Set(value string) error {
 		fn := strings.TrimSpace(e)
 		info, err := os.Stat(fn)
 		if err != nil {
-			return fmt.Errorf("error getting file info for %q", fn)
+			return fmt.Errorf("getting file info for %q", fn)
 		}
 		if info.IsDir() && !strings.HasSuffix(fn, string(os.PathSeparator)) {
 			fn = fn + string(os.PathSeparator)
@@ -293,21 +293,21 @@ func validateOptions(o *Options) error {
 // Run is the entrypoint which will update Prow config files based on the provided options.
 func Run(o *Options) error {
 	if err := validateOptions(o); err != nil {
-		return fmt.Errorf("error validating options: %w", err)
+		return fmt.Errorf("validating options: %w", err)
 	}
 
 	if err := cdToRootDir(); err != nil {
-		return fmt.Errorf("failed to change to root dir: %w", err)
+		return fmt.Errorf("change to root dir: %w", err)
 	}
 
 	images, err := UpdateReferences(o)
 	if err != nil {
-		return fmt.Errorf("failed to update image references: %w", err)
+		return fmt.Errorf("update image references: %w", err)
 	}
 
 	changed, err := HasChanges()
 	if err != nil {
-		return fmt.Errorf("error occurred when checking changes: %w", err)
+		return fmt.Errorf("checking changes: %w", err)
 	}
 
 	if !changed {
@@ -328,7 +328,7 @@ func Run(o *Options) error {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
 	} else if o.Gerrit == nil {
 		if err := sa.Start([]string{o.GitHubToken}); err != nil {
-			return fmt.Errorf("failed to start secrets agent: %w", err)
+			return fmt.Errorf("start secrets agent: %w", err)
 		}
 
 		gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
@@ -336,7 +336,7 @@ func Run(o *Options) error {
 		if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
 			user, err := gc.BotUser()
 			if err != nil {
-				return fmt.Errorf("failed to get the user data for the provided GH token: %w", err)
+				return fmt.Errorf("get the user data for the provided GH token: %w", err)
 			}
 			if o.GitHubLogin == "" {
 				o.GitHubLogin = user.Login
@@ -369,19 +369,19 @@ func Run(o *Options) error {
 		}
 
 		if err := MakeGitCommit(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, o.GitName, o.GitEmail, o.Prefixes, stdout, stderr, versions); err != nil {
-			return fmt.Errorf("failed to push changes to the remote branch: %w", err)
+			return fmt.Errorf("push changes to the remote branch: %w", err)
 		}
 
 		if o.GitHubBaseBranch == "" {
 			repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 			if err != nil {
-				return fmt.Errorf("failed to detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
+				return fmt.Errorf("detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
 			}
 			o.GitHubBaseBranch = repo.DefaultBranch
 		}
 
 		if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, images, getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, o.Prefixes, versions, o.Labels); err != nil {
-			return fmt.Errorf("failed to create the PR: %w", err)
+			return fmt.Errorf("create the PR: %w", err)
 		}
 	} else {
 		if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
@@ -403,8 +403,8 @@ func Run(o *Options) error {
 		}
 
 		err = gerritCommitandPush(o.Prefixes, versions, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
-		// If failed to push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
-		if err != nil && strings.Contains(err.Error(), "failed to push some refs") && strings.Contains(err.Error(), "closed") {
+		// If push because a closed PR already exists with this change ID (the PR was abandoned). Hash the ID again and try one more time.
+		if err != nil && strings.Contains(err.Error(), "push some refs") && strings.Contains(err.Error(), "closed") {
 			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
 			changeId, subErr := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId)
 			if subErr != nil {
@@ -429,7 +429,7 @@ func Run(o *Options) error {
 // updateFunc: a function that returns commit message and error
 func Run2(o *Options, prh PRHandler) error {
 	if err := validateOptions(o); err != nil {
-		return fmt.Errorf("error validating options: %w", err)
+		return fmt.Errorf("validating options: %w", err)
 	}
 
 	if o.SkipPullRequest {
@@ -447,21 +447,21 @@ func processGitHub(o *Options, prh PRHandler) error {
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
 	if err := sa.Start([]string{o.GitHubToken}); err != nil {
-		return fmt.Errorf("failed to start secrets agent: %w", err)
+		return fmt.Errorf("start secrets agent: %w", err)
 	}
 
 	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 
 	// Make change, commit and push
-	for _, f := range prh.Changes() {
-		msg, err := f()
+	for i, changeFunc := range prh.Changes() {
+		msg, err := changeFunc()
 		if err != nil {
-			return fmt.Errorf("failed to process provided function: %w", err)
+			return fmt.Errorf("process function %d: %w", i, err)
 		}
 
 		changed, err := HasChanges()
 		if err != nil {
-			return fmt.Errorf("error occurred when checking changes: %w", err)
+			return fmt.Errorf("checking changes: %w", err)
 		}
 
 		if !changed {
@@ -471,30 +471,27 @@ func processGitHub(o *Options, prh PRHandler) error {
 		}
 
 		if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
-			return fmt.Errorf("failed git commit: %w", err)
+			return fmt.Errorf("git commit: %w", err)
 		}
 	}
 
-	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName),
-		o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
-		return fmt.Errorf("failed to push changes to the remote branch: %w", err)
+	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
 	summary, body, err := prh.PRTitleBody()
 	if err != nil {
-		return fmt.Errorf("failed creating PR summary and body: %w", err)
+		return fmt.Errorf("creating PR summary and body: %w", err)
 	}
 	if o.GitHubBaseBranch == "" {
 		repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 		if err != nil {
-			return fmt.Errorf("failed to detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
+			return fmt.Errorf("detect default remote branch for %s/%s: %w", o.GitHubOrg, o.GitHubRepo, err)
 		}
 		o.GitHubBaseBranch = repo.DefaultBranch
 	}
-	if err := updatePRWithLabels2(gc, o.GitHubOrg, o.GitHubRepo,
-		getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin,
-		o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
-		return fmt.Errorf("failed to create the PR: %w", err)
+	if err := updatePRWithLabels2(gc, o.GitHubOrg, o.GitHubRepo, getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
+		return fmt.Errorf("to create the PR: %w", err)
 	}
 	return nil
 }
@@ -522,15 +519,15 @@ func processGerrit(o *Options, prh PRHandler) error {
 	}
 
 	// Make change, commit and push
-	for _, f := range prh.Changes() {
-		msg, err := f()
+	for i, changeFunc := range prh.Changes() {
+		msg, err := changeFunc()
 		if err != nil {
-			return fmt.Errorf("failed to process provided function: %w", err)
+			return fmt.Errorf("process function %d: %w", i, err)
 		}
 
 		changed, err := HasChanges()
 		if err != nil {
-			return fmt.Errorf("error occurred when checking changes: %w", err)
+			return fmt.Errorf("checking changes: %w", err)
 		}
 
 		if !changed {
@@ -540,10 +537,10 @@ func processGerrit(o *Options, prh PRHandler) error {
 		}
 
 		if err = gerritCommitandPush2(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr); err != nil {
-			// If failed to push because a closed PR already exists with this
+			// If push because a closed PR already exists with this
 			// change ID (the PR was abandoned). Hash the ID again and try one
 			// more time.
-			if !strings.Contains(err.Error(), "failed to push some refs") || !strings.Contains(err.Error(), "closed") {
+			if !strings.Contains(err.Error(), "push some refs") || !strings.Contains(err.Error(), "closed") {
 				return err
 			}
 			logrus.Warn("Error pushing CR due to already used ChangeID. PR may have been abandoned. Trying again with new ChangeID.")
@@ -564,7 +561,7 @@ func gerritCommitandPush(prefixes []Prefix, versions map[string][]string, autobu
 
 	// TODO(mpherman): Add reviewers to CreateCR
 	if err := createCR(msg, "master", changeId, reviewers, cc, stdout, stderr); err != nil {
-		return fmt.Errorf("Failled to create the CR: %w", err)
+		return fmt.Errorf("create CR: %w", err)
 	}
 	return nil
 }
@@ -574,7 +571,7 @@ func gerritCommitandPush2(summary, autobumpId, changeId string, reviewers, cc []
 
 	// TODO(mpherman): Add reviewers to CreateCR
 	if err := createCR(msg, "master", changeId, reviewers, cc, stdout, stderr); err != nil {
-		return fmt.Errorf("Failled to create the CR: %w", err)
+		return fmt.Errorf("create CR: %w", err)
 	}
 	return nil
 }
@@ -582,14 +579,14 @@ func gerritCommitandPush2(summary, autobumpId, changeId string, reviewers, cc []
 func cdToRootDir() error {
 	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
 		if err := os.Chdir(bazelWorkspace); err != nil {
-			return fmt.Errorf("failed to chdir to bazel workspace (%s): %w", bazelWorkspace, err)
+			return fmt.Errorf("chdir to bazel workspace (%s): %w", bazelWorkspace, err)
 		}
 		return nil
 	}
 	cmd := exec.Command(gitCmd, "rev-parse", "--show-toplevel")
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("failed to get the repo's root directory: %w", err)
+		return fmt.Errorf("get the repo's root directory: %w", err)
 	}
 	d := strings.TrimSpace(string(output))
 	logrus.Infof("Changing working directory to %s...", d)
@@ -663,7 +660,7 @@ func UpdatePullRequestWithLabels(gc github.Client, org, repo, title, body, sourc
 	logrus.Info("Creating or updating PR...")
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
 	if err != nil {
-		return fmt.Errorf("failed to ensure PR exists: %w", err)
+		return fmt.Errorf("ensure PR exists: %w", err)
 	}
 
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, baseBranch, title)
@@ -679,7 +676,7 @@ func UpdatePullRequestWithLabels2(gc github.Client, org, repo, title, body, sour
 	}
 	n, err := updater.EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch, allowMods, gc, labels)
 	if err != nil {
-		return fmt.Errorf("failed to ensure PR exists: %w", err)
+		return fmt.Errorf("ensure PR exists: %w", err)
 	}
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, baseBranch, title)
 	return nil
@@ -719,7 +716,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	case upstreamVersion, upstreamStagingVersion:
 		tagPicker, err = upstreamImageVersionResolver(o, o.TargetVersion, parseUpstreamImageVersion, imageBumperCli)
 		if err != nil {
-			return nil, fmt.Errorf("failed to resolve the %s image version: %w", o.TargetVersion, err)
+			return nil, fmt.Errorf("resolve the %s image version: %w", o.TargetVersion, err)
 		}
 	default:
 		tagPicker = func(imageHost, imageName, currentTag string) (string, error) { return o.TargetVersion, nil }
@@ -728,7 +725,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	updateFile := func(name string) error {
 		logrus.Infof("Updating file %s", name)
 		if err := imageBumperCli.UpdateFile(tagPicker, name, filterRegexp); err != nil {
-			return fmt.Errorf("failed to update the file: %w", err)
+			return fmt.Errorf("update the file: %w", err)
 		}
 		return nil
 	}
@@ -743,18 +740,18 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	for _, path := range o.IncludedConfigPaths {
 		info, err := os.Stat(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get the file info for %q", path)
+			return nil, fmt.Errorf("get the file info for %q", path)
 		}
 		if info.IsDir() {
 			err := filepath.Walk(path, func(subpath string, info os.FileInfo, err error) error {
 				return updateYAMLFile(subpath)
 			})
 			if err != nil {
-				return nil, fmt.Errorf("failed to update yaml files under %q: %w", path, err)
+				return nil, fmt.Errorf("update yaml files under %q: %w", path, err)
 			}
 		} else {
 			if err := updateYAMLFile(path); err != nil {
-				return nil, fmt.Errorf("failed to update the yaml file %q: %w", path, err)
+				return nil, fmt.Errorf("update the yaml file %q: %w", path, err)
 			}
 		}
 	}
@@ -762,7 +759,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	// Update the extra files in any case.
 	for _, file := range o.ExtraFiles {
 		if err := updateFile(file); err != nil {
-			return nil, fmt.Errorf("failed to update the extra file %q: %w", file, err)
+			return nil, fmt.Errorf("update the extra file %q: %w", file, err)
 		}
 	}
 
@@ -789,7 +786,7 @@ func upstreamImageVersionResolver(
 					return version, nil
 				} else {
 					imageBumperCli.AddToCache(imageFullPath, currentTag)
-					return "", fmt.Errorf("Unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
+					return "", fmt.Errorf("unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
 				}
 			}
 		}
@@ -832,7 +829,7 @@ func findExactMatch(body, prefix string) (string, error) {
 func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
 	resp, err := http.Get(upstreamAddress)
 	if err != nil {
-		return "", fmt.Errorf("error sending GET request to %q: %w", upstreamAddress, err)
+		return "", fmt.Errorf("sending GET request to %q: %w", upstreamAddress, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -840,7 +837,7 @@ func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("error reading the response body: %w", err)
+		return "", fmt.Errorf("reading the response body: %w", err)
 	}
 	return findExactMatch(string(body), prefix)
 }
@@ -891,7 +888,7 @@ func HasChanges() (bool, error) {
 	combinedOutput, err := exec.Command(gitCmd, args...).CombinedOutput()
 	if err != nil {
 		logrus.WithField("cmd", gitCmd).Debugf("output is '%s'", string(combinedOutput))
-		return false, fmt.Errorf("error running command %s %s: %w", gitCmd, args, err)
+		return false, fmt.Errorf("running command %s %s: %w", gitCmd, args, err)
 	}
 	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
@@ -979,7 +976,7 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	logrus.Info("Making git commit...")
 
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
-		return fmt.Errorf("failed to git add: %w", err)
+		return fmt.Errorf("git add: %w", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
@@ -989,29 +986,29 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 		commitArgs = append(commitArgs, "--signoff")
 	}
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
-		return fmt.Errorf("failed to git commit: %w", err)
+		return fmt.Errorf("git commit: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
-		return fmt.Errorf("failed to add remote: %w", err)
+		return fmt.Errorf("add remote: %w", err)
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
 	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
 		logrus.Info("fetchStderr is : ", fetchStderr.String())
 		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
-			return fmt.Errorf("failed to fetch from fork: %w", err)
+			return fmt.Errorf("fetch from fork: %w", err)
 		}
 	} else {
 		var err error
 		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
 		if err != nil {
-			return fmt.Errorf("failed to get remote tree ref: %w", err)
+			return fmt.Errorf("get remote tree ref: %w", err)
 		}
 	}
 
 	localTreeRef, err := getTreeRef(stderr, "HEAD")
 	if err != nil {
-		return fmt.Errorf("failed to get local tree ref: %w", err)
+		return fmt.Errorf("get local tree ref: %w", err)
 	}
 
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
@@ -1035,7 +1032,7 @@ func GitCommitSignoffAndPush2(remote, remoteBranch, name, email, message string,
 }
 func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
-		return fmt.Errorf("failed to git add: %w", err)
+		return fmt.Errorf("git add: %w", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
@@ -1045,32 +1042,32 @@ func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bo
 		commitArgs = append(commitArgs, "--signoff")
 	}
 	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
-		return fmt.Errorf("failed to git commit: %w", err)
+		return fmt.Errorf("git commit: %w", err)
 	}
 	return nil
 }
 
 func gitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
-		return fmt.Errorf("failed to add remote: %w", err)
+		return fmt.Errorf("add remote: %w", err)
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
 	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
 		logrus.Info("fetchStderr is : ", fetchStderr.String())
 		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
-			return fmt.Errorf("failed to fetch from fork: %w", err)
+			return fmt.Errorf("fetch from fork: %w", err)
 		}
 	} else {
 		var err error
 		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
 		if err != nil {
-			return fmt.Errorf("failed to get remote tree ref: %w", err)
+			return fmt.Errorf("get remote tree ref: %w", err)
 		}
 	}
 	localTreeRef, err := getTreeRef(stderr, "HEAD")
 	if err != nil {
-		return fmt.Errorf("failed to get local tree ref: %w", err)
+		return fmt.Errorf("get local tree ref: %w", err)
 	}
 
 	if dryrun {
@@ -1098,7 +1095,7 @@ func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir s
 		workingDir:  workingDir,
 	}
 	if err := gc.Call(stdout, stderr); err != nil {
-		return fmt.Errorf("failed to %s: %w", gc.getCommand(), err)
+		return fmt.Errorf("%s: %w", gc.getCommand(), err)
 	}
 	return nil
 }
@@ -1251,7 +1248,7 @@ func getAssignment(assignTo, oncallAddress, oncallGroup string) string {
 func getTreeRef(stderr io.Writer, refname string) (string, error) {
 	revParseStdout := &bytes.Buffer{}
 	if err := Call(revParseStdout, stderr, gitCmd, "rev-parse", refname+":"); err != nil {
-		return "", fmt.Errorf("failed to parse ref: %w", err)
+		return "", fmt.Errorf("parse ref: %w", err)
 	}
 	fields := strings.Fields(revParseStdout.String())
 	if n := len(fields); n < 1 {
@@ -1279,7 +1276,7 @@ func getDiff(prevCommit string) (string, error) {
 	var diffBuf bytes.Buffer
 	var errBuf bytes.Buffer
 	if err := Call(&diffBuf, &errBuf, gitCmd, "diff", prevCommit); err != nil {
-		return "", fmt.Errorf("error diffing previous bump: %v -- %s", err, errBuf.String())
+		return "", fmt.Errorf("diffing previous bump: %v -- %s", err, errBuf.String())
 	}
 	return diffBuf.String(), nil
 }
@@ -1293,7 +1290,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 	}
 	// Get PR with same ChangeID for this bump
 	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
-		return false, fmt.Errorf("error getting previous bump: %v", err)
+		return false, fmt.Errorf("getting previous bump: %v", err)
 	}
 	prevCommit := strings.TrimSpace(outBuf.String())
 	// No current CRs with cur ChangeID means this is not a noOp change
@@ -1314,7 +1311,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stderr io.Writer) error {
 	noOp, err := gerritNoOpChange(changeID)
 	if err != nil {
-		return fmt.Errorf("error diffing previous bump: %v", err)
+		return fmt.Errorf("diffing previous bump: %v", err)
 	}
 	if noOp {
 		logrus.Info("CR is a no-op change. Returning without pushing update")
@@ -1336,7 +1333,7 @@ func getLastBumpCommit(gerritAuthor, commitTag string) (string, error) {
 	var errBuf bytes.Buffer
 
 	if err := Call(&outBuf, &errBuf, gitCmd, "log", fmt.Sprintf("--author=%s", gerritAuthor), fmt.Sprintf("--grep=%s", commitTag), "-1", "--format='%H'"); err != nil {
-		return "", errors.New("error running git command")
+		return "", errors.New("running git command")
 	}
 
 	return outBuf.String(), nil

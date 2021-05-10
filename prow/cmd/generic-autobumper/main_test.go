@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
 	"reflect"
 	"regexp"
 	"strings"
@@ -34,14 +37,14 @@ func TestValidateOptions(t *testing.T) {
 	emptyStr := ""
 	whateverStr := "whatever"
 	emptyArr := make([]string, 0)
-	emptyPrefixes := make([]Prefix, 0)
-	latestPrefixes := []Prefix{{
+	emptyPrefixes := make([]prefix, 0)
+	latestPrefixes := []prefix{{
 		Name:                 "test",
 		Prefix:               "gcr.io/test/",
 		RefConfigFile:        "",
 		StagingRefConfigFile: "",
 	}}
-	upstreamPrefixes := []Prefix{{
+	upstreamPrefixes := []prefix{{
 		Name:                 "test",
 		Prefix:               "gcr.io/test/",
 		RefConfigFile:        "ref",
@@ -53,7 +56,7 @@ func TestValidateOptions(t *testing.T) {
 		name                string
 		targetVersion       *string
 		includeConfigPaths  *[]string
-		prefixes            *[]Prefix
+		prefixes            *[]prefix
 		upstreamURLBase     *string
 		err                 bool
 		upstreamBaseChanged bool
@@ -124,7 +127,7 @@ func TestValidateOptions(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			defaultOption := &Options{
+			defaultOption := &options{
 				UpstreamURLBase:     "whatever-URLBase",
 				Prefixes:            latestPrefixes,
 				TargetVersion:       latestVersion,
@@ -194,6 +197,31 @@ func (cli *fakeImageBumperCli) TagExists(imageHost, imageName, currentTag string
 }
 
 func TestUpdateReferences(t *testing.T) {
+	tmpDir, err := os.MkdirTemp(".", "test-update-references_")
+	if err != nil {
+		t.Fatalf("Failed created tmp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed cleanup tmp dir %q: %v", tmpDir, err)
+		}
+	})
+	for dir, fps := range map[string][]string{
+		"testdata/dir/subdir1": {"test1-1.yaml", "test1-2.yaml"},
+		"testdata/dir/subdir2": {"test2-1.yaml"},
+		"testdata/dir/subdir3": {"test3-1.yaml"},
+		"testdata/dir":         {"extra-file"},
+	} {
+		if err := os.MkdirAll(path.Join(tmpDir, dir), 0755); err != nil {
+			t.Fatalf("Faile creating dir %q: %v", dir, err)
+		}
+		for _, f := range fps {
+			if _, err := os.Create(path.Join(tmpDir, dir, f)); err != nil {
+				t.Fatalf("Faile creating file %q: %v", f, err)
+			}
+		}
+	}
+
 	cases := []struct {
 		description        string
 		targetVersion      string
@@ -204,67 +232,86 @@ func TestUpdateReferences(t *testing.T) {
 		expectError        bool
 	}{
 		{
-			description:        "update the images to the latest version",
-			targetVersion:      latestVersion,
-			includeConfigPaths: []string{"testdata/dir/subdir1", "testdata/dir/subdir2"},
+			description:   "update the images to the latest version",
+			targetVersion: latestVersion,
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/subdir1"),
+				path.Join(tmpDir, "testdata/dir/subdir2"),
+			},
 			expectedRes: map[string]string{
-				"testdata/dir/subdir1/test1-1.yaml": "fake-latest",
-				"testdata/dir/subdir1/test1-2.yaml": "fake-latest",
-				"testdata/dir/subdir2/test2-1.yaml": "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir1/test1-1.yaml"): "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir1/test1-2.yaml"): "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir2/test2-1.yaml"): "fake-latest",
 			},
 			expectError: false,
 		},
 		{
-			description:        "update the images to a specific version",
-			targetVersion:      "v20200101-livebull",
-			includeConfigPaths: []string{"testdata/dir/subdir2"},
+			description:   "update the images to a specific version",
+			targetVersion: "v20200101-livebull",
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/subdir2"),
+			},
 			expectedRes: map[string]string{
-				"testdata/dir/subdir2/test2-1.yaml": "v20200101-livebull",
+				path.Join(tmpDir, "testdata/dir/subdir2/test2-1.yaml"): "v20200101-livebull",
 			},
 			expectError: false,
 		},
 		{
-			description:        "by default only yaml files will be updated",
-			targetVersion:      latestVersion,
-			includeConfigPaths: []string{"testdata/dir/subdir3"},
+			description:   "by default only yaml files will be updated",
+			targetVersion: latestVersion,
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/subdir3"),
+			},
 			expectedRes: map[string]string{
-				"testdata/dir/subdir3/test3-1.yaml": "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir3/test3-1.yaml"): "fake-latest",
 			},
 			expectError: false,
 		},
 		{
-			description:        "files under the excluded paths will not be updated",
-			targetVersion:      latestVersion,
-			includeConfigPaths: []string{"testdata/dir"},
-			excludeConfigPaths: []string{"testdata/dir/subdir1", "testdata/dir/subdir2"},
+			description:   "files under the excluded paths will not be updated",
+			targetVersion: latestVersion,
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir"),
+			},
+			excludeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/subdir1"),
+				path.Join(tmpDir, "testdata/dir/subdir2"),
+			},
 			expectedRes: map[string]string{
-				"testdata/dir/subdir3/test3-1.yaml": "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir3/test3-1.yaml"): "fake-latest",
 			},
 			expectError: false,
 		},
 		{
-			description:        "non YAML files could be configured by specifying extraFiles",
-			targetVersion:      latestVersion,
-			includeConfigPaths: []string{"testdata/dir/subdir3"},
-			extraFiles:         []string{"testdata/dir/extra-file", "testdata/dir/subdir3/test3-2"},
+			description:   "non YAML files could be configured by specifying extraFiles",
+			targetVersion: latestVersion,
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/subdir3"),
+			},
+			extraFiles: []string{
+				path.Join(tmpDir, "testdata/dir/extra-file"),
+				path.Join(tmpDir, "testdata/dir/subdir3/test3-2"),
+			},
 			expectedRes: map[string]string{
-				"testdata/dir/subdir3/test3-1.yaml": "fake-latest",
-				"testdata/dir/extra-file":           "fake-latest",
-				"testdata/dir/subdir3/test3-2":      "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir3/test3-1.yaml"): "fake-latest",
+				path.Join(tmpDir, "testdata/dir/extra-file"):           "fake-latest",
+				path.Join(tmpDir, "testdata/dir/subdir3/test3-2"):      "fake-latest",
 			},
 			expectError: false,
 		},
 		{
-			description:        "updating non-existed files will return an error",
-			targetVersion:      latestVersion,
-			includeConfigPaths: []string{"testdata/dir/whatever-subdir"},
-			expectError:        true,
+			description:   "updating non-existed files will return an error",
+			targetVersion: latestVersion,
+			includeConfigPaths: []string{
+				path.Join(tmpDir, "testdata/dir/whatever-subdir"),
+			},
+			expectError: true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
+			option := &options{
 				TargetVersion:       tc.targetVersion,
 				IncludedConfigPaths: tc.includeConfigPaths,
 				ExtraFiles:          tc.extraFiles,
@@ -363,56 +410,41 @@ func TestParseUpstreamImageVersion(t *testing.T) {
 }
 
 func TestUpstreamImageVersionResolver(t *testing.T) {
-	prowProdFakeVersion := "v-prow-prod-version"
-	prowStagingFakeVersion := "v-prow-staging-version"
-	boskosProdFakeVersion := "v-boskos-prod-version"
-	boskosStagingFakeVersion := "v-boskos-staging-version"
-	prowRefConfigFile := "prow-prod"
-	boskosRefConfigFile := "boskos-prod"
-	prowStagingRefConfigFile := "prow-staging"
-	boskosStagingRefConfigFile := "boskos-staging"
-	fakeUpstreamURLBase := "test.com"
-	prowPrefix := "gcr.io/k8s-prow/"
-	boskosPrefix := "gcr.io/k8s-boskos/"
-	doesNotExistPrefix := "gcr.io/dne"
-	doesNotExist := "DNE"
-
-	prowPrefixStruct := Prefix{
+	const (
+		prowProdFakeVersion        = "v-prow-prod-version"
+		prowStagingFakeVersion     = "v-prow-staging-version"
+		boskosProdFakeVersion      = "v-boskos-prod-version"
+		boskosStagingFakeVersion   = "v-boskos-staging-version"
+		prowRefConfigFile          = "prow-prod"
+		boskosRefConfigFile        = "boskos-prod"
+		prowStagingRefConfigFile   = "prow-staging"
+		boskosStagingRefConfigFile = "boskos-staging"
+		fakeUpstreamURLBase        = "test.com"
+		prowPrefix                 = "gcr.io/k8s-prow/"
+		boskosPrefix               = "gcr.io/k8s-boskos/"
+		doesNotExistPrefix         = "gcr.io/dne"
+		doesNotExist               = "DNE"
+	)
+	prowPrefixStruct := prefix{
 		Prefix:               prowPrefix,
 		RefConfigFile:        prowRefConfigFile,
 		StagingRefConfigFile: prowStagingRefConfigFile,
 	}
-	boskosPrefixStruct := Prefix{
+	boskosPrefixStruct := prefix{
 		Prefix:               boskosPrefix,
 		RefConfigFile:        boskosRefConfigFile,
 		StagingRefConfigFile: boskosStagingRefConfigFile,
 	}
-	//Prefix used to test when a tag does not exist. This is used to have parser return a tag that will make TagExists return false
-	tagDoesNotExistPrefix := Prefix{
+	// prefix used to test when a tag does not exist. This is used to have parser return a tag that will make TagExists return false
+	tagDoesNotExistPrefix := prefix{
 		Prefix:               doesNotExistPrefix,
 		RefConfigFile:        doesNotExist,
 		StagingRefConfigFile: doesNotExist,
 	}
 
-	fakeImageVersionParser := func(upstreamAddress, prefix string) (string, error) {
-		switch upstreamAddress {
-		case fakeUpstreamURLBase + "/" + doesNotExist:
-			return doesNotExist, nil
-		case fakeUpstreamURLBase + "/" + prowRefConfigFile:
-			return prowProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + prowStagingRefConfigFile:
-			return prowStagingFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosRefConfigFile:
-			return boskosProdFakeVersion, nil
-		case fakeUpstreamURLBase + "/" + boskosStagingRefConfigFile:
-			return boskosStagingFakeVersion, nil
-		default:
-			return "", fmt.Errorf("unsupported upstream address %q for parsing the image version", upstreamAddress)
-		}
-	}
-
 	cases := []struct {
 		description         string
+		parser              func(string, string) (string, error)
 		upstreamVersionType string
 		imageHost           string
 		imageName           string
@@ -420,46 +452,92 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 		expectedTargetTag   string
 		expectError         bool
 		resolverError       bool
-		prefixes            []Prefix
+		prefixes            []prefix
 	}{
 		{
-			description:         "resolve image version with an invalid version type",
+			description: "resolve image version with an invalid version type",
+			parser: func(upAddr, pref string) (string, error) {
+				switch strings.TrimPrefix(upAddr, fakeUpstreamURLBase+"/") {
+				case prowRefConfigFile:
+					return prowProdFakeVersion, nil
+				case boskosRefConfigFile:
+					return boskosProdFakeVersion, nil
+				default:
+					return "", errors.New("not supported")
+				}
+			},
 			upstreamVersionType: "whatever-version-type",
 			expectError:         true,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 		},
 		{
-			description:         "resolve image with two prefixes possible and upstreamVersion",
+			description: "resolve image with two prefixes possible and upstreamVersion",
+			parser: func(upAddr, pref string) (string, error) {
+				switch strings.TrimPrefix(upAddr, fakeUpstreamURLBase+"/") {
+				case prowRefConfigFile:
+					return prowProdFakeVersion, nil
+				case boskosRefConfigFile:
+					return boskosProdFakeVersion, nil
+				default:
+					return "", errors.New("not supported")
+				}
+			},
 			upstreamVersionType: upstreamVersion,
 			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 			imageHost:           prowPrefix,
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   prowProdFakeVersion,
 		},
 		{
-			description:         "resolve image with two prefixes possible and staging version",
+			description: "resolve image with two prefixes possible and staging version",
+			parser: func(upAddr, pref string) (string, error) {
+				switch strings.TrimPrefix(upAddr, fakeUpstreamURLBase+"/") {
+				case prowStagingRefConfigFile:
+					return prowStagingFakeVersion, nil
+				case boskosStagingRefConfigFile:
+					return boskosStagingFakeVersion, nil
+				default:
+					return "", errors.New("not supported")
+				}
+			},
 			upstreamVersionType: upstreamStagingVersion,
 			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 			imageHost:           boskosPrefix,
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   boskosStagingFakeVersion,
 		},
 		{
-			description:         "resolve image when unknown prefix",
+			description: "resolve image when unknown prefix",
+			parser: func(upAddr, pref string) (string, error) {
+				switch strings.TrimPrefix(upAddr, fakeUpstreamURLBase+"/") {
+				case boskosRefConfigFile:
+					return boskosProdFakeVersion, nil
+				default:
+					return "", errors.New("not supported")
+				}
+			},
 			upstreamVersionType: upstreamVersion,
 			expectError:         false,
-			prefixes:            []Prefix{boskosPrefixStruct},
+			prefixes:            []prefix{boskosPrefixStruct},
 			imageHost:           prowPrefix,
 			currentTag:          "whatever-current-tag",
 			expectedTargetTag:   "whatever-current-tag",
 		},
 		{
-			description:         "tag does not exist",
+			description: "tag does not exist",
+			parser: func(upAddr, pref string) (string, error) {
+				switch strings.TrimPrefix(upAddr, fakeUpstreamURLBase+"/") {
+				case doesNotExist:
+					return doesNotExist, nil
+				default:
+					return "", errors.New("not supported")
+				}
+			},
 			upstreamVersionType: upstreamVersion,
 			expectError:         false,
-			prefixes:            []Prefix{tagDoesNotExistPrefix},
+			prefixes:            []prefix{tagDoesNotExistPrefix},
 			imageHost:           doesNotExistPrefix,
 			currentTag:          "doesNotExist",
 			expectedTargetTag:   "",
@@ -468,12 +546,12 @@ func TestUpstreamImageVersionResolver(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
+			option := &options{
 				UpstreamURLBase: fakeUpstreamURLBase,
 				Prefixes:        tc.prefixes,
 			}
 			cli := &fakeImageBumperCli{replacements: map[string]string{}, tagCache: map[string]string{}}
-			resolver, err := upstreamImageVersionResolver(option, tc.upstreamVersionType, fakeImageVersionParser, cli)
+			resolver, err := upstreamImageVersionResolver(option, tc.upstreamVersionType, tc.parser, cli)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected to get an error but the result is nil")
 				return
@@ -519,12 +597,12 @@ func TestUpstreamConfigVersions(t *testing.T) {
 	prowPrefix := "gcr.io/k8s-prow/"
 	boskosPrefix := "gcr.io/k8s-boskos/"
 
-	prowPrefixStruct := Prefix{
+	prowPrefixStruct := prefix{
 		Prefix:               prowPrefix,
 		RefConfigFile:        prowRefConfigFile,
 		StagingRefConfigFile: prowStagingRefConfigFile,
 	}
-	boskosPrefixStruct := Prefix{
+	boskosPrefixStruct := prefix{
 		Prefix:               boskosPrefix,
 		RefConfigFile:        boskosRefConfigFile,
 		StagingRefConfigFile: boskosStagingRefConfigFile,
@@ -549,32 +627,32 @@ func TestUpstreamConfigVersions(t *testing.T) {
 		upstreamVersionType string
 		expectedResult      map[string]string
 		expectError         bool
-		prefixes            []Prefix
+		prefixes            []prefix
 	}{
 		{
 			description:         "resolve image version with an invalid version type",
 			upstreamVersionType: "whatever-version-type",
 			expectError:         true,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 		},
 		{
 			description:         "correct versions map for production",
 			upstreamVersionType: upstreamVersion,
 			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 			expectedResult:      map[string]string{prowPrefix: prowProdFakeVersion, boskosPrefix: boskosProdFakeVersion},
 		},
 		{
 			description:         "correct versions map for staging",
 			upstreamVersionType: upstreamStagingVersion,
 			expectError:         false,
-			prefixes:            []Prefix{prowPrefixStruct, boskosPrefixStruct},
+			prefixes:            []prefix{prowPrefixStruct, boskosPrefixStruct},
 			expectedResult:      map[string]string{prowPrefix: prowStagingFakeVersion, boskosPrefix: boskosStagingFakeVersion},
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			option := &Options{
+			option := &options{
 				UpstreamURLBase: fakeUpstreamURLBase,
 				Prefixes:        tc.prefixes,
 			}
@@ -597,67 +675,67 @@ func TestUpstreamConfigVersions(t *testing.T) {
 }
 
 func TestGetVersionsAndCheckConsistency(t *testing.T) {
-	prowPrefix := Prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
-	boskosPrefix := Prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
-	inconsistentPrefix := Prefix{Prefix: "inconsistent/", ConsistentImages: false}
+	prowPrefix := prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	boskosPrefix := prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
+	inconsistentPrefix := prefix{Prefix: "inconsistent/", ConsistentImages: false}
 	testCases := []struct {
 		name             string
 		images           map[string]string
-		prefixes         []Prefix
+		prefixes         []prefix
 		expectedVersions map[string][]string
 		err              bool
 	}{
 		{
 			name:             "two prefixes being bumped with consistent tags",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			prefixes:         []prefix{prowPrefix, boskosPrefix},
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
 		{
 			name:     "two prefixes being bumped with inconsistent tags",
-			prefixes: []Prefix{prowPrefix, boskosPrefix},
+			prefixes: []prefix{prowPrefix, boskosPrefix},
 			images:   map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "tag1"},
 			err:      true,
 		},
 		{
 			name:             "two prefixes being bumped with no bumps",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			prefixes:         []prefix{prowPrefix, boskosPrefix},
 			images:           map[string]string{},
 			err:              false,
 			expectedVersions: map[string][]string{},
 		},
 		{
 			name:             "Prefix being bumped with inconsistent tags",
-			prefixes:         []Prefix{inconsistentPrefix},
+			prefixes:         []prefix{inconsistentPrefix},
 			images:           map[string]string{"inconsistent/test:tag1": "newtag1", "inconsistent/test2:tag2": "newtag2"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"inconsistent/test:tag1"}, "newtag2": {"inconsistent/test2:tag2"}},
 		},
 		{
 			name:             "One of the image types wasn't bumped. Do not include in versions.",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			prefixes:         []prefix{prowPrefix, boskosPrefix},
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1", "gcr.io/k8s-boskos/nobumped:tag1": "tag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
 		{
 			name:             "Two of the images in one type wasn't bumped. Do not include in versions. Do not error",
-			prefixes:         []Prefix{prowPrefix, boskosPrefix},
+			prefixes:         []prefix{prowPrefix, boskosPrefix},
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag1": "newtag1", "gcr.io/k8s-boskos/nobumped:tag1": "tag1", "gcr.io/k8s-boskos/nobumped2:tag1": "tag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag1"}},
 		},
 		{
 			name:             "prefix was not consistent before bump and now is",
-			prefixes:         []Prefix{prowPrefix},
+			prefixes:         []prefix{prowPrefix},
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:tag2": "newtag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/k8s-prow/test2:tag2"}},
 		},
 		{
 			name:             "prefix was not consistent before bump one was bumped ahead manually",
-			prefixes:         []Prefix{prowPrefix},
+			prefixes:         []prefix{prowPrefix},
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:newtag1": "newtag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}},
@@ -680,55 +758,55 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 }
 
 func TestMakeCommitSummary(t *testing.T) {
-	prowPrefix := Prefix{Name: "Prow", Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
-	boskosPrefix := Prefix{Name: "Boskos", Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
-	inconsistentPrefix := Prefix{Name: "Inconsistent", Prefix: "gcr.io/inconsistent/", ConsistentImages: false}
+	prowPrefix := prefix{Name: "Prow", Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	boskosPrefix := prefix{Name: "Boskos", Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
+	inconsistentPrefix := prefix{Name: "Inconsistent", Prefix: "gcr.io/inconsistent/", ConsistentImages: false}
 	testCases := []struct {
 		name           string
-		prefixes       []Prefix
+		prefixes       []prefix
 		versions       map[string][]string
 		consistency    bool
 		expectedResult string
 	}{
 		{
 			name:           "Two prefixes, but only one bumped",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
 			expectedResult: "Update Prow to tag1",
 		},
 		{
 			name:           "Two prefixes, both bumped",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2",
 		},
 		{
 			name:           "Empty versions",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix},
 			versions:       map[string][]string{},
 			expectedResult: "Update Prow, Boskos images as necessary",
 		},
 		{
 			name:           "One bumped inconsistently",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}, "tag3": {"gcr.io/inconsistent/test:tag3"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
 		},
 		{
 			name:           "inconsistent tag was not bumped, do not include in result",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2",
 		},
 		{
 			name:           "Two images bumped to same version",
-			prefixes:       []Prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
+			prefixes:       []prefix{prowPrefix, boskosPrefix, inconsistentPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/inconsistent/test:tag3"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Prow to tag1, Boskos to tag2 and Inconsistent as needed",
 		},
 		{
 			name:           "only bump inconsistent",
-			prefixes:       []Prefix{inconsistentPrefix},
+			prefixes:       []prefix{inconsistentPrefix},
 			versions:       map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1", "gcr.io/inconsistent/test:tag3"}, "tag2": {"gcr.io/k8s-boskos/test:tag2"}},
 			expectedResult: "Update Inconsistent as needed",
 		},

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -52,7 +53,7 @@ var (
 var _ bumper.PRHandler = (*client)(nil)
 
 type client struct {
-	o        *Options
+	o        *options
 	images   map[string]string
 	versions map[string][]string
 }
@@ -63,13 +64,11 @@ func (c *client) Changes() []func() (string, error) {
 	return []func() (string, error){
 		func() (string, error) {
 			var err error
-			c.images, err = UpdateReferences(c.o)
-			if err != nil {
+			if c.images, err = updateReferencesWrapper(c.o); err != nil {
 				return "", fmt.Errorf("failed to update image references: %w", err)
 			}
 
-			c.versions, err = getVersionsAndCheckConsistency(c.o.Prefixes, c.images)
-			if err != nil {
+			if c.versions, err = getVersionsAndCheckConsistency(c.o.Prefixes, c.images); err != nil {
 				return "", err
 			}
 
@@ -88,8 +87,8 @@ func (c *client) PRTitleBody() (string, string, error) {
 	return makeCommitSummary(c.o.Prefixes, c.versions), "", nil
 }
 
-// Options is the options for autobumper operations.
-type Options struct {
+// options is the options for autobumper operations.
+type options struct {
 	// The URL where upstream image references are located. Only required if Target Version is "upstream" or "upstreamStaging". Use "https://raw.githubusercontent.com/{ORG}/{REPO}"
 	// Images will be bumped based off images located at the address using this URL and the refConfigFile or stagingRefConigFile for each Prefix.
 	UpstreamURLBase string `yaml:"upstreamURLBase"`
@@ -102,11 +101,11 @@ type Options struct {
 	// The target version to bump images version to, which can be one of latest, upstream, upstream-staging and vYYYYMMDD-deadbeef.
 	TargetVersion string `yaml:"targetVersion"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
-	Prefixes []Prefix `yaml:"prefixes"`
+	Prefixes []prefix `yaml:"prefixes"`
 }
 
-// Prefix is the information needed for each prefix being bumped.
-type Prefix struct {
+// prefix is the information needed for each prefix being bumped.
+type prefix struct {
 	// Name of the tool being bumped
 	Name string `yaml:"name"`
 	// The image prefix that the autobumper should look for
@@ -123,7 +122,7 @@ type Prefix struct {
 	ConsistentImages bool `yaml:"consistentImages"`
 }
 
-func parseOptions() (*Options, *bumper.Options, error) {
+func parseOptions() (*options, *bumper.Options, error) {
 	var config string
 	var labelsOverride []string
 	var skipPullRequest bool
@@ -133,20 +132,19 @@ func parseOptions() (*Options, *bumper.Options, error) {
 	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
 	flag.Parse()
 
-	var o Options
+	var o options
 	var pro bumper.Options
 	data, err := ioutil.ReadFile(config)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to read in config file, %s", config)
+		return nil, nil, fmt.Errorf("read %q: %w", config, err)
 	}
 
-	err = yaml.Unmarshal(data, &o)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+	if err = yaml.Unmarshal(data, &o); err != nil {
+		return nil, nil, fmt.Errorf("unmarshal %q: %w", config, err)
 	}
 
 	if err := yaml.Unmarshal(data, &pro); err != nil {
-		return nil, nil, fmt.Errorf("Failed to parse yaml file, %s", err)
+		return nil, nil, fmt.Errorf("unmarshal %q: %w", config, err)
 	}
 
 	if labelsOverride != nil {
@@ -156,17 +154,17 @@ func parseOptions() (*Options, *bumper.Options, error) {
 	return &o, &pro, nil
 }
 
-func validateOptions(o *Options) error {
+func validateOptions(o *options) error {
 	if len(o.Prefixes) == 0 {
-		return fmt.Errorf("Must have at least one Prefix specified")
+		return errors.New("must have at least one Prefix specified")
 	}
 	if len(o.IncludedConfigPaths) == 0 {
-		return fmt.Errorf("includedConfigPaths is mandatory")
+		return errors.New("includedConfigPaths is mandatory")
 	}
 	if o.TargetVersion != latestVersion && o.TargetVersion != upstreamVersion &&
 		o.TargetVersion != upstreamStagingVersion && !tagRegexp.MatchString(o.TargetVersion) {
-		logrus.Warnf("Warning: targetVersion is not one of %v so it might not work properly.",
-			[]string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion})
+		logrus.WithField("allowed", []string{latestVersion, upstreamVersion, upstreamStagingVersion, tagVersion}).Warn(
+			"Warning: targetVersion mot in allowed so it might not work properly.")
 	}
 	if o.TargetVersion == upstreamVersion {
 		for _, prefix := range o.Prefixes {
@@ -190,16 +188,19 @@ func validateOptions(o *Options) error {
 	return nil
 }
 
-// UpdateReferences update the references of prow-images and/or boskos-images and/or testimages
+// updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
 // in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
 // if the file is a yaml file (*.yaml) or extraFiles[file]=true
-func UpdateReferences(o *Options) (map[string]string, error) {
+func updateReferencesWrapper(o *options) (map[string]string, error) {
 	logrus.Info("Bumping image references...")
 	var allPrefixes []string
 	for _, prefix := range o.Prefixes {
 		allPrefixes = append(allPrefixes, prefix.Prefix)
 	}
-	filterRegexp := regexp.MustCompile(strings.Join(allPrefixes, "|"))
+	filterRegexp, err := regexp.Compile(strings.Join(allPrefixes, "|"))
+	if err != nil {
+		return nil, fmt.Errorf("bad regexp %q: %w", strings.Join(allPrefixes, "|"), err)
+	}
 	imageBumperCli := imagebumper.NewClient()
 	return updateReferences(imageBumperCli, filterRegexp, o)
 }
@@ -212,16 +213,15 @@ type imageBumper interface {
 	TagExists(imageHost, imageName, currentTag string) (bool, error)
 }
 
-func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *Options) (map[string]string, error) {
+func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o *options) (map[string]string, error) {
 	var tagPicker func(string, string, string) (string, error)
-	var err error
 
 	switch o.TargetVersion {
 	case latestVersion:
 		tagPicker = imageBumperCli.FindLatestTag
 	case upstreamVersion, upstreamStagingVersion:
-		tagPicker, err = upstreamImageVersionResolver(o, o.TargetVersion, parseUpstreamImageVersion, imageBumperCli)
-		if err != nil {
+		var err error
+		if tagPicker, err = upstreamImageVersionResolver(o, o.TargetVersion, parseUpstreamImageVersion, imageBumperCli); err != nil {
 			return nil, fmt.Errorf("failed to resolve the %s image version: %w", o.TargetVersion, err)
 		}
 	default:
@@ -229,7 +229,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	}
 
 	updateFile := func(name string) error {
-		logrus.Infof("Updating file %s", name)
+		logrus.WithField("file", name).Info("Updating file")
 		if err := imageBumperCli.UpdateFile(tagPicker, name, filterRegexp); err != nil {
 			return fmt.Errorf("failed to update the file: %w", err)
 		}
@@ -246,7 +246,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 	for _, path := range o.IncludedConfigPaths {
 		info, err := os.Stat(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get the file info for %q", path)
+			return nil, fmt.Errorf("failed to get the file info for %q: %w", path, err)
 		}
 		if info.IsDir() {
 			err := filepath.Walk(path, func(subpath string, info os.FileInfo, err error) error {
@@ -274,7 +274,7 @@ func updateReferences(imageBumperCli imageBumper, filterRegexp *regexp.Regexp, o
 
 // used by updateReferences
 func upstreamImageVersionResolver(
-	o *Options, upstreamVersionType string, parse func(upstreamAddress, prefix string) (string, error), imageBumperCli imageBumper) (func(imageHost, imageName, currentTag string) (string, error), error) {
+	o *options, upstreamVersionType string, parse func(upstreamAddress, prefix string) (string, error), imageBumperCli imageBumper) (func(imageHost, imageName, currentTag string) (string, error), error) {
 	upstreamVersions, err := upstreamConfigVersions(upstreamVersionType, o, parse)
 	if err != nil {
 		return nil, err
@@ -283,26 +283,24 @@ func upstreamImageVersionResolver(
 	return func(imageHost, imageName, currentTag string) (string, error) {
 		imageFullPath := imageHost + "/" + imageName + ":" + currentTag
 		for prefix, version := range upstreamVersions {
-			if strings.HasPrefix(imageFullPath, prefix) {
-				exists, err := imageBumperCli.TagExists(imageHost, imageName, version)
-				if err != nil {
-					return "", err
-				}
-				if exists {
-					imageBumperCli.AddToCache(imageFullPath, version)
-					return version, nil
-				} else {
-					imageBumperCli.AddToCache(imageFullPath, currentTag)
-					return "", fmt.Errorf("Unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
-				}
+			if !strings.HasPrefix(imageFullPath, prefix) {
+				continue
 			}
+			if exists, err := imageBumperCli.TagExists(imageHost, imageName, version); err != nil {
+				return "", err
+			} else if exists {
+				imageBumperCli.AddToCache(imageFullPath, version)
+				return version, nil
+			}
+			imageBumperCli.AddToCache(imageFullPath, currentTag)
+			return "", fmt.Errorf("Unable to bump to %s, image tag %s does not exist for %s", imageFullPath, version, imageName)
 		}
 		return currentTag, nil
 	}, nil
 }
 
 // used by upstreamImageVersionResolver
-func upstreamConfigVersions(upstreamVersionType string, o *Options, parse func(upstreamAddress, prefix string) (string, error)) (versions map[string]string, err error) {
+func upstreamConfigVersions(upstreamVersionType string, o *options, parse func(upstreamAddress, prefix string) (string, error)) (versions map[string]string, err error) {
 	versions = make(map[string]string)
 	var upstreamAddress string
 	for _, prefix := range o.Prefixes {
@@ -352,7 +350,7 @@ func parseUpstreamImageVersion(upstreamAddress, prefix string) (string, error) {
 // For example {"gcr.io/k8s-prow/test1:tag": "newtag", "gcr.io/k8s-prow/test2:tag": "newtag"},
 // and returns a map of new versions resulted from bumping : the images using those versions.
 // It will error if one of the Prefixes was bumped inconsistently when it was not supposed to
-func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string) (map[string][]string, error) {
+func getVersionsAndCheckConsistency(prefixes []prefix, images map[string]string) (map[string][]string, error) {
 	// Key is tag, value is full image.
 	versions := map[string][]string{}
 	consistencyChecker := map[string]string{}
@@ -380,7 +378,7 @@ func getVersionsAndCheckConsistency(prefixes []Prefix, images map[string]string)
 // makeCommitSummary takes a list of Prefixes and a map of new tags resulted
 // from bumping : the images using those tags and returns a summary of what was
 // bumped for use in the commit message
-func makeCommitSummary(prefixes []Prefix, versions map[string][]string) string {
+func makeCommitSummary(prefixes []prefix, versions map[string][]string) string {
 	var allPrefixes []string
 	for _, prefix := range prefixes {
 		allPrefixes = append(allPrefixes, prefix.Name)
