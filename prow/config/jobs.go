@@ -191,6 +191,8 @@ type JenkinsSpec struct {
 	// Job is managed by the GH branch source plugin
 	// and requires a specific path
 	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
+	// JobPath is the full path to the jenkins job
+	JobPath string `json:"job_path,omitempty"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.

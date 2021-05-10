@@ -429,6 +429,10 @@ func getJobName(spec *prowapi.ProwJobSpec) string {
 		return fmt.Sprintf("%s/job/%s", spec.Job, spec.Refs.BaseRef)
 	}
 
+	if spec.JenkinsSpec != nil && spec.JenkinsSpec.JobPath != "" {
+		return spec.JenkinsSpec.JobPath
+	}
+
 	return spec.Job
 }
 
