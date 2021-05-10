@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
         imagePullPolicy: IfNotPresent
         command:
         - make
