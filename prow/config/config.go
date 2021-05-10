@@ -1453,12 +1453,12 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 }
 
 // defaultPresubmits defaults the presubmits for one repo
-func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+func defaultPresubmits(presubmits []Presubmit, addtionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPresubmitFields(presubmits)
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1470,12 +1470,12 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 }
 
 // defaultPostsubmits defaults the postsubmits for one repo
-func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+func defaultPostsubmits(postsubmits []Postsubmit, addtionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPostsubmitFields(postsubmits)
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1505,14 +1505,14 @@ func (c *Config) finalizeJobConfig() error {
 	}
 
 	for repo, jobs := range c.PresubmitsStatic {
-		if err := defaultPresubmits(jobs, c, repo); err != nil {
+		if err := defaultPresubmits(jobs, nil, c, repo); err != nil {
 			return err
 		}
 		c.AllRepos.Insert(repo)
 	}
 
 	for repo, jobs := range c.PostsubmitsStatic {
-		if err := defaultPostsubmits(jobs, c, repo); err != nil {
+		if err := defaultPostsubmits(jobs, nil, c, repo); err != nil {
 			return err
 		}
 		c.AllRepos.Insert(repo)

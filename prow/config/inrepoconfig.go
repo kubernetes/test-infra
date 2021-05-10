@@ -37,6 +37,7 @@ const (
 // ProwYAML represents the content of a .prow.yaml file
 // used to version Presubmits and Postsubmits inside the tested repo.
 type ProwYAML struct {
+	Presets     []Preset     `json:"presets"`
 	Presubmits  []Presubmit  `json:"presubmits"`
 	Postsubmits []Postsubmit `json:"postsubmits"`
 }
@@ -121,10 +122,10 @@ func defaultProwYAMLGetter(
 }
 
 func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error {
-	if err := defaultPresubmits(p.Presubmits, c, identifier); err != nil {
+	if err := defaultPresubmits(p.Presubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
-	if err := defaultPostsubmits(p.Postsubmits, c, identifier); err != nil {
+	if err := defaultPostsubmits(p.Postsubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
 	if err := validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...), c.PodNamespace); err != nil {
