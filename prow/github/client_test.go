@@ -2431,6 +2431,74 @@ func TestListPRCommits(t *testing.T) {
 	}
 }
 
+func TestUpdatePullRequestBranch(t *testing.T) {
+	sha := "74053d555d71a14e3853b97e204d7d6415521375"
+	mismatchedSha := "mismatchedSha"
+
+	testcases := []struct {
+		name            string
+		expectedHeadSha *string
+		err             bool
+	}{
+		{
+			name:            "nil expectedHeadSha",
+			expectedHeadSha: nil,
+			err:             false,
+		},
+		{
+			name:            "matched expectedHeadSha",
+			expectedHeadSha: &sha,
+			err:             false,
+		},
+		{
+			name:            "mismatched expectedHeadSha",
+			expectedHeadSha: &mismatchedSha,
+			err:             true,
+		},
+	}
+
+	for _, tc := range testcases {
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut {
+				t.Errorf("Bad method: %s", r.Method)
+			}
+
+			if r.URL.Path != "/repos/k8s/kuber/pulls/5/update-branch" {
+				t.Errorf("Bad request path: %s", r.URL.Path)
+			}
+
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("Could not read request body: %v", err)
+			}
+
+			var data struct {
+				ExpectedHeadSha *string `json:"expected_head_sha,omitempty"`
+			}
+			if err := json.Unmarshal(b, &data); err != nil {
+				t.Errorf("Could not unmarshal request: %v", err)
+			}
+
+			if data.ExpectedHeadSha != nil {
+				if *data.ExpectedHeadSha != sha {
+					http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
+				}
+			}
+			http.Error(w, "202 Accepted", http.StatusAccepted)
+		}))
+		defer ts.Close()
+
+		c := getClient(ts.URL)
+		err := c.UpdatePullRequestBranch("k8s", "kuber", 5, tc.expectedHeadSha)
+		if tc.err && err == nil {
+			t.Errorf("%s: expected error failed to occur", tc.name)
+		}
+		if !tc.err && err != nil {
+			t.Errorf("%s: received unexpected error: %v", tc.name, err)
+		}
+	}
+}
+
 func TestCombinedStatus(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

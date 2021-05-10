@@ -3976,7 +3976,7 @@ func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit
 //
 // GitHub API docs: https://developer.github.com/v3/pulls#update-a-pull-request-branch
 func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error {
-	durationLogger := c.log("UpdatePullRequestBranch", org, repo, *expectedHeadSha)
+	durationLogger := c.log("UpdatePullRequestBranch", org, repo)
 	defer durationLogger()
 
 	data := struct {
@@ -3988,7 +3988,6 @@ func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedH
 		ExpectedHeadSha: expectedHeadSha,
 	}
 
-	ge := githubError{}
 	code, err := c.request(&request{
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/update-branch", org, repo, number),
@@ -3996,7 +3995,7 @@ func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedH
 		org:         org,
 		requestBody: &data,
 		exitCodes:   []int{202, 422},
-	}, &ge)
+	}, nil)
 	if err != nil {
 		return err
 	}
