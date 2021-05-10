@@ -71,7 +71,7 @@ func (o options) getLabels() []string {
 	if o.labels != "" {
 		return strings.Split(o.labels, ",")
 	}
-	return []string{}
+	return nil
 }
 
 func optionsFromFlags() options {
