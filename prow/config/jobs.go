@@ -191,6 +191,8 @@ type JenkinsSpec struct {
 	// Job is managed by the GH branch source plugin
 	// and requires a specific path
 	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
+	// AdditionalParams allows to pass params to jenkins jobs
+	AdditionalParams []prowapi.JenkinsAdditionalParam `json:"additional_params,omitempty"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.

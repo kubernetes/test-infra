@@ -610,6 +610,14 @@ func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID str
 	if err != nil {
 		return err
 	}
+
+	// Check if additional params defined
+	if spec.JenkinsSpec != nil && len(spec.JenkinsSpec.AdditionalParams) > 0 {
+		for _, additionalParam := range spec.JenkinsSpec.AdditionalParams {
+			env[additionalParam.Name] = additionalParam.Value
+		}
+	}
+
 	params := url.Values{}
 	for key, value := range env {
 		params.Set(key, value)
