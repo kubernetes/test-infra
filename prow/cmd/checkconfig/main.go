@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -369,7 +368,7 @@ func validate(o options) error {
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
 		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
-			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./")))
+			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./"), o.config.SupplementalProwConfigsFileNameSuffix))
 		}
 	}
 
@@ -1119,7 +1118,7 @@ func validateCluster(cfg *config.Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS) error {
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, supplementalProwConfigsFileNameSuffix string) error {
 	var errs []error
 	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -1139,7 +1138,7 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 
 		fs.ReadFile(filesystem, path)
 
-		if d.IsDir() || (filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml") {
+		if d.IsDir() || (!strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix)) {
 			return nil
 		}
 

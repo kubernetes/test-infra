@@ -1754,7 +1754,7 @@ tide:
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var errMsg string
-			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs)
+			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs, ".yaml")
 			if err != nil {
 				errMsg = err.Error()
 			}
