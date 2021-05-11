@@ -110,6 +110,7 @@ func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	if p.JenkinsSpec != nil {
 		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+			JobPath:               p.JenkinsSpec.JobPath,
 		}
 	}
 	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
@@ -127,6 +128,7 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	if p.JenkinsSpec != nil {
 		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+			JobPath:               p.JenkinsSpec.JobPath,
 		}
 	}
 
@@ -270,6 +272,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	}
 	if pj.Spec.JenkinsSpec != nil {
 		fields["github_based_job"] = pj.Spec.JenkinsSpec.GitHubBranchSourceJob
+		fields["job_path"] = pj.Spec.JenkinsSpec.JobPath
 	}
 
 	return fields
