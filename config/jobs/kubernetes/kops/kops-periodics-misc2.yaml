@@ -503,7 +503,7 @@ periodics:
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Simple.pod.should.handle.in-cluster.config|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Simple.pod.should.handle.in-cluster.config"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -571,7 +571,7 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25 \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -639,7 +639,7 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25 \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
