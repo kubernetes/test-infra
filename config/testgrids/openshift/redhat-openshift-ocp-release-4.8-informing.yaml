@@ -3051,6 +3051,10 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-virtualmedia
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-azure-single-node
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-azure-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-aws-single-node
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-aws-single-node
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-ovirt
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-ovirt
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere
