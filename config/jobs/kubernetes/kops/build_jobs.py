@@ -671,16 +671,6 @@ def generate_misc():
                                 '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
-        # A special test for AWS EBS CSI Driver
-        build_test(name_override="kops-grid-scenario-aws-ebs-csi-driver",
-                   cloud="aws",
-                   distro="u2004",
-                   k8s_version="1.21",
-                   feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-                   runs_per_day=1,
-                   extra_flags=['--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
-                   extra_dashboards=['kops-misc']),
-
         build_test(name_override="kops-grid-scenario-terraform",
                    container_runtime='containerd',
                    k8s_version="1.20",
