@@ -368,7 +368,7 @@ func validate(o options) error {
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
 		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
-			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./"), o.config.SupplementalProwConfigsFileNameSuffix))
+			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./"), o.config.SupplementalProwConfigsFileNameSuffix, "not/implemented"))
 		}
 	}
 
@@ -1118,7 +1118,7 @@ func validateCluster(cfg *config.Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, supplementalProwConfigsFileNameSuffix string) error {
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, supplementalProwConfigsFileNameSuffix, supplementalPluginsConfigFileNameSuffix string) error {
 	var errs []error
 	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -1138,7 +1138,7 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 
 		fs.ReadFile(filesystem, path)
 
-		if d.IsDir() || (!strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix)) {
+		if d.IsDir() || (!strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix) && !strings.HasSuffix(path, supplementalPluginsConfigFileNameSuffix)) {
 			return nil
 		}
 
@@ -1162,18 +1162,19 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 			return nil
 		}
 
-		rawCfg, err := fs.ReadFile(filesystem, path)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
-			return nil
+		var cfg hirarchicalConfig
+		if strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix) {
+			cfg = &config.Config{}
+		} else {
+			cfg = &plugins.Configuration{}
 		}
-		var prowCfg config.ProwConfig
-		if err := yaml.Unmarshal(rawCfg, &prowCfg); err != nil {
-			errs = append(errs, fmt.Errorf("failed to deserialize config at %s: %w", path, err))
+
+		isGlobal, targetedOrgs, targetedRepos, err := getSupplementalConfigScope(path, filesystem, cfg)
+		if err != nil {
+			errs = append(errs, err)
 			return nil
 		}
 
-		isGlobal, targetedOrgs, targetedRepos := prowCfg.HasConfigFor()
 		if isOrgConfig {
 			expectedTargetOrg := pathElements[0]
 			if !isGlobal && len(targetedOrgs) == 1 && targetedOrgs.Has(expectedTargetOrg) && len(targetedRepos) == 0 {
@@ -1281,4 +1282,21 @@ func prefixWithAndIfNeeded(s string, needsAnd bool) string {
 		return " and" + s
 	}
 	return s
+}
+
+type hirarchicalConfig interface {
+	HasConfigFor() (bool, sets.String, sets.String)
+}
+
+func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hirarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
+	data, err := fs.ReadFile(filesystem, path)
+	if err != nil {
+		return false, nil, nil, fmt.Errorf("failed to read %s: %w", path, err)
+	}
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+		return false, nil, nil, fmt.Errorf("failed to unmarshal %s into %T: %w", path, cfg, err)
+	}
+
+	global, orgs, repos = cfg.HasConfigFor()
+	return global, orgs, repos, nil
 }

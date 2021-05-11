@@ -1691,6 +1691,21 @@ branch-protection:
 tide:
   merge_method:
     my-org/my-repo: squash`
+	const validGlobalPluginsConfig = `
+blunderbuss:
+  max_request_count: 2
+  request_count: 2
+  use_status_availability: true`
+	const validOrgPluginsConfig = `
+plugins:
+  my-org:
+    plugins:
+    - assign`
+	const validRepoPluginsConfig = `
+plugins:
+  my-org/my-repo:
+    plugins:
+    - assign`
 
 	tests := []struct {
 		name string
@@ -1700,61 +1715,92 @@ tide:
 	}{
 		{
 			name: "No configs, no error",
-			fs:   testfs(root+"/OWNERS", "some-owners"),
+			fs:   testfs(map[string]string{root + "/OWNERS": "some-owners"}),
 		},
 		{
 			name: "Config directly below root, no error",
-			fs:   testfs(root+"/cfg.yaml", validGlobalConfig),
+			fs: testfs(map[string]string{
+				root + "/cfg.yaml":     validGlobalConfig,
+				root + "/plugins.yaml": validGlobalPluginsConfig,
+			}),
 		},
 		{
 			name: "Valid org config",
-			fs:   testfs(root+"/my-org/cfg.yaml", validOrgConfig),
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     validOrgConfig,
+				root + "/my-org/plugins.yaml": validOrgPluginsConfig,
+			}),
 		},
 		{
-			name:                 "Valid org config for wrong org",
-			fs:                   testfs(root+"/my-other-org/cfg.yaml", validOrgConfig),
-			expectedErrorMessage: `config root/my-other-org/cfg.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org`,
+			name: "Valid org config for wrong org",
+			fs: testfs(map[string]string{
+				root + "/my-other-org/cfg.yaml":     validOrgConfig,
+				root + "/my-other-org/plugins.yaml": validOrgPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-other-org/cfg.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org, config root/my-other-org/plugins.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org]`,
 		},
 		{
-			name:                 "Invalid org config",
-			fs:                   testfs(root+"/my-org/cfg.yaml", invalidConfig),
-			expectedErrorMessage: `failed to deserialize config at root/my-org/cfg.yaml: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.ProwConfig`,
+			name: "Invalid org config",
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     invalidConfig,
+				root + "/my-org/plugins.yaml": invalidConfig,
+			}),
+			expectedErrorMessage: `[failed to unmarshal root/my-org/cfg.yaml into *config.Config: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.Config, failed to unmarshal root/my-org/plugins.yaml into *plugins.Configuration: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type plugins.Configuration]`,
 		},
 		{
-			name:                 "Repo config at org level",
-			fs:                   testfs(root+"/my-org/cfg.yaml", validRepoConfig),
-			expectedErrorMessage: `config root/my-org/cfg.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo`,
+			name: "Repo config at org level",
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     validRepoConfig,
+				root + "/my-org/plugins.yaml": validRepoPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/cfg.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo, config root/my-org/plugins.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo]`,
 		},
 		{
 			name: "Valid repo config",
-			fs:   testfs(root+"/my-org/my-repo/cfg.yaml", validRepoConfig),
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     validRepoConfig,
+				root + "/my-org/my-repo/plugins.yaml": validRepoPluginsConfig,
+			}),
 		},
 		{
-			name:                 "Valid repo config for wrong repo",
-			fs:                   testfs(root+"/my-org/my-other-repo/cfg.yaml", validRepoConfig),
-			expectedErrorMessage: `config root/my-org/my-other-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo`,
+			name: "Valid repo config for wrong repo",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-other-repo/cfg.yaml":     validRepoConfig,
+				root + "/my-org/my-other-repo/plugins.yaml": validRepoPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/my-other-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo, config root/my-org/my-other-repo/plugins.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo]`,
 		},
 		{
-			name:                 "Invalid repo config",
-			fs:                   testfs(root+"/my-org/my-repo/cfg.yaml", invalidConfig),
-			expectedErrorMessage: `failed to deserialize config at root/my-org/my-repo/cfg.yaml: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.ProwConfig`,
+			name: "Invalid repo config",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     invalidConfig,
+				root + "/my-org/my-repo/plugins.yaml": invalidConfig,
+			}),
+			expectedErrorMessage: `[failed to unmarshal root/my-org/my-repo/cfg.yaml into *config.Config: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.Config, failed to unmarshal root/my-org/my-repo/plugins.yaml into *plugins.Configuration: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type plugins.Configuration]`,
 		},
 		{
-			name:                 "Org config at repo level",
-			fs:                   testfs(root+"/my-org/my-repo/cfg.yaml", validOrgConfig),
-			expectedErrorMessage: `config root/my-org/my-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org`,
+			name: "Org config at repo level",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     validOrgConfig,
+				root + "/my-org/my-repo/plugins.yaml": validOrgPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/my-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org, config root/my-org/my-repo/plugins.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org]`,
 		},
 		{
-			name:                 "Nested too deeply",
-			fs:                   testfs(root+"/my-org/my-repo/nest/cfg.yaml", validOrgConfig),
-			expectedErrorMessage: `config root/my-org/my-repo/nest/cfg.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.`,
+			name: "Nested too deeply",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/nest/cfg.yaml":     validOrgConfig,
+				root + "/my-org/my-repo/nest/plugins.yaml": validOrgPluginsConfig,
+			}),
+
+			expectedErrorMessage: `[config root/my-org/my-repo/nest/cfg.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org., config root/my-org/my-repo/nest/plugins.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.]`,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var errMsg string
-			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs, ".yaml")
+			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs, "cfg.yaml", "plugins.yaml")
 			if err != nil {
 				errMsg = err.Error()
 			}
@@ -1765,10 +1811,12 @@ tide:
 	}
 }
 
-func testfs(path, data string) fstest.MapFS {
-	return fstest.MapFS{
-		path: &fstest.MapFile{Data: []byte(data)},
+func testfs(files map[string]string) fstest.MapFS {
+	filesystem := fstest.MapFS{}
+	for path, content := range files {
+		filesystem[path] = &fstest.MapFile{Data: []byte(content)}
 	}
+	return filesystem
 }
 
 func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T) {
