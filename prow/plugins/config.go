@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -1803,4 +1804,21 @@ func (p *Plugins) mergeFrom(other *Plugins) error {
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
+	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins}) {
+		global = true
+	}
+	orgs = sets.String{}
+	repos = sets.String{}
+	for orgOrRepo := range c.Plugins {
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
+		}
+	}
+
+	return global, orgs, repos
 }

@@ -6188,7 +6188,7 @@ func TestHasConfigFor(t *testing.T) {
 			},
 		},
 		{
-			name: "Any config that is empty except for branchprotection.orgs with empty repoo is considered to be for those orgs",
+			name: "Any config that is empty except for branchprotection.orgs with empty repo is considered to be for those orgs",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				expectOrgs = sets.String{}
 				result := &ProwConfig{BranchProtection: BranchProtection{Orgs: map[string]Org{}}}
