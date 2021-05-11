@@ -17,16 +17,15 @@ limitations under the License.
 package approvers2
 
 import (
-	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-
-	"path/filepath"
-	"reflect"
-	"strings"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 )
 
 const (
@@ -78,11 +77,6 @@ func (f FakeRepo) FindApproverOwnersForFile(path string) string {
 
 func (f FakeRepo) IsNoParentOwners(path string) bool {
 	return f.noParentOwnersMap[path]
-}
-
-type dir struct {
-	fullPath  string
-	approvers sets.String
 }
 
 func canonicalize(path string) string {

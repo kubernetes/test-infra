@@ -1,235 +1,264 @@
-# Reviewers and Approvers
+# Granular Approval Support
 
-## Questions this Doc Seeks To Answer
+The `granular_approval` support for the `approve` plugin can be used to alter the behavior of the `approve` plugin.
 
-1. What are reviewers, approvers, and the OWNERS files?
-2. How does the reviewer selection mechanism work? approver selection mechanism work?
-3. How does an approver know which PR s/he has to approve?
+## Summary
 
-## Overview
+If `granular_approval` is set to `true` the `approve` plugin allows approvers to granularly approve a PR , i.e, approve individual files instead of full directories.  
+An approver can approve changes in the PR by using the `/approve` command in a comment, or retract it by typing `/approve cancel` (at the beginning of the comment line.)  
+An approve can approve individual changes or a set of changes by using the `/approve files <path-to-files>` command in a comment.  
 
-Every GitHub directory which is a unit of independent code contains a file named "OWNERS". The file lists reviewers and approvers for the directory. Approvers (or previously called assignees) are owners of the codes. 
+## Approvers
 
-Approvers:
-* have contributed substantially to the repo
-* can provide an approval (`/approve`) indicating whether a change to a directory or subdirectory should be accepted
-* Approval is done on a per directory basis and subdirectories inherit their parents directory's approvers
+Approvers are people who have contributed substantially to the repo and can provide approval to changes to the repo. Approvers are defined in a file named "OWNERS" that is present in each GitHub directory which is a unit of independent code.  
 
-Reviewers:
-* generally a larger set of current and past contributors
-* They are responsible for a more thorough code review, discussing the implementation details and style
-* Provide an `/lgtm` when they are satisfied with the Pull Request. The `/lgtm` must be renewed whenever the Pull Request changes.
+The OWNERS file can be defined in one of the following ways:  
 
-An example of the OWNERS file is listed below:
-
+With an OWNERS file defined like below the user `ykakarap` and `nikhita` can approve the changes to any files in the directory (and sub-directories) that contains the OWNERS file.
 ```yaml
-reviewers:
-- jack
-- ken
-- lina
-
 approvers:
-- jack
-- ken
-- lina
+- ykakarap
+- nikhita
+```
+
+With an OWNERS file defined like below the user `ykakarap` can only approve files whose paths end in `_test.go` while the user `nikhita` can approve all the files in the directory (and sub-directories) that contains the OWNERS file.
+```yaml
+filters:
+  ".*_test\\.go":
+    approvers:
+      - ykakarap
+  
+  ".*":
+    approvers:
+      - nikhita
 ```
 
 Note that items in the OWNERS files can be GitHub usernames, or aliases defined in OWNERS_ALIASES files. An OWNERS_ALIASES file is another co-existed file that delivers a mechanism for defining groups. However, GitHub Team names are not supported. We do not use them because there is no audit log for changes to the GitHub Teams. This way we have an audit log.
 
-## Blunderbuss And Reviewers
+## Design
 
-### lgtm Label
+A PR cannot be merged into the repo without the **approved** label. In order for the approved label to be applied, every file modified by the PR must be approved by an approver in the OWNERs files.  
 
-LGTM is abbreviation for "looks good to me". The **lgtm** label is normally given when the code has been thoroughly reviewed.  Getting it means the PR is one step away from getting merged.  Reviewers of the PR give the label to a PR by typing `/lgtm` in a comment, or retract it by typing `/lgtm cancel` (at the beginning of a comment line). Authors of the PR cannot give the label, but they can cancel it. The bot retracts the label automatically if someone updates the PR with a new commit.
+An approver can approve changes to a single file, a collection of files or a directory using the following commands:
+- `/approve files <path-to-a-single-file>`  
+	approves the file in the given path.
+- `/approve files <path-with-wild-card>`  
+	approves all the files in the PR that match the wild card path.
+- `/approve files <path-to-directory>/*`  
+	approves all the files in the given directory.
+- `/approve`  
+	approves all the files in the PR the approver has permission to approve.
 
-Any collaborator on the repo may use the `/lgtm` command, whether or not they are selected as a reviewer or approver by this plugin. (See the next section for reviewer and approver selection algorithm.)
+The process is best illustrated in the example below:
 
-### Blunderbuss Selection Mechanism
+### Example
+In a repo with the following folder structure:
+```
+pkg/
+├── api/
+|   ├── OWNERS  
+└── registry/
+    ├── OWNERS
+	├── apps/
+```
+The OWNERS file at `pkg/api/OWNERS` is:
+```yaml
+filters: 
+  .*: 
+    approvers: 
+      - nikhita
+      - bob
+  .*_test\.go: 
+    approvers: 
+      - ykakarap
+```
 
-Blunderbuss provides statistical means to select a subset of approvers found in OWNERS files for approving a PR. A PR consists of changes on one or more files, in which each file has different number of lines of codes changed. Blunderbuss determines the magnitude of code change within a PR using total number of lines of codes changed across various files. Number of reviewers selected for each PR is 2.
+The OWNERs file at `pkg/registry/OWNERS` is:
+```yaml
+approvers:
+- ykakarap
+- nikhita
+- bob
+```
 
-Algorithm for selecting reviewers is as follows:
+Consider a PR which changes the following files:
+```
+pkg
+├── api
+│   ├── first.go
+│   ├── first_test.go
+│   ├── second.go
+│   └── second_test.go
+└── registry
+    ├── apps
+    │   ├── one.go
+    │   └── one_test.go
+    ├── first.go
+    ├── first_test.go
+    ├── second.go
+    └── second_test.go
+```
 
-1. determine potential reviewers of a file by going over all reviewers found in the OWNERS files for current and parent directories of the file (deduplication involved)
+#### Step 1:
+The k8s-bot creates a comment on the PR showing the initial status. The k8s-bot also suggests the selected approvers along with the list of OWNERS file where the approved can be found. More details on how approvers are selected is described below.
 
-2. assign each changed file with a weightage based on number of lines of codes changed
-
-3. assign each potential reviewer with a weightage by summing up weightages of all changed files in which s/he is a reviewer
-
-4. randomly select 2 reviewers based on their weightage
-
-## Approval Handler and the Approved Label
-
-### approved Label
-
-A PR cannot be merged into the repo without the **approved** label.  In order for the approved label to be applied, every file modified by the PR must be approved (via `/approve`) by an approver from the OWNERs files.  Note, this does not necessarily require multiple approvers.  The process is best illustrated in the example below.
-
-#### Approval Selection Mechanism
-
-First, it is important to understand that ALL approvers in an OWNERS file can approve any file in that directory AND its subdirectories. Second, it is important to understand the somewhat-competing goals of the bot when selecting approvers:
-
-1. Provide a subset of approvers that can approve all files in the PR
-
-2. Provide a small subset of approvers and suggest the same reviewers as blunderbuss if possible (people can be both reviewers and approvers)
-
-3. Do not always suggest the same set of people to approve and do not consistently suggest people from the root OWNERS file
-
-The exact algorithm for selecting approvers is somewhat complex; it is an set cover approximation with consideration for existing assignees. To read it in depth, check out the approvers source code linked at the end of the README.  
-
-## Example
-
-![Directory Structure](images/directory_structure.png)
-
-Suppose files in directories E and G are changed in a PR created by PRAuthor. Any combination of approver(s) listed below can approve the PR in order to get it merged:
-
-1. approvers found in OWNERS files for leaf (current) directories E and G
-
-2. approvers found in OWNERS files for parent directories B and C
-
-3. approvers found in OWNERS files for root directory A
-
-Note someone can be both a reviewer found in OWNERS files for directory A and E. If s/he is selected as an approver and gives approval, it approves entire PR because s/he is also a reviewer for the root directory A.
-
-### Step 1:
-
-K8s-bot creates a comment that suggests the selected approvers and shows a list of OWNERS file(s) where the approvers can be found.
-	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	[APPROVALNOTIFIER] This PR is NOT APPROVED
 
 	This pull-request has been approved by: *PRAuthor*
-	We suggest the following additional approvers: **approver1,** **approver2**
+	To complete the pull request process, please assign nikhita, ykakarap
+	You can assign the PR to them by writing /assign @nikhita @ykakarap in a comment when ready.
 
-	If they are not already assigned, you can assign the PR to them by writing `/assign @approver1 @approver2` in a comment when ready.
+	The full list of commands accepted by this bot can be found here.
 
-	∇ Details
-	Needs approval from an approver in each of these OWNERS Files:
-	* /A/B/E/OWNERS
-	* /A/C/G/OWNERS
+	Out of 10 files: 0 are approved and 10 are unapproved.
 
-	You can indicate your approval by writing `/approve` in a comment
-	You can cancel your approval by writing `/approve cancel` in a comment
+	Needs approval from approvers in these files:
 
-A selected approver such as *approver1* can be notified by typing `/assign @approver1` in a comment.
+	* pkg/api/OWNERS
+	* pkg/registry/OWNERS
 
-### Step 2:
+	Approvers can indicate their approval by writing /approve in a comment
+	Approvers can also choose to approve only specific files by writing /approve files <path-to-file> in a comment
+	Approvers can cancel approval by writing /approve cancel in a comment
+	The status of the PR is:
 
-*approver1* is in the E OWNERS file. S/he writes `/approve`
+	* pkg/api/
+	* pkg/registry/
 
-K8s-bot updates comment:
-	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+The selected approver such as *ykakarap* can be notified by typing `/assign @ykakarap` in a comment.
 
-	This pull-request has been approved by: *approver1, PRAuthor*
-	We suggest the following additional approver: **approver2**
+#### Step 2:
 
-	If they are not already assigned, you can assign the PR to them by writing /assign @approver2 in a comment when ready.
-
-	∇ Details
-	Needs approval from an approver in each of these OWNERS Files:
-	* ~/A/B/E/OWNERS~ [approver1]
-	* /A/C/G/OWNERS
-
-	You can indicate your approval by writing `/approve` in a comment
-	You can cancel your approval by writing `/approve cancel` in a comment
-
-### Step 3:
-
-*approver3* (an approver for D) is NOT an approver for any of the affected directories. S/he writes `/approve`
+*ykakarap* approves `pkg/api/first_test.go` by writing `/approve files pkg/api/first_test.go`.
 
 K8s-bot updates comment:
+
+	[APPROVALNOTIFIER] This PR is NOT APPROVED
+
+	This pull-request has been approved by: *PRAuthor*, *ykakarap*
+	To complete the pull request process, please assign nikhita
+	You can assign the PR to them by writing `/assign @nikhita` in a comment when ready.
+
+	The full list of commands accepted by this bot can be found here.
+
+	Out of 10 files: 1 are approved and 9 are unapproved.
+
+	Needs approval from approvers in these files:
+
+	* pkg/api/OWNERS
+	* pkg/registry/OWNERS
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	Approvers can indicate their approval by writing /approve in a comment
+	Approvers can also choose to approve only specific files by writing /approve files <path-to-file> in a comment
+	Approvers can cancel approval by writing /approve cancel in a comment
+	The status of the PR is:
 
-	This pull-request has been approved by: *approver1, approver3, PRAuthor* 
-	We suggest the following additional approvers: **approver2**
+	* pkg/api/ (partially approved, need additional approvals) [ykakarap]
+	* pkg/registry/
 
-	If they are not already assigned, you can assign the PR to them by writing /assign @approver1 @approver2 in a comment when ready.
-	
-	∇ Details
-	Needs approval from an approver in each of these OWNERS Files:
-	* ~/A/B/E/OWNERS~ [approver1]
-	* /A/C/G/OWNERS
+Note that even though *ykakarap* can approve more files in the PR only 1 files in the PR was approved. The directry is `pkg/api/` is parritally approved and the PR status shows that only 1 files is approved and the remaining 9 files still need to be approved. 
 
-	You can indicate your approval by writing `/approve` in a comment
-	You can cancel your approval by writing `/approve cancel` in a comment
+#### Step 3:
 
-### Step 4:
-
-*approver1* is an approver of the PR. S/he writes `/lgtm`
+*nikhita* approves all the files under `pkg/register/apps/` by writing `/approve files pkg/register/apps/*`.
 
 K8s-bot updates comment:
+
+	[APPROVALNOTIFIER] This PR is NOT APPROVED
+
+	This pull-request has been approved by: *PRAuthor*, *ykakarap*, *nikhita*
+	To complete the pull request process, please assign bob
+	You can assign the PR to them by writing `/assign @bob` in a comment when ready.
+
+	The full list of commands accepted by this bot can be found here.
+
+	Out of 10 files: 3 are approved and 7 are unapproved.
+
+	Needs approval from approvers in these files:
+
+	* pkg/api/OWNERS
+	* pkg/registry/OWNERS
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	Approvers can indicate their approval by writing /approve in a comment
+	Approvers can also choose to approve only specific files by writing /approve files <path-to-file> in a comment
+	Approvers can cancel approval by writing /approve cancel in a comment
+	The status of the PR is:
 
-	This pull-request has been approved by: *approver1, approver3, PRAuthor*
-	We suggest the following additional approver: **approver2**
+	* pkg/api/ (partially approved, need additional approvals) [ykakarap]
+	* pkg/registry/ (partially approved, need additional approvals) [nikhita]
 
-	If they are not already assigned, you can assign the PR to them by writing /assign @approver2 in a comment when ready.
-	
-	∇ Details
-	Needs approval from an approver in each of these OWNERS Files:
-	* ~/A/B/E/OWNERS~ [approver1]
-	* /A/C/G/OWNERS
+The 2 files (`pkg/registry/apps/one.go` and `pkg/registry/apps/one_test.go`) match the wild card pattern used in the approval comment and are approved.
 
-	You can indicate your approval by writing `/approve` in a comment
-	You can cancel your approval by writing `/approve cancel` in a comment
-
-The **lgtm** label is immediately added to the PR.
-
-### Step 5:
-
-*approver2* (who in the C OWNERS file, which is a parent to G) writes `/approve`
+#### Step 5:
+*ykakara* approves all the remaining files in the `pkg/registry/` directry by writing `/approve files pkg/registry/*`.
 
 K8s-bot updates comment:
+
+	[APPROVALNOTIFIER] This PR is NOT APPROVED
+
+	This pull-request has been approved by: *PRAuthor*, *ykakarap*, *nikhita*
+	To complete the pull request process, please assign bob
+	You can assign the PR to them by writing `/assign @bob` in a comment when ready.
+
+	The full list of commands accepted by this bot can be found here.
+
+	Out of 10 files: 7 are approved and 3 are unapproved.
+
+	Needs approval from approvers in these files:
+
+	* pkg/api/OWNERS
 	
-	[APPROVALNOTIFIER] This PR is **APPROVED**
+	Approvers can indicate their approval by writing /approve in a comment
+	Approvers can also choose to approve only specific files by writing /approve files <path-to-file> in a comment
+	Approvers can cancel approval by writing /approve cancel in a comment
+	The status of the PR is:
 
-	The following people have approved this PR: *approver1, approver2, approver3, PRAuthor*
+	* pkg/api/ (partially approved, need additional approvals) [ykakarap]
+	* ~pkg/registry/~ (approved) [nikhita, ykakarap]
 
-	∇ Details
-	Needs approval from an approver in each of these OWNERS Files:
-	* ~/A/B/E/OWNERS~ [approver1]
-	* ~/A/C/G/OWNERS~ [approver2]
+The directory `pkg/registry/` is now completely approved. The PR only needs approval from approvers in the `pkg/api/OWNERS` file.
 
-	You can indicate your approval by writing `/approve` in a comment
-	You can cancel your approval by writing `/approve cancel` in a comment
+#### Step 6:
 
-The PR is now unblocked from merging. If [Tide](/prow/cmd/tide) is configured, the K8s-bot merges the PR, because it has both the **lgtm** and **approved**. It K8s-bot still needs to wait its turn in submit queue and pass tests.
+*nikhita* approves all the remaining changes by writing `/approve`.
 
-![Bot Notification for Approval Mechanism](images/bot_notification_for_approval_selection_mechanism.png)
+K8s-bot updates comment:
 
-## Configuration options
+	[APPROVALNOTIFIER] This PR is NOT APPROVED
 
-See the [Approve](https://godoc.org/k8s.io/test-infra/prow/plugins#Approve) go struct for documentation of the options for this plugin.
+	This pull-request has been approved by: *PRAuthor*, *ykakarap*, *nikhita*
+	To complete the pull request process, please assign bob
+	You can assign the PR to them by writing `/assign @bob` in a comment when ready.
 
-See also the [Lgtm](https://godoc.org/k8s.io/test-infra/prow/plugins#Lgtm) go struct for documentation of the [LGTM](#lgtm-label) plugin's options.
+	The full list of commands accepted by this bot can be found here.
 
-## Final Notes
+	Out of 10 files: 10 are approved and 0 are unapproved.
 
-Obtaining approvals from selected approvers is the last step towards merging a PR. The approvers approve a PR by typing `/approve` in a comment, or retract it by typing `/approve cancel`.
+	Approvers can indicate their approval by writing /approve in a comment
+	Approvers can also choose to approve only specific files by writing /approve files <path-to-file> in a comment
+	Approvers can cancel approval by writing /approve cancel in a comment
+	The status of the PR is:
 
-Algorithm for getting the status is as follow:
+	* ~pkg/api/~ (approved) [ykakarap, nikhita]
+	* ~pkg/registry/~ (approved) [nikhita, ykakarap]
 
-1. run through all comments to obtain latest intention of approvers
+The PR is now completely approved and the the bot assigs the label `approved` to the PR. If the PR also has the label `lgtm` the PR is then merged.
 
-2. put all approvers into an approver set
+### Canceling an approval
 
-3. determine whether a file has at least one approver in the approver set
+At any point before the PR is merged the approver can revoke his/her approval by writing `/approve cancel` in a comment. This will revoke the approval given all the files till that point. 
 
-4. add the status to the PR if all files have been approved
 
-If an approval is cancelled, the bot will delete the status added to the PR and remove the approver from the approver set. If someone who is not an approver in the OWNERS file types `/approve` in a comment, the PR will not be approved. If someone who is an approver in the OWNERS file and s/he does not get selected, s/he can still type `/approve` or `/lgtm` in a comment, pushing the PR forward.
+### Suggested Approvers Mechanism
 
-### Code Implementation Links
+First, it is important to understand that ALL approvers in an OWNERS file can approve any file (according to the filters defined) in that directory AND its subdirectories.  
 
-Blunderbuss: 
-[prow/plugins/blunderbuss/blunderbuss.go](https://git.k8s.io/test-infra/prow/plugins/blunderbuss/blunderbuss.go)
+The suggested approvers selection algorithm is roughly:
+* Construct the subset of approvers from the leaf OWNERS files (according to the files in the PR) without the approvers who already provided an approval or are already assigned.
+* Construct the minimum set of approvers from this subset who can approve the remaining files in the PR
+* Repeat the process with root approvers excluding current approvers, current assignees and leaf suggested approvers.
+* Return the final set of suggested approvers
 
-LGTM:
-[prow/plugins/lgtm/lgtm.go](https://git.k8s.io/test-infra/prow/plugins/lgtm/lgtm.go)
+The exact algorithms for selecting approvers is somewhat complex; it is an set cover approximations with considerations for existing assignees and current approvers. To read it in more depth, check out the approvers source code linked at the end of the README.
 
-Approve:
-[prow/plugins/approve/approve.go](https://git.k8s.io/test-infra/prow/plugins/approve/approve.go)
-
-[prow/plugins/approve/approvers/owners.go](https://git.k8s.io/test-infra/prow/plugins/approve/approvers/owners.go)
 

@@ -73,7 +73,7 @@ func (o Owners) GetApprovers() map[string]sets.String {
 	return filesToApprovers
 }
 
-// GetLeafApprovers returns a map from files -> people that are approvers in them (only the leaf)
+// GetLeafApprovers returns a map from files -> people that are approvers for them (only the leaf)
 func (o Owners) GetLeafApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
@@ -357,20 +357,6 @@ func NewApprovers(owners Owners) Approvers {
 		},
 	}
 }
-
-// shouldNotOverrideApproval decides whether or not we should keep the
-// original approval:
-// If someone approves a PR multiple times, we only want to keep the
-// latest approval, unless a previous approval was "no-issue", and the
-// most recent isn't.
-/*
-func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool {
-	login = strings.ToLower(login)
-	approval, alreadyApproved := ap.approvers[login]
-
-	return alreadyApproved && approval.NoIssue && !noIssue
-}
-*/
 
 // AddLGTMer adds a new LGTM Approver
 func (ap *Approvers) AddLGTMer(login, reference, path string) {
@@ -932,11 +918,6 @@ func wildcardPathMatch(pattern, targetPath string) bool {
 		return wildcardPathMatch(patternRemain, targetPathRemain)
 	}
 	return false
-}
-
-func wildcardPathSubset(pattern, targetPath string) bool {
-	targetPath = strings.ReplaceAll(targetPath, "*", "xyz")
-	return wildcardPathMatch(pattern, targetPath)
 }
 
 // approversForFile return the set of approvers in potentialApprovers who approved the file
