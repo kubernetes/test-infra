@@ -13,7 +13,7 @@ presubmits:
           BASE_SHA="${PULL_BASE_SHA:-""}"; ARTIFACTS="${ARTIFACTS:-tmp/artifacts}";
           mkdir -p "${ARTIFACTS}";
           export GO111MODULE=on;
-          go get github.com/kubernetes-sigs/depstat;
+          go install github.com/kubernetes-sigs/depstat;
           function write_report() { depstat stats --json };
           function diff_reports() { diff $1 $2 };
           write_report > "${ARTIFACTS}/stats.json";
