@@ -193,6 +193,8 @@ type JenkinsSpec struct {
 	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
 	// AdditionalParams allows to pass params to jenkins jobs
 	AdditionalParams []prowapi.JenkinsAdditionalParam `json:"additional_params,omitempty"`
+	// JobPath is the full path to the jenkins job
+	JobPath string `json:"job_path,omitempty"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.

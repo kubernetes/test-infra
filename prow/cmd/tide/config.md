@@ -10,6 +10,7 @@ To deploy Tide for your organization or repository, please see [how to get start
 
 The following configuration fields are available:
 
+* `batch_allow_pending`: Boolean that allows tide to pick PRs for batch that have pending tests.
 * `sync_period`: The field specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
 * `status_update_period`: The field specifies how often Tide will update GitHub status contexts.
    Defaults to the value of `sync_period`.

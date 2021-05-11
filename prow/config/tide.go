@@ -162,6 +162,11 @@ type Tide struct {
 	// starting a new one requires to start new instances of all tests.
 	// Use '*' as key to set this globally. Defaults to true.
 	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+
+	// BatchAllowPending is a config that allows tide to select PRs that still have pending tests,
+	// this is intended to increase the likelihood of batch PRs.
+	// Note that failed or error status contexts will still preclude PR from being in a batch.
+	BatchAllowPending *bool `json:"batch_skip_tests,omitempty"`
 }
 
 func (t *Tide) PrioritizeExistingBatches(repo OrgRepo) bool {

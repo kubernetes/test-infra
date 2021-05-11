@@ -605,6 +605,8 @@ tide:
   - labels: [ "kind/flake", "priority/critical-urgent" ]
   - labels: [ "kind/failing-test", "priority/critical-urgent" ]
   - labels: [ "kind/bug", "priority/critical-urgent" ]
+  # this will allow tide to pick PRs for batch builds while still pending tests
+  # batch_allow_pending: false
 
 push_gateway:
   endpoint: pushgateway

@@ -73,6 +73,13 @@ type Controller struct {
 	totURL        string
 	// if skip report job results to github
 	skipReport bool
+
+	// retryAbortedJobs is used if the behavior of prow should be to retrigger aborted jenkins
+	// jobs where the initiation of desired abortion was not caused by prow
+	// This setting is specially useful for cases where you don't control when workers terminate,
+	// such as when using spot instances.
+	retryAbortedJobs bool
+
 	// selector that will be applied on prowjobs.
 	selector string
 
@@ -88,7 +95,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool, retryAbortedJobs bool) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -97,17 +104,18 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
-		prowJobClient: prowJobClient,
-		jc:            jc,
-		ghc:           ghc,
-		log:           logger,
-		cfg:           cfg,
-		selector:      selector,
-		node:          n,
-		totURL:        totURL,
-		skipReport:    skipReport,
-		pendingJobs:   make(map[string]int),
-		clock:         clock.RealClock{},
+		prowJobClient:    prowJobClient,
+		jc:               jc,
+		ghc:              ghc,
+		log:              logger,
+		cfg:              cfg,
+		selector:         selector,
+		node:             n,
+		totURL:           totURL,
+		skipReport:       skipReport,
+		retryAbortedJobs: retryAbortedJobs,
+		pendingJobs:      make(map[string]int),
+		clock:            clock.RealClock{},
 	}, nil
 }
 
@@ -224,10 +232,12 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	if !c.skipReport {
-		reportTypes := c.cfg().GitHubReporter.JobTypesToReport
-		jConfig := c.config()
-		for report := range reportCh {
+	reportTypes := c.cfg().GitHubReporter.JobTypesToReport
+	jConfig := c.config()
+	for report := range reportCh {
+		// Report status if pending, otherwise crier doesn't know when link is available
+		// We always want to report the status URL, when state changes from enqueued to running
+		if !c.skipReport || report.Status.Description == "Jenkins job running." {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
 			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
 				reportErrs = append(reportErrs, err)
@@ -354,6 +364,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 	prevPJ := pj.DeepCopy()
 
 	jb, jbExists := jbs[pj.ObjectMeta.Name]
+	reTriggered := false
 	if !jbExists {
 		pj.SetComplete()
 		pj.Status.State = prowapi.ErrorState
@@ -386,19 +397,46 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			pj.Status.Description = "Jenkins job failed."
 
 		case jb.IsAborted():
-			pj.SetComplete()
-			pj.Status.State = prowapi.AbortedState
-			pj.Status.Description = "Jenkins job aborted."
+			// If config is set to retry aborted jobs and if aborted state is not coming from prow
+			if c.retryAbortedJobs && pj.Status.State != prowapi.AbortedState {
+				buildID, err := c.getBuildID(pj.Spec.Job)
+				if err != nil {
+					return fmt.Errorf("error getting build ID: %v", err)
+				}
+				if err := c.jc.Build(&pj, buildID); err != nil {
+					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&pj)).Warn("Cannot start Jenkins build")
+					pj.SetComplete()
+					pj.Status.State = prowapi.ErrorState
+					pj.Status.URL = c.cfg().StatusErrorLink
+					pj.Status.Description = "Error starting Jenkins job."
+				} else {
+					reTriggered = true
+					now := metav1.NewTime(c.clock.Now())
+					pj.Status.PendingTime = &now
+					pj.Status.State = prowapi.PendingState
+					pj.Status.Description = "Jenkins job enqueued."
+					pj.Status.URL = ""
+					pj.Status.BuildID = buildID
+					pj.Status.JenkinsBuildID = ""
+				}
+			} else {
+				pj.SetComplete()
+				pj.Status.State = prowapi.AbortedState
+				pj.Status.Description = "Jenkins job aborted."
+			}
 		}
-		// Construct the status URL that will be used in reports.
-		pj.Status.PodName = pj.ObjectMeta.Name
-		pj.Status.BuildID = jb.BuildID()
-		pj.Status.JenkinsBuildID = strconv.Itoa(jb.Number)
-		var b bytes.Buffer
-		if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
-		} else {
-			pj.Status.URL = b.String()
+
+		if !reTriggered {
+			// Construct the status URL that will be used in reports.
+			pj.Status.PodName = pj.ObjectMeta.Name
+			pj.Status.BuildID = jb.BuildID()
+			pj.Status.JenkinsBuildID = strconv.Itoa(jb.Number)
+			var b bytes.Buffer
+			if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
+				c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
+			} else {
+				pj.Status.URL = b.String()
+			}
 		}
 	}
 	// Report to GitHub.

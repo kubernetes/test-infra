@@ -915,6 +915,7 @@ func (r Refs) String() string {
 type JenkinsSpec struct {
 	GitHubBranchSourceJob bool                     `json:"github_branch_source_job,omitempty"`
 	AdditionalParams      []JenkinsAdditionalParam `json:"additional_params,omitempty"`
+  JobPath               string `json:"job_path,omitempty"`
 }
 
 // Currently only string parameters supported

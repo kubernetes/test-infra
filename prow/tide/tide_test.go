@@ -982,6 +982,14 @@ func TestPickBatchV2(t *testing.T) {
 	testPickBatch(localgit.NewV2, t)
 }
 
+func TestPickBatchAllowPending(t *testing.T) {
+	testPickBatchAllowPending(localgit.New, t)
+}
+
+func TestPickBatchAllowPendingV2(t *testing.T) {
+	testPickBatchAllowPending(localgit.NewV2, t)
+}
+
 func testPickBatch(clients localgit.Clients, t *testing.T) {
 	lg, gc, err := clients()
 	if err != nil {
@@ -1127,6 +1135,130 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 	}
 	if !equality.Semantic.DeepEqual(presubmits, ca.Config().PresubmitsStatic["o/r"]) {
 		t.Errorf("resolving presubmits failed, diff:\n%v\n", diff.ObjectReflectDiff(presubmits, ca.Config().PresubmitsStatic["o/r"]))
+	}
+	for _, testpr := range testprs {
+		var found bool
+		for _, pr := range prs {
+			if int(pr.Number) == testpr.number {
+				found = true
+				break
+			}
+		}
+		if found && !testpr.included {
+			t.Errorf("PR %d should not be picked.", testpr.number)
+		} else if !found && testpr.included {
+			t.Errorf("PR %d should be picked.", testpr.number)
+		}
+	}
+}
+
+func testPickBatchAllowPending(clients localgit.Clients, t *testing.T) {
+	lg, gc, err := clients()
+	if err != nil {
+		t.Fatalf("Error making local git: %v", err)
+	}
+	defer gc.Clean()
+	defer lg.Clean()
+	if err := lg.MakeFakeRepo("o", "r"); err != nil {
+		t.Fatalf("Error making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	testprs := []struct {
+		files    map[string][]byte
+		success  bool
+		number   int
+		pending  bool
+		included bool
+	}{
+		{
+			files:    map[string][]byte{"bar": []byte("ok")},
+			success:  true,
+			pending:  false,
+			number:   0,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"foo": []byte("ok")},
+			success:  false,
+			pending:  true,
+			number:   1,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"foo": []byte("ok")},
+			success:  false,
+			pending:  false,
+			number:   2,
+			included: false,
+		},
+	}
+	sp := subpool{
+		log:    logrus.WithField("component", "tide"),
+		org:    "o",
+		repo:   "r",
+		branch: "master",
+		sha:    "master",
+	}
+	for _, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", testpr.number)); err != nil {
+			t.Fatalf("Error checking out new branch: %v", err)
+		}
+		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
+			t.Fatalf("Error adding commit: %v", err)
+		}
+		if err := lg.Checkout("o", "r", "master"); err != nil {
+			t.Fatalf("Error checking out master: %v", err)
+		}
+		oid := githubql.String(fmt.Sprintf("origin/pr-%d", testpr.number))
+		var pr PullRequest
+		pr.Number = githubql.Int(testpr.number)
+		pr.HeadRefOID = oid
+		pr.Commits.Nodes = []struct {
+			Commit Commit
+		}{{Commit: Commit{OID: oid}}}
+		pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{State: githubql.StatusStateSuccess})
+		if !testpr.success {
+			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
+		}
+		if testpr.pending {
+			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStatePending
+		}
+		sp.prs = append(sp.prs, pr)
+	}
+	ca := &config.Agent{}
+	batchAllowPending := true
+	ca.Set(&config.Config{
+		ProwConfig: config.ProwConfig{
+			Tide: config.Tide{
+				BatchSizeLimitMap: map[string]int{"*": 5},
+				BatchAllowPending: &batchAllowPending,
+			},
+		},
+		JobConfig: config.JobConfig{
+			PresubmitsStatic: map[string][]config.Presubmit{
+				"o/r": {{
+					AlwaysRun: true,
+					JobBase: config.JobBase{
+						Name: "my-presubmit",
+					},
+				}},
+			},
+		},
+	})
+	c := &Controller{
+		logger: logrus.WithField("component", "tide"),
+		gc:     gc,
+		config: ca.Config,
+	}
+	prs, _, err := c.pickBatch(sp, map[int]contextChecker{
+		0: &config.TideContextPolicy{},
+		1: &config.TideContextPolicy{},
+		2: &config.TideContextPolicy{},
+	})
+	if err != nil {
+		t.Fatalf("Error from pickBatch: %v", err)
 	}
 	for _, testpr := range testprs {
 		var found bool
