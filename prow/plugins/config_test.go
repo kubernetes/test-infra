@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -1658,6 +1659,66 @@ func TestPluginsMergeFrom(t *testing.T) {
 			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
 				t.Errorf("expexcted config differs from actual: %s", diff)
 			}
+		})
+	}
+}
+
+func TestHasConfigFor(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name            string
+		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String)
+	}{
+		{
+			name: "Any non-empty config with empty Plugins is considered to be global",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig.Plugins = nil
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
+			},
+		},
+		{
+			name: "Any config with plugins is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				for orgOrRepo := range fuzzedConfig.Plugins {
+					if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Plugins: fuzzedConfig.Plugins}), expectOrgs, expectRepos
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for i := 0; i < 100; i++ {
+				fuzzedConfig := &Configuration{}
+				fuzzer.Fuzz(fuzzedConfig)
+
+				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
+				actualIsGlobal, actualOrgs, actualRepos := fuzzedAndManipulatedConfig.HasConfigFor()
+
+				if expectIsGlobal != actualIsGlobal {
+					t.Errorf("exepcted isGlobal: %t, got: %t", expectIsGlobal, actualIsGlobal)
+				}
+
+				if diff := cmp.Diff(expectOrgs, actualOrgs); diff != "" {
+					t.Errorf("expected orgs differ from actual: %s", diff)
+				}
+
+				if diff := cmp.Diff(expectRepos, actualRepos); diff != "" {
+					t.Errorf("expected repos differ from actual: %s", diff)
+				}
+			}
+
 		})
 	}
 }
