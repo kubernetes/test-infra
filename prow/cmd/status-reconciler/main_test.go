@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 )
 
 func newSetStringsFlagForTest(vals ...string) flagutil.Strings {
@@ -113,7 +114,11 @@ func TestGatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				pluginConfig:           "/etc/plugins/plugins.yaml",
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
+					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
 				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				tokenBurst:             100,
 				tokensPerHour:          300,
@@ -138,7 +143,7 @@ func TestGatherOptions(t *testing.T) {
 			case err != nil && err.Error() != tc.expectedErr.Error():
 				t.Errorf("Expect error: %v\ngot:\n%v", err, tc.expectedErr)
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("got:\n%#v \n != \nexpected:\n%#v", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}

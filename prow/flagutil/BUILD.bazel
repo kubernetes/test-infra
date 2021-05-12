@@ -57,6 +57,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/flagutil/config:all-srcs",
+        "//prow/flagutil/plugins:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -22,10 +22,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -80,7 +82,7 @@ func Test_gatherOptions(t *testing.T) {
 				"--plugin-config": "/random/value",
 			},
 			expected: func(o *options) {
-				o.pluginConfig = "/random/value"
+				o.pluginsConfig.PluginConfigPath = "/random/value"
 			},
 		},
 	}
@@ -94,7 +96,11 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				pluginConfig:           "/etc/plugins/plugins.yaml",
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
+					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
 				dryRun:                 true,
 				gracePeriod:            180 * time.Second,
 				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
@@ -132,7 +138,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}
