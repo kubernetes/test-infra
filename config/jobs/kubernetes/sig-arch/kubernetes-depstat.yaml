@@ -11,11 +11,11 @@ presubmits:
         args: ["-c", "set -euo; 
           BASE_SHA="${PULL_BASE_SHA:-""}"; ARTIFACTS="${ARTIFACTS:-/tmp/artifacts}";
           mkdir -p "${ARTIFACTS}";
-          cd $ARTIFACTS
+          cd "$ARTIFACTS"
           go install github.com/kubernetes-sigs/depstat@latest;
           cd /go/src/k8s.io/kubernetes
           function write_report() { depstat stats --json; };
-          function diff_reports() { diff $1 $2; };
+          function diff_reports() { diff "$1" "$2"; };
           write_report > "${ARTIFACTS}/stats.json";
           if [ -n "${BASE_SHA}" ]; then
           git checkout -b base "${BASE_SHA}";
