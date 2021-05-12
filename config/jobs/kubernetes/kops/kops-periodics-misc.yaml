@@ -304,7 +304,7 @@ periodics:
       command:
       - runner.sh
       args:
-      - ./tests/e2e/scenarios/aws-cbs-csi-driver/run-test.sh
+      - ./tests/e2e/scenarios/aws-ebs-csi/run-test.sh
       env:
       - name: CLOUD_PROVIDER
         value: aws
