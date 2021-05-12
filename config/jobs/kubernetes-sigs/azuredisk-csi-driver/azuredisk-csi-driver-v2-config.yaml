@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
-  - name: pull-azuredisk-csi-driver-verify-v2
+  - name: pull-azuredisk-csi-driver-verify-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -20,10 +20,10 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-verify-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-verify-mainv2
       description: "Run code verification tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-unit-v2
+  - name: pull-azuredisk-csi-driver-unit-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -43,10 +43,10 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-unit-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-unit-mainv2
       description: "Run unit tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-sanity-v2
+  - name: pull-azuredisk-csi-driver-sanity-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -67,10 +67,10 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-sanity-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-sanity-mainv2
       description: "Run sanity tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-integration-v2
+  - name: pull-azuredisk-csi-driver-integration-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -91,10 +91,10 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-integration-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-integration-mainv2
       description: "Run integration tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-single-az-v2
+  - name: pull-azuredisk-csi-driver-e2e-single-az-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -142,10 +142,10 @@ presubmits:
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az-mainv2
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-multi-az-v2
+  - name: pull-azuredisk-csi-driver-e2e-multi-az-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -194,10 +194,10 @@ presubmits:
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az-mainv2
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-migration-v2
+  - name: pull-azuredisk-csi-driver-e2e-migration-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -247,10 +247,10 @@ presubmits:
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-mainv2
       description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Linux nodes."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-migration-windows-v2
+  - name: pull-azuredisk-csi-driver-e2e-migration-windows-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -304,10 +304,10 @@ presubmits:
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-windows-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-windows-mainv2
       description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-windows-v2
+  - name: pull-azuredisk-csi-driver-e2e-windows-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -359,10 +359,10 @@ presubmits:
             value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-mainv2
       description: "Run E2E tests on a Windows cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-windows-build-v2
+  - name: pull-azuredisk-csi-driver-windows-build-mainv2
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -380,6 +380,6 @@ presubmits:
         - azuredisk-windows
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-windows-build-v2
+      testgrid-tab-name: pr-azuredisk-csi-driver-windows-build-mainv2
       description: "Run make azuredisk-windows for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
