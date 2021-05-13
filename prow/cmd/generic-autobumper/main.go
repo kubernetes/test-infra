@@ -487,7 +487,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
-	if err := bumper.Run2(pro, &client{o: o}); err != nil {
+	if err := bumper.Run(pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }
