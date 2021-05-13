@@ -96,8 +96,8 @@ func TestFindConfigToUpdate(t *testing.T) {
 			})
 			srcRootDir, dstRootDir := seedTempDir(t, tmpDir, tc.srcNodes, tc.dstNodes)
 			c := client{
-				srcPath: srcRootDir,
-				dstPath: dstRootDir,
+				SrcPath: srcRootDir,
+				DstPath: dstRootDir,
 			}
 			if wantErr, gotErr := tc.wantErr, c.findConfigToUpdate(); (wantErr && (gotErr == nil)) || (!wantErr && (gotErr != nil)) {
 				t.Fatalf("Error mismatch. want: %v, got: %v", wantErr, gotErr)
@@ -170,8 +170,8 @@ func TestCopyFiles(t *testing.T) {
 			})
 			srcRootDir, dstRootDir := seedTempDir(t, tmpDir, tc.srcNodes, tc.dstNodes)
 			c := client{
-				srcPath: srcRootDir,
-				dstPath: dstRootDir,
+				SrcPath: srcRootDir,
+				DstPath: dstRootDir,
 				paths:   tc.paths,
 			}
 			if wantErr, gotErr := tc.wantErr, c.copyFiles(); (wantErr && (gotErr == nil)) || (!wantErr && (gotErr != nil)) {
