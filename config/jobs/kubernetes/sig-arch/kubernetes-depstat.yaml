@@ -25,4 +25,4 @@ presubmits:
           git checkout -b base "${BASE_SHA}" \
           write_report > "${ARTIFACTS}/stats-base.json" \
           diff_reports "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json \
-          fi \
+          fi
