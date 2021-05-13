@@ -11,18 +11,17 @@ presubmits:
         args:
         - -c
         - |
-          set -euo \
-          BASE_SHA="${PULL_BASE_SHA:-""}" \
-          ARTIFACTS="${ARTIFACTS:-/tmp/artifacts}" \
-          mkdir -p "${ARTIFACTS}" \
-          cd "$ARTIFACTS" \
-          go install github.com/kubernetes-sigs/depstat@latest \
-          cd /go/src/k8s.io/kubernetes \
-          function write_report() { depstat stats --json; } \
-          function diff_reports() { diff "$1" "$2"; } \
-          write_report > "${ARTIFACTS}/stats.json" \
+          set -euo; \
+          BASE_SHA="${PULL_BASE_SHA:-"09268c16853b233ebaedcd6a877eac23690b5190"}"; \
+          ARTIFACTS="${ARTIFACTS:-/tmp/artifacts}"; \
+          mkdir -p "${ARTIFACTS}"; \
+          cd "$ARTIFACTS"; \
+          go install github.com/kubernetes-sigs/depstat@latest; \
+          cd /go/src/k8s.io/kubernetes; \
+          function write_report() { depstat stats --json; }; \
+          write_report > "${ARTIFACTS}/stats.json"; \
           if [ -n "${BASE_SHA}" ]; then \
-          git checkout -b base "${BASE_SHA}" \
-          write_report > "${ARTIFACTS}/stats-base.json" \
-          diff_reports "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json \
-          fi
+          git checkout -b base "${BASE_SHA}"; \
+          write_report > "${ARTIFACTS}/stats-base.json"; \
+          diff "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json; \
+          fi;
