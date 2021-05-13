@@ -84,7 +84,15 @@ func (c *client) Changes() []func() (string, error) {
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
 func (c *client) PRTitleBody() (string, string, error) {
-	return makeCommitSummary(c.o.Prefixes, c.versions), "", nil
+	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes), nil
+}
+
+func generatePRBody(images map[string]string, prefixes []prefix) (body string) {
+	body = ""
+	for _, prefix := range prefixes {
+		body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, images) + "\n\n"
+	}
+	return body + "\n"
 }
 
 // options is the options for autobumper operations.
