@@ -49,6 +49,13 @@ fi
 gcp_sa_project=${gcp_service_account##*@}
 gcp_sa_project=${gcp_sa_project%%.*}
 
+# Default compute engine service accounts have a different format that makes them
+# appear to belong to a 'developer' project:  <project-number>-compute@developer.gserviceaccount.com
+# We assume the default compute SA belongs to the project containing the cluster in this case.
+if [[ "${gcp_sa_project}" == "developer" ]]; then
+  gcp_sa_project="${project}"
+fi
+
 role=roles/iam.workloadIdentityUser
 members=($(
   gcloud iam service-accounts get-iam-policy \
