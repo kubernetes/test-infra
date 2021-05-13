@@ -532,7 +532,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-1.21-informing, sig-windows-signal
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-2019-1.21
   decorate: true
   decoration_config:
@@ -580,7 +580,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-1.21-informing, sig-windows-signal, sig-windows-master-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-20h2-1.21
   decorate: true
   decoration_config:
@@ -628,7 +628,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-1.21-informing, sig-windows-master-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-2004-1.21
   decorate: true
   decoration_config:
@@ -771,7 +771,7 @@ periodics:
         privileged: true
 - annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    testgrid-dashboards: sig-release-1.21-informing, sig-windows-signal, sig-windows-master-release
+    testgrid-dashboards: sig-release-1.21-informing, sig-windows-signal, sig-windows-1.21-release
     testgrid-tab-name: aks-engine-windows-containerd-1.21
   decorate: true
   decoration_config:
@@ -790,7 +790,7 @@ periodics:
     preset-service-account: "true"
     preset-windows-private-registry-cred: "true"
     preset-windows-repo-list-master: "true"
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-1-21
+  name: ci-kubernetes-e2e-aks-engine-azure-1-21-windows-containerd
   spec:
     containers:
     - args:
@@ -809,7 +809,7 @@ periodics:
       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
       - --aksengine-winZipBuildScript=$(WIN_BUILD)
       - --aksengine-orchestratorRelease=1.21
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_21.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows

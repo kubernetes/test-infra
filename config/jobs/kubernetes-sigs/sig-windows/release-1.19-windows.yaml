@@ -49,7 +49,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.19-informing, sig-windows-1.19-release
+    testgrid-dashboards: sig-release-1.19-informing, sig-windows-signal, sig-windows-1.19-release
     testgrid-tab-name: aks-engine-windows-dockershim-1.19
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.19 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
