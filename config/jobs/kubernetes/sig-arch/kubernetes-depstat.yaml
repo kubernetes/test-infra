@@ -22,3 +22,7 @@ presubmits:
           git checkout -b base "${PULL_BASE_SHA}"; \
           depstat stats --json > "${ARTIFACTS}/stats-base.json"; \
           diff -s --ignore-all-space "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json || true;
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-testing-misc
+      description: Generates dependency statistics by running depstat for base and current PR
