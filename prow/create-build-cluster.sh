@@ -197,7 +197,7 @@ EOF
 }
 
 function genConfig() {
-  # TODO: Automatically inject this into config.yaml at the same time as kubeconfig credential setup (which auto creates a CL we can include this in).
+  # TODO: Automatically inject this into config.yaml at the same time as kubeconfig credential setup (which auto creates a PR we can include this in).
   echo
   echo "The following changes should be made to the Prow instance's config.yaml file (Probably located at ${PROW_DEPLOYMENT_DIR}/../config.yaml)."
   echo
