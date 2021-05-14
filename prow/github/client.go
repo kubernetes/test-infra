@@ -250,7 +250,7 @@ type Client interface {
 	ListAppInstallations() ([]AppInstallation, error)
 	GetApp() (*App, error)
 
-	Throttle(hourlyTokens, burst int)
+	Throttle(hourlyTokens, burst int, org ...string) error
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 
@@ -387,14 +387,15 @@ type throttler struct {
 }
 
 type throttlerDelegate struct {
-	ticker   *time.Ticker
-	throttle chan time.Time
+	ticker   map[string]*time.Ticker
+	throttle map[string]chan time.Time
 	http     httpClient
-	slow     int32 // Helps log once when requests start/stop being throttled
+	slow     map[string]*int32 // Helps log once when requests start/stop being throttled
 	lock     sync.RWMutex
 }
 
-func (t *throttler) Wait() {
+func (t *throttler) Wait(org string) {
+
 	start := time.Now()
 	log := logrus.WithFields(logrus.Fields{"client": "github", "throttled": true})
 	defer func() {
@@ -408,11 +409,18 @@ func (t *throttler) Wait() {
 	}()
 	t.lock.RLock()
 	defer t.lock.RUnlock()
+	if _, found := t.ticker[org]; !found {
+		org = throttlerGlobalKey
+	}
+	if _, hasThrottler := t.ticker[org]; !hasThrottler {
+		return
+	}
+
 	var more bool
 	select {
-	case _, more = <-t.throttle:
+	case _, more = <-t.throttle[org]:
 		// If we were throttled and the channel is now somewhat (25%+) full, note this
-		if len(t.throttle) > cap(t.throttle)/4 && atomic.CompareAndSwapInt32(&t.slow, 1, 0) {
+		if len(t.throttle[org]) > cap(t.throttle[org])/4 && atomic.CompareAndSwapInt32(t.slow[org], 1, 0) {
 			log.Debug("Unthrottled")
 		}
 		if !more {
@@ -422,26 +430,35 @@ func (t *throttler) Wait() {
 	default: // Do not wait if nothing is available right now
 	}
 	// If this is the first time we are waiting, note this
-	if slow := atomic.SwapInt32(&t.slow, 1); slow == 0 {
+	if slow := atomic.SwapInt32(t.slow[org], 1); slow == 0 {
 		log.Debug("Throttled")
 	}
-	_, more = <-t.throttle
+	_, more = <-t.throttle[org]
 	if !more {
 		log.Debug("Throttle channel closed")
 	}
 }
 
-func (t *throttler) Refund() {
+const throttlerGlobalKey = "*"
+
+func (t *throttler) Refund(org string) {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
+	if _, found := t.ticker[org]; !found {
+		org = throttlerGlobalKey
+	}
+	if _, hasThrottler := t.ticker[org]; !hasThrottler {
+		return
+	}
 	select {
-	case t.throttle <- time.Now():
+	case t.throttle[org] <- time.Now():
 	default:
 	}
 }
 
 func (t *throttler) Do(req *http.Request) (*http.Response, error) {
-	t.Wait()
+	org := extractOrgFromContext(req.Context())
+	t.Wait(org)
 	resp, err := t.http.Do(req)
 	if err == nil {
 		cacheMode := ghcache.CacheResponseMode(resp.Header.Get(ghcache.CacheModeHeader))
@@ -453,7 +470,7 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 				"throttled":  true,
 				"cache-mode": string(cacheMode),
 			}).Debug("Throttler refunding token for free response from ghcache.")
-			t.Refund()
+			t.Refund(org)
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"client":     "github",
@@ -469,7 +486,7 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (t *throttler) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
-	t.Wait()
+	t.Wait(extractOrgFromContext(ctx))
 	return t.graph.QueryWithGitHubAppsSupport(ctx, q, vars, org)
 }
 
@@ -482,19 +499,29 @@ func (t *throttler) forUserAgent(userAgent string) gqlClient {
 
 // Throttle client to a rate of at most hourlyTokens requests per hour,
 // allowing burst tokens.
-func (c *client) Throttle(hourlyTokens, burst int) {
-	c.log("Throttle", hourlyTokens, burst)
+func (c *client) Throttle(hourlyTokens, burst int, orgs ...string) error {
+	org := "*"
+	if len(orgs) > 0 {
+		if !c.usesAppsAuth {
+			return errors.New("passing an org to the throttler is only allowed when using github apps auth")
+		}
+		if len(orgs) > 1 {
+			return fmt.Errorf("may only pass one org for throttling, got %d", len(orgs))
+		}
+		org = orgs[0]
+	}
+	c.log("Throttle", hourlyTokens, burst, org)
 	c.throttle.lock.Lock()
 	defer c.throttle.lock.Unlock()
-	previouslyThrottled := c.throttle.ticker != nil
+	previouslyThrottled := c.throttle.ticker[org] != nil
 	if hourlyTokens <= 0 || burst <= 0 { // Disable throttle
 		if previouslyThrottled { // Unwrap clients if necessary
 			c.client = c.throttle.http
 			c.gqlc = c.throttle.graph
-			c.throttle.ticker.Stop()
-			c.throttle.ticker = nil
+			c.throttle.ticker[org].Stop()
+			c.throttle.ticker[org] = nil
 		}
-		return
+		return nil
 	}
 	rate := time.Hour / time.Duration(hourlyTokens)
 	ticker := time.NewTicker(rate)
@@ -517,8 +544,21 @@ func (c *client) Throttle(hourlyTokens, burst int) {
 		c.client = &c.throttle
 		c.gqlc = &c.throttle
 	}
-	c.throttle.ticker = ticker
-	c.throttle.throttle = throttle
+	if c.throttle.ticker == nil {
+		c.throttle.ticker = map[string]*time.Ticker{}
+	}
+	c.throttle.ticker[org] = ticker
+	if c.throttle.throttle == nil {
+		c.throttle.throttle = map[string]chan time.Time{}
+	}
+	c.throttle.throttle[org] = throttle
+	if c.throttle.slow == nil {
+		c.throttle.slow = map[string]*int32{}
+	}
+	var i int32
+	c.throttle.slow[org] = &i
+
+	return nil
 }
 
 func (c *client) SetMax404Retries(max int) {
