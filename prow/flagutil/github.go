@@ -47,25 +47,87 @@ type GitHubOptions struct {
 	AppID             string
 	AppPrivateKeyPath string
 
+	ThrottleHourlyTokens int
+	ThrottleAllowBurst   int
+
 	// This will only be set after a github client was retrieved for the first time
 	appsTokenGenerator github.GitHubAppTokenGenerator
 }
 
+// flagParams struct is used indirectly by users of this package to customize
+// the common flags behavior, such as providing their own default values
+// or suppressing presence of certain flags.
+type flagParams struct {
+	defaults GitHubOptions
+
+	disableThrottlerOptions bool
+}
+
 const DefaultGitHubTokenPath = "/etc/github/oauth" // Exported for testing purposes
 
-// AddFlags injects GitHub options into the given FlagSet.
+type FlagParameter func(options *flagParams)
+
+// ThrottlerDefaults allows to customize the default values of flags
+// that control the throttler behavior. Setting `hourlyTokens` to zero
+// disables throttling by default.
+func ThrottlerDefaults(hourlyTokens, allowedBursts int) FlagParameter {
+	return func(o *flagParams) {
+		o.defaults.ThrottleHourlyTokens = hourlyTokens
+		o.defaults.ThrottleAllowBurst = allowedBursts
+	}
+}
+
+// DisableThrottlerOptions suppresses the presence of throttler-related flags,
+// effectively disallowing external users to parametrize default throttling
+// behavior. This is useful mostly when a program creates multiple GH clients
+// with different behavior.
+func DisableThrottlerOptions() FlagParameter {
+	return func(o *flagParams) {
+		o.disableThrottlerOptions = true
+	}
+}
+
+// AddCustomizedFlags injects GitHub options into the given FlagSet. Behavior can be customized
+// via the functional options.
+func (o *GitHubOptions) AddCustomizedFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) {
+	o.addFlags(fs, paramFuncs...)
+}
+
+// AddFlags injects GitHub options into the given FlagSet
 func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.Host, "github-host", github.DefaultHost, "GitHub's default host (may differ for enterprise)")
-	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
+	o.addFlags(fs)
+}
+
+func (o *GitHubOptions) addFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) {
+	params := flagParams{
+		defaults: GitHubOptions{
+			Host:            github.DefaultHost,
+			endpoint:        NewStrings(github.DefaultAPIEndpoint),
+			graphqlEndpoint: github.DefaultGraphQLEndpoint,
+		},
+	}
+
+	for _, parametrize := range paramFuncs {
+		parametrize(&params)
+	}
+
+	defaults := params.defaults
+	fs.StringVar(&o.Host, "github-host", defaults.Host, "GitHub's default host (may differ for enterprise)")
+	o.endpoint = NewStrings(defaults.endpoint.Strings()...)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.TokenPath, "github-token-path", "", "Path to the file containing the GitHub OAuth secret.")
-	fs.StringVar(&o.AppID, "github-app-id", "", "ID of the GitHub app. If set, requires --github-app-private-key-path to be set and --github-token-path to be unset.")
-	fs.StringVar(&o.AppPrivateKeyPath, "github-app-private-key-path", "", "Path to the private key of the github app. If set, requires --github-app-id to bet set and --github-token-path to be unset")
+	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", defaults.graphqlEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
+	fs.StringVar(&o.TokenPath, "github-token-path", defaults.TokenPath, "Path to the file containing the GitHub OAuth secret.")
+	fs.StringVar(&o.AppID, "github-app-id", defaults.AppID, "ID of the GitHub app. If set, requires --github-app-private-key-path to be set and --github-token-path to be unset.")
+	fs.StringVar(&o.AppPrivateKeyPath, "github-app-private-key-path", defaults.AppPrivateKeyPath, "Path to the private key of the github app. If set, requires --github-app-id to bet set and --github-token-path to be unset")
+
+	if !params.disableThrottlerOptions {
+		fs.IntVar(&o.ThrottleHourlyTokens, "github-hourly-tokens", defaults.ThrottleHourlyTokens, "If set to a value larger than zero, enable client-side throttling to limit hourly token consumption. If set, --github-allowed-burst must be positive too.")
+		fs.IntVar(&o.ThrottleAllowBurst, "github-allowed-burst", defaults.ThrottleAllowBurst, "Size of token consumption bursts. If set, --github-hourly-tokens must be positive too and set to a higher or equal number.")
+	}
 }
 
 // Validate validates GitHub options. Note that validate updates the GitHubOptions
-// to add default valiues for TokenPath and graphqlEndpoint.
+// to add default values for TokenPath and graphqlEndpoint.
 func (o *GitHubOptions) Validate(bool) error {
 	endpoints := o.endpoint.Strings()
 	for i, uri := range endpoints {
@@ -91,6 +153,18 @@ func (o *GitHubOptions) Validate(bool) error {
 		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
 	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
 		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
+	}
+
+	if (o.ThrottleHourlyTokens > 0) != (o.ThrottleAllowBurst > 0) {
+		if o.ThrottleHourlyTokens == 0 {
+			// Tolerate `--github-hourly-tokens=0` alone to disable throttling
+			o.ThrottleAllowBurst = 0
+		} else {
+			return errors.New("--github-hourly-tokens and --github-allowed-burst must be either both higher than zero or both equal to zero")
+		}
+	}
+	if o.ThrottleAllowBurst > o.ThrottleHourlyTokens {
+		return errors.New("--github-allowed-burst must not be larger than --github-hourly-tokens")
 	}
 
 	return nil
@@ -145,23 +219,28 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 
 	}
 
+	optionallyThrottled := func(c github.Client) github.Client {
+		// Throttle handles zeros as "disable throttling" so we do not need to call it conditionally
+		c.Throttle(o.ThrottleHourlyTokens, o.ThrottleHourlyTokens)
+		return c
+	}
+
 	if dryRun {
 		if o.AppPrivateKeyPath != "" {
 			appsTokenGenerator, client := github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
 			o.appsTokenGenerator = appsTokenGenerator
-			return client, nil
+			return optionallyThrottled(client), nil
 		}
 		client := github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-		return client, nil
+		return optionallyThrottled((client)), nil
 	}
 	if o.AppPrivateKeyPath != "" {
 		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
 		o.appsTokenGenerator = appsTokenGenerator
-		return client, nil
-
+		return optionallyThrottled(client), nil
 	}
 
-	return github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+	return optionallyThrottled(github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)), nil
 }
 
 // GitHubClient returns a GitHub client.

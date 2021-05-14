@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *May 14th, 2021*: All components that interact with GitHub newly allow client-side throttling customization
+    via `--github-hourly-tokens` and `--github-allowed-burst` parameters. A notable exception to this is Tide which
+    has custom throttling logic and does not expose these two new options. Other existing custom options in branchprotector,
+    peribolos, status-reconciler and needs-rebase (`--tokens/--hourly-tokens` etc.) are deprecated and will be removed
+    in August 2021.
   - *April 12th, 2021* End of grace period for storage bucket validation, additional buckets have to be allowed
     by adding them to the `deck.additional_allowed_buckets` list.
   - *March 9th, 2021* Tide batchtesting will now continue to test a given batch even

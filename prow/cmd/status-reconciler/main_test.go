@@ -120,7 +120,7 @@ func TestGatherOptions(t *testing.T) {
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
-			expected.github.AddFlags(expectedfs)
+			expected.github.AddCustomizedFlags(expectedfs, flagutil.ThrottlerDefaults(300, 100))
 			if tc.expected != nil {
 				tc.expected(expected)
 			}

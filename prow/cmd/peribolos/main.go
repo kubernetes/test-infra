@@ -63,9 +63,12 @@ type options struct {
 	allowRepoArchival bool
 	allowRepoPublish  bool
 	github            flagutil.GitHubOptions
-	tokenBurst        int
-	tokensPerHour     int
-	logLevel          string
+
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
+	tokenBurst    int
+	tokensPerHour int
+
+	logLevel string
 }
 
 func parseOptions() options {
@@ -84,8 +87,8 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
 	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable) DEPRECATED: use --github-hourly-tokens")
+	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
 	flags.BoolVar(&o.dumpFull, "dump-full", false, "Output current config of the org as a valid input config file instead of a snippet")
 	flags.BoolVar(&o.ignoreSecretTeams, "ignore-secret-teams", false, "Do not dump or update secret teams if set")
@@ -98,15 +101,28 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.allowRepoArchival, "allow-repo-archival", false, "If set, archiving repos is allowed while updating repos")
 	flags.BoolVar(&o.allowRepoPublish, "allow-repo-publish", false, "If set, making private repos public is allowed while updating repos")
 	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
-	o.github.AddFlags(flags)
+	o.github.AddCustomizedFlags(flags, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
+
+	if o.tokensPerHour != defaultTokens {
+		if o.github.ThrottleHourlyTokens != defaultTokens {
+			return fmt.Errorf("--tokens cannot be specified with together with --github-hourly-tokens: use just the latter")
+		}
+		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
+		o.github.ThrottleHourlyTokens = o.tokensPerHour
+	}
+	if o.tokenBurst != defaultBurst {
+		if o.github.ThrottleAllowBurst != defaultBurst {
+			return fmt.Errorf("--token-burst cannot be specified with together with --github-allowed-burst: use just the latter")
+		}
+		logrus.Warn("--token-burst is deprecated: use --github-allowed-burst instead")
+		o.github.ThrottleAllowBurst = o.tokenBurst
+	}
+
 	if err := o.github.Validate(!o.confirm); err != nil {
 		return err
-	}
-	if o.tokensPerHour > 0 && o.tokenBurst >= o.tokensPerHour {
-		return fmt.Errorf("--tokens=%d must exceed --token-burst=%d", o.tokensPerHour, o.tokenBurst)
 	}
 
 	if o.minAdmins < 2 {
@@ -160,9 +176,6 @@ func main() {
 	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
-	}
-	if o.tokensPerHour > 0 {
-		githubClient.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
 	}
 
 	if o.dump != "" {

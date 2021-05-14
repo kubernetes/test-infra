@@ -30,6 +30,11 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const (
+	defaultTokens = 300
+	defaultBurst  = 300
+)
+
 type options struct {
 	github flagutil.GitHubOptions
 
@@ -48,7 +53,7 @@ func gatherOptions() options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
-	o.github.AddFlags(fs)
+	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatal("could not parse input")
 	}
@@ -71,7 +76,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gc.Throttle(300, 300)
 
 	if err := acceptInvitations(gc, o.dryRun); err != nil {
 		logrus.WithError(err).Fatal("Errors occurred.")
