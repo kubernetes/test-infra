@@ -23,10 +23,12 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
@@ -50,8 +52,16 @@ type GitHubOptions struct {
 	ThrottleHourlyTokens int
 	ThrottleAllowBurst   int
 
+	OrgThrottlers       Strings
+	parsedOrgThrottlers map[string]throttlerSettings
+
 	// This will only be set after a github client was retrieved for the first time
 	appsTokenGenerator github.GitHubAppTokenGenerator
+}
+
+type throttlerSettings struct {
+	hourlyTokens int
+	burst        int
 }
 
 // flagParams struct is used indirectly by users of this package to customize
@@ -123,7 +133,58 @@ func (o *GitHubOptions) addFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) 
 	if !params.disableThrottlerOptions {
 		fs.IntVar(&o.ThrottleHourlyTokens, "github-hourly-tokens", defaults.ThrottleHourlyTokens, "If set to a value larger than zero, enable client-side throttling to limit hourly token consumption. If set, --github-allowed-burst must be positive too.")
 		fs.IntVar(&o.ThrottleAllowBurst, "github-allowed-burst", defaults.ThrottleAllowBurst, "Size of token consumption bursts. If set, --github-hourly-tokens must be positive too and set to a higher or equal number.")
+		fs.Var(&o.OrgThrottlers, "github-throttle-org", "Throttler settings for a specific org in org:hourlyTokens:burst format. Can be passed multiple times. Only valid when using github apps auth.")
 	}
+}
+
+func (o *GitHubOptions) parseOrgThrottlers() error {
+	if len(o.OrgThrottlers.vals) == 0 {
+		return nil
+	}
+
+	if o.AppID == "" {
+		return errors.New("--github-throttle-org was passed, but client doesn't use apps auth")
+	}
+
+	o.parsedOrgThrottlers = make(map[string]throttlerSettings, len(o.OrgThrottlers.vals))
+	var errs []error
+	for _, orgThrottler := range o.OrgThrottlers.vals {
+		colonSplit := strings.Split(orgThrottler, ":")
+		if len(colonSplit) != 3 {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s is not in org:hourlyTokens:burst format", orgThrottler))
+			continue
+		}
+		org, hourlyTokensString, burstString := colonSplit[0], colonSplit[1], colonSplit[2]
+		hourlyTokens, err := strconv.ParseInt(hourlyTokensString, 10, 32)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s is not in org:hourlyTokens:burst format: hourlyTokens is not an int", orgThrottler))
+			continue
+		}
+		burst, err := strconv.ParseInt(burstString, 10, 32)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s is not in org:hourlyTokens:burst format: burst is not an int", orgThrottler))
+			continue
+		}
+		if hourlyTokens < 1 {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s: hourlyTokens must be > 0", orgThrottler))
+			continue
+		}
+		if burst < 1 {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s: burst must be > 0", orgThrottler))
+			continue
+		}
+		if burst > hourlyTokens {
+			errs = append(errs, fmt.Errorf("-github-throttle-org=%s: burst must not be greater than hourlyTokens", orgThrottler))
+			continue
+		}
+		if _, alreadyExists := o.parsedOrgThrottlers[org]; alreadyExists {
+			errs = append(errs, fmt.Errorf("got multiple -github-throttle-org for the %s org", org))
+			continue
+		}
+		o.parsedOrgThrottlers[org] = throttlerSettings{hourlyTokens: int(hourlyTokens), burst: int(burst)}
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // Validate validates GitHub options. Note that validate updates the GitHubOptions
@@ -167,7 +228,7 @@ func (o *GitHubOptions) Validate(bool) error {
 		return errors.New("--github-allowed-burst must not be larger than --github-hourly-tokens")
 	}
 
-	return nil
+	return o.parseOrgThrottlers()
 }
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
@@ -219,28 +280,35 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 
 	}
 
-	optionallyThrottled := func(c github.Client) github.Client {
+	optionallyThrottled := func(c github.Client) (github.Client, error) {
 		// Throttle handles zeros as "disable throttling" so we do not need to call it conditionally
-		c.Throttle(o.ThrottleHourlyTokens, o.ThrottleHourlyTokens)
-		return c
+		if err := c.Throttle(o.ThrottleHourlyTokens, o.ThrottleHourlyTokens); err != nil {
+			return nil, fmt.Errorf("failed to throttle: %w", err)
+		}
+		for org, settings := range o.parsedOrgThrottlers {
+			if err := c.Throttle(settings.hourlyTokens, settings.burst, org); err != nil {
+				return nil, fmt.Errorf("failed to set up throttling for org %s: %w", org, err)
+			}
+		}
+		return c, nil
 	}
 
 	if dryRun {
 		if o.AppPrivateKeyPath != "" {
 			appsTokenGenerator, client := github.NewAppsAuthDryRunClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
 			o.appsTokenGenerator = appsTokenGenerator
-			return optionallyThrottled(client), nil
+			return optionallyThrottled(client)
 		}
 		client := github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-		return optionallyThrottled((client)), nil
+		return optionallyThrottled((client))
 	}
 	if o.AppPrivateKeyPath != "" {
 		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
 		o.appsTokenGenerator = appsTokenGenerator
-		return optionallyThrottled(client), nil
+		return optionallyThrottled(client)
 	}
 
-	return optionallyThrottled(github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)), nil
+	return optionallyThrottled(github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...))
 }
 
 // GitHubClient returns a GitHub client.
