@@ -75,6 +75,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 80m
     path_alias: k8s.io/cloud-provider-gcp
     labels:
       preset-service-account: "true"
