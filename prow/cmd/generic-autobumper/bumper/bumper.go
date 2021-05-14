@@ -452,6 +452,22 @@ func processGitHub(o *Options, prh PRHandler) error {
 
 	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 
+	if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
+		user, err := gc.BotUser()
+		if err != nil {
+			return fmt.Errorf("get the user data for the provided GH token: %w", err)
+		}
+		if o.GitHubLogin == "" {
+			o.GitHubLogin = user.Login
+		}
+		if o.GitName == "" {
+			o.GitName = user.Name
+		}
+		if o.GitEmail == "" {
+			o.GitEmail = user.Email
+		}
+	}
+
 	// Make change, commit and push
 	var anyChange bool
 	for i, changeFunc := range prh.Changes() {
