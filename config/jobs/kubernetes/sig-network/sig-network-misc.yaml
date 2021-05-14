@@ -33,7 +33,7 @@ presubmits:
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.0
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.1
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc93
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -582,7 +582,7 @@ periodics:
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
       - --env=KUBE_CONTAINER_RUNTIME=containerd
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.0
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.1
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc93
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
