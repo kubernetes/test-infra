@@ -7,7 +7,7 @@ presubmits:
     spec:
       containers:
       - image: golang
-        command: 
+        command:
         - /bin/bash
         args:
         - -c
