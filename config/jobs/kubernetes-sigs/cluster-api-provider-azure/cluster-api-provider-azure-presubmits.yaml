@@ -239,6 +239,9 @@ presubmits:
         env:
         - name: WINDOWS
           value: "true"
+        # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+        - name: CONFORMANCE_NODES
+          value: "4"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
