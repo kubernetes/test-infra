@@ -67,7 +67,7 @@ for release in "$@"; do
       ;;
     *)
       branch="master"
-      orchestrator_release="1.21"
+      orchestrator_release="1.22"
       ;;
   esac
 
@@ -281,7 +281,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
         - --aksengine-public-key=\$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=\$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=\$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=${orchestrator_release}
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
