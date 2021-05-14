@@ -12,7 +12,7 @@ presubmits:
         - -c
         - |
           set -euo; \
-          BASE_SHA="${PULL_BASE_SHA:-"09268c16853b233ebaedcd6a877eac23690b5190"}"; \
+          BASE_SHA="${PULL_BASE_SHA:-""}"; \
           ARTIFACTS="${ARTIFACTS:-/tmp/artifacts}"; \
           mkdir -p "${ARTIFACTS}"; \
           cd "$ARTIFACTS"; \
