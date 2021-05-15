@@ -18,7 +18,6 @@ presubmits:
           pushd "$ARTIFACTS"; \
           go install github.com/kubernetes-sigs/depstat@latest; \
           popd; \
-          cd /go/src/k8s.io/kubernetes; \
           depstat stats --json > "${ARTIFACTS}/stats.json"; \
           git checkout -b base "${PULL_BASE_SHA}"; \
           depstat stats --json > "${ARTIFACTS}/stats-base.json"; \
