@@ -14,6 +14,7 @@ presubmits:
         - -c
         - |
           set -euo; \
+          export PATH=$PATH:$GOPATH/bin
           mkdir -p "${ARTIFACTS}"; \
           pushd "$ARTIFACTS"; \
           go install github.com/kubernetes-sigs/depstat@latest; \
