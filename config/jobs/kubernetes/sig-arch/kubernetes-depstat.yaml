@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: check-dependency-stats
     decorate: true
+    path_alias: k8s.io/kubernetes
     always_run: false
     optional: true
     spec:
