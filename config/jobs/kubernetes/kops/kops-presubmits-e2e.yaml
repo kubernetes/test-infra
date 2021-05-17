@@ -22,7 +22,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -88,7 +88,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -154,7 +154,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -221,7 +221,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -283,7 +283,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         imagePullPolicy: Always
         command:
         - runner.sh
