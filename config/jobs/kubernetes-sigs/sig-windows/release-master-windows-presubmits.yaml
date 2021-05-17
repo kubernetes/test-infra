@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         command:
         - runner.sh
         - kubetest
@@ -75,7 +75,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         command:
         - runner.sh
         - kubetest
@@ -133,7 +133,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         command:
         - runner.sh
         - kubetest
@@ -195,7 +195,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         command:
         - runner.sh
         - kubetest
