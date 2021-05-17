@@ -7,8 +7,6 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    always_run: false
-    optional: true
     spec:
       containers:
       - image: golang
