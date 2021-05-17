@@ -73,11 +73,13 @@ func (c *client) Changes() []func() (string, error) {
 			}
 
 			var body string
+			var prefixNames []string
 			for _, prefix := range c.o.Prefixes {
+				prefixNames = append(prefixNames, prefix.Name)
 				body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, c.images) + "\n\n"
 			}
 
-			return body, nil
+			return fmt.Sprintf("Bumping %s\n\n%s", strings.Join(prefixNames, " and "), body), nil
 		},
 	}
 }
