@@ -293,8 +293,14 @@ aliases:
   - mengqiy
   - directxman12
 
+  kubebuilder-approvers:
+  - camilamacedo86
+  - estroz
+  - adirio
+
   kubebuilder-reviewers:
   - alexeldeib
+  - joelanford
 
   kubebuilder-emeritus-approvers:
   - pwittrock
