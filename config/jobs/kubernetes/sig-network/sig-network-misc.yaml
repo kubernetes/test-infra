@@ -1,7 +1,70 @@
 presubmits:
-  # Note, these jobs need to generally stage reults to a GCE bucket.
-  # We currently have two, network-policies , and ipvs...
+  # Note, these jobs need to generally stage results to a GCE bucket.
+  # We currently have three, ingress, network-policies , and ipvs...
   kubernetes/kubernetes:
+
+  - name: pull-kubernetes-e2e-gci-gce-ingress
+    branches:
+    - master
+    always_run: false
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
+    optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --extract=local
+        - --env=ALLOW_PRIVILEGED=true
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.1
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc94
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+        - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --ginkgo-parallel=15
+        - --gcp-master-image=ubuntu
+        - --gcp-node-image=ubuntu
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]|Loadbalancing|LoadBalancers
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
+        - --timeout=150m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+        resources:
+          requests:
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-ingress, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+      description: Uses kubetest to run e2e Conformance, SIG-Network or Network Ingress tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
     branches:
     - master
