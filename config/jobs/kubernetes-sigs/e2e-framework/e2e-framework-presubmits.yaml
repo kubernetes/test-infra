@@ -15,3 +15,18 @@ presubmits:
       testgrid-tab-name: pull-e2e-framework-verify
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+  - name: pull-e2e-framework-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/e2e-framework
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-testing-e2e-framework
+      testgrid-tab-name: pull-e2e-framework-test
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
