@@ -761,7 +761,7 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large",
-                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc1"],
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
@@ -772,7 +772,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
-                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc1"],
+                                "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    extra_dashboards=['kops-misc']),
 
     ]
