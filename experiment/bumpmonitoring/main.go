@@ -61,6 +61,7 @@ func parseOptions() (*options, error) {
 	var labelsOverride []string
 	var skipPullRequest bool
 
+	flag.StringVar(&config, "config", "", "The path to the config file for PR creation.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
 	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
 	flag.Parse()
@@ -95,8 +96,8 @@ func validateOptions(o *options) error {
 var _ bumper.PRHandler = (*client)(nil)
 
 type client struct {
-	SrcPath string
-	DstPath string
+	srcPath string
+	dstPath string
 	paths   []string
 }
 
@@ -131,12 +132,12 @@ func (c *client) body() string {
 	return fmt.Sprintf(`For code reviewers:
 - breaking changes are only introduced in %s/mixins/lib/config.libsonnet
 - presubmit test is expected to fail if there is any breaking change
-- push to this change with fix if it's the case`, c.DstPath)
+- push to this change with fix if it's the case`, c.dstPath)
 }
 
 func (c *client) findConfigToUpdate() error {
 	for subPath, re := range configPathsToUpdate {
-		fullPath := path.Join(c.DstPath, subPath)
+		fullPath := path.Join(c.dstPath, subPath)
 
 		if _, err := os.Stat(fullPath); err != nil {
 			if !os.IsNotExist(err) {
@@ -155,7 +156,7 @@ func (c *client) findConfigToUpdate() error {
 					return nil
 				}
 			}
-			relPath, _ := filepath.Rel(c.DstPath, leafPath)
+			relPath, _ := filepath.Rel(c.dstPath, leafPath)
 			c.paths = append(c.paths, relPath)
 			return nil
 		})
@@ -166,8 +167,8 @@ func (c *client) findConfigToUpdate() error {
 
 func (c *client) copyFiles() error {
 	for _, subPath := range c.paths {
-		SrcPath := path.Join(c.SrcPath, subPath)
-		DstPath := path.Join(c.DstPath, subPath)
+		SrcPath := path.Join(c.srcPath, subPath)
+		DstPath := path.Join(c.dstPath, subPath)
 		content, err := ioutil.ReadFile(SrcPath)
 		if err != nil {
 			return fmt.Errorf("failed reading file %q: %w", SrcPath, err)
@@ -189,8 +190,8 @@ func main() {
 	}
 
 	c := client{
-		SrcPath: o.SrcPath,
-		DstPath: o.DstPath,
+		srcPath: o.SrcPath,
+		dstPath: o.DstPath,
 		paths:   make([]string, 0),
 	}
 
