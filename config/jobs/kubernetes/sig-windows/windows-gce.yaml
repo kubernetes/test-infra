@@ -22,6 +22,8 @@ presets:
     value: "containerd"
   - name: PREPULL_TIMEOUT
     value: "30m"
+  - name: WINDOWS_ENABLE_DSR
+    value: "true"
 - labels:
     preset-load-gce-windows: "true"
   env:
@@ -193,6 +195,8 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2004"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
