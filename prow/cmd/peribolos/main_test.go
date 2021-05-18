@@ -2343,19 +2343,25 @@ func TestConfigureTeamRepos(t *testing.T) {
 			teamName:    "team",
 			team: org.Team{
 				Repos: map[string]github.RepoPermissionLevel{
-					"read":  github.Read,
-					"write": github.Write,
-					"admin": github.Admin,
+					"read":     github.Read,
+					"triage":   github.Triage,
+					"write":    github.Write,
+					"maintain": github.Maintain,
+					"admin":    github.Admin,
 				},
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "triage", Permissions: github.RepoPermissions{Pull: true, Triage: true}},
 				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
+				{Name: "maintain", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "triage", Permissions: github.RepoPermissions{Pull: true, Triage: true}},
 				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
+				{Name: "maintain", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
 			}},
 		},
