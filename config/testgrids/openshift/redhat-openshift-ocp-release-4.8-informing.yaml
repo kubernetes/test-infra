@@ -127,6 +127,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1026,6 +1053,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-fips-serial
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-ovn-local-gateway
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-ovn-local-gateway
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -2904,6 +2958,9 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-compact-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-compact-upgrade
 - days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-hypershift
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-hypershift
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
 - days_of_results: 60
@@ -3000,6 +3057,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-ovn-local-gateway
+  name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-ovn-local-gateway
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-proxy
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-single-node
@@ -3051,10 +3111,6 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-virtualmedia
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-azure-single-node
-  name: periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-azure-single-node
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-aws-single-node
-  name: periodic-ci-openshift-release-master-ci-4.8-e2e-upgrade-aws-single-node
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-ovirt
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-ovirt
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere
