@@ -35,6 +35,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.22
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_DS2_v2
+        - --aksengine-location=eastus2
         - --aksengine-deploy-custom-k8s
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/kubernetes.json
