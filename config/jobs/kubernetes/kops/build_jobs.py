@@ -881,7 +881,7 @@ def generate_versions():
 def generate_pipeline():
     results = []
     focus_regex = r'\[k8s.io\]\sNetworking.*\[Conformance\]'
-    for version in ['master', '1.20', '1.19']:
+    for version in ['master', '1.21', '1.20', '1.19']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
