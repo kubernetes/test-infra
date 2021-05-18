@@ -15,3 +15,20 @@ presubmits:
       testgrid-tab-name: pull-e2e-framework-verify
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+  - name: pull-e2e-framework-unit-tests
+    decorate: true
+    path_alias: sigs.k8s.io/e2e-framework
+    always_run: true
+    spec:
+      containers:
+        - image: golang:1.16
+          command:
+            - "go"
+          args:
+            - "test"
+            - "./..."
+          env:
+            - name: GO111MODULE
+              value: "on"
+    annotations:
+      description: "Run unit tests on e2e-framework."
