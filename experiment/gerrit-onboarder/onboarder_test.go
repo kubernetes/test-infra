@@ -1,6 +1,23 @@
+/*
+Copyright 2021 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package main
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -18,7 +35,7 @@ func TestMapToGroups(t *testing.T) {
 		{
 			name:         "empty map",
 			groupsMap:    map[string]string{},
-			groupsString: "# UUID\tGroup Name\n#\n",
+			groupsString: "# UUID\tGroup Name\n",
 			orderedIDs:   []string{},
 		},
 		{
@@ -27,7 +44,7 @@ func TestMapToGroups(t *testing.T) {
 				"123456": "Test Project 1",
 				"567890": "Test Project 2",
 			},
-			groupsString: "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
+			groupsString: "# UUID\tGroup Name\n123456\tTest Project 1\n567890\tTest Project 2\n",
 			orderedIDs:   []string{"123456", "567890"},
 		},
 		{
@@ -36,8 +53,17 @@ func TestMapToGroups(t *testing.T) {
 				"1234":      "Test Project 1",
 				"123456789": "Test Project 2",
 			},
-			groupsString: "# UUID   \tGroup Name\n#\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
+			groupsString: "# UUID   \tGroup Name\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
 			orderedIDs:   []string{"1234", "123456789"},
+		},
+		{
+			name: "Keeps comments",
+			groupsMap: map[string]string{
+				"1234":      "Test Project 1",
+				"123456789": "Test Project 2",
+			},
+			groupsString: "# UUID   \tGroup Name\n#\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
+			orderedIDs:   []string{"#", "1234", "123456789"},
 		},
 	}
 
@@ -61,7 +87,7 @@ func TestGroupsToMap(t *testing.T) {
 		{
 			name:         "empty groups",
 			groupsMap:    map[string]string{},
-			groupsString: "# UUID\tGroup Name\n#\n",
+			groupsString: "# UUID\tGroup Name\n",
 			orderedIDs:   []string{},
 		},
 		{
@@ -70,7 +96,7 @@ func TestGroupsToMap(t *testing.T) {
 				"123456": "Test Project 1",
 				"567890": "Test Project 2",
 			},
-			groupsString: "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
+			groupsString: "# UUID\tGroup Name\n123456\tTest Project 1\n567890\tTest Project 2\n",
 			orderedIDs:   []string{"123456", "567890"},
 		},
 		{
@@ -79,8 +105,17 @@ func TestGroupsToMap(t *testing.T) {
 				"1234":      "Test Project 1",
 				"123456789": "Test Project 2",
 			},
-			groupsString: "# UUID   \tGroup Name\n#\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
+			groupsString: "# UUID   \tGroup Name\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
 			orderedIDs:   []string{"1234", "123456789"},
+		},
+		{
+			name: "keeps comments",
+			groupsMap: map[string]string{
+				"1234":      "Test Project 1",
+				"123456789": "Test Project 2",
+			},
+			groupsString: "# UUID   \tGroup Name\n#\n1234     \tTest Project 1\n123456789\tTest Project 2\n",
+			orderedIDs:   []string{"#", "1234", "123456789"},
 		},
 	}
 
@@ -180,6 +215,7 @@ func TestEnsureUUID(t *testing.T) {
 		group          string
 		groupsString   string
 		expectedString string
+		err            bool
 	}{
 		{
 			name:           "already exists",
@@ -187,6 +223,7 @@ func TestEnsureUUID(t *testing.T) {
 			group:          "Test Project 1",
 			groupsString:   "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
 			expectedString: "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
+			err:            false,
 		},
 		{
 			name:           "add new ID with new spacing",
@@ -194,11 +231,35 @@ func TestEnsureUUID(t *testing.T) {
 			group:          "Test Project 3",
 			groupsString:   "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
 			expectedString: "# UUID   \tGroup Name\n#\n123456   \tTest Project 1\n567890   \tTest Project 2\n123456789\tTest Project 3\n",
+			err:            false,
+		},
+		{
+			name:           "conflicting ID",
+			id:             "123456",
+			group:          "Test Project 3",
+			groupsString:   "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
+			expectedString: "",
+			err:            true,
+		},
+		{
+			name:           "conflicting groupName",
+			id:             "12345678",
+			group:          "Test Project 1",
+			groupsString:   "# UUID\tGroup Name\n#\n123456\tTest Project 1\n567890\tTest Project 2\n",
+			expectedString: "",
+			err:            true,
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if diff := cmp.Diff(tc.expectedString, ensureUUID(tc.groupsString, tc.id, tc.group)); diff != "" {
+			res, err := ensureUUID(tc.groupsString, tc.id, tc.group)
+			if err != nil && !tc.err {
+				t.Errorf("expected no error but got %w", err)
+			}
+			if err == nil && tc.err {
+				t.Error("expected error but got none")
+			}
+			if diff := cmp.Diff(tc.expectedString, res); diff != "" {
 				t.Errorf("ensureUUID returned unexpected value (-want +got):\n%s", diff)
 			}
 		})
@@ -233,54 +294,54 @@ func TestGetInheritedRepo(t *testing.T) {
 
 }
 
-func TestLineInRightHeaderFunc(t *testing.T) {
+func TestLineInMatchingHeaderFunc(t *testing.T) {
+	sampleConfig := map[string][]string{
+		"[access]":                     {"\towner = group Test Group 2", "\towner = group Test Group 3"},
+		"[access \"refs/*\"]":          {"\tread = group Test Group 1"},
+		"[access \"refs/for/master\"]": {"\tread = group Test Group 4"},
+	}
 	cases := []struct {
 		name      string
 		configMap map[string][]string
-		header    string
 		line      string
 		expected  bool
+		regex     *regexp.Regexp
 	}{
 		{
 			name:      "empty config",
 			configMap: map[string][]string{},
-			header:    "[access]",
 			line:      "owner = group Test Group",
 			expected:  false,
+			regex:     accessRefsRegex,
 		},
 		{
 			name:      "line in config",
-			configMap: map[string][]string{"[access]": {"\towner = group Test Group"}},
-			header:    "[access]",
-			line:      "owner = group Test Group",
+			configMap: sampleConfig,
+			line:      "read = group Test Group 1",
 			expected:  true,
+			regex:     accessRefsRegex,
 		},
 		{
-			name: "line not under header",
-			configMap: map[string][]string{
-				"[access]":            {"\towner = group Test Group", "\towner = group Test Group 2"},
-				"[access \"refs/*\"]": {"\tread = group Test Group 3"},
-			},
-			header:   "[access]",
-			line:     "Not here",
-			expected: false,
+			name:      "line not under header",
+			configMap: sampleConfig,
+			line:      "owner = group Test Group 2",
+			expected:  false,
+			regex:     accessRefsRegex,
 		},
 		{
-			name: "header not present",
-			configMap: map[string][]string{
-				"[access]":            {"\towner = group Test Group", "\towner = group Test Group 2"},
-				"[access \"refs/*\"]": {"\tread = group Test Group 3"},
-			},
-			header:   "[not here]",
-			line:     "Not here",
-			expected: false,
+			name:      "header more complicated",
+			configMap: sampleConfig,
+			line:      "read = group Test Group 4",
+			expected:  true,
+			regex:     accessRefsRegex,
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := lineInRightHeaderFunc(tc.header, tc.line)
-			if diff := cmp.Diff(tc.expected, res(tc.configMap)); diff != "" {
-				t.Errorf("lineInConfig returned unexpected value(-want +got):\n%s", diff)
+			resFunc := lineInMatchingHeaderFunc(tc.regex, tc.line)
+			res := resFunc(tc.configMap)
+			if diff := cmp.Diff(tc.expected, res); diff != "" {
+				t.Errorf("lineInMatchingHeaderFunc returned unexpected value(-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -304,12 +365,13 @@ func TestLabelExists(t *testing.T) {
 		},
 		{
 			name:      "header in config",
-			configMap: map[string][]string{LABEL_HEADER: {"\towner = group Test Group"}},
+			configMap: map[string][]string{labelHeader: {"\towner = group Test Group"}},
 			expected:  true,
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			// labelExists always returns nil error
 			res := labelExists(tc.configMap)
 			if diff := cmp.Diff(tc.expected, res); diff != "" {
 				t.Errorf("lineInConfig returned unexpected value(-want +got):\n%s", diff)
@@ -352,8 +414,9 @@ func TestLabelAccessExistsFunc(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := labelAccessExistsFunc(tc.groupName)
-			if diff := cmp.Diff(tc.expected, res(tc.configMap)); diff != "" {
+			resFunc := labelAccessExistsFunc(tc.groupName)
+			res := resFunc(tc.configMap)
+			if diff := cmp.Diff(tc.expected, res); diff != "" {
 				t.Errorf("lineInConfig returned unexpected value(-want +got):\n%s", diff)
 			}
 		})
