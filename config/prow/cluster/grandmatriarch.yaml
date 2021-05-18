@@ -56,6 +56,6 @@ spec:
       serviceAccountName: grandmatriarch
       containers:
       - name: bakery
-        image: gcr.io/k8s-prow/grandmatriarch:v20210517-20d336d503
+        image: gcr.io/k8s-prow/grandmatriarch:v20210518-70987fc2aa
         args:
         - http-cookiefile
