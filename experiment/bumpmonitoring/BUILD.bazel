@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -27,4 +28,11 @@ go_test(
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+    component = "bumpmonitoring",
+    visibility = ["//visibility:public"],
 )
