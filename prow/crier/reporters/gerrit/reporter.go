@@ -237,9 +237,6 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			}
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
-			if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
-				continue
-			}
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
@@ -258,7 +255,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	if report.Total <= 0 {
 		// Shouldn't happen but return if does
-		logger.Warn("Tried to report empty or aborted jobs.")
+		logger.Warn("Tried to report empty jobs.")
 		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
