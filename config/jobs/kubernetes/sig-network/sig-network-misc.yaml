@@ -49,7 +49,7 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]|Loadbalancing|LoadBalancers --ginkgo.skip=\[Feature:kubemci\]
+        - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]|Loadbalancing|LoadBalancers --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
         - --timeout=150m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
