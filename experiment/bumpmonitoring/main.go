@@ -195,7 +195,7 @@ func main() {
 		paths:   make([]string, 0),
 	}
 
-	if err := bumper.Run2(&o.Options, &c); err != nil {
+	if err := bumper.Run(&o.Options, &c); err != nil {
 		logrus.Fatal(err)
 	}
 }
