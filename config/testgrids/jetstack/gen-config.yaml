@@ -325,6 +325,15 @@ dashboards:
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
     test_group_name: pull-cert-manager-e2e-v1-20
+  - code_search_url_template:
+      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.21 cluster
+    name: pull-cert-manager-e2e-v1-21
+    open_bug_template:
+      url: https://github.com/jetstack/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
+    test_group_name: pull-cert-manager-e2e-v1-21
   name: jetstack-cert-manager-presubmits-blocking
 - dashboard_tab:
   - alert_options:
@@ -552,4 +561,7 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: jetstack-logs/pr-logs/directory/pull-cert-manager-e2e-v1-20
   name: pull-cert-manager-e2e-v1-20
+  num_columns_recent: 20
+- gcs_prefix: jetstack-logs/pr-logs/directory/pull-cert-manager-e2e-v1-21
+  name: pull-cert-manager-e2e-v1-21
   num_columns_recent: 20
