@@ -49,33 +49,49 @@ periodics:
       args:
       - -c
       - |
-        echo "Ensure gcloud creds are working" >&2
-        gcloud config list
-        echo "Running Audit Script to dump GCP configuration to yaml" >&2
-        pushd ./audit
-        bash ./audit-gcp.sh
-        popd
+        set -o errexit
+        set -o nounset
+        set -o pipefail
 
-        echo "Generate pr-creator binary from k/test-infra/robots" >&2
-        pushd ../../kubernetes/test-infra
-        go build -o /workspace/pr-creator robots/pr-creator/main.go
-        popd
-
-        echo "Prepare commit for possible PR" >&2
-        GH_TOKEN=$(cat /etc/github-token/token)
         GH_USER=cncf-ci
         GH_NAME="CNCF CI Bot"
         GH_EMAIL="cncf-ci@ii.coop"
         FORK_GH_REPO=k8s.io
         FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
+
+        echo "Ensure git configured" >&2
         git config user.name "${GH_NAME}"
         git config user.email "${GH_EMAIL}"
+
+        echo "Ensure gcloud creds are working" >&2
+        gcloud config list
+
+        echo "Running Audit Script to dump GCP configuration to yaml" >&2
+        pushd ./audit
+        bash ./audit-gcp.sh
+        popd
+
+        echo "Determining whether there are changes to push" >&2
         git add --all audit
         git commit -m "audit: update as of $(date +%Y-%m-%d)"
-        echo -e "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}:..." >&2
+        git remote add fork "https://github.com/${GH_USER}/${FORK_GH_BRANCH}"
+        if git fetch fork "${FORK_GH_BRANCH}"; then
+          if git diff --quiet HEAD "fork/${FORK_GH_BRANCH}" -- audit; then
+            echo "No new changes to push, exiting early..." >&2
+            exit
+          fi
+        fi
+
+        echo "Generating pr-creator binary from k/test-infra/robots" >&2
+        pushd ../../kubernetes/test-infra
+        go build -o /workspace/pr-creator robots/pr-creator/main.go
+        popd
+
+        echo "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}..." >&2
+        GH_TOKEN=$(cat /etc/github-token/token)
         git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
 
-        echo "Creating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into k8s.io:main..." >&2
+        echo "Creating or updating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into kubernetes:main..." >&2
         /workspace/pr-creator \
           --github-token-path=/etc/github-token/token \
           --org=kubernetes --repo=k8s.io --branch=main \
