@@ -51,11 +51,11 @@ If not, you may need to manually run `bazel run //config/prow/cluster:production
 TODO
 
 <!--URLS-->
-[OWNERS]: ./OWNERS
-[README]: ./README.md
-[playbooks]: ./../docs/playbooks.md
+[OWNERS]: /prow/OWNERS
+[README]: /prow/README.md
+[playbooks]: /docs/playbooks/README.md
 <!--Additional URLS-->
-[cluster]: ./cluster/
+[cluster]: /config/cluster
 [prow-k8s-io]: https://prow.k8s.io
 [Stackdriver]: https://cloud.google.com/stackdriver/
 

@@ -122,14 +122,14 @@ Consider asking for help from someone familiar with Bazel if you suspect this
 issue.
 
 <!--URLS-->
-[OWNERS]: ./OWNERS 
-[README]: ./README.md 
-[playbooks]: ./../docs/playbooks.md
+[OWNERS]: /greenhouse/OWNERS 
+[README]: /greenhouse/README.md 
+[playbooks]: /docs/playbooks/README.md
 <!--Additional URLS-->
 [bazel]: https://bazel.build/
 [remote-build-cache]: https://docs.bazel.build/versions/master/remote-caching.html
-[deployment.yaml]: ./deployment.yaml
-[service.yaml]: ./deployment.yaml
+[deployment.yaml]: /greenhouse/deployment.yaml
+[service.yaml]: /greenhouse/service.yaml
 [prow-k8s-io]: https://prow.k8s.io
 [bazel#4558]: https://github.com/bazelbuild/bazel/issues/4558
 [velodrome]: http://velodrome.k8s.io/dashboard/db/bazel-cache?refresh=1m&orgId=1
