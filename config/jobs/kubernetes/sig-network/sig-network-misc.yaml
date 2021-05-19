@@ -43,7 +43,8 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-        - --ginkgo-parallel=15
+        - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
+        - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
@@ -51,7 +52,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]|Loadbalancing|LoadBalancers --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
-        - --timeout=150m
+        - --timeout=320m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
         resources:
           requests:
