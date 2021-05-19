@@ -65,8 +65,13 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
+var (
+	checkRequiredLabelsRe = regexp.MustCompile(`(?mi)^/check-require-labels\s*$`)
+)
+
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
@@ -95,15 +100,48 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
-	return &pluginhelp.PluginHelp{
+	pluginHelp := &pluginhelp.PluginHelp{
 			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
 			Config: map[string]string{
 				"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
 			},
 			Snippet: yamlSnippet,
-		},
-		nil
+		}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/check-require-labels",
+		Description: "Forces the 'require-matching-label' plugin to reprocess the pull request.",
+		Featured:    true,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/check-require-labels"},
+	})
+	return pluginHelp, nil
+
 }
+
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent, pre github.PullRequestEvent) error {
+	return handleComment(pc, &ce, pre github.PullRequestEvent)
+}
+
+func handleComment(pc plugins.Agent, e *github.GenericCommentEvent,  pre github.PullRequestEvent) error {
+	// Only consider "/check-cla" comments.
+	if !checkRequiredLabelsRe.MatchString(e.Body) {
+		return nil
+	}
+	ce := &event{
+		org:    pre.Repo.Owner.Login,
+		repo:   pre.Repo.Name,
+		number: pre.PullRequest.Number,
+		branch: pre.PullRequest.Base.Ref,
+		author: pre.PullRequest.User.Login,
+		label:  pre.Label.Name, // This will be empty for non-label events.
+	}
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, ce)
+}
+
 
 type event struct {
 	org    string
