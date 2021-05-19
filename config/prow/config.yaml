@@ -115,6 +115,8 @@ managed_webhooks:
       token_created_after: 2020-07-24T00:00:00Z
     kubernetes-csi:
       token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-security:
+      token_created_after: 2021-05-19T00:00:00Z
     kubernetes-sigs:
       token_created_after: 2020-08-12T00:00:00Z
     containerd/containerd:
