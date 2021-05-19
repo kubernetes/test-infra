@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-discovery-latest
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-discovery-1-21
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-discovery-1-20
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-discovery-1-19
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
