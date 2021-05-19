@@ -151,7 +151,10 @@ function createCluster() {
 
 function createBucket() {
   gsutil mb -p "${PROJECT}" -b on "${GCS_BUCKET}"
-  gsutil iam ch "serviceAccount:${CONTROL_PLANE_SA}:roles/storage.objectAdmin" "${GCS_BUCKET}"
+  for i in ${CONTROL_PLANE_SA//,/ }
+  do
+    gsutil iam ch "serviceAccount:${i}:roles/storage.objectAdmin" "${GCS_BUCKET}"
+  done
 }
 
 function ensureBucket() {
