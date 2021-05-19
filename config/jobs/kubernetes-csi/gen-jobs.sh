@@ -66,11 +66,12 @@ node-driver-registrar
 # All kubernetes-csi repos for which want to define pull tests for
 # the csi-release-tools repo. Ideally, this list should represent
 # different ways of using csi-release-tools (for example, single image
-# vs. multiple images per repo).
+# vs. multiple images per repo). csi-sanity tests are used by csi-driver-host-path.
 csi_release_tools_repos="
 csi-test
 external-provisioner
 external-snapshotter
+csi-driver-host-path
 "
 
 # kubernetes-csi repos which only need to be tested against at most a
