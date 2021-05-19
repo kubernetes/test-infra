@@ -5,6 +5,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     always_run: false
     optional: true
+    run_if_changed: '^(go.mod|go.sum|vendor)'
     spec:
       containers:
       - image: golang
