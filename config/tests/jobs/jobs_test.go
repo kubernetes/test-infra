@@ -525,47 +525,6 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	}
 }
 
-// Unit test jobs outside kubernetes-security do not use the security cluster
-// and that jobs inside kubernetes-security DO
-func TestConfigSecurityClusterRestricted(t *testing.T) {
-	for repo, jobs := range c.PresubmitsStatic {
-		if strings.HasPrefix(repo, "kubernetes-security/") {
-			for _, job := range jobs {
-				if job.Agent != "jenkins" && job.Cluster != "security" {
-					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
-				}
-			}
-		} else {
-			for _, job := range jobs {
-				if job.Cluster == "security" {
-					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
-				}
-			}
-		}
-	}
-	for repo, jobs := range c.PostsubmitsStatic {
-		if strings.HasPrefix(repo, "kubernetes-security/") {
-			for _, job := range jobs {
-				if job.Agent != "jenkins" && job.Cluster != "security" {
-					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
-				}
-			}
-		} else {
-			for _, job := range jobs {
-				if job.Cluster == "security" {
-					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
-				}
-			}
-		}
-	}
-	// TODO: this will need to be more complex if we ever add k-s periodic
-	for _, job := range c.AllPeriodics() {
-		if job.Cluster == "security" {
-			t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
-		}
-	}
-}
-
 // checkDockerSocketVolumes returns an error if any volume uses a hostpath
 // to the docker socket. we do not want to allow this
 func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
