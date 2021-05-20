@@ -19,8 +19,11 @@ package flagutil
 import (
 	"flag"
 	"fmt"
+	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
@@ -178,6 +181,112 @@ func TestCustomThrottlerOptions(t *testing.T) {
 				if flg != nil && flg.DefValue != expected {
 					t.Errorf("Flag --%s default value differs: expected %#v got '%#v'", name, expected, flg.DefValue)
 				}
+			}
+		})
+	}
+}
+
+func TestOrgThottlerOptions(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name       string
+		parameters []string
+
+		expectedErrorMsg            string
+		expectedParsedOrgThrottlers map[string]throttlerSettings
+	}{
+		{
+			name: "No org throttler, success",
+		},
+		{
+			name:             "Invalid format, a colon too much",
+			parameters:       []string{"--github-throttle-org=kubernetes:10:10:10"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:10:10:10 is not in org:hourlyTokens:burst format",
+		},
+		{
+			name:             "Invalid format, a colon too little",
+			parameters:       []string{"--github-throttle-org=kubernetes:10"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:10 is not in org:hourlyTokens:burst format",
+		},
+		{
+			name:             "Invalid format, hourly tokens not an int",
+			parameters:       []string{"--github-throttle-org=kubernetes:a:10"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:a:10 is not in org:hourlyTokens:burst format: hourlyTokens is not an int",
+		},
+		{
+			name:             "Invalid format, burst not an int",
+			parameters:       []string{"--github-throttle-org=kubernetes:10:a"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:10:a is not in org:hourlyTokens:burst format: burst is not an int",
+		},
+		{
+			name:             "Invalid, burst > hourly tokens",
+			parameters:       []string{"--github-throttle-org=kubernetes:10:11"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:10:11: burst must not be greater than hourlyTokens",
+		},
+		{
+			name:             "Invalid, burst < 1",
+			parameters:       []string{"--github-throttle-org=kubernetes:10:0"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:10:0: burst must be > 0",
+		},
+		{
+			name:             "Invalid, hourly tokens < 1",
+			parameters:       []string{"--github-throttle-org=kubernetes:0:10"},
+			expectedErrorMsg: "-github-throttle-org=kubernetes:0:10: hourlyTokens must be > 0",
+		},
+		{
+			name: "Invalid, multiple settings for same org",
+			parameters: []string{
+				"--github-throttle-org=kubernetes:10:10",
+				"--github-throttle-org=kubernetes:10:10",
+			},
+			expectedErrorMsg: "got multiple -github-throttle-org for the kubernetes org",
+		},
+		{
+			name:                        "Valid single org setting, success",
+			parameters:                  []string{"--github-throttle-org=kubernetes:10:10"},
+			expectedParsedOrgThrottlers: map[string]throttlerSettings{"kubernetes": {hourlyTokens: 10, burst: 10}},
+		},
+		{
+			name: "Valid settings for multiple orgs, success",
+			parameters: []string{
+				"--github-throttle-org=kubernetes:10:10",
+				"--github-throttle-org=kubernetes-sigs:10:10",
+			},
+			expectedParsedOrgThrottlers: map[string]throttlerSettings{
+				"kubernetes":      {hourlyTokens: 10, burst: 10},
+				"kubernetes-sigs": {hourlyTokens: 10, burst: 10},
+			},
+		},
+	}
+
+	exportThrottlerSettings := cmp.Exporter(func(t reflect.Type) bool {
+		return t == reflect.TypeOf(throttlerSettings{})
+	})
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			opts := &GitHubOptions{}
+			opts.AddFlags(fs)
+			if err := fs.Parse(tc.parameters); err != nil {
+				t.Fatalf("flag parsing failed: %v", err)
+			}
+			opts.AppID = "10"
+			opts.AppPrivateKeyPath = "/test/path"
+
+			var actualErrMsg string
+			if actualErr := opts.Validate(false); actualErr != nil {
+				actualErrMsg = actualErr.Error()
+			}
+			if actualErrMsg != tc.expectedErrorMsg {
+				t.Fatalf("actual error %s does not match expected error %s", actualErrMsg, tc.expectedErrorMsg)
+			}
+			if actualErrMsg != "" {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expectedParsedOrgThrottlers, opts.parsedOrgThrottlers, exportThrottlerSettings); diff != "" {
+				t.Errorf("expected org throttlers differ from actual: %s", diff)
 			}
 		})
 	}
