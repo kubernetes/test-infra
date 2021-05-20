@@ -155,7 +155,7 @@ periodics:
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
-      - --gcp-zone=asia-southeast1-a
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
@@ -186,7 +186,7 @@ periodics:
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
-      - --gcp-zone=asia-southeast1-a
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
