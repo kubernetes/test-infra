@@ -1388,6 +1388,12 @@ repos:
         target: both
         addedBy: humans
       - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes
         name: area/web-development
         target: both
