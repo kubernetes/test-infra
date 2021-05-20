@@ -93,7 +93,7 @@ pod-identity() {
   head -n 1 <(
     entropy=$(date +%S)
     set -o xtrace
-    kubectl run --rm=true -i --generator=run-pod/v1 \
+    kubectl run --rm=true -i \
       "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
       --image=google/cloud-sdk:slim "workload-identity-test-$entropy" \
       <<< "gcloud config get-value core/account"
