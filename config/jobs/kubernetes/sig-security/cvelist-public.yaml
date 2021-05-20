@@ -14,7 +14,7 @@ presubmits:
         - -c
         - |
           set -euo pipefail; \
-          git diff --name-only --diff-filter=d $PULL_BASE_SHA...$PULL_PULL_SHA | grep "\/CVE.*json$" | xargs validate-k8s.sh
+          git diff --name-only --diff-filter=d $PULL_BASE_SHA...$PULL_PULL_SHA | grep "\/CVE.*json$" | xargs ./validate-k8s.sh
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-security-cvelist-public
