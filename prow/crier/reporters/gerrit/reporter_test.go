@@ -681,7 +681,7 @@ func TestReport(t *testing.T) {
 			numExpectedReport: 2,
 		},
 		{
-			name: "2 jobs, one passed, one aborted, should report but skip aborted job",
+			name: "2 jobs, one passed, one aborted, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -702,7 +702,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:  "ci-foo",
+					Type: v1.PresubmitJob,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -726,15 +727,15 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:  "ci-bar",
+						Type: v1.PresubmitJob,
 					},
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
-			reportExclude:     []string{"2", "0", "FAILURE", "ABORTED", "ci-bar", "guber/bar"},
-			expectLabel:       map[string]string{codeReview: lgtm},
-			numExpectedReport: 1,
+			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "guber/foo"},
+			expectLabel:       map[string]string{codeReview: lbtm},
+			numExpectedReport: 2,
 		},
 		{
 			name: "postsubmit after presubmit on same revision, should report separately",
