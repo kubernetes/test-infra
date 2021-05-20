@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-21-on-latest
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-20-on-latest
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-20-on-1-21
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-19-on-1-21
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -170,7 +170,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-19-on-1-20
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -210,7 +210,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-18-on-1-20
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -250,7 +250,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-node-kubelet
     testgrid-tab-name: kubeadm-kinder-kubelet-1-18-on-1-19
-    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, kubernetes-sig-node-test-failures+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder), sig-node (kubelet); Uses kubeadm/kinder to create a cluster with kubelet version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
