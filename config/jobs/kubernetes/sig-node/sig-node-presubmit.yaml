@@ -204,6 +204,39 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-node-kubelet-serial
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-kubelet
+      testgrid-tab-name: pr-node-kubelet-serial
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+        args:
+        - --repo=k8s.io/kubernetes=master
+        - --timeout=440
+        - --root=/go/src
+        - --scenario=kubernetes_e2e
+        - --
+        - --deployment=node
+        - --gcp-project-type=node-e2e-project
+        - --gcp-zone=us-west1-b
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+        - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
+        - --timeout=420m
+        env:
+        - name: GOPATH
+          value: /go
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager
     always_run: false
     optional: true
