@@ -896,6 +896,10 @@ plugins:
     - wip
     - yuks
 
+  kubernetes-security/cvelist-public:
+    plugins:
+    - trigger
+
   kubernetes-sigs:
     plugins:
     - approve
