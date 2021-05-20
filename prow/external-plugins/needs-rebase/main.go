@@ -30,19 +30,19 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
-	"k8s.io/test-infra/prow/plugins"
 )
 
 type options struct {
 	port int
 
-	pluginConfig           string
+	pluginsConfig          pluginsflagutil.PluginOptions
 	dryRun                 bool
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
@@ -80,7 +80,6 @@ func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -89,7 +88,8 @@ func gatherOptions() options {
 
 	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultHourlyTokens, defaultHourlyTokens))
 
-	for _, group := range []flagutil.OptionGroup{&o.instrumentationOptions} {
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	for _, group := range []flagutil.OptionGroup{&o.instrumentationOptions, &o.pluginsConfig} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -119,9 +119,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	pa := &plugins.ConfigAgent{}
-	if err := pa.Start(o.pluginConfig, nil, "", false); err != nil {
-		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
+	pa, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
+		log.WithError(err).Fatal("Error loading plugin config")
 	}
 
 	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)

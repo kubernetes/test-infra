@@ -59,6 +59,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
@@ -104,6 +105,7 @@ const (
 
 type options struct {
 	config                configflagutil.ConfigOptions
+	pluginsConfig         pluginsflagutil.PluginOptions
 	instrumentation       prowflagutil.InstrumentationOptions
 	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
@@ -126,7 +128,6 @@ type options struct {
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
-	pluginConfig          string
 }
 
 func (o *options) Validate() error {
@@ -138,6 +139,10 @@ func (o *options) Validate() error {
 	}
 
 	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
+	}
+
+	if err := o.pluginsConfig.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -184,7 +189,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
 	o.config.AddFlags(fs)
 	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
@@ -192,6 +196,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.github.AllowAnonymous = true
 	o.github.AllowDirectAccess = true
 	o.storage.AddFlags(fs)
+	o.pluginsConfig.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -281,9 +286,9 @@ func main() {
 	cfg := configAgent.Config
 
 	var pluginAgent *plugins.ConfigAgent
-	if o.pluginConfig != "" {
-		pluginAgent = &plugins.ConfigAgent{}
-		if err := pluginAgent.Start(o.pluginConfig, nil, "", false); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err = o.pluginsConfig.PluginAgent()
+		if err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 	} else {

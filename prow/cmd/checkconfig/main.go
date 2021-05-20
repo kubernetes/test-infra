@@ -41,6 +41,7 @@ import (
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/kube"
@@ -62,8 +63,8 @@ import (
 )
 
 type options struct {
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -148,8 +149,10 @@ func getAllWarnings() []string {
 
 func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
-	if err := o.config.Validate(false); err != nil {
-		return err
+	for _, validate := range []interface{ Validate(bool) error }{&o.config, &o.pluginsConfig} {
+		if err := validate.Validate(false); err != nil {
+			return err
+		}
 	}
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
@@ -185,7 +188,7 @@ func parseOptions() (options, error) {
 }
 
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
-	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	o.pluginsConfig.CheckUnknownPlugins = true
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
@@ -195,6 +198,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
+	o.pluginsConfig.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -248,10 +252,10 @@ func validate(o options) error {
 		}
 	}
 
-	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
-	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig, nil, "", true); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err := o.pluginsConfig.PluginAgent()
+		if err != nil {
 			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
@@ -346,11 +350,11 @@ func validate(o options) error {
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
+		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginsConfig.PluginConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -371,8 +375,8 @@ func validate(o options) error {
 	}
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
-		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
-			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./"), o.config.SupplementalProwConfigsFileNameSuffix, "not/implemented"))
+		if err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(os.DirFS("./"), o.config.SupplementalProwConfigDirs.Strings(), o.pluginsConfig.SupplementalPluginsConfigDirs.Strings(), o.config.SupplementalProwConfigsFileNameSuffix, o.pluginsConfig.SupplementalPluginsConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
@@ -1122,7 +1126,24 @@ func validateCluster(cfg *config.Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, supplementalProwConfigsFileNameSuffix, supplementalPluginsConfigFileNameSuffix string) error {
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filesystem fs.FS, supplementalProwConfigDirs, supplementalPluginsConfigDirs []string, supplementalProwConfigsFileNameSuffix, supplementalPluginsConfigFileNameSuffix string) error {
+	var errs []error
+
+	for _, supplementalProwConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, filesystem, func() hierarchicalConfig { return &config.Config{} }, supplementalProwConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, supplementalPluginsConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalPluginsConfigDir, filesystem, func() hierarchicalConfig { return &plugins.Configuration{} }, supplementalPluginsConfigFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, target func() hierarchicalConfig, filesuffix string) error {
 	var errs []error
 	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -1142,7 +1163,7 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 
 		fs.ReadFile(filesystem, path)
 
-		if d.IsDir() || (!strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix) && !strings.HasSuffix(path, supplementalPluginsConfigFileNameSuffix)) {
+		if d.IsDir() || !strings.HasSuffix(path, filesuffix) {
 			return nil
 		}
 
@@ -1166,13 +1187,7 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 			return nil
 		}
 
-		var cfg hirarchicalConfig
-		if strings.HasSuffix(path, supplementalProwConfigsFileNameSuffix) {
-			cfg = &config.Config{}
-		} else {
-			cfg = &plugins.Configuration{}
-		}
-
+		cfg := target()
 		isGlobal, targetedOrgs, targetedRepos, err := getSupplementalConfigScope(path, filesystem, cfg)
 		if err != nil {
 			errs = append(errs, err)
@@ -1288,11 +1303,11 @@ func prefixWithAndIfNeeded(s string, needsAnd bool) string {
 	return s
 }
 
-type hirarchicalConfig interface {
+type hierarchicalConfig interface {
 	HasConfigFor() (bool, sets.String, sets.String)
 }
 
-func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hirarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
+func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
 	data, err := fs.ReadFile(filesystem, path)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("failed to read %s: %w", path, err)

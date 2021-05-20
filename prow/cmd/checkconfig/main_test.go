@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -1284,7 +1285,11 @@ func TestOptions(t *testing.T) {
 					JobConfigPath:                         "config/jobs/org/job.yaml",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				pluginConfig:    "prow/plugins/plugin.yaml",
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "prow/plugins/plugin.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+					CheckUnknownPlugins:                      true,
+				},
 				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
 				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
 				strict:          true,
@@ -1302,7 +1307,11 @@ func TestOptions(t *testing.T) {
 				"--prow-yaml-repo-name=my/repo",
 			},
 			expectedOptions: &options{
-				pluginConfig: "prow/plugins/plugin.yaml",
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "prow/plugins/plugin.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+					CheckUnknownPlugins:                      true,
+				},
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
@@ -1337,7 +1346,7 @@ func TestOptions(t *testing.T) {
 			case actualErr != nil:
 				t.Errorf("unexpected error: %v", actualErr)
 			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
-				t.Errorf("actual \n%#v\n != expected \n%#v\n", actualOptions, *tc.expectedOptions)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actualOptions, *tc.expectedOptions, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}
@@ -1800,7 +1809,7 @@ plugins:
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var errMsg string
-			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root, tc.fs, "cfg.yaml", "plugins.yaml")
+			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(tc.fs, []string{root}, []string{root}, "cfg.yaml", "plugins.yaml")
 			if err != nil {
 				errMsg = err.Error()
 			}
