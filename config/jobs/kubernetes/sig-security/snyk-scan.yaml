@@ -1,0 +1,37 @@
+#  Periodic CI job for running snyk scans against k/k master
+# - It installs snyk CLI and requires 'snyk_token' secret available
+#   in test infra with key name 'SNYK_TOKEN'. This secret is used to
+#   populate env var 'SNYK_TOKEN', required for snyk CLI auth.
+# - Licenses and few false positive deps (eg version '0.0.0') are
+#   filtered from the snyk scan results and printed on stdout as well
+#   as "${ARTIFACTS}/snyk_results.json"
+periodics:
+  - interval: 6h
+    name: snyk-scan-kubernetes-master-periodical
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: golang
+        envFrom:
+        - secretRef:
+            # secret key should be defined as SNYK_TOKEN
+            name: snyk_token
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail; \
+          apt update && apt -y install jq; \
+          wget -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk; \
+          mkdir -p "${ARTIFACTS}"; \
+          snyk test --json  | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/snyk_results.json"
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-security-snyk-scan
+      description: Run snyk scan on k/k master periodically
