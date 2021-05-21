@@ -3,12 +3,14 @@
 
 ## Running Deck locally
 
-Deck can be run locally by executing `./runlocal`. The scripts starts Deck via 
+Deck can be run locally by executing `./prow/cmd/deck/runlocal`. The scripts starts Deck via
 Bazel using:
+
 * pre-generated data (extracted from a running Prow instance)
 * the local `config.yaml`
 * the local static files, template files and lenses
 
+Open your browser and go to: <http://localhost:8080>
 
 ## Debugging via Intellij / VSCode
 
