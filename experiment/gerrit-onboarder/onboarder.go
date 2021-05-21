@@ -17,12 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"os/exec"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -63,6 +67,8 @@ type options struct {
 	repo      string
 	uuID      string
 	groupName string
+	dryRun    bool
+	local     bool
 }
 
 func parseAndValidateOptions() (*options, error) {
@@ -71,10 +77,12 @@ func parseAndValidateOptions() (*options, error) {
 	flag.StringVar(&o.repo, "repo", "", "The gerrit Repo.")
 	flag.StringVar(&o.uuID, "uuid", "", "The UUID to be added to the file.")
 	flag.StringVar(&o.groupName, "group", "", "The corresponding group name for the UUID.")
+	flag.BoolVar(&o.dryRun, "dry_run", false, "If dry_run is true, PR will not be created")
+	flag.BoolVar(&o.local, "local", false, "If local is true, changes will be made to local repo instead of new temp dir.")
 	flag.Parse()
 
 	if o.host == "" || o.repo == "" || o.uuID == "" || o.groupName == "" {
-		return &o, errors.New("all flags are required")
+		return &o, errors.New("host, repo, uuid, and group are all required fields")
 	}
 
 	return &o, nil
@@ -155,23 +163,23 @@ func ensureUUID(groupsFile, uuid, group string) (string, error) {
 	return mapToGroups(groupsMap, orderedKeys), nil
 }
 
-func updateGroups(uuid, group string) (bool, error) {
-	data, err := ioutil.ReadFile(groupsFile)
+func updateGroups(workDir, uuid, group string) error {
+	data, err := ioutil.ReadFile(path.Join(workDir, groupsFile))
 	if err != nil {
-		return false, fmt.Errorf("faield to read groups file: %w", err)
+		return fmt.Errorf("failed to read groups file: %w", err)
 	}
 
 	newData, err := ensureUUID(string(data), uuid, group)
 	if err != nil {
-		return false, fmt.Errorf("faield to ensure group exists: %w", err)
+		return fmt.Errorf("failed to ensure group exists: %w", err)
 	}
 
-	err = ioutil.WriteFile(groupsFile, []byte(newData), 0755)
+	err = ioutil.WriteFile(path.Join(workDir, groupsFile), []byte(newData), 0755)
 	if err != nil {
-		return false, fmt.Errorf("faield to write groups file: %w", err)
+		return fmt.Errorf("failed to write groups file: %w", err)
 	}
 
-	return newData != string(data), nil
+	return nil
 }
 
 func configToMap(configFile string) (map[string][]string, []string) {
@@ -276,27 +284,27 @@ func labelAccessExistsFunc(groupName string) func(map[string][]string) bool {
 	}
 }
 
-func verifyInTree(host, cur_branch string, configMap map[string][]string, verify func(map[string][]string) bool) (bool, error) {
+func verifyInTree(workDir, host, cur_branch string, configMap map[string][]string, verify func(map[string][]string) bool) (bool, error) {
 	if verify(configMap) {
 		return true, nil
 	} else if inheritance := getInheritedRepo(configMap); inheritance != "" {
 		parent_branch := cur_branch + "_parent"
-		if err := fetchMetaConfig(host, inheritance, parent_branch); err != nil {
+		if err := fetchMetaConfig(host, inheritance, parent_branch, workDir); err != nil {
 			return false, fmt.Errorf("unable to fetch refs/meta/config for %s: %w", inheritance, err)
 		}
-		data, err := ioutil.ReadFile(projectConfigFile)
+		data, err := ioutil.ReadFile(path.Join(workDir, projectConfigFile))
 		if err != nil {
 			return false, fmt.Errorf("failed to read project.config file: %w", err)
 		}
 		newConfig, _ := configToMap(string(data))
-		ret, err := verifyInTree(host, parent_branch, newConfig, verify)
+		ret, err := verifyInTree(workDir, host, parent_branch, newConfig, verify)
 		if err != nil {
 			return false, fmt.Errorf("failed to check if lines in config for %s/%s: %w", host, inheritance, err)
 		}
-		if err := bumper.Call(os.Stdout, os.Stderr, "git", "checkout", cur_branch); err != nil {
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "checkout", cur_branch); err != nil {
 			return false, fmt.Errorf("failed to checkout %s, %w", cur_branch, err)
 		}
-		if err := bumper.Call(os.Stdout, os.Stderr, "git", "branch", "-D", parent_branch); err != nil {
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "branch", "-D", parent_branch); err != nil {
 			return false, fmt.Errorf("failed to delete %s branch, %w", parent_branch, err)
 		}
 		return ret, nil
@@ -304,15 +312,15 @@ func verifyInTree(host, cur_branch string, configMap map[string][]string, verify
 	return false, nil
 }
 
-func ensureProjectConfig(config, host, cur_branch, groupName string) (string, error) {
+func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (string, error) {
 	configMap, orderedKeys := configToMap(config)
 
 	// Check that prow automation robot has access to refs/*
 	accessLines := []string{}
 	readAccessLine := fmt.Sprintf(prowReadAccessFormat, groupName)
-	prowReadAccess, err := verifyInTree(host, cur_branch, configMap, lineInMatchingHeaderFunc(accessRefsRegex, readAccessLine))
+	prowReadAccess, err := verifyInTree(workDir, host, cur_branch, configMap, lineInMatchingHeaderFunc(accessRefsRegex, readAccessLine))
 	if err != nil {
-		return "", fmt.Errorf("faield to check if needed lines in config: %w", err)
+		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
 	if !prowReadAccess {
 		accessLines = append(accessLines, readAccessLine)
@@ -320,9 +328,9 @@ func ensureProjectConfig(config, host, cur_branch, groupName string) (string, er
 
 	// Check that the line "label-verified" = ... group GROUPNAME exists under ANY header
 	labelAccessLine := fmt.Sprintf(prowLabelAccessFormat, groupName)
-	prowLabelAccess, err := verifyInTree(host, cur_branch, configMap, labelAccessExistsFunc(groupName))
+	prowLabelAccess, err := verifyInTree(workDir, host, cur_branch, configMap, labelAccessExistsFunc(groupName))
 	if err != nil {
-		return "", fmt.Errorf("faield to check if needed lines in config: %w", err)
+		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
 	if !prowLabelAccess {
 		accessLines = append(accessLines, labelAccessLine)
@@ -330,9 +338,9 @@ func ensureProjectConfig(config, host, cur_branch, groupName string) (string, er
 	configMap, orderedKeys = addSection(accessHeader, configMap, orderedKeys, accessLines)
 
 	// We need to be less exact with the Label-Verified header so we are just checking if it exists anywhere:
-	labelExists, err := verifyInTree(host, cur_branch, configMap, labelExists)
+	labelExists, err := verifyInTree(workDir, host, cur_branch, configMap, labelExists)
 	if err != nil {
-		return "", fmt.Errorf("faield to check if needed lines in config: %w", err)
+		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
 	if !labelExists {
 		configMap, orderedKeys = addSection(labelHeader, configMap, orderedKeys, labelLines)
@@ -341,36 +349,85 @@ func ensureProjectConfig(config, host, cur_branch, groupName string) (string, er
 
 }
 
-func updatePojectConfig(host, cur_branch, groupName string) error {
-	data, err := ioutil.ReadFile(projectConfigFile)
+func updatePojectConfig(workDir, host, cur_branch, groupName string) error {
+	data, err := ioutil.ReadFile(path.Join(workDir, projectConfigFile))
 	if err != nil {
-		return fmt.Errorf("faield to read project.config file: %w", err)
+		return fmt.Errorf("failed to read project.config file: %w", err)
 	}
 
-	newData, err := ensureProjectConfig(string(data), host, cur_branch, groupName)
+	newData, err := ensureProjectConfig(workDir, string(data), host, cur_branch, groupName)
 	if err != nil {
 		return fmt.Errorf("failed to ensure updated project config: %w", err)
 	}
-	err = ioutil.WriteFile(projectConfigFile, []byte(newData), 0755)
+	err = ioutil.WriteFile(path.Join(workDir, projectConfigFile), []byte(newData), 0755)
 	if err != nil {
-		return fmt.Errorf("faield to write groups file: %w", err)
+		return fmt.Errorf("failed to write groups file: %w", err)
 	}
 
 	return nil
 }
 
-func fetchMetaConfig(host, repo, branch string) error {
-	if err := bumper.Call(os.Stdout, os.Stderr, "git", "fetch", fmt.Sprintf("sso://%s/%s", host, repo), "refs/meta/config"); err != nil {
+func fetchMetaConfig(host, repo, branch, workDir string) error {
+	if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "fetch", fmt.Sprintf("sso://%s/%s", host, repo), "refs/meta/config"); err != nil {
 		return fmt.Errorf("failed to fetch refs/meta/config, %w", err)
 	}
-	if err := bumper.Call(os.Stdout, os.Stderr, "git", "checkout", "FETCH_HEAD"); err != nil {
+	if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "checkout", "FETCH_HEAD"); err != nil {
 		return fmt.Errorf("failed to checkout FETCH_HEAD, %w", err)
 	}
-	if err := bumper.Call(os.Stdout, os.Stderr, "git", "switch", "-c", branch); err != nil {
+	if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "switch", "-c", branch); err != nil {
 		return fmt.Errorf("failed to switch to new branch, %w", err)
 	}
 
 	return nil
+}
+
+func execInDir(stdout, stderr io.Writer, dir string, cmd string, args ...string) error {
+	(&logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: logrus.StandardLogger().Formatter,
+		Hooks:     logrus.StandardLogger().Hooks,
+		Level:     logrus.StandardLogger().Level,
+	}).WithField("dir", dir).
+		WithField("cmd", cmd).
+		// The default formatting uses a space as separator, which is hard to read if an arg contains a space
+		WithField("args", fmt.Sprintf("['%s']", strings.Join(args, "', '"))).
+		Info("running command")
+
+	c := exec.Command(cmd, args...)
+	c.Dir = dir
+	c.Stdout = stdout
+	c.Stderr = stderr
+	return c.Run()
+}
+
+func createCR(workDir string, dryRun bool) error {
+	diff, err := getDiff(workDir)
+	if err != nil {
+		return err
+	}
+	if diff == "" {
+		logrus.Info("No changes made. Returning without creating CR")
+		return nil
+	}
+	commitMessage := fmt.Sprintf("Grant the Prow cluster read and label permissions\n\nChange-Id: I%s", bumper.GitHash(fmt.Sprintf("%d", rand.Int())))
+	if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "commit", "-a", "-v", "-m", commitMessage); err != nil {
+		return fmt.Errorf("unable to commit: %w", err)
+	}
+	if !dryRun {
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "push", "origin", "HEAD:refs/for/refs/meta/config"); err != nil {
+			return fmt.Errorf("unable to push: %w", err)
+		}
+	}
+	return nil
+}
+
+func getDiff(workDir string) (string, error) {
+	var diffBuf bytes.Buffer
+	var errBuf bytes.Buffer
+	if err := execInDir(&diffBuf, &errBuf, workDir, "git", "diff"); err != nil {
+		return "", fmt.Errorf("diffing previous bump: %v -- %s", err, errBuf.String())
+	}
+	return diffBuf.String(), nil
 }
 
 func main() {
@@ -379,35 +436,46 @@ func main() {
 		logrus.Fatal(err)
 	}
 
+	var workDir string
+	if o.local {
+		workDir, err = os.Getwd()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	} else {
+		workDir, err = ioutil.TempDir("", "gerrit_onboarding")
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		defer os.RemoveAll(workDir)
+
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "clone", fmt.Sprintf("sso://%s/%s", o.host, o.repo)); err != nil {
+			logrus.Fatal(fmt.Errorf("failed to clone sso://%s/%s %w", o.host, o.repo, err))
+		}
+
+		workDir = path.Join(workDir, o.repo)
+	}
+
+	// Using math/rand instead of crypto/rand so we don't need to handle errors
 	rand.Seed(time.Now().UTC().UnixNano())
 	branchName := fmt.Sprintf("gerritOnboarding_%d", rand.Int())
 
-	if err = fetchMetaConfig(o.host, o.repo, branchName); err != nil {
+	if err = fetchMetaConfig(o.host, o.repo, branchName, workDir); err != nil {
 		logrus.Fatal(err)
 	}
 
-	groupsChanged, err := updateGroups(o.uuID, o.groupName)
-	if err != nil {
+	// It is important that we update projectConfig BEFORE we update groups, because updating
+	// project config involves switching branches and we need to have no uncommitted changes to do that.
+	if err = updatePojectConfig(workDir, o.host, branchName, o.groupName); err != nil {
 		logrus.Fatal(err)
 	}
 
-	if groupsChanged {
-		logrus.Info("groups file did not change. Skipping stash step")
-		if err := bumper.Call(os.Stdout, os.Stderr, "git", "stash"); err != nil {
-			logrus.Fatal(err)
-		}
-	}
-
-	if err = updatePojectConfig(o.host, branchName, o.groupName); err != nil {
+	if err = updateGroups(workDir, o.uuID, o.groupName); err != nil {
 		logrus.Fatal(err)
 	}
 
-	if groupsChanged {
-		if err := bumper.Call(os.Stdout, os.Stderr, "git", "stash", "apply"); err != nil {
-			logrus.Fatal(err)
-		}
+	if err = createCR(workDir, o.dryRun); err != nil {
+		logrus.Fatal(err)
 	}
-
-	//Create PR
 
 }
