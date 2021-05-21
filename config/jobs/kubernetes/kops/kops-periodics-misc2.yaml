@@ -134,7 +134,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-service-account-iam
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "1.19", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager
   cron: '28 22 * * *'
   labels:
@@ -163,7 +163,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=kubenet --container-runtime=docker --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true" \
           --env=KOPS_FEATURE_FLAGS=EnableExternalCloudController,SpecOverrideFlag \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
@@ -189,7 +189,7 @@ periodics:
           memory: 3Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: docker
+    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true
     test.kops.k8s.io/feature_flags: EnableExternalCloudController,SpecOverrideFlag

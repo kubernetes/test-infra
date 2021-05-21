@@ -663,6 +663,7 @@ def generate_misc():
 
         # A special test for AWS Cloud-Controller-Manager
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
+                   container_runtime='containerd',
                    cloud="aws",
                    distro="u2004",
                    k8s_version="1.19",
