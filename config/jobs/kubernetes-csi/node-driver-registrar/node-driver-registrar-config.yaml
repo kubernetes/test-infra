@@ -39,7 +39,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -81,7 +81,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -135,7 +135,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
@@ -177,7 +177,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -231,7 +231,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -273,7 +273,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -327,7 +327,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -373,7 +373,7 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -427,7 +427,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.1"
+          value: "v1.6.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
