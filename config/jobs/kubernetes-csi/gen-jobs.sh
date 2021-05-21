@@ -45,7 +45,7 @@ experimental_k8s_version="1.21"
 latest_stable_k8s_version="1.20" # TODO: bump to 1.21 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.7.1"
+hostpath_driver_version="v1.6.0"
 
 # We need this image because it has Docker in Docker and go.
 dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master"
