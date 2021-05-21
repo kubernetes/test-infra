@@ -19,6 +19,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/aws-stockout:all-srcs",
+        "//experiment/bumpmonitoring:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/cluster-upgrader:all-srcs",
         "//experiment/clustersecretbackup:all-srcs",

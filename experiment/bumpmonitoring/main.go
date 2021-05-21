@@ -45,9 +45,6 @@ var (
 	configPathExcluded = []*regexp.Regexp{
 		regexp.MustCompile(`mixins/prometheus/prometheus\.libsonnet`),
 	}
-	configPathProwSpecific = []string{
-		"mixins/lib/config_util.libsonnet",
-	}
 )
 
 type options struct {
