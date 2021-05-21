@@ -18,7 +18,7 @@ cd "${DIR}"
 cd localdata
 HOST=${1:-"https://prow.k8s.io"}
 if [[ "${HOST}" == "openshift" ]]; then
-	HOST="https://deck-ci.svc.ci.openshift.org"
+	HOST="https://prow.ci.openshift.org"
 fi
 
 echo "fetching localdata from ${HOST}"
