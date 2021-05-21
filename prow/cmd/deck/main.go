@@ -123,7 +123,6 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	storage               prowflagutil.StorageClientOptions
-	gcsNoAuth             bool
 	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
@@ -158,12 +157,6 @@ func (o *options) Validate() error {
 	if o.hiddenOnly && o.showHidden {
 		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
 	}
-	if o.gcsNoAuth {
-		logrus.Warn("'--gcs-no-auth' is deprecated and is not used anymore. We always fall back to an anonymous client now, if all other options fail.")
-	}
-	if o.storage.GCSCredentialsFile != "" && o.gcsNoAuth {
-		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
-	}
 	return nil
 }
 
@@ -184,7 +177,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
