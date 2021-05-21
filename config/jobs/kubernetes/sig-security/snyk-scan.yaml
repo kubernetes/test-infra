@@ -33,5 +33,5 @@ periodics:
           snyk test --json  | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/snyk_results.json"
     annotations:
       testgrid-create-test-group: "true"
-      testgrid-dashboards: sig-security-snyk-scan
+      testgrid-dashboards: sig-testing-misc
       description: Run snyk scan on k/k master periodically
