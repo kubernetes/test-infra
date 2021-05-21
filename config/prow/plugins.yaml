@@ -256,6 +256,12 @@ slack:
     exempt_users:
     - k8s-publishing-bot
   - repos:
+    - kubernetes/pod-security-admission
+    channels:
+    - sig-auth
+    exempt_users:
+    - k8s-publishing-bot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
