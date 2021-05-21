@@ -2,6 +2,8 @@ periodics:
   - interval: 6h
     name: check-dependency-stats-periodical
     decorate: true
+    decoration_config:
+      timeout: 5m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
