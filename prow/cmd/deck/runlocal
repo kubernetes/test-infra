@@ -34,5 +34,4 @@ bazel run //prow/cmd/deck:deck -- \
   --template-files-location=./prow/cmd/deck/template \
   --spyglass-files-location=./prow/spyglass/lenses \
   --config-path "${DIR}/../../../config/prow/config.yaml" \
-  --spyglass \
-  --gcs-no-auth
+  --spyglass
