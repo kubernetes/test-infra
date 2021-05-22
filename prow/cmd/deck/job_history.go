@@ -33,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -66,6 +67,7 @@ type buildData struct {
 	Duration     time.Duration
 	Result       string
 	commitHash   string
+	Pull         *prowv1.Pull
 }
 
 // storageBucket is an abstraction for unit testing
@@ -361,6 +363,16 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 			}
 		}
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
+	}
+
+	pj := prowapi.ProwJob{}
+	err = readJSON(ctx, bucket, path.Join(dir, "prowjob.json"), &pj)
+	if err != nil {
+		logrus.Debugf("failed to read prowjob.json: %v", err)
+	} else {
+		if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
+			b.Pull = &pj.Spec.Refs.Pulls[0]
+		}
 	}
 
 	if commitHash, err := getPullCommitHash(started.Pull); err == nil {

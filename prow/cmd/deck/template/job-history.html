@@ -17,7 +17,7 @@
   <table id="history-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="max-width: 1000px">
     <thead>
     <tr>
-      <th class="mdl-data-table__cell--non-numeric">Build ID</th>
+      <th class="mdl-data-table__cell--non-numeric">Build</th>
       <th class="mdl-data-table__cell--non-numeric">Started</th>
       <th class="mdl-data-table__cell--non-numeric">Duration</th>
       <th class="mdl-data-table__cell--non-numeric">Result</th>
@@ -29,6 +29,7 @@
         <td class="mdl-data-table__cell--non-numeric">
           {{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>
           {{else}}{{.ID}}{{end}}
+          {{if .Pull}}(#<a href={{.Pull.Link}}>{{.Pull.Number}}</a> by <a href={{.Pull.AuthorLink}}>{{.Pull.Author}}){{end}}
         </td>
         <td class="mdl-data-table__cell--non-numeric">{{.Started}}</td>
         <td class="mdl-data-table__cell--non-numeric">{{.Duration}}</td>
