@@ -8,6 +8,8 @@ presets:
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
 - labels:
     preset-e2e-gce-windows: "true"
   env:
