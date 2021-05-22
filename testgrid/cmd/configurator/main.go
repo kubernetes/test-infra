@@ -230,6 +230,10 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
+	if opt.validateConfigFile {
+		return tgCfgUtil.Validate(&c)
+	}
+
 	// Print proto if requested
 	if opt.printText {
 		if opt.writeYAML {
