@@ -185,7 +185,6 @@ run_hourly = [
 run_daily = [
     'kops-grid-scenario-service-account-iam',
     'kops-grid-scenario-arm64',
-    'kops-grid-scenario-aws-cloud-controller-manager',
     'kops-grid-scenario-serial-test-for-timeout',
     'kops-grid-scenario-terraform',
 ]
@@ -666,7 +665,8 @@ def generate_misc():
                    container_runtime='containerd',
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="1.19",
+                   k8s_version="stable",
+                   runs_per_day=3,
                    feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
