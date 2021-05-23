@@ -277,7 +277,7 @@ periodics:
     testgrid-dashboards: google-aws, kops-1.21, kops-k8s-1.21, kops-kubetest2, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico
-- interval: 24h
+- interval: 8h
   name: e2e-kops-aws-aws-ebs-csi-driver
   always_run: false
   labels:
@@ -321,7 +321,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-scenario-aws-ebs-csi-driver
-- interval: 24h
+- interval: 8h
   name: e2e-kops-aws-aws-load-balancer-controller
   always_run: false
   labels:
