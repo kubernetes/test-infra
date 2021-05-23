@@ -18,7 +18,7 @@ presubmits:
         - runner.sh
         args:
         - "make"
-        - "bazel-build"
+        - "bazel-version-dist"
         resources:
           requests:
             memory: "2Gi"
