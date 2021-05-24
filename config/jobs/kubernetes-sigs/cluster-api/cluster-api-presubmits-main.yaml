@@ -151,7 +151,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-go-canary
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
