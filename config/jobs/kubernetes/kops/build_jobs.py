@@ -670,6 +670,7 @@ def generate_misc():
                    feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
+                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|nodes.have.volume.limits', # pylint: disable=line-too-long
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
