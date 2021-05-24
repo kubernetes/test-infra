@@ -163,7 +163,7 @@ presubmits:
           - name: DOCKER_SERVICE_CIDRS
             value: "fd00:100:64::/108"
           - name: DOCKER_POD_CIDRS
-            value: "fd00:100:64::/108"
+            value: "fd00:100:96::/48"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
