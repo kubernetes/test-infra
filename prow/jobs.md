@@ -40,6 +40,10 @@ periodics:
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   # Alternatively use a cron instead of an interval, for example:
   # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
+  extra_ref:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
+  - org: org
+    repo: repo
+    base_ref: main
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
@@ -53,7 +57,7 @@ postsubmits:
     spec: {}              # As for periodics.
     max_concurrency: 10   # Run no more than this number concurrently.
     branches:             # Regexps, only run against these branches.
-    - ^master$
+    - ^main$
     skip_branches:        # Regexps, do not run against these branches.
     - ^release-.*$
 ```
