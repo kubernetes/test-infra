@@ -2,12 +2,9 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    always_run: false
-    optional: true
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-20
+    always_run: true
+    optional: false
     decorate: true
     skip_report: false
     labels:
@@ -29,13 +26,13 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
+          value: "1.20.0"
         - name: CSI_PROW_USE_BAZEL
-          value: "false"
+          value: "true"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.6.0"
+          value: "v1.7.2"
         - name: CSI_SNAPSHOTTER_VERSION
-          value: "master"
+          value: "v4.0.0"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel serial-alpha parallel-alpha"
         - name: CSI_PROW_SANITY_POD
@@ -47,10 +44,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            cpu: 2000m
