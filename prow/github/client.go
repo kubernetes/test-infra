@@ -513,13 +513,12 @@ func (c *client) Throttle(hourlyTokens, burst int, orgs ...string) error {
 	c.log("Throttle", hourlyTokens, burst, org)
 	c.throttle.lock.Lock()
 	defer c.throttle.lock.Unlock()
-	previouslyThrottled := c.throttle.ticker[org] != nil
 	if hourlyTokens <= 0 || burst <= 0 { // Disable throttle
-		if previouslyThrottled { // Unwrap clients if necessary
-			c.client = c.throttle.http
-			c.gqlc = c.throttle.graph
+		if c.throttle.throttle[org] != nil {
+			delete(c.throttle.throttle, org)
+			delete(c.throttle.slow, org)
 			c.throttle.ticker[org].Stop()
-			c.throttle.ticker[org] = nil
+			delete(c.throttle.ticker, org)
 		}
 		return nil
 	}
@@ -538,20 +537,23 @@ func (c *client) Throttle(hourlyTokens, burst int, orgs ...string) error {
 			}
 		}
 	}()
-	if !previouslyThrottled { // Wrap clients if we haven't already
+	if c.throttle.http == nil { // Wrap clients if we haven't already
 		c.throttle.http = c.client
 		c.throttle.graph = c.gqlc
 		c.client = &c.throttle
 		c.gqlc = &c.throttle
 	}
+
 	if c.throttle.ticker == nil {
 		c.throttle.ticker = map[string]*time.Ticker{}
 	}
 	c.throttle.ticker[org] = ticker
+
 	if c.throttle.throttle == nil {
 		c.throttle.throttle = map[string]chan time.Time{}
 	}
 	c.throttle.throttle[org] = throttle
+
 	if c.throttle.slow == nil {
 		c.throttle.slow = map[string]*int32{}
 	}
