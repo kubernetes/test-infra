@@ -91,6 +91,9 @@ const (
 	// FinishedStatusFile is the JSON file that stores information about the build
 	// after its completion. See testgrid/metadata/job.go for more details.
 	FinishedStatusFile = "finished.json"
+
+	// ProwJobFile is the JSON file that stores the prowjob information.
+	ProwJobFile = "prowjob.json"
 )
 
 // +genclient
