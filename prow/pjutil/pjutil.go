@@ -75,6 +75,7 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 				Number:     number,
 				Author:     pr.User.Login,
 				SHA:        pr.Head.SHA,
+				Title:      pr.Title,
 				Link:       pr.HTMLURL,
 				AuthorLink: pr.User.HTMLURL,
 				CommitLink: fmt.Sprintf("%s/pull/%d/commits/%s", repoLink, number, pr.Head.SHA),
