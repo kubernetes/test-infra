@@ -124,7 +124,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			}
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)
-		case "prowjob.json":
+		case prowv1.ProwJobFile:
 			// Only show the prowjob-based hint if we don't have a pod-based one
 			// (the pod-based ones are probably more useful when they exist)
 			if metadataViewData.Hint == "" {
@@ -261,7 +261,7 @@ func hintFromPodInfo(buf []byte) string {
 func hintFromProwJob(buf []byte) (string, bool) {
 	var pj prowv1.ProwJob
 	if err := json.Unmarshal(buf, &pj); err != nil {
-		logrus.WithError(err).Info("Failed to decode prowjob.json")
+		logrus.WithError(err).Infof("Failed to decode %s", prowv1.ProwJobFile)
 		return "", false
 	}
 

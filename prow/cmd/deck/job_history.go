@@ -366,9 +366,9 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	}
 
 	pj := prowapi.ProwJob{}
-	err = readJSON(ctx, bucket, path.Join(dir, "prowjob.json"), &pj)
+	err = readJSON(ctx, bucket, path.Join(dir, prowv1.ProwJobFile), &pj)
 	if err != nil {
-		logrus.Debugf("failed to read prowjob.json: %v", err)
+		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
 	} else {
 		if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
 			b.Pull = &pj.Spec.Refs.Pulls[0]
