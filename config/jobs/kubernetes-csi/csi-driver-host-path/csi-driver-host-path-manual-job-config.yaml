@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/csi-driver-host-path:
-  - name: pull-kubernetes-csi-csi-driver-host-distributed-on-kubernetes-1-19
+  - name: pull-kubernetes-csi-csi-driver-host-distributed-on-kubernetes-1-21
     # Will only work on branches with https://github.com/kubernetes-csi/csi-driver-host-path/pull/248 merged.
     # That was merged into master and we don't maintain any older branches, so always
     # running it is fine.
@@ -29,7 +29,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.19.0"
+          value: "1.21.0"
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_PROW_DRIVER_VERSION
@@ -47,17 +47,21 @@ presubmits:
           privileged: true
         resources:
           requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
             cpu: 2000m
 periodics:
 - interval: 6h
-  # 1.20 is used because we currently have pre-built images for it.
-  # The Kubernetes version does not matter much here, we just care
-  # about exercising distributed provisioning on some Kubernetes version.
+  # 1.21 is used because the distributed deployment also
+  # uses capacity tracking which is enabled by default in
+  # Kubernetes 1.21.
   #
   # This job is meant to detect regressions in upcoming releases
   # that slipped through pre-merge testing, so we have to use canary
   # images.
-  name: ci-kubernetes-csi-canary-distributed-on-kubernetes-1-20
+  name: ci-kubernetes-csi-canary-distributed-on-kubernetes-1-21
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -83,7 +87,7 @@ periodics:
       - ./.prow.sh
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
-        value: "1.20.0"
+        value: "1.21.0"
       - name: CSI_PROW_USE_BAZEL
         value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
@@ -104,6 +108,10 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-        resources:
-          requests:
-            cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

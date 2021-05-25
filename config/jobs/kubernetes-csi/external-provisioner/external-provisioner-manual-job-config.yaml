@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-20
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-21
     always_run: true
     optional: false
     decorate: true
@@ -26,7 +26,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.20.0"
+          value: "1.21.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
@@ -46,4 +46,8 @@ presubmits:
           privileged: true
         resources:
           requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
             cpu: 2000m
