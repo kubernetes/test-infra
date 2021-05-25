@@ -328,7 +328,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-days-of-results: '59'
     testgrid-tab-name: kops-aws-misc-ha-euwest1
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -663,7 +663,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-days-of-results: '59'
     testgrid-tab-name: kops-aws-misc-updown
 
 # {"cloud": "aws", "container_runtime": "docker", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.networking.cilium.version=v1.10.0-rc2", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
