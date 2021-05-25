@@ -19,23 +19,6 @@ presubmits:
       testgrid-tab-name: pr-verify-fmt
       description: Verifies the Golang sources have been formatted
 
-  - name: pull-vsphere-csi-driver-verify-lint
-    always_run: false
-    run_if_changed: '\.go$|hack\/check-lint\.sh'
-    decorate: true
-    path_alias: sigs.k8s.io/vsphere-csi-driver
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
-        command:
-        - make
-        args:
-        - lint
-    annotations:
-      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
-      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-lint
-      description: Verifies the Golang sources are linted
 
   - name: pull-vsphere-csi-driver-verify-vet
     always_run: false
