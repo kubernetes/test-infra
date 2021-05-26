@@ -719,14 +719,14 @@ func getChangeId(gerritAuthor, commitTag, startingID string) (string, error) {
 			return "", fmt.Errorf("Error getting change Id: %w", err)
 		}
 		if lastBumpCommit != "" {
-			id = "I" + gitHash(lastBumpCommit)
+			id = "I" + GitHash(lastBumpCommit)
 		} else {
 			// If it is the first time the autobumper has run a commit will not exist with the tag
 			// create a deterministic tag by hashing the tag itself instead of the last commit.
-			id = "I" + gitHash(gerritAuthor+commitTag)
+			id = "I" + GitHash(gerritAuthor+commitTag)
 		}
 	} else {
-		id = gitHash(startingID)
+		id = GitHash(startingID)
 	}
 	gitLog, err := getFullLog()
 	if err != nil {
@@ -735,7 +735,7 @@ func getChangeId(gerritAuthor, commitTag, startingID string) (string, error) {
 	//While a commit on the base branch exists with this change ID...
 	for strings.Contains(gitLog, id) {
 		// Choose another ID by hashing the current ID.
-		id = "I" + gitHash(id)
+		id = "I" + GitHash(id)
 	}
 
 	return id, nil
@@ -751,7 +751,7 @@ func getFullLog() (string, error) {
 	return outBuf.String(), nil
 }
 
-func gitHash(hashing string) string {
+func GitHash(hashing string) string {
 	h := sha1.New()
 	io.WriteString(h, hashing)
 	return fmt.Sprintf("%x", h.Sum(nil))
