@@ -98,6 +98,7 @@ presubmits:
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
         - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.2
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc95
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -116,7 +117,7 @@ presubmits:
         - --provider=gce
         # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
+        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
         - --timeout=150m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
@@ -647,6 +648,7 @@ periodics:
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
       - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.2
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc95
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -665,7 +667,7 @@ periodics:
       - --provider=gce
       # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
       # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
       - --extract=ci/latest
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
