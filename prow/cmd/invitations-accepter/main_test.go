@@ -28,43 +28,82 @@ import (
 func TestAcceptInvitations(t *testing.T) {
 
 	testCases := []struct {
-		id          string
-		invitations map[int]github.UserRepoInvitation
+		id              string
+		repoInvitations map[int]github.UserRepoInvitation
+		orgInvitations  map[string]github.UserOrgInvitation
 	}{
 		{
 			id: "no invitations to accept",
 		},
 		{
-			id: "one invitation to accept",
-			invitations: map[int]github.UserRepoInvitation{
+			id: "one repo invitation to accept",
+			repoInvitations: map[int]github.UserRepoInvitation{
 				1: {InvitationID: 1, Repository: &github.Repo{FullName: "foo/bar"}},
 			},
 		},
 		{
-			id: "multiple invitations per client to accept",
-			invitations: map[int]github.UserRepoInvitation{
+			id: "multiple repo invitations to accept",
+			repoInvitations: map[int]github.UserRepoInvitation{
 				1: {InvitationID: 1, Repository: &github.Repo{FullName: "foo/bar"}},
 				2: {InvitationID: 2, Repository: &github.Repo{FullName: "james/bond"}},
 				3: {InvitationID: 3, Repository: &github.Repo{FullName: "captain/hook"}},
+			},
+		},
+
+		{
+			id: "one org invitation to accept",
+			orgInvitations: map[string]github.UserOrgInvitation{
+				"org-1": {Org: github.UserOrganization{Login: "org-1"}},
+			},
+		},
+		{
+			id: "multiple org invitations to accept",
+			orgInvitations: map[string]github.UserOrgInvitation{
+				"org-1": {Org: github.UserOrganization{Login: "org-1"}},
+				"org-2": {Org: github.UserOrganization{Login: "org-2"}},
+				"org-3": {Org: github.UserOrganization{Login: "org-3"}},
+			},
+		},
+		{
+			id: "multiple org and repo invitations to accept",
+			repoInvitations: map[int]github.UserRepoInvitation{
+				1: {InvitationID: 1, Repository: &github.Repo{FullName: "foo/bar"}},
+				2: {InvitationID: 2, Repository: &github.Repo{FullName: "james/bond"}},
+				3: {InvitationID: 3, Repository: &github.Repo{FullName: "captain/hook"}},
+			},
+			orgInvitations: map[string]github.UserOrgInvitation{
+				"org-1": {Org: github.UserOrganization{Login: "org-1"}},
+				"org-2": {Org: github.UserOrganization{Login: "org-2"}},
+				"org-3": {Org: github.UserOrganization{Login: "org-3"}},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			fgh := &fakegithub.FakeClient{UserRepoInvitations: tc.invitations}
+			fgh := &fakegithub.FakeClient{UserRepoInvitations: tc.repoInvitations, UserOrgInvitations: tc.orgInvitations}
 
 			if err := acceptInvitations(fgh, false); err != nil {
 				t.Fatalf("error wasn't expected: %v", err)
 			}
 
-			actualInvitations, err := fgh.ListCurrentUserRepoInvitations()
+			actualOrgInvitations, err := fgh.ListCurrentUserOrgInvitations()
 			if err != nil {
 				t.Fatalf("error not expected: %v", err)
 			}
 
-			var expected []github.UserRepoInvitation
-			if diff := cmp.Diff(actualInvitations, expected); diff != "" {
+			var orgInvitationsExpected []github.UserOrgInvitation
+			if diff := cmp.Diff(actualOrgInvitations, orgInvitationsExpected); diff != "" {
+				t.Fatal(diff)
+			}
+
+			actualRepoInvitations, err := fgh.ListCurrentUserRepoInvitations()
+			if err != nil {
+				t.Fatalf("error not expected: %v", err)
+			}
+
+			var repoInvitationsExpected []github.UserRepoInvitation
+			if diff := cmp.Diff(actualRepoInvitations, repoInvitationsExpected); diff != "" {
 				t.Fatal(diff)
 			}
 		})
