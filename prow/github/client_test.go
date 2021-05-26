@@ -2001,6 +2001,7 @@ func TestListIssueEvents(t *testing.T) {
 }
 
 func TestThrottle(t *testing.T) {
+	logrus.SetLevel(logrus.DebugLevel)
 	t.Parallel()
 	testCases := []struct {
 		name string
@@ -2035,6 +2036,20 @@ func TestThrottle(t *testing.T) {
 					t.Fatalf("calling Throttle failed: %v", err)
 				}
 			},
+		},
+		{
+			name: "Apps auth, global throttler and throttler for our org",
+			setupThrottling: func(t *testing.T, c *client) {
+				c.usesAppsAuth = true
+				// Make sure this is not the budget we end up using.
+				if err := c.Throttle(100, 100); err != nil {
+					t.Fatalf("failed to set global throttler: %v", err)
+				}
+				if err := c.Throttle(1, 2, "org"); err != nil {
+					t.Fatalf("throttling our org failed: %v", err)
+				}
+			},
+			expectThrottling: true,
 		},
 	}
 
@@ -2081,14 +2096,19 @@ func TestThrottle(t *testing.T) {
 				t.Fatalf("Expected throttle channel capacity of %d, found %d", expectItems, n)
 			}
 			check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
+				t.Helper()
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if len(events) != 1 || events[0].Event != expectedAction {
 					t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
 				}
-				if len(c.throttle.throttle) != 1 {
-					t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
+				if tc.expectThrottling {
+					if len(c.throttle.throttle[throttlerKey]) != 1 {
+						t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle[throttlerKey]))
+					}
+				} else if _, throttleChannelExists := c.throttle.throttle[throttlerKey]; throttleChannelExists {
+					t.Error("didn't expect throttling, but throttler existed")
 				}
 			}
 			events, err := c.ListIssueEvents("org", "repo", 1)
