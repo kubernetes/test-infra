@@ -58,7 +58,7 @@ status:
   state: triggered
 ```
 
-Every thirty seconds, `cmd/plank` runs [`Sync`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/plank/controller.go#L71). `Sync` runs [`syncKubernetesJob`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/plank/controller.go#L233-L296) for each Prow job and pod. Because the above Prow job lacks a corresponding Kubernetes pod, `Sync` creates one in the [`test-pods`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cluster/test_pod_namespace.yaml) namespace. Finally, `Sync` updates the status line on the PR with a link to Gubernator. Gubernator handles real-time logs and results.
+Every thirty seconds, `cmd/plank` runs [`Sync`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/plank/controller.go#L71). `Sync` runs [`syncKubernetesJob`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/plank/controller.go#L233-L296) for each Prow job and pod. Because the above Prow job lacks a corresponding Kubernetes pod, `Sync` creates one in the [`test-pods`](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cluster/test_pod_namespace.yaml) namespace.
 
 When the Prow job ends, the `syncKubernetesJob` method updates the ProwJob status to success and sets the status line on GitHub to success. The status update makes a green check-mark show up on the PR.
 
