@@ -16,6 +16,9 @@ presubmits:
         args:
         - make
         - verify
+        env:
+          - name: BUILD_V2
+            value: "true"
         securityContext:
           privileged: true
     annotations:
@@ -65,6 +68,9 @@ presubmits:
         - sanity-test-v2
         securityContext:
           privileged: true
+        env:
+          - name: BUILD_V2
+            value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-sanity-mainv2
@@ -89,6 +95,9 @@ presubmits:
         - integration-test-v2
         securityContext:
           privileged: true
+        env:
+          - name: BUILD_V2
+            value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-integration-mainv2
@@ -377,7 +386,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - azuredisk-windows
+        - azuredisk-windows-v2
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-windows-build-mainv2
