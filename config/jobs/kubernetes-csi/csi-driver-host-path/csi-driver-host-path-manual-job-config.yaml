@@ -32,12 +32,17 @@ presubmits:
           value: "1.21.0"
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel serial-alpha parallel-alpha"
+        - name: CSI_PROW_SANITY_POD
+          # The hostpath pod is part of a DaemonSet with an unpredictable
+          # name. There's also more than one. We can list all them by
+          # their label, but then still need to filter by node name
+          # to find the one that is on the same host as the socat pod
+          # which exposes the CSI socket for us.
+          value: kubectl get pods -l app.kubernetes.io/name=csi-hostpathplugin -o "jsonpath={.items[?(@.spec.nodeName==\"$(kubectl get pods/csi-hostpath-socat-0 -o jsonpath={.spec.nodeName})\")].metadata.name}"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -48,6 +53,7 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+
 periodics:
 - interval: 6h
   # 1.21 is used because the distributed deployment also
@@ -70,7 +76,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
-    testgrid-tab-name: distributed-on-master
+    testgrid-tab-name: distributed-on-1-21
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: periodic Kubernetes-CSI job for distributed provisioning on Kubernetes master, with CSIStorageCapacity
   spec:
@@ -94,6 +100,13 @@ periodics:
         value: "sanity serial parallel serial-alpha parallel-alpha"
       - name: CSI_PROW_DEPLOYMENT
         value: "kubernetes-distributed"
+      - name: CSI_PROW_SANITY_POD
+        # The hostpath pod is part of a DaemonSet with an unpredictable
+        # name. There's also more than one. We can list all them by
+        # their label, but then still need to filter by node name
+        # to find the one that is on the same host as the socat pod
+        # which exposes the CSI socket for us.
+        value: kubectl get pods -l app.kubernetes.io/name=csi-hostpathplugin -o "jsonpath={.items[?(@.spec.nodeName==\"$(kubectl get pods/csi-hostpath-socat-0 -o jsonpath={.spec.nodeName})\")].metadata.name}"
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
