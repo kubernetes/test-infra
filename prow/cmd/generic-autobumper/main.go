@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -43,6 +44,10 @@ const (
 	upstreamStagingVersion = "upstream-staging"
 	tagVersion             = "vYYYYMMDD-deadbeef"
 	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+
+	defaultOncallGroup = "testinfra"
+	errOncallMsgTempl  = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
+	noOncallMsg        = "Nobody is currently oncall, so falling back to Blunderbuss."
 )
 
 var (
@@ -86,7 +91,7 @@ func (c *client) Changes() []func() (string, error) {
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
 func (c *client) PRTitleBody() (string, string, error) {
-	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes), nil
+	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes) + getAssignment(c.o.OncallAddress, c.o.OncallGroup) + "\n", nil
 }
 
 func generatePRBody(images map[string]string, prefixes []prefix) (body string) {
@@ -112,6 +117,12 @@ type options struct {
 	TargetVersion string `yaml:"targetVersion"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []prefix `yaml:"prefixes"`
+	// The oncall address where we can get the JSON file that stores the current oncall information.
+	OncallAddress string `json:"onCallAddress"`
+	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
+	OncallGroup string `json:"onCallGroup"`
+	// Whether skip f no oncall is discovered
+	SkipIfNoOncall bool `yaml:"skipIfNoOncall"`
 }
 
 // prefix is the information needed for each prefix being bumped.
@@ -137,12 +148,13 @@ func parseOptions() (*options, *bumper.Options, error) {
 	var labelsOverride []string
 	var skipPullRequest bool
 
+	var o options
 	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
 	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
+	flag.BoolVar(&o.SkipIfNoOncall, "skip-if-no-oncall", false, "Don't run anything if no oncall is discovered")
 	flag.Parse()
 
-	var o options
 	var pro bumper.Options
 	data, err := ioutil.ReadFile(config)
 	if err != nil {
@@ -159,6 +171,9 @@ func parseOptions() (*options, *bumper.Options, error) {
 
 	if labelsOverride != nil {
 		pro.Labels = labelsOverride
+	}
+	if o.OncallGroup == "" {
+		o.OncallGroup = defaultOncallGroup
 	}
 	pro.SkipPullRequest = skipPullRequest
 	return &o, &pro, nil
@@ -196,6 +211,36 @@ func validateOptions(o *options) error {
 	}
 
 	return nil
+}
+
+func getAssignment(oncallAddress, oncallGroup string) string {
+	if oncallAddress == "" {
+		return ""
+	}
+
+	req, err := http.Get(oncallAddress)
+	if err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err)
+	}
+	defer req.Body.Close()
+	if req.StatusCode != http.StatusOK {
+		return fmt.Sprintf(errOncallMsgTempl,
+			fmt.Sprintf("Error requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status))
+	}
+	oncall := struct {
+		Oncall map[string]string `json:"Oncall"`
+	}{}
+	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err)
+	}
+	curtOncall, ok := oncall.Oncall[oncallGroup]
+	if !ok {
+		return fmt.Sprintf(errOncallMsgTempl, fmt.Sprintf("Oncall map doesn't contain group '%s'", oncallGroup))
+	}
+	if curtOncall != "" {
+		return "/cc @" + curtOncall
+	}
+	return noOncallMsg
 }
 
 // updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
@@ -482,6 +527,15 @@ func main() {
 	o, pro, err := parseOptions()
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
+	}
+
+	if o.SkipIfNoOncall {
+		if oncall := getAssignment(o.OncallAddress, o.OncallGroup); len(oncall) == 0 ||
+			oncall == noOncallMsg || strings.Contains(oncall, "An error occurred while finding an assignee") {
+
+			logrus.WithField("oncall", oncall).Info("`skip-if-no-oncall` is configured and there is no oncall. Skip bumping.")
+			return
+		}
 	}
 	if err := validateOptions(o); err != nil {
 		logrus.WithError(err).Fatalf("Failed validating flags")

@@ -18,8 +18,6 @@ package bumper
 
 import (
 	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"path"
 	"path/filepath"
@@ -256,73 +254,20 @@ func TestGetAssignment(t *testing.T) {
 		expectResKeyword     string
 	}{
 		{
-			description:          "empty oncall URL will return an empty string",
-			oncallURL:            "",
-			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: "",
-			expectResKeyword:     "",
-		},
-		{
-			description:          "an invalid oncall URL will return an error message",
-			oncallURL:            "whatever-url",
-			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: "",
-			expectResKeyword:     "error",
-		},
-		{
-			description:          "an invalid response will return an error message",
-			oncallURL:            "auto",
-			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: "whatever-malformed-response",
-			expectResKeyword:     "error",
-		},
-		{
-			description:          "a valid response will return the oncaller from default group",
-			oncallURL:            "auto",
-			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"}}`,
-			expectResKeyword:     "fake-oncall-name",
-		},
-		{
-			description:          "a valid response will return the oncaller from non-default group",
-			oncallURL:            "auto",
-			oncallGroup:          "another-group",
-			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
-			expectResKeyword:     "fake-oncall-name2",
-		},
-		{
-			description:          "a valid response without expected oncall group",
-			oncallURL:            "auto",
-			oncallGroup:          "group-not-exist",
-			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
-			expectResKeyword:     "error",
-		},
-		{
-			description:          "a valid response with empty oncall will return on oncall message",
-			oncallURL:            "auto",
-			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: `{"Oncall":{"testinfra":""}}`,
-			expectResKeyword:     "Nobody",
-		},
-		{
 			description:      "AssignTo takes precedence over oncall setings",
 			assignTo:         "some-user",
 			expectResKeyword: "/cc @some-user",
+		},
+		{
+			description:      "No assign to",
+			assignTo:         "",
+			expectResKeyword: "",
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.description, func(t *testing.T) {
-			if tc.oncallURL == "auto" {
-				// generate a test server so we can capture and inspect the request
-				testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					res.Write([]byte(tc.oncallServerResponse))
-				}))
-				defer func() { testServer.Close() }()
-				tc.oncallURL = testServer.URL
-			}
-
-			res := getAssignment(tc.assignTo, tc.oncallURL, tc.oncallGroup)
+			res := getAssignment(tc.assignTo)
 			if !strings.Contains(res, tc.expectResKeyword) {
 				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
 			}
