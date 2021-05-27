@@ -26,10 +26,6 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
-  annotations:
-    testgrid-dashboards: wg-k8s-infra-k8sio
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
   extra_refs:
   - org: kubernetes
     repo: k8s.io
@@ -37,9 +33,16 @@ periodics:
   - org: kubernetes
     repo: test-infra
     base_ref: master
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
-    github_users:
-      - hh
+    github_team_slugs:
+    - org: kubernetes
+      slug: wg-k8s-infra-leads
+    - org: kubernetes
+      slug: k8s-infra-gcp-auditors
   spec:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
@@ -70,6 +73,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: k8s-infra-group-admins
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
@@ -91,6 +100,10 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
@@ -112,6 +125,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
@@ -141,6 +160,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
