@@ -38,10 +38,6 @@ presubmits:
           value: "v3.0.3"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel serial-alpha parallel-alpha"
-        - name: CSI_PROW_SANITY_POD
-          value: csi-hostpath-socat-0
-        - name: CSI_PROW_SANITY_CONTAINER
-          value: socat
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -96,10 +92,6 @@ periodics:
         value: "false"
       - name: CSI_PROW_TESTS
         value: "sanity serial parallel serial-alpha parallel-alpha"
-      - name: CSI_PROW_SANITY_POD
-        value: csi-hostpath-socat-0
-      - name: CSI_PROW_SANITY_CONTAINER
-        value: socat
       - name: CSI_PROW_DEPLOYMENT
         value: "kubernetes-distributed"
       # Replace images....
