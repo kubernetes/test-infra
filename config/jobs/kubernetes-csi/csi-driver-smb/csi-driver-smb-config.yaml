@@ -311,3 +311,45 @@ presubmits:
       testgrid-tab-name: pull-csi-driver-smb-external-e2e
       description: "Run External E2E tests for SMB CSI driver on VMAS cluster."
       testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-e2e-gce
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+    - master
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/csi-driver-smb/test/run-e2e-test.sh
+        - --timeout=120m
+        env:
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        - name: PREPULL_YAML
+          value: "prepull-head.yaml"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+        securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-smb-e2e-gce
+      description: "Run E2E tests for SMB CSI driver on GCE cluster."
