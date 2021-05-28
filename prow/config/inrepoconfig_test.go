@@ -312,6 +312,199 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				return nil
 			},
 		},
+		// .prow directory
+		{
+			name: "Basic happy path (.prow directory, single file)",
+			baseContent: map[string][]byte{
+				".prow/base.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Prefer .prow.yaml over .prow directory",
+			baseContent: map[string][]byte{
+				".prow.yaml":      []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/base.yaml": []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge presubmits under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/one.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/two.yaml": []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 2 ||
+					p.Presubmits[0].Name != "hans" ||
+					p.Presubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two presubmit with name "hans" and "kurt", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge presubmits several levels under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/sub1/sub2/one.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/sub3/two.yaml":      []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 2 ||
+					p.Presubmits[0].Name != "hans" ||
+					p.Presubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two presubmit with name "hans" and "kurt", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge postsubmits under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/one.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/two.yaml": []byte(`postsubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Postsubmits); n != 2 ||
+					p.Postsubmits[0].Name != "hans" ||
+					p.Postsubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two postsubmit with name "hans" and "kurt", got %v`, p.Postsubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge postsubmits several levels under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/sub1/sub2/one.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/sub3/two.yaml":      []byte(`postsubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Postsubmits); n != 2 ||
+					p.Postsubmits[0].Name != "hans" ||
+					p.Postsubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two postsubmit with names "hans" and "kurt", got %v`, p.Postsubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge presets under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/one.yaml": []byte(`presets: [{"labels": {"hans": "hansValue"}}]`),
+				".prow/two.yaml": []byte(`presets: [{"labels": {"kurt": "kurtValue"}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presets); n != 2 ||
+					p.Presets[0].Labels["hans"] != "hansValue" ||
+					p.Presets[1].Labels["kurt"] != "kurtValue" {
+					return fmt.Errorf(`expected exactly two presets with labels "hans": "hansValue" and "kurt": "kurtValue", got %v`, p.Presets)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge presets several levels under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/sub1/sub2/one.yaml": []byte(`presets: [{"labels": {"hans": "hansValue"}}]`),
+				".prow/sub3/two.yaml":      []byte(`presets: [{"labels": {"kurt": "kurtValue"}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presets); n != 2 ||
+					p.Presets[0].Labels["hans"] != "hansValue" ||
+					p.Presets[1].Labels["kurt"] != "kurtValue" {
+					return fmt.Errorf(`expected exactly two presets with labels "hans": "hansValue" and "kurt": "kurtValue", got %v`, p.Presets)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Merge presubmits, postsubmits and presets several levels under .prow directory",
+			baseContent: map[string][]byte{
+				".prow/sub1/sub2/one.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]
+postsubmits: [{"name": "karl", "spec": {"containers": [{}]}}]
+presets: [{"labels": {"karl": "karlValue"}}]
+`),
+				".prow/sub3/two.yaml": []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]
+postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
+				".prow/sub4//sub5/sub6/three.yaml": []byte(`presets: [{"labels": {"henning": "henningValue"}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 2 ||
+					p.Presubmits[0].Name != "hans" ||
+					p.Presubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two presubmits with names "hans" and "kurt" got %v`, p.Presubmits)
+				}
+				if n := len(p.Postsubmits); n != 2 ||
+					p.Postsubmits[0].Name != "karl" ||
+					p.Postsubmits[1].Name != "oli" {
+					return fmt.Errorf(`expected exactly two postsubmits with names "karl" and "oli", got %v`, p.Postsubmits)
+				}
+				if n := len(p.Presets); n != 2 ||
+					p.Presets[0].Labels["karl"] != "karlValue" ||
+					p.Presets[1].Labels["henning"] != "henningValue" {
+					return fmt.Errorf(`expected exactly two presets with labels "karl": "karlValue" and "henning": "henningValue", got %v`, p.Presets)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Non-.yaml files under .prow directory are allowed",
+			baseContent: map[string][]byte{
+				".prow/one.yaml":     []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/OWNERS":       []byte(`approvers: [approver1, approver2]`),
+				".prow/sub/two.yaml": []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+				".prow/sub/OWNERS":   []byte(`approvers: [approver3, approver4]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 2 ||
+					p.Presubmits[0].Name != "hans" ||
+					p.Presubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two presubmit with name "hans" and "kurt", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
 	}
 
 	for idx := range testCases {
