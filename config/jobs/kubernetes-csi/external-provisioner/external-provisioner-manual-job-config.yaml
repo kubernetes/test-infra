@@ -34,7 +34,12 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
-          value: "sanity serial parallel serial-alpha parallel-alpha"
+          # sanity intentionally not included: it needs special
+          # support for CSI_PROW_SANITY_POD as a shell command
+          # (not in any stable release yet) and
+          # it doesn't involve the external-provisioner (therefore
+          # it doesn't make sense in this job).
+          value: "serial parallel serial-alpha parallel-alpha"
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         # docker-in-docker needs privileged mode
