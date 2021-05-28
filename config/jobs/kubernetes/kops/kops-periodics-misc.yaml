@@ -102,7 +102,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: aws
       - name: CLUSTER_NAME
-        value: e2e-f9b0e6b3f9-a6ae4.test-cncf-aws.k8s.io
+        value: e2e-5b8a0404e9-b544a.test-cncf-aws.k8s.io
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       securityContext:
