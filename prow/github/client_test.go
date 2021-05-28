@@ -2968,7 +2968,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 
 	clientMethods := getCallForAllClientMethodsThroughReflection(
 		ghClient,
-		func(methodName string) bool { return toSkip.Has(methodName) },
+		func(method reflect.Method) bool { return toSkip.Has(method.Name) },
 		func(typeName string) interface{} {
 			if typeName == "string" {
 				return "org"
@@ -3002,7 +3002,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 
 func getCallForAllClientMethodsThroughReflection(
 	c Client,
-	skip func(methodName string) bool,
+	skip func(reflect.Method) bool,
 	typeOverrides ...func(typeName string) (override interface{}),
 ) (getCalls []func() (methodName string, call func() error)) {
 
@@ -3011,7 +3011,7 @@ func getCallForAllClientMethodsThroughReflection(
 
 	for i := 0; i < clientType.NumMethod(); i++ {
 		i := i
-		if skip(clientType.Method(i).Name) {
+		if skip(clientType.Method(i)) {
 			continue
 		}
 		var args []reflect.Value
@@ -3305,8 +3305,10 @@ func TestThrottlerRespectsContexts(t *testing.T) {
 	defer cancel()
 
 	clientMethods := getCallForAllClientMethodsThroughReflection(c,
-		// Skip all methods whose name doesn't end with 'WithContext'
-		func(methodName string) bool { return !strings.HasSuffix(methodName, "WithContext") },
+		// Skip all method whose first arg is not of type context.Context (self is the actual first arg)
+		func(m reflect.Method) bool {
+			return m.Func.Type().NumIn() < 2 || m.Func.Type().In(1).String() != "context.Context"
+		},
 		// Insert our custom ctx for any arg of type context.Context
 		func(typeName string) interface{} {
 			if typeName == "context.Context" {
