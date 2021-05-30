@@ -321,7 +321,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-scenario-aws-ebs-csi-driver
-- interval: 1h
+- interval: 24h
   name: e2e-kops-aws-aws-load-balancer-controller
   always_run: false
   labels:
