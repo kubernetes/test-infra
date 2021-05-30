@@ -126,7 +126,7 @@ func defaultProwYAMLGetter(
 		log.Debugf("Attempting to read config files under %q.", inRepoConfigDirName)
 		prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
 		err := filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
-			if info == nil {
+			if err != nil {
 				return err
 			}
 			if !info.IsDir() && filepath.Ext(p) == ".yaml" {
