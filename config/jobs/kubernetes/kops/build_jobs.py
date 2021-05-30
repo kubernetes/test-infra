@@ -337,7 +337,7 @@ distros_ssh_user = {
 def build_test(cloud='aws',
                distro='u2004',
                networking=None,
-               container_runtime='docker',
+               container_runtime='containerd',
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
@@ -484,7 +484,7 @@ def build_test(cloud='aws',
 def presubmit_test(cloud='aws',
                    distro='u2004',
                    networking=None,
-                   container_runtime='docker',
+                   container_runtime='containerd',
                    k8s_version='latest',
                    kops_channel='alpha',
                    name=None,
@@ -667,7 +667,6 @@ def generate_misc():
 
         # A special test for AWS Cloud-Controller-Manager
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
-                   container_runtime='containerd',
                    cloud="aws",
                    distro="u2004",
                    k8s_version="stable",
@@ -678,7 +677,6 @@ def generate_misc():
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
-                   container_runtime='containerd',
                    k8s_version="1.20",
                    terraform_version="0.14.6",
                    extra_dashboards=['kops-misc']),
@@ -693,7 +691,6 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-release",
                    k8s_version="latest",
-                   container_runtime="containerd",
                    distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -706,7 +703,6 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-ci",
                    k8s_version="ci",
-                   container_runtime="containerd",
                    distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -719,7 +715,6 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
                    k8s_version="ci",
-                   container_runtime="containerd",
                    distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -733,7 +728,6 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-amd64-conformance",
                    k8s_version="ci",
-                   container_runtime="containerd",
                    distro='u2004',
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -745,7 +739,6 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-updown",
                    k8s_version="stable",
-                   container_runtime="containerd",
                    networking="calico",
                    distro='u2004',
                    kops_channel="alpha",
@@ -796,7 +789,6 @@ def generate_distros():
         results.append(
             build_test(distro=distro_short,
                        networking='calico',
-                       container_runtime='containerd',
                        k8s_version='stable',
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
@@ -832,7 +824,6 @@ def generate_network_plugins():
             networking_arg = 'kube-router'
         results.append(
             build_test(
-                container_runtime='containerd',
                 k8s_version='stable',
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -852,7 +843,6 @@ def generate_versions():
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
     results = [
         build_test(
-            container_runtime='containerd',
             k8s_version='ci',
             kops_channel='alpha',
             name_override='kops-aws-k8s-latest',
@@ -868,7 +858,6 @@ def generate_versions():
         distro = 'deb9' if version == '1.17' else 'u2004'
         results.append(
             build_test(
-                container_runtime='containerd',
                 distro=distro,
                 k8s_version=version,
                 kops_channel='alpha',
@@ -893,7 +882,6 @@ def generate_pipeline():
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
         results.append(
             build_test(
-                container_runtime='containerd',
                 k8s_version=version.replace('master', 'latest'),
                 kops_version=kops_version,
                 kops_channel='alpha',
@@ -939,7 +927,6 @@ def generate_presubmits_network_plugins():
             skip_regex += r'|up\sand\sdown|headless|service-proxy-name'
         results.append(
             presubmit_test(
-                container_runtime='containerd',
                 k8s_version='stable',
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
@@ -971,7 +958,6 @@ def generate_presubmits_e2e():
             skip_override=skip_regex,
         ),
         presubmit_test(
-            container_runtime='containerd',
             k8s_version='1.21',
             kops_channel='alpha',
             name='pull-kops-e2e-kubernetes-aws',
@@ -981,7 +967,6 @@ def generate_presubmits_e2e():
             skip_override=skip_regex,
         ),
         presubmit_test(
-            container_runtime='containerd',
             k8s_version='1.21',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-containerd-ha',
@@ -1004,7 +989,6 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
-            container_runtime='containerd',
             k8s_version='1.21',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce',
