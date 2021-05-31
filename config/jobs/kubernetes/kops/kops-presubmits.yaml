@@ -557,7 +557,7 @@ presubmits:
       testgrid-tab-name: verify-cloudformation
   - name: pull-kops-e2e-aws-ebs-csi-driver
     always_run: false
-    skip_report: true
+    skip_report: false
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
