@@ -275,6 +275,18 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 			if err != nil {
 				return err
 			}
+
+			// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+			// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+			// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+			// get duplicate data.
+			if strings.HasPrefix(info.Name(), "..") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
 			if info.IsDir() || !strings.HasSuffix(path, supplementalPluginConfigFileSuffix) {
 				return nil
 			}
