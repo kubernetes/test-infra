@@ -685,7 +685,7 @@ def generate_misc():
                    k8s_version="stable",
                    networking="calico",
                    kops_channel="alpha",
-                   runs_per_day=24,
+                   runs_per_day=8,
                    extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
                    extra_dashboards=["kops-misc"]),
 
@@ -848,7 +848,7 @@ def generate_versions():
             name_override='kops-aws-k8s-latest',
             networking='calico',
             extra_dashboards=['kops-versions'],
-            runs_per_day=24,
+            runs_per_day=8,
             # This version marker is only used by the k/k presubmit job
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
             skip_override=skip_regex
