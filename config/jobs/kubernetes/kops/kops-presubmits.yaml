@@ -555,6 +555,44 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-cloudformation
+  - name: pull-kops-e2e-aws-ebs-csi-driver
+    always_run: false
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/aws-ebs-csi/run-test.sh
+        env:
+        - name: CLOUD_PROVIDER
+          value: aws
+        - name: CLUSTER_NAME
+          value: e2e-f9b0e6b3f9-a6fg2.test-cncf-aws.k8s.io
+        - name: KOPS_STATE_STORE
+          value: s3://k8s-kops-prow
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2, kops-presubmits, presubmits-kops
+      testgrid-days-of-results: "30"
+      testgrid-tab-name: pull-kops-e2e-aws-ebs-csi-driver
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
