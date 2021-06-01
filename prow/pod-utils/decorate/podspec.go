@@ -107,7 +107,7 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 		maybeTruncated := value
 		if len(value) > validation.LabelValueMaxLength {
 			// TODO(fejta): consider truncating middle rather than end.
-			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], ".-")
+			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], "._-")
 			log.WithFields(logrus.Fields{
 				"key":            key,
 				"value":          value,
