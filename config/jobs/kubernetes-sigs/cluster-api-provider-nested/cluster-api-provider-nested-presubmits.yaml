@@ -10,7 +10,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -30,7 +30,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -53,7 +53,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
