@@ -1044,6 +1044,7 @@ type ManagedWebhooks struct {
 type SlackReporter struct {
 	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
 	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
+	Host              string                 `json:"host"`
 	Channel           string                 `json:"channel"`
 	ReportTemplate    string                 `json:"report_template"`
 }
@@ -1453,12 +1454,12 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 }
 
 // defaultPresubmits defaults the presubmits for one repo
-func defaultPresubmits(presubmits []Presubmit, addtionalPresets []Preset, c *Config, repo string) error {
+func defaultPresubmits(presubmits []Presubmit, additionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPresubmitFields(presubmits)
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1470,12 +1471,12 @@ func defaultPresubmits(presubmits []Presubmit, addtionalPresets []Preset, c *Con
 }
 
 // defaultPostsubmits defaults the postsubmits for one repo
-func defaultPostsubmits(postsubmits []Postsubmit, addtionalPresets []Preset, c *Config, repo string) error {
+func defaultPostsubmits(postsubmits []Postsubmit, additionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPostsubmitFields(postsubmits)
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
