@@ -36,7 +36,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master"
+tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master"
 kubekins_e2e_image="${tmp/\-master/}"
 
 readonly ginkgo_focus="\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice"
@@ -260,7 +260,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
