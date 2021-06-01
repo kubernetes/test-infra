@@ -31,16 +31,19 @@ import (
 	slackclient "k8s.io/test-infra/prow/slack"
 )
 
-const reporterName = "slackreporter"
+const (
+	reporterName    = "slackreporter"
+	defaultHostName = "*"
+)
 
 type slackClient interface {
 	WriteMessage(text, channel string) error
 }
 
 type slackReporter struct {
-	client slackClient
-	config func(*prowapi.Refs) config.SlackReporter
-	dryRun bool
+	clients map[string]slackClient
+	config  func(*prowapi.Refs) config.SlackReporter
+	dryRun  bool
 }
 
 func (sr *slackReporter) getConfig(pj *v1.ProwJob) config.SlackReporter {
@@ -58,11 +61,18 @@ func jobConfig(pj *v1.ProwJob) *v1.SlackReporterConfig {
 	return nil
 }
 
-func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
-	if jobCfg != nil && jobCfg.Channel != "" {
-		return jobCfg.Channel
+func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) (string, string) {
+	host, channel := prowCfg.Host, prowCfg.Channel
+	if jobCfg != nil && jobCfg.Host != "" {
+		host = jobCfg.Host
 	}
-	return prowCfg.Channel
+	if jobCfg != nil && jobCfg.Channel != "" {
+		channel = jobCfg.Channel
+	}
+	if len(host) == 0 {
+		host = defaultHostName
+	}
+	return host, channel
 }
 
 func reportTemplate(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
@@ -80,7 +90,11 @@ func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 	prowCfg := sr.getConfig(pj)
 	jobCfg := jobConfig(pj)
 	templateStr := reportTemplate(prowCfg, jobCfg)
-	channel := channel(prowCfg, jobCfg)
+	host, channel := channel(prowCfg, jobCfg)
+	client, ok := sr.clients[host]
+	if !ok {
+		return fmt.Errorf("host '%s' not supported", host)
+	}
 	b := &bytes.Buffer{}
 	tmpl, err := template.New("").Parse(templateStr)
 	if err != nil {
@@ -95,7 +109,7 @@ func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 		log.WithField("messagetext", b.String()).Debug("Skipping reporting because dry-run is enabled")
 		return nil
 	}
-	if err := sr.client.WriteMessage(b.String(), channel); err != nil {
+	if err := client.WriteMessage(b.String(), channel); err != nil {
 		log.WithError(err).Error("failed to write Slack message")
 		return fmt.Errorf("failed to write Slack message: %v", err)
 	}
@@ -148,10 +162,17 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	return shouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte) *slackReporter {
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte, additionalTokens map[string]func() []byte) *slackReporter {
+	clients := map[string]slackClient{}
+	if token != nil {
+		clients[defaultHostName] = slackclient.NewClient(token)
+	}
+	for key, val := range additionalTokens {
+		clients[key] = slackclient.NewClient(val)
+	}
 	return &slackReporter{
-		client: slackclient.NewClient(token),
-		config: cfg,
-		dryRun: dryRun,
+		clients: clients,
+		config:  cfg,
+		dryRun:  dryRun,
 	}
 }
