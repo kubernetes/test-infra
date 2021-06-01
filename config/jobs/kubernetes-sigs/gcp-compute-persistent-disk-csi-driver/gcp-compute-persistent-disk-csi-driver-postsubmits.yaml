@@ -90,7 +90,7 @@ periodics:
       - "test/run-k8s-integration-migration.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
-        value: "stable"
+        value: "stable-master"
       - name: GCE_PD_DO_DRIVER_BUILD
         value: "false"
       # docker-in-docker needs privileged mode
