@@ -319,6 +319,8 @@ func TestProtect(t *testing.T) {
 		teams                  []github.Team
 		skipVerifyRestrictions bool
 		errors                 int
+
+		enabled func(org, repo string) bool
 	}{
 		{
 			name: "nothing",
@@ -514,6 +516,68 @@ branch-protection:
 				},
 			},
 			branchProtections: map[string]github.BranchProtection{"org/skip=master": {}},
+		},
+		{
+			name:     "protect org but branchprotector is not enabled for this org, nothing happens",
+			branches: []string{"org/repo1=master", "org/repo1=branch"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			enabled: func(org, repo string) bool { return org != "org" },
+		},
+		{
+			name:     "protect org, branchprotector is disabled for different org, org gets protected",
+			branches: []string{"org/repo1=master", "org/repo1=branch"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+				{
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+			},
+			enabled: func(org, repo string) bool { return org != "other-org" },
+		},
+		{
+			name:     "protect org, branchprotector is disabled for one repo so it gets skipped",
+			branches: []string{"org/repo1=master", "org/repo2=master"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			expected: []requirements{{
+				Org:    "org",
+				Repo:   "repo1",
+				Branch: "master",
+				Request: &github.BranchProtectionRequest{
+					EnforceAdmins: &no,
+				},
+			}},
+			enabled: func(org, repo string) bool { return org == "org" && repo != "repo2" },
 		},
 		{
 			name:     "protect org but skip a repo due to archival",
@@ -1294,6 +1358,10 @@ branch-protection:
 			if err := yaml.Unmarshal([]byte(tc.config), &cfg); err != nil {
 				t.Fatalf("failed to parse config: %v", err)
 			}
+
+			if tc.enabled == nil {
+				tc.enabled = func(org, repo string) bool { return true }
+			}
 			p := protector{
 				client:             &fc,
 				cfg:                &cfg,
@@ -1302,6 +1370,7 @@ branch-protection:
 				done:               make(chan []error),
 				completedRepos:     make(map[string]bool),
 				verifyRestrictions: !tc.skipVerifyRestrictions,
+				enabled:            tc.enabled,
 			}
 			go func() {
 				p.protect()
@@ -1399,6 +1468,7 @@ branch-protection:
 		updates:        make(chan requirements),
 		done:           make(chan []error),
 		completedRepos: make(map[string]bool),
+		enabled:        func(org, repo string) bool { return true },
 	}
 	go func() {
 		p.protect()
@@ -1460,6 +1530,7 @@ branch-protection:
 		updates:        make(chan requirements),
 		done:           make(chan []error),
 		completedRepos: make(map[string]bool),
+		enabled:        func(org, repo string) bool { return true },
 	}
 	go func() {
 		p.protect()
