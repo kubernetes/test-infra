@@ -19,12 +19,10 @@ package bumper
 import (
 	"bytes"
 	"crypto/sha1"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -40,10 +38,6 @@ const (
 	forkRemoteName = "bumper-fork-remote"
 
 	defaultHeadBranchName = "autobump"
-	defaultOncallGroup    = "testinfra"
-
-	errOncallMsgTempl = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
-	noOncallMsg       = "Nobody is currently oncall, so falling back to Blunderbuss."
 
 	gitCmd = "git"
 )
@@ -87,10 +81,6 @@ type Options struct {
 	GitEmail string `json:"gitEmail"`
 	// AssignTo specifies who to assign the created PR to. Takes precedence over onCallAddress and onCallGroup if set.
 	AssignTo string `json:"assign_to"`
-	// The oncall address where we can get the JSON file that stores the current oncall information.
-	OncallAddress string `json:"onCallAddress"`
-	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
-	OncallGroup string `json:"onCallGroup"`
 	// Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `json:"skipPullRequest"`
 	// Information needed to do a gerrit bump. Do not include if doing github bump
@@ -208,9 +198,6 @@ func validateOptions(o *Options) error {
 			o.HeadBranchName = defaultHeadBranchName
 		}
 	}
-	if o.OncallGroup == "" {
-		o.OncallGroup = defaultOncallGroup
-	}
 
 	return nil
 }
@@ -303,7 +290,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 		}
 		o.GitHubBaseBranch = repo.DefaultBranch
 	}
-	if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, getAssignment(o.AssignTo, o.OncallAddress, o.OncallGroup), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
+	if err := updatePRWithLabels(gc, o.GitHubOrg, o.GitHubRepo, getAssignment(o.AssignTo), o.GitHubLogin, o.GitHubBaseBranch, o.HeadBranchName, updater.PreventMods, summary, body, o.Labels, o.SkipPullRequest); err != nil {
 		return fmt.Errorf("to create the PR: %w", err)
 	}
 	return nil
@@ -578,37 +565,11 @@ func generatePRBody(body, assignment string) string {
 	return body + assignment + "\n"
 }
 
-func getAssignment(assignTo, oncallAddress, oncallGroup string) string {
+func getAssignment(assignTo string) string {
 	if assignTo != "" {
 		return "/cc @" + assignTo
 	}
-	if oncallAddress == "" {
-		return ""
-	}
-
-	req, err := http.Get(oncallAddress)
-	if err != nil {
-		return fmt.Sprintf(errOncallMsgTempl, err)
-	}
-	defer req.Body.Close()
-	if req.StatusCode != http.StatusOK {
-		return fmt.Sprintf(errOncallMsgTempl,
-			fmt.Sprintf("Error requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status))
-	}
-	oncall := struct {
-		Oncall map[string]string `json:"Oncall"`
-	}{}
-	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
-		return fmt.Sprintf(errOncallMsgTempl, err)
-	}
-	curtOncall, ok := oncall.Oncall[oncallGroup]
-	if !ok {
-		return fmt.Sprintf(errOncallMsgTempl, fmt.Sprintf("Oncall map doesn't contain group '%s'", oncallGroup))
-	}
-	if curtOncall != "" {
-		return "/cc @" + curtOncall
-	}
-	return noOncallMsg
+	return ""
 }
 
 func getTreeRef(stderr io.Writer, refname string) (string, error) {
