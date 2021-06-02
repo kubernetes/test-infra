@@ -133,7 +133,7 @@ func defaultProwYAMLGetter(
 			return nil, fmt.Errorf("failed to read contents of directory %q: %v", inRepoConfigDirName, err)
 		}
 	} else {
-		log.Debugf("Attempting to get %q.", inRepoConfigFileName)
+		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
 		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
 			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
