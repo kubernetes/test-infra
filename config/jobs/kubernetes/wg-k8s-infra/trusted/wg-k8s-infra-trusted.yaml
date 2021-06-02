@@ -26,10 +26,6 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
-  annotations:
-    testgrid-dashboards: wg-k8s-infra-k8sio
-    testgrid-alert-email: hh@ii.coop
-    testgrid-num-failures-to-alert: '100'
   extra_refs:
   - org: kubernetes
     repo: k8s.io
@@ -37,70 +33,23 @@ periodics:
   - org: kubernetes
     repo: test-infra
     base_ref: master
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
-    github_users:
-      - hh
+    github_team_slugs:
+    - org: kubernetes
+      slug: wg-k8s-infra-leads
+    - org: kubernetes
+      slug: k8s-infra-gcp-auditors
   spec:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
     - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.16
       imagePullPolicy: Always
       command:
-      - bash
-      args:
-      - -c
-      - |
-        set -o errexit
-        set -o nounset
-        set -o pipefail
-
-        GH_USER=cncf-ci
-        GH_NAME="CNCF CI Bot"
-        GH_EMAIL="cncf-ci@ii.coop"
-        FORK_GH_REPO=k8s.io
-        FORK_GH_BRANCH=autoaudit-${PROW_INSTANCE_NAME:-prow}
-
-        echo "Ensure git configured" >&2
-        git config user.name "${GH_NAME}"
-        git config user.email "${GH_EMAIL}"
-
-        echo "Ensure gcloud creds are working" >&2
-        gcloud config list
-
-        echo "Running Audit Script to dump GCP configuration to yaml" >&2
-        pushd ./audit
-        bash ./audit-gcp.sh
-        popd
-
-        echo "Determining whether there are changes to push" >&2
-        git add --all audit
-        git commit -m "audit: update as of $(date +%Y-%m-%d)"
-        git remote add fork "https://github.com/${GH_USER}/${FORK_GH_BRANCH}"
-        if git fetch fork "${FORK_GH_BRANCH}"; then
-          if git diff --quiet HEAD "fork/${FORK_GH_BRANCH}" -- audit; then
-            echo "No new changes to push, exiting early..." >&2
-            exit
-          fi
-        fi
-
-        echo "Generating pr-creator binary from k/test-infra/robots" >&2
-        pushd ../../kubernetes/test-infra
-        go build -o /workspace/pr-creator robots/pr-creator/main.go
-        popd
-
-        echo "Pushing commit to github.com/${GH_USER}/${FORK_GH_REPO}..." >&2
-        GH_TOKEN=$(cat /etc/github-token/token)
-        git push -f "https://${GH_USER}:${GH_TOKEN}@github.com/${GH_USER}/${FORK_GH_REPO}" "HEAD:${FORK_GH_BRANCH}" 2>/dev/null
-
-        echo "Creating or updating PR to merge ${GH_USER}:${FORK_GH_BRANCH} into kubernetes:main..." >&2
-        /workspace/pr-creator \
-          --github-token-path=/etc/github-token/token \
-          --org=kubernetes --repo=k8s.io --branch=main \
-          --source="${GH_USER}:${FORK_GH_BRANCH}" \
-          --head-branch="${FORK_GH_BRANCH}" \
-          --title="audit: update as of $(date +%Y-%m-%d)" \
-          --body="Audit Updates wg-k8s-infra" \
-          --confirm
+      - ./audit/create-or-update-audit-pr.sh
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
@@ -124,6 +73,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: k8s-infra-group-admins
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
@@ -145,6 +100,10 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
@@ -166,6 +125,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
@@ -195,6 +160,12 @@ postsubmits:
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
