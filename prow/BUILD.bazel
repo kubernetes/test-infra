@@ -70,6 +70,8 @@ prow_push(
             "localhost:5000/hook": "//prow/cmd/hook:image",
             "localhost:5000/horologium": "//prow/cmd/horologium:image",
             "localhost:5000/prow-controller-manager": "//prow/cmd/prow-controller-manager:image",
+            "localhost:5000/deck": "//prow/cmd/deck:image",
+            "localhost:5000/tide": "//prow/cmd/tide:image",
             "localhost:5000/fakeghserver": "//prow/test/integration/fakeghserver:image",
         },
     ),
