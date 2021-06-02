@@ -97,7 +97,7 @@ func defaultProwYAMLGetter(
 
 	prowYAML := &ProwYAML{}
 
-	log.Debugf("Attempting to get %q.", inRepoConfigFileName)
+	log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
 	prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
 	if _, err := os.Stat(prowYAMLFilePath); err == nil {
 		log.Debugf("No error checking for %q, full path %q.", inRepoConfigFileName, prowYAMLFilePath)
