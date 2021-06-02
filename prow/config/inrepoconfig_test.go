@@ -329,7 +329,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 		},
 		{
-			name: "Prefer .prow.yaml over .prow directory",
+			name: "Prefer .prow directory over .prow.yaml file",
 			baseContent: map[string][]byte{
 				".prow.yaml":      []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
 				".prow/base.yaml": []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
@@ -338,8 +338,8 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err != nil {
 					return fmt.Errorf("unexpected error: %v", err)
 				}
-				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
-					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "kurt" {
+					return fmt.Errorf(`expected exactly one presubmit with name "kurt", got %v`, p.Presubmits)
 				}
 				return nil
 			},
