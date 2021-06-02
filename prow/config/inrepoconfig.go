@@ -123,14 +123,14 @@ func defaultProwYAMLGetter(
 				}
 				partialProwYAML := &ProwYAML{}
 				if err := yaml.Unmarshal(bytes, partialProwYAML); err != nil {
-					return fmt.Errorf("failed to unmarshal %q: %v", p, err)
+					return fmt.Errorf("failed to unmarshal %q: %w", p, err)
 				}
 				prowYAML = mergeProwYAML(prowYAML, partialProwYAML)
 			}
 			return err
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to read contents of directory %q: %v", inRepoConfigDirName, err)
+			return nil, fmt.Errorf("failed to read contents of directory %q: %w", inRepoConfigDirName, err)
 		}
 	} else {
 		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")

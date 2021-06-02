@@ -92,6 +92,6 @@ directory in the root of your repo. All the YAML files under the `.prow` directo
 be read and merged together recursively.This will make it easier to handle big repos with
 a large number of jobs and will allow to have fine grained OWNERS control on them.
 
-When both `.prow.yaml` file and `.prow` directory are present, `.prow.yaml` is preferred.
+`.prow` directory and `.prow.yaml` file are mutually exclusive, when both are present `.prow` directory is preferred.
 
 For a more detailed documentation of possible configuration parameters for jobs, please check the [job documentation](/prow/jobs.md)
