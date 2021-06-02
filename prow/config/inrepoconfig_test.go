@@ -505,6 +505,24 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 				return nil
 			},
 		},
+		{
+			name: "Both .yaml and .yml files are allowed under .prow directory)",
+			baseContent: map[string][]byte{
+				".prow/one.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow/two.yml":  []byte(`presubmits: [{"name": "kurt", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Presubmits); n != 2 ||
+					p.Presubmits[0].Name != "hans" ||
+					p.Presubmits[1].Name != "kurt" {
+					return fmt.Errorf(`expected exactly two presubmit with name "hans" and "kurt", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+		},
 	}
 
 	for idx := range testCases {

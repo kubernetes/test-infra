@@ -97,15 +97,13 @@ func defaultProwYAMLGetter(
 
 	prowYAML := &ProwYAML{}
 
-	log.Debugf("Attempting to read config files under %q.", inRepoConfigDirName)
 	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
-	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && fileInfo.IsDir() {
+	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
+	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && fileInfo != nil && fileInfo.IsDir() {
 		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
 			c := &ProwYAML{}
 			c.Presets = append(a.Presets, b.Presets...)
-
 			c.Presubmits = append(a.Presubmits, b.Presubmits...)
-
 			c.Postsubmits = append(a.Postsubmits, b.Postsubmits...)
 
 			return c
@@ -115,7 +113,7 @@ func defaultProwYAMLGetter(
 			if err != nil {
 				return err
 			}
-			if !info.IsDir() && filepath.Ext(p) == ".yaml" {
+			if !info.IsDir() && (filepath.Ext(p) == ".yaml" || filepath.Ext(p) == ".yml") {
 				log.Debugf("Reading YAML file %q", p)
 				bytes, err := ioutil.ReadFile(p)
 				if err != nil {
@@ -138,14 +136,14 @@ func defaultProwYAMLGetter(
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
 			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
 			if err != nil {
-				return nil, fmt.Errorf("failed to read %q: %w", inRepoConfigFileName, err)
+				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
 			}
 			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal %q: %v", inRepoConfigFileName, err)
+				return nil, fmt.Errorf("failed to unmarshal %q: %v", prowYAMLDirPath, err)
 			}
 		} else {
 			if !os.IsNotExist(err) {
-				return nil, fmt.Errorf("failed to check if file %q exists: %v", inRepoConfigFileName, err)
+				return nil, fmt.Errorf("failed to check if file %q exists: %v", prowYAMLDirPath, err)
 			}
 		}
 	}
