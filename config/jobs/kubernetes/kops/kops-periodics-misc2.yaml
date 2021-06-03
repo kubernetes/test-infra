@@ -67,7 +67,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enable=true --override=cluster.spec.awsLoadBalancerController.enable=true", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enabled=true --override=cluster.spec.awsLoadBalancerController.enabled=true", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
 - name: e2e-kops-grid-scenario-service-account-iam
   cron: '45 6-23/8 * * *'
   labels:
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=kubenet --container-runtime=containerd --api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enable=true --override=cluster.spec.awsLoadBalancerController.enable=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=kubenet --container-runtime=containerd --api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enabled=true --override=cluster.spec.awsLoadBalancerController.enabled=true" \
           --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
@@ -124,7 +124,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enable=true --override=cluster.spec.awsLoadBalancerController.enable=true
+    test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.certManager.enabled=true --override=cluster.spec.awsLoadBalancerController.enabled=true
     test.kops.k8s.io/feature_flags: UseServiceAccountIAM
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
