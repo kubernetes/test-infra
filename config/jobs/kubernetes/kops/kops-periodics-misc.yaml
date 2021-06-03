@@ -150,9 +150,9 @@ periodics:
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       - name: KOPS_VERSION_A
-        value: v1.19.2
+        value: "1.19"
       - name: KOPS_VERSION_B
-        value: v1.20.0
+        value: "1.20"
       - name: K8S_VERSION_A
         value: v1.19.10
       - name: K8S_VERSION_B
@@ -166,6 +166,58 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-upgrade-k119-ko119-to-k120-ko120
+- interval: 1h # TODO(justinsb): reduce once working
+  name: e2e-kops-aws-upgrade-k120-ko120-to-k121-ko121
+  always_run: false
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: CLOUD_PROVIDER
+        value: aws
+      - name: CLUSTER_NAME
+        value: e2e-f9b0e6b3f9-a6a19.test-cncf-aws.k8s.io
+      - name: KOPS_STATE_STORE
+        value: s3://k8s-kops-prow
+      - name: KOPS_VERSION_A
+        value: "1.20"
+      - name: KOPS_VERSION_B
+        value: "1.21"
+      - name: K8S_VERSION_A
+        value: v1.20.7
+      - name: K8S_VERSION_B
+        value: v1.21.0
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
+    testgrid-days-of-results: "30"
+    testgrid-tab-name: kops-aws-upgrade-k120-ko120-to-k121-ko121
 - name: e2e-kops-do-calico
   cron: '54 4-23/8 * * *'
   labels:
