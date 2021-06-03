@@ -282,7 +282,7 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 
 	optionallyThrottled := func(c github.Client) (github.Client, error) {
 		// Throttle handles zeros as "disable throttling" so we do not need to call it conditionally
-		if err := c.Throttle(o.ThrottleHourlyTokens, o.ThrottleHourlyTokens); err != nil {
+		if err := c.Throttle(o.ThrottleHourlyTokens, o.ThrottleAllowBurst); err != nil {
 			return nil, fmt.Errorf("failed to throttle: %w", err)
 		}
 		for org, settings := range o.parsedOrgThrottlers {
@@ -300,7 +300,7 @@ func (o *GitHubOptions) githubClient(secretAgent *secret.Agent, dryRun bool) (gi
 			return optionallyThrottled(client)
 		}
 		client := github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-		return optionallyThrottled((client))
+		return optionallyThrottled(client)
 	}
 	if o.AppPrivateKeyPath != "" {
 		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secretAgent.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
