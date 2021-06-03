@@ -4043,7 +4043,11 @@ func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedH
 	}
 
 	if code == http.StatusUnprocessableEntity {
-		return fmt.Errorf("mismatch expected head sha: %s", *expectedHeadSha)
+		msg := "mismatch expected head sha"
+		if expectedHeadSha != nil {
+			msg = fmt.Sprintf("%s: %s", msg, *expectedHeadSha)
+		}
+		return errors.New(msg)
 	}
 
 	return nil

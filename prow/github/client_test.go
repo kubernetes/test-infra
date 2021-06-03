@@ -2511,12 +2511,19 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 	testcases := []struct {
 		name            string
 		expectedHeadSha *string
+		forceMismatch   bool
 		err             bool
 	}{
 		{
 			name:            "nil expectedHeadSha",
 			expectedHeadSha: nil,
 			err:             false,
+		},
+		{
+			name:            "nil mismatched expectedHeadSha",
+			expectedHeadSha: nil,
+			forceMismatch:   true,
+			err:             true,
 		},
 		{
 			name:            "matched expectedHeadSha",
@@ -2552,12 +2559,13 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 				t.Errorf("Could not unmarshal request: %v", err)
 			}
 
-			if data.ExpectedHeadSha != nil {
-				if *data.ExpectedHeadSha != sha {
-					http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
-				}
+			if data.ExpectedHeadSha != nil && *data.ExpectedHeadSha != sha {
+				http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
+			} else if tc.forceMismatch == true {
+				http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
+			} else {
+				http.Error(w, "202 Accepted", http.StatusAccepted)
 			}
-			http.Error(w, "202 Accepted", http.StatusAccepted)
 		}))
 		defer ts.Close()
 
