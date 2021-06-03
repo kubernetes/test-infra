@@ -80,6 +80,9 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd
     test_group_name: pull-kubernetes-e2e-gce-ubuntu-containerd
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-fcos-crio
+    test_group_name: pull-kubernetes-e2e-gce-fcos-crio
+    base_options: width=10
   - name: pull-kubernetes-verify-govet-levee
     test_group_name: pull-kubernetes-verify-govet-levee
     base_options: width=10
