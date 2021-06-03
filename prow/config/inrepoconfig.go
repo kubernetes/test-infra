@@ -99,7 +99,7 @@ func defaultProwYAMLGetter(
 
 	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
 	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
-	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && fileInfo != nil && fileInfo.IsDir() {
+	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && err == nil && fileInfo.IsDir() {
 		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
 			c := &ProwYAML{}
 			c.Presets = append(a.Presets, b.Presets...)
@@ -131,6 +131,9 @@ func defaultProwYAMLGetter(
 			return nil, fmt.Errorf("failed to read contents of directory %q: %w", inRepoConfigDirName, err)
 		}
 	} else {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("reading %q: %w", prowYAMLDirPath, err)
+		}
 		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
 		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
