@@ -671,6 +671,15 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
+        # A special test for warm pool
+        build_test(name_override="kops-warm-pool",
+                   runs_per_day=3,
+                   networking="cilium",
+                   extra_flags=['--api-loadbalancer-type=public',
+                                '--override=cluster.spec.warmPool.minSize=1'
+                                ],
+                   extra_dashboards=['kops-misc']),
+
         # A special test for AWS Cloud-Controller-Manager
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
                    cloud="aws",
