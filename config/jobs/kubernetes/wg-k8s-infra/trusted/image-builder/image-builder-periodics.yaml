@@ -1,15 +1,13 @@
 periodics:
 - name: periodic-image-builder-gcp-all-nightly
   cluster: k8s-infra-prow-build-trusted
-  interval: 24h
+  interval: 2h
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: image-builder
     base_ref: master
     path_alias: "sigs.k8s.io/image-builder"
-  labels:
-    preset-service-account: "true"
   spec:
     serviceAccountName: gcb-builder-cluster-api-gcp
     containers:
