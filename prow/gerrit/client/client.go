@@ -19,6 +19,7 @@ limitations under the License.
 package client
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"sort"
@@ -188,17 +189,8 @@ func (c *Client) authenticateOnce(previousToken string) string {
 	logrus.Info("New gerrit token, updating handler authentication...")
 
 	// update auth token for each instance
-	for instance, handler := range c.handlers {
-		log := handler.log
+	for _, handler := range c.handlers {
 		handler.authService.SetCookieAuth("o", current)
-
-		self, _, err := handler.accountService.GetAccount("self")
-		if err != nil {
-			log.WithError(err).Error("GetAccount() failed with new authentication")
-			continue
-		}
-		log.WithField("name", self.Name).Info("Authentication successful")
-		c.accounts[instance] = self
 	}
 	return current
 }
@@ -316,8 +308,25 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 }
 
 // Account returns gerrit account for the given instance
-func (c *Client) Account(instance string) *gerrit.AccountInfo {
-	return c.accounts[instance]
+func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if existing, ok := c.accounts[instance]; ok {
+		return existing, nil
+	}
+
+	handler, ok := c.handlers[instance]
+	if !ok {
+		return nil, errors.New("no handlers found")
+	}
+
+	self, _, err := handler.accountService.GetAccount("self")
+	if err != nil {
+		return nil, fmt.Errorf("GetAccount() failed with new authentication: %v", err)
+
+	}
+	c.accounts[instance] = self
+	return c.accounts[instance], nil
 }
 
 // private handler implementation details
