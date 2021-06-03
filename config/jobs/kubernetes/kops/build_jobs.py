@@ -662,7 +662,9 @@ def generate_misc():
                    cloud="aws",
                    distro="u2004",
                    feature_flags=["UseServiceAccountIAM"],
-                   extra_flags=['--api-loadbalancer-type=public'],
+                   extra_flags=['--api-loadbalancer-type=public',
+                                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
+                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         # A special test for AWS Cloud-Controller-Manager
