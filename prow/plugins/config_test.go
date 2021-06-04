@@ -1534,7 +1534,7 @@ func TestConfigMergingProperties(t *testing.T) {
 		{
 			name: "Plugins config",
 			makeMergeable: func(c *Configuration) {
-				*c = Configuration{Plugins: c.Plugins}
+				*c = Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla}
 			},
 		},
 	}
@@ -1651,6 +1651,327 @@ func TestPluginsMergeFrom(t *testing.T) {
 			}
 			if tc.expectedErrMsg != errMsg {
 				t.Fatalf("expected error message %q, got %s", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expexcted config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestBugzillaMergeFrom(t *testing.T) {
+	t.Parallel()
+
+	yes := true
+	targetRelease1 := "target-release-1"
+	targetRelease2 := "target-release-2"
+
+	testCases := []struct {
+		name string
+
+		from *Bugzilla
+		to   *Bugzilla
+
+		expected       *Bugzilla
+		expectedErrMsg string
+	}{
+		{
+			name: "Merging for two different repos",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging organization defaults and repo in org",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging 2 organizations",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org-2": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					}},
+				"org-2": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging global defaults succeeds",
+
+			from: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			expected: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}, Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging multiple global defaults fails",
+
+			from: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}},
+			to: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease2,
+				},
+			}},
+			expectedErrMsg: "configuration of global default defined in multiple places",
+		},
+		{
+			name: "Merging same organization defaults fails",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease2,
+						},
+					},
+				},
+			}},
+
+			expectedErrMsg: "found duplicate organization config for bugzilla.org",
+		},
+		{
+			name: "Merging same repository fails",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expectedErrMsg: "found duplicate repository config for bugzilla.org/repo-1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %q", tc.expectedErrMsg, errMsg)
 			}
 			if err != nil {
 				return
