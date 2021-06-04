@@ -3045,7 +3045,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-openstack-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-ovirt-upgrade
-- days_of_results: 60
+- days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-vsphere-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-vsphere-upgrade
 - days_of_results: 60
