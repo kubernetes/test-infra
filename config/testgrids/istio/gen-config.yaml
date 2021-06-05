@@ -1305,19 +1305,6 @@ dashboards:
     test_group_name: unit-tests_istio_postsubmit
   name: istio_istio_postsubmit
 - dashboard_tab:
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: integ-multicluster-k8s-tests_istio_periodic'
-    name: integ-multicluster-k8s-tests_istio_periodic
-    open_bug_template:
-      url: https://github.com/istio/istio/issues/
-    open_test_template:
-      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: integ-multicluster-k8s-tests_istio_periodic
-  name: istio_istio_periodic
-- dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: build_pkg'
@@ -6283,13 +6270,13 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: daily-fortio-performance-benchmark-release-1.9'
-    name: daily-fortio-performance-benchmark-release-1.9
+    description: 'prowjob_name: daily-fortio-performance-benchmark-release-1.10'
+    name: daily-fortio-performance-benchmark-release-1.10
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: daily-fortio-performance-benchmark-release-1.9
+    test_group_name: daily-fortio-performance-benchmark-release-1.10
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -6305,13 +6292,13 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: daily-nighthawk-performance-benchmark-release-1.9'
-    name: daily-nighthawk-performance-benchmark-release-1.9
+    description: 'prowjob_name: daily-nighthawk-performance-benchmark-release-1.10'
+    name: daily-nighthawk-performance-benchmark-release-1.10
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: daily-nighthawk-performance-benchmark-release-1.9
+    test_group_name: daily-nighthawk-performance-benchmark-release-1.10
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -6748,17 +6735,14 @@ test_groups:
 - gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark
   name: daily-fortio-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.9
-  name: daily-fortio-performance-benchmark-release-1.9
+- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.10
+  name: daily-fortio-performance-benchmark-release-1.10
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark
   name: daily-nighthawk-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.9
-  name: daily-nighthawk-performance-benchmark-release-1.9
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-multicluster-k8s-tests_istio_periodic
-  name: integ-multicluster-k8s-tests_istio_periodic
+- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.10
+  name: daily-nighthawk-performance-benchmark-release-1.10
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-boutique-rollback-master-1.9
   name: istio-boutique-rollback-master-1.9
