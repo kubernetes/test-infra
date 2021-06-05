@@ -59,6 +59,9 @@ dashboards:
   - name: pull-kubernetes-node-e2e-containerd
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: width=10
+  - name: pull-kubernetes-node-crio-e2e
+    test_group_name: pull-kubernetes-node-crio-e2e
+    base_options: width=10
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10

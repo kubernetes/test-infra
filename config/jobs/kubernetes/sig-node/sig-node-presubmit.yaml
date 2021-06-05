@@ -461,8 +461,8 @@ presubmits:
       testgrid-dashboards: sig-node-cri-o
       testgrid-tab-name: pr-crio-gce-e2e
     always_run: true
-    skip_report: true
-    optional: true
+    optional: false
+    cluster: k8s-infra-prow-build
     max_concurrency: 12
     labels:
       preset-service-account: "true"
@@ -492,8 +492,12 @@ presubmits:
         - --timeout=180m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-kubernetes-node-kubelet-serial-memory-manager
     always_run: false
