@@ -54,6 +54,11 @@ const (
 	pluginName = "require-matching-label"
 )
 
+var (
+	checkRequiredLablesRe = regexp.MustCompile(`(?mi)^/check-required-labels\s*$`)
+)
+
+
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
@@ -68,6 +73,7 @@ type commentPruner interface {
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
@@ -95,14 +101,24 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
-	return &pluginhelp.PluginHelp{
+	pluginHelp =  &pluginhelp.PluginHelp{
 			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
 			Config: map[string]string{
 				"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
 			},
 			Snippet: yamlSnippet,
-		},
-		nil
+		}
+	
+	pluginHelp.AddCommand(pluginhelp.Command{
+			Usage:       "/check-required-labels",
+			Description: "Forces the require-matching-label plugin to reprocess an issue or PR that do not have any labels matching.An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label",
+			Featured:    true,
+			WhoCanUse:   "Anyone",
+			Examples:    []string{"/check-required-labels"},
+		})
+
+	return pluginHelp,nil
+	
 }
 
 type event struct {
@@ -154,6 +170,22 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		return err
 	}
 	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
+}
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+		return handleComment(pc.GitHubClient, pc.Logger, &ce)
+}
+func handleComment(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+	//consider open and close PRs and new comments
+	if e.IssueState != "open" || e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+	// Only consider "/check-required-labels" comments.
+	if !checkRequiredLablesRe.MatchString(e.Body) {
+		return nil
+	}
+
+	//to be continued
+
 }
 
 // matchingConfigs filters irrelevant RequireMtchingLabel configs from
