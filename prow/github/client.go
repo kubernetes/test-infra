@@ -1686,7 +1686,7 @@ func (c *client) DeleteCommentWithContext(ctx context.Context, org, repo string,
 		method:    http.MethodDelete,
 		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		org:       org,
-		exitCodes: []int{204},
+		exitCodes: []int{204, 404},
 	}, nil)
 	return err
 }
