@@ -1,20 +1,23 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- alejandrox1
 - bart0sh
-- dchen1107
 - derekwaynecarr
+- ehashman
 - karan
 - MHBauer
-- Random-Liu
 - vpickard
 - sjenning
+- SergeyKanzhelev
 approvers:
 - yujuhong
 - Random-Liu
 - dchen1107
 - derekwaynecarr
 - sjenning
+- mrunalp
+- klueska
 emeritus_approvers:
 - dashpole
 labels:
