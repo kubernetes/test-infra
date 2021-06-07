@@ -36,8 +36,10 @@ import (
 
 const (
 	// PluginName is the name of this plugin
-	PluginName         = labels.NeedsRebase
-	needsRebaseMessage = "PR needs rebase."
+	PluginName              = labels.NeedsRebase
+	needsRebaseMessage      = "PR needs rebase."
+	dependabotRebaseMessage = "rebase"
+	dependabotUser          = "dependabot[bot]"
 )
 
 var sleep = time.Sleep
@@ -214,7 +216,12 @@ func takeActionWithContext(ctx context.Context, ghc githubClient, org, repo stri
 		if err := ghc.AddLabelWithContext(ctx, org, repo, num, labels.NeedsRebase); err != nil {
 			return fmt.Errorf("failed to add %q label: %w", labels.NeedsRebase, err)
 		}
-		msg := plugins.FormatSimpleResponse(author, needsRebaseMessage)
+		var msg string
+		if author == dependabotUser {
+			msg = plugins.FormatSimpleResponse(author, dependabotRebaseMessage)
+		} else {
+			msg = plugins.FormatSimpleResponse(author, needsRebaseMessage)
+		}
 		return ghc.CreateCommentWithContext(ctx, org, repo, num, msg)
 	} else if mergeable && hasLabel {
 		// remove label and prune comment
