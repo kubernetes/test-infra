@@ -636,6 +636,9 @@ def generate_grid():
             for distro in distro_options:
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
+                        # https://github.com/kubernetes/kops/pull/11696
+                        if kops_version is None and distro in ["deb9", "rhel7", "u1804"]:
+                            continue
                         results.append(
                             build_test(cloud="aws",
                                        distro=distro,
