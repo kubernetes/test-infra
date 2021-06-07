@@ -347,6 +347,8 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
+        - name: REGISTRY
+          value: "gcr.io/kubernetes-e2e-test-images"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         securityContext:
             privileged: true
