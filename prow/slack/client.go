@@ -143,5 +143,8 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	uv.Add("channel", channel)
 	uv.Add("text", text)
 
-	return sl.postMessage(chatPostMessage, uv)
+	if err := sl.postMessage(chatPostMessage, uv); err != nil {
+		return fmt.Errorf("failed to post message to #%s: %w", channel, err)
+	}
+	return nil
 }
