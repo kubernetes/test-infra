@@ -30,7 +30,7 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
@@ -106,7 +106,7 @@ periodics:
       - --env=CL2_DELETE_TEST_THROUGHPUT=30
       - --env=CL2_ENABLE_HUGE_SERVICES=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --test=false
