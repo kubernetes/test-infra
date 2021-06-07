@@ -391,6 +391,11 @@ def build_test(cloud='aws',
     if cloud == 'aws' and k8s_version in ('stable', '1.21') and skip_regex:
         skip_regex += r'|Invalid.AWS.KMS.key'
 
+    # TODO(rifelpet): Remove once volume limits tests have been fixed
+    # https://github.com/kubernetes/kubernetes/issues/79660#issuecomment-854884112
+    if cloud == 'aws' and k8s_version in ('latest', '1.22') and skip_regex:
+        skip_regex += r'|Volume.limits.should.verify.that.all.nodes.have.volume.limits'
+
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud

@@ -40,7 +40,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -106,7 +106,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -172,7 +172,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -434,7 +434,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -769,7 +769,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -834,7 +834,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
