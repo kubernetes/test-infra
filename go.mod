@@ -25,7 +25,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.1
 	github.com/Azure/go-autorest/autorest/adal v0.9.5
-	github.com/GoogleCloudPlatform/testgrid v0.0.58
+	github.com/GoogleCloudPlatform/testgrid v0.0.68
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/andygrunwald/go-jira v1.13.0
@@ -49,7 +49,7 @@ require (
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.5.2
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/gofuzz v1.1.0
+	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/mux v1.7.4

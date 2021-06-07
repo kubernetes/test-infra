@@ -138,7 +138,7 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
+	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.ProwJobFile), true, output)
 }
 
 func (gr *gcsReporter) GetName() string {

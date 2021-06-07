@@ -339,6 +339,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-alert-stale-results-hours": "24",
 				"testgrid-days-of-results":           "30",
 				"testgrid-in-cell-metric":            "haunted-house",
+				"testgrid-disable-prowjob-analysis":  "true",
 			},
 			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
@@ -350,6 +351,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						AlertStaleResultsHours: 24,
 						DaysOfResults:          30,
 						ShortTextMetric:        "haunted-house",
+						DisableProwjobAnalysis: true,
 					},
 				},
 				Dashboards: []*config.Dashboard{

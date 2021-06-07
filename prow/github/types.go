@@ -215,6 +215,10 @@ const (
 	PullRequestActionLocked PullRequestEventAction = "locked"
 	// PullRequestActionUnlocked means labels were removed
 	PullRequestActionUnlocked PullRequestEventAction = "unlocked"
+	// PullRequestActionAutoMergeEnabled means auto merge was enabled
+	PullRequestActionAutoMergeEnabled PullRequestEventAction = "auto_merge_enabled"
+	// PullRequestActionAutoMergeDisabled means auto merge was disabled
+	PullRequestActionAutoMergeDisabled PullRequestEventAction = "auto_merge_disabled"
 )
 
 // GenericEvent is a lightweight struct containing just Sender, Organization and Repo as

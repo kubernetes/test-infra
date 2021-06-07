@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
       command:
       - runner.sh
       - kubetest
@@ -49,7 +49,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.18-informing, sig-windows-1.18-release
+    testgrid-dashboards: sig-release-1.18-informing, sig-windows-signal, sig-windows-1.18-release
     testgrid-tab-name: aks-engine-windows-dockershim-1.18
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s 1.18 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -72,7 +72,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.18
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
       command:
       - runner.sh
       - kubetest

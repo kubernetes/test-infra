@@ -121,16 +121,15 @@ func TestOptions(t *testing.T) {
 			args: []string{"--config-path=foo", "--fix-team-members"},
 		},
 		{
-			name: "allow disabled throttle",
+			name: "allow legacy disabled throttle",
 			args: []string{"--config-path=foo", "--tokens=0"},
 			expected: &options{
-				config:        "foo",
-				minAdmins:     defaultMinAdmins,
-				requireSelf:   true,
-				maximumDelta:  defaultDelta,
-				tokensPerHour: 0,
-				tokenBurst:    defaultBurst,
-				logLevel:      "info",
+				config:       "foo",
+				minAdmins:    defaultMinAdmins,
+				requireSelf:  true,
+				maximumDelta: defaultDelta,
+				tokenBurst:   defaultBurst,
+				logLevel:     "info",
 			},
 		},
 		{
@@ -180,18 +179,20 @@ func TestOptions(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		var actual options
-		err := actual.parseArgs(flags, tc.args)
-		actual.github = flagutil.GitHubOptions{}
-		switch {
-		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to return an error", tc.name)
-		case err != nil && tc.expected != nil:
-			t.Errorf("%s: unexpected error: %v", tc.name, err)
-		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: got incorrect options: %v", tc.name, cmp.Diff(actual, *tc.expected))
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actual options
+			err := actual.parseArgs(flags, tc.args)
+			actual.github = flagutil.GitHubOptions{}
+			switch {
+			case err == nil && tc.expected == nil:
+				t.Errorf("%s: failed to return an error", tc.name)
+			case err != nil && tc.expected != nil:
+				t.Errorf("%s: unexpected error: %v", tc.name, err)
+			case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
+				t.Errorf("%s: got incorrect options: %v", tc.name, cmp.Diff(actual, *tc.expected, cmp.AllowUnexported(options{}, flagutil.Strings{}, flagutil.GitHubOptions{})))
+			}
+		})
 	}
 }
 
@@ -2342,19 +2343,25 @@ func TestConfigureTeamRepos(t *testing.T) {
 			teamName:    "team",
 			team: org.Team{
 				Repos: map[string]github.RepoPermissionLevel{
-					"read":  github.Read,
-					"write": github.Write,
-					"admin": github.Admin,
+					"read":     github.Read,
+					"triage":   github.Triage,
+					"write":    github.Write,
+					"maintain": github.Maintain,
+					"admin":    github.Admin,
 				},
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "triage", Permissions: github.RepoPermissions{Pull: true, Triage: true}},
 				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
+				{Name: "maintain", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "triage", Permissions: github.RepoPermissions{Pull: true, Triage: true}},
 				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
+				{Name: "maintain", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
 			}},
 		},

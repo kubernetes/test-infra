@@ -6,7 +6,8 @@ presubmits:
     path_alias: "sigs.k8s.io/release-utils"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.16
+        imagePullPolicy: Always
         command:
         - go
         args:
@@ -24,7 +25,8 @@ presubmits:
     path_alias: "sigs.k8s.io/release-utils"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.16
+        imagePullPolicy: Always
         command:
         - go
         args:

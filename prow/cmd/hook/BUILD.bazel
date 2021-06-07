@@ -31,7 +31,9 @@ go_test(
     deps = [
         "//prow/flagutil:go_default_library",
         "//prow/flagutil/config:go_default_library",
+        "//prow/flagutil/plugins:go_default_library",
         "//prow/plugins:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
@@ -47,6 +49,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/flagutil/config:go_default_library",
+        "//prow/flagutil/plugins:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/githubeventserver:go_default_library",
         "//prow/hook:go_default_library",

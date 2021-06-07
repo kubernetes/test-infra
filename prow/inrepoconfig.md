@@ -25,11 +25,11 @@ in_repo_config:
 Additionally, `Deck` must be configured with a github token if that is not already the case. To do
 so, the `--github-token-path=` flag must be set and point to a valid token file that has permissions
 to read all your repositories. Also, in order for Deck to serve content from storage locations not
-defined in the default locations or centrally-defined jobs, those buckets must be listed 
+defined in the default locations or centrally-defined jobs, those buckets must be listed
 in `deck.additional_allowed_buckets`.
 
 Afterwards, you need to add a config verification job to make sure people people get told about
-mistakes in their `.prow.yaml` rather than the PR being stuck. It makes sense to define this
+mistakes in their in repo config rather than the PR being stuck. It makes sense to define this
 job in the central repository rather than the code repository, so the `checkconfig` version used
 stays in sync with the Prow version used. It looks like this:
 
@@ -86,5 +86,12 @@ postsubmits:
       - config/jobs
       - config/prow/cluster
 ```
+
+It is possible also to use multiple config files with this same format under a `.prow`
+directory in the root of your repo. All the YAML files under the `.prow` directory will
+be read and merged together recursively.This will make it easier to handle big repos with
+a large number of jobs and will allow to have fine grained OWNERS control on them.
+
+`.prow` directory and `.prow.yaml` file are mutually exclusive, when both are present `.prow` directory is preferred.
 
 For a more detailed documentation of possible configuration parameters for jobs, please check the [job documentation](/prow/jobs.md)

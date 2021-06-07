@@ -1,0 +1,30 @@
+periodics:
+  - interval: 6h
+    name: check-dependency-stats-periodical
+    decorate: true
+    decoration_config:
+      timeout: 5m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: golang
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo; \
+          export PATH=$PATH:$GOPATH/bin; \
+          mkdir -p "${ARTIFACTS}"; \
+          pushd "$ARTIFACTS"; \
+          go install github.com/kubernetes-sigs/depstat@latest; \
+          popd; \
+          depstat stats --json | tee "${ARTIFACTS}/stats-base.json";
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-testing-misc
+      description: Generates dependency statistics by running depstat for base periodically

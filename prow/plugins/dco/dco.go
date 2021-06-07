@@ -114,6 +114,7 @@ type gitHubClient interface {
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type commentPruner interface {

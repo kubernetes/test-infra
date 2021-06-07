@@ -873,7 +873,7 @@ plank:
     job_url_template: ' '
 
     # PodPendingTimeout is after how long the controller will perform a garbage
-    # collection on pending pods. Defaults to one day.
+    # collection on pending pods. Defaults to 10 minutes.
     pod_pending_timeout: 0s
 
     # PodRunningTimeout is after how long the controller will abort a prowjob pod
@@ -881,7 +881,7 @@ plank:
     pod_running_timeout: 0s
 
     # PodUnscheduledTimeout is after how long the controller will abort a prowjob
-    # stuck in an unscheduled state. Defaults to one day.
+    # stuck in an unscheduled state. Defaults to 5 minutes.
     pod_unscheduled_timeout: 0s
 
     # ReportTemplateString compiles into ReportTemplate at load time.
@@ -948,6 +948,7 @@ sinker:
 slack_reporter_configs:
     "":
         channel: ' '
+        host: ' '
         job_states_to_report:
           - ""
         job_types_to_report:

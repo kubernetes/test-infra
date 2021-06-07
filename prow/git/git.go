@@ -164,13 +164,13 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
 	}
 	cache := filepath.Join(c.dir, repo) + ".git"
+	remote := fmt.Sprintf("%s/%s", base, repo)
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
 		c.logger.Infof("Cloning %s for the first time.", repo)
 		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		remote := fmt.Sprintf("%s/%s", base, repo)
 		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
@@ -178,6 +178,10 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		return nil, err
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
+		// Update remote url, if we use apps auth the token changes every hour
+		if b, err := retryCmd(c.logger, cache, c.git, "remote", "set-url", "origin", remote); err != nil {
+			return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
+		}
 		c.logger.Infof("Fetching %s.", repo)
 		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))

@@ -47,9 +47,13 @@ type options struct {
 	config             configflagutil.ConfigOptions
 	confirm            bool
 	verifyRestrictions bool
-	tokens             int
-	tokenBurst         int
-	github             flagutil.GitHubOptions
+
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
+	tokens     int
+	tokenBurst int
+
+	github           flagutil.GitHubOptions
+	githubEnablement flagutil.GitHubEnablementOptions
 }
 
 func (o *options) Validate() error {
@@ -57,8 +61,27 @@ func (o *options) Validate() error {
 		return err
 	}
 
+	if err := o.githubEnablement.Validate(!o.confirm); err != nil {
+		return err
+	}
+
 	if err := o.config.Validate(!o.confirm); err != nil {
 		return err
+	}
+
+	if o.tokens != defaultTokens {
+		if o.github.ThrottleHourlyTokens != defaultTokens {
+			return fmt.Errorf("--tokens cannot be specified together with --github-hourly-tokens: use just the latter")
+		}
+		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
+		o.github.ThrottleHourlyTokens = o.tokens
+	}
+	if o.tokenBurst != defaultBurst {
+		if o.github.ThrottleAllowBurst != defaultBurst {
+			return fmt.Errorf("--token-burst cannot be specified together with --github-allowed-burst: use just the latter")
+		}
+		logrus.Warn("--token-burst is deprecated: use --github-allowed-burst instead")
+		o.github.ThrottleAllowBurst = o.tokenBurst
 	}
 
 	return nil
@@ -69,10 +92,11 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
-	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable) DEPRECATED: use --github-hourly-tokens")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	o.config.AddFlags(fs)
-	o.github.AddFlags(fs)
+	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
+	o.githubEnablement.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -121,7 +145,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(o.tokens, o.tokenBurst)
 
 	p := protector{
 		client:             githubClient,
@@ -131,6 +154,7 @@ func main() {
 		completedRepos:     make(map[string]bool),
 		done:               make(chan []error),
 		verifyRestrictions: o.verifyRestrictions,
+		enabled:            o.githubEnablement.EnablementChecker(),
 	}
 
 	go p.configureBranches()
@@ -164,6 +188,7 @@ type protector struct {
 	completedRepos     map[string]bool
 	done               chan []error
 	verifyRestrictions bool
+	enabled            func(org, repo string) bool
 }
 
 func (p *protector) configureBranches() {
@@ -192,6 +217,9 @@ func (p *protector) protect() {
 
 	// Scan the branch-protection configuration
 	for orgName := range bp.Orgs {
+		if !p.enabled(orgName, "") {
+			continue
+		}
 		org := bp.GetOrg(orgName)
 		if err := p.UpdateOrg(orgName, *org); err != nil {
 			p.errors.add(fmt.Errorf("update %s: %v", orgName, err))
@@ -218,6 +246,9 @@ func (p *protector) protect() {
 		}
 		orgName := parts[0]
 		repoName := parts[1]
+		if !p.enabled(orgName, repoName) {
+			continue
+		}
 		repo := bp.GetOrg(orgName).GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
 			p.errors.add(fmt.Errorf("update %s/%s: %v", orgName, repoName, err))
@@ -258,6 +289,9 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 
 	var errs []error
 	for _, repoName := range repos {
+		if !p.enabled(orgName, repoName) {
+			continue
+		}
 		repo := org.GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
 			errs = append(errs, fmt.Errorf("update %s: %v", repoName, err))

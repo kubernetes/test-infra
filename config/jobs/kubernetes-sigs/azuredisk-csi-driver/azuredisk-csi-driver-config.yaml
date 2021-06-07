@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         args:
@@ -70,30 +70,6 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-sanity
       description: "Run sanity tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-sanity-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - sanity-test-v2
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-sanity-v2
-      description: "Run sanity tests for Azure Disk CSI V2 driver."
-      testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
     decorate: true
     always_run: true
@@ -105,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         args:
@@ -117,30 +93,6 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-integration
       description: "Run integration tests for Azure Disk CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-integration-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - integration-test-v2
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-integration-v2
-      description: "Run integration tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
     decorate: true
@@ -160,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -175,7 +127,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.18
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -190,57 +142,6 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-single-az-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: ENABLE_TOPOLOGY
-            value: "false"
-          - name: BUILD_V2
-            value: "true"
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az-v2
-      description: "Run E2E tests on a single-az cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
     decorate: true
@@ -260,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -276,7 +177,7 @@ presubmits:
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.18
-        - --aksengine-location=eastus2
+        - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -290,58 +191,6 @@ presubmits:
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az
-      description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-multi-az-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
-        - --aksengine-location=eastus2
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: ENABLE_TOPOLOGY
-            value: "true"
-          - name: BUILD_V2
-            value: "true"
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az-v2
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration
@@ -362,7 +211,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -395,59 +244,6 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration
       description: "Run E2E tests on a cluster for Azure Disk CSI driver with CSI migration feature enabled on Linux nodes."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-migration-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.18
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-          - name: TEST_MIGRATION
-            value: "true"
-          - name: BUILD_V2
-            value: "true"
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-v2
-      description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Linux nodes."
-      testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-windows
     decorate: true
     always_run: true
@@ -468,7 +264,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -503,63 +299,6 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-windows
       description: "Run E2E tests on a cluster for Azure Disk CSI driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-migration-windows-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-azure-windows: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.19
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration-windows.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-          - name: TEST_MIGRATION
-            value: "true"
-          - name: TEST_WINDOWS
-            value: "true"
-          - name: BUILD_V2
-            value: "true"
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration-windows-v2
-      description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Windows nodes."
-      testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows
     decorate: true
     always_run: true
@@ -580,7 +319,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -613,61 +352,6 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows
       description: "Run E2E tests on a Windows cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e-windows-v2
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-azure-windows: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.19
-        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_csi_proxy.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: TEST_WINDOWS
-            value: "true"
-          - name: BUILD_V2
-            value: "true"
-    annotations:
-      testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-v2
-      description: "Run E2E tests on a Windows cluster for Azure Disk CSI V2 driver."
-      testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e
     decorate: true
     always_run: false
@@ -687,7 +371,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -739,7 +423,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -784,7 +468,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         args:
@@ -814,7 +498,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -867,7 +551,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest
@@ -882,10 +566,11 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.17
+        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-location=westeurope
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
         securityContext:
@@ -902,7 +587,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-containerd
     decorate: true
-    always_run: false
+    always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -920,7 +605,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - kubetest

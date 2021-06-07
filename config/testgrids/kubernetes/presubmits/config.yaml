@@ -56,6 +56,9 @@ dashboards:
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd
+    test_group_name: pull-kubernetes-node-e2e-containerd
+    base_options: width=10
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10
@@ -151,6 +154,8 @@ dashboards:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: width=10
+  - name: pull-kubernetes-node-e2e
+    test_group_name: pull-kubernetes-node-e2e
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance

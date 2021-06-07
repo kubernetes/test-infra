@@ -19,6 +19,7 @@ package plugin
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -43,12 +44,12 @@ var sleep = time.Sleep
 
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	CreateComment(org, repo string, number int, comment string) error
+	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
 	BotUserChecker() (func(candidate string) bool, error)
-	AddLabel(org, repo string, number int, label string) error
-	RemoveLabel(org, repo string, number int, label string) error
+	AddLabelWithContext(ctx context.Context, org, repo string, number int, label string) error
+	RemoveLabelWithContext(ctx context.Context, org, repo string, number int, label string) error
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
-	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
@@ -120,7 +121,7 @@ func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
 	}
 	hasLabel := github.HasLabel(labels.NeedsRebase, issueLabels)
 
-	return takeAction(log, ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
+	return takeAction(ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
 const searchQueryPrefix = "archived:false is:pr is:open"
@@ -179,7 +180,6 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		})
 		l.Debug("Processing PR")
 		err := takeAction(
-			l,
 			ghc,
 			org,
 			repo,
@@ -198,24 +198,36 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 // takeAction adds or removes the "needs-rebase" label based on the current
 // state of the PR (hasLabel and mergeable). It also handles adding and
 // removing GitHub comments notifying the PR author that a rebase is needed.
-func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
+func takeAction(ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	// Swallow context.DeadlineExceeded errors, they are expected to happen when we get throttled
+	if err := takeActionWithContext(ctx, ghc, org, repo, num, author, hasLabel, mergeable); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+	return nil
+}
+
+func takeActionWithContext(ctx context.Context, ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
 	if !mergeable && !hasLabel {
-		if err := ghc.AddLabel(org, repo, num, labels.NeedsRebase); err != nil {
-			log.WithError(err).Errorf("Failed to add %q label.", labels.NeedsRebase)
+		if err := ghc.AddLabelWithContext(ctx, org, repo, num, labels.NeedsRebase); err != nil {
+			return fmt.Errorf("failed to add %q label: %w", labels.NeedsRebase, err)
 		}
 		msg := plugins.FormatSimpleResponse(author, needsRebaseMessage)
-		return ghc.CreateComment(org, repo, num, msg)
+		return ghc.CreateCommentWithContext(ctx, org, repo, num, msg)
 	} else if mergeable && hasLabel {
 		// remove label and prune comment
-		if err := ghc.RemoveLabel(org, repo, num, labels.NeedsRebase); err != nil {
-			log.WithError(err).Errorf("Failed to remove %q label.", labels.NeedsRebase)
+		if err := ghc.RemoveLabelWithContext(ctx, org, repo, num, labels.NeedsRebase); err != nil {
+			return fmt.Errorf("failed to remove %q label: %w", labels.NeedsRebase, err)
 		}
 		botUserChecker, err := ghc.BotUserChecker()
 		if err != nil {
 			return err
 		}
-		return ghc.DeleteStaleComments(org, repo, num, nil, shouldPrune(botUserChecker))
+		return ghc.DeleteStaleCommentsWithContext(ctx, org, repo, num, nil, shouldPrune(botUserChecker))
 	}
+
 	return nil
 }
 

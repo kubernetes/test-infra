@@ -47,7 +47,7 @@ type gerritClient interface {
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	Account(instance string) *gerrit.AccountInfo
+	Account(instance string) (*gerrit.AccountInfo, error)
 }
 
 // Controller manages gerrit changes.
@@ -255,9 +255,10 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
-		account := c.gc.Account(instance)
-		if account == nil {
-			return errors.New("account not found") // Should not happen, since this means auth failed
+		account, err := c.gc.Account(instance)
+		if err != nil {
+			// This would happen if authenticateOnce hasn't done register this instance yet
+			return fmt.Errorf("account not found for %q: %v", instance, err)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]

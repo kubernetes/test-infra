@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-master-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-21-latest
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "8"
@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.21-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-20-1-21
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.21
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.20-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-19-1-20
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.20
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.20
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.19-informing
     testgrid-tab-name: kubeadm-kinder-upgrade-1-18-1-19
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -148,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.19
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

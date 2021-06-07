@@ -3,6 +3,14 @@
 postsubmits:
   kubernetes-csi/csi-driver-host-path:
     - name: post-csi-driver-host-path-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -32,6 +40,14 @@ postsubmits:
               - .
   kubernetes-csi/csi-driver-smb:
     - name: post-csi-driver-smb-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -61,6 +77,14 @@ postsubmits:
               - .
   kubernetes-csi/csi-test:
     - name: post-csi-test-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -90,6 +114,14 @@ postsubmits:
               - .
   kubernetes-csi/external-attacher:
     - name: post-external-attacher-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -119,6 +151,14 @@ postsubmits:
               - .
   kubernetes-csi/external-health-monitor:
     - name: post-external-health-monitor-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -148,6 +188,14 @@ postsubmits:
               - .
   kubernetes-csi/external-provisioner:
     - name: post-external-provisioner-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -177,6 +225,14 @@ postsubmits:
               - .
   kubernetes-csi/external-resizer:
     - name: post-external-resizer-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -206,6 +262,14 @@ postsubmits:
               - .
   kubernetes-csi/external-snapshotter:
     - name: post-external-snapshotter-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -235,6 +299,14 @@ postsubmits:
               - .
   kubernetes-csi/livenessprobe:
     - name: post-livenessprobe-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -264,6 +336,14 @@ postsubmits:
               - .
   kubernetes-csi/node-driver-registrar:
     - name: post-node-driver-registrar-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -293,6 +373,14 @@ postsubmits:
               - .
   kubernetes-csi/csi-driver-nfs:
     - name: post-csi-driver-nfs-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -322,6 +410,14 @@ postsubmits:
               - .
   kubernetes-csi/csi-driver-iscsi:
     - name: post-csi-driver-iscsi-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -351,6 +447,14 @@ postsubmits:
               - .
   kubernetes-sigs/sig-storage-local-static-provisioner:
     - name: post-sig-storage-local-static-provisioner-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -380,6 +484,14 @@ postsubmits:
               - .
   kubernetes-sigs/nfs-ganesha-server-and-external-provisioner:
     - name: post-nfs-ganesha-server-and-external-provisioner-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -409,6 +521,14 @@ postsubmits:
               - .
   kubernetes-sigs/nfs-subdir-external-provisioner:
     - name: post-nfs-subdir-external-provisioner-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -438,6 +558,14 @@ postsubmits:
               - .
   kubernetes-csi/csi-proxy:
     - name: post-csi-proxy-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -467,6 +595,14 @@ postsubmits:
               - .
   kubernetes-sigs/container-object-storage-interface-controller:
     - name: post-container-object-storage-interface-controller-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -496,6 +632,14 @@ postsubmits:
               - .
   kubernetes-sigs/container-object-storage-interface-provisioner-sidecar:
     - name: post-container-object-storage-interface-provisioner-sidecar-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -525,6 +669,14 @@ postsubmits:
               - .
   kubernetes-sigs/container-object-storage-interface-csi-adapter:
     - name: post-container-object-storage-interface-csi-adapter-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build

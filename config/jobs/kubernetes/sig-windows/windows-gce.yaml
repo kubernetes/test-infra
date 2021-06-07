@@ -8,6 +8,8 @@ presets:
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
 - labels:
     preset-e2e-gce-windows: "true"
   env:
@@ -22,6 +24,8 @@ presets:
     value: "containerd"
   - name: PREPULL_TIMEOUT
     value: "30m"
+  - name: WINDOWS_ENABLE_DSR
+    value: "true"
 - labels:
     preset-load-gce-windows: "true"
   env:
@@ -93,11 +97,11 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-signal
+    testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master
     description: Runs tests on a Kubernetes cluster with Windows 2019 nodes on GCE
 
@@ -141,13 +145,15 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win20h2"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-signal, sig-windows-master-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: gce-windows-20h2-master
     description: Runs tests on a Kubernetes cluster with Windows 20H2 nodes on GCE
 
@@ -191,13 +197,15 @@ periodics:
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2004"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-release-master-informing, sig-windows-master-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: gce-windows-2004-master
     description: Runs tests on a Kubernetes cluster with Windows 2004 nodes on GCE
 
@@ -245,7 +253,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -293,7 +301,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -341,7 +349,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
@@ -390,7 +398,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-1.21
@@ -423,7 +431,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "k8s.gcr.io/pause:3.4.1"
@@ -477,7 +485,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
@@ -563,7 +571,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

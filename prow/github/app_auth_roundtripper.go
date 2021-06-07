@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"context"
 	"crypto/rsa"
 	"fmt"
 	"net/http"
@@ -101,11 +102,16 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 	return nil
 }
 
-func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
+func extractOrgFromContext(ctx context.Context) string {
 	var org string
-	if v := r.Context().Value(githubOrgHeaderKey); v != nil {
+	if v := ctx.Value(githubOrgHeaderKey); v != nil {
 		org = v.(string)
 	}
+	return org
+}
+
+func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
+	org := extractOrgFromContext(r.Context())
 
 	token, err := arr.installationTokenFor(org)
 	if err != nil {

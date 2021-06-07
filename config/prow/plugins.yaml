@@ -256,6 +256,12 @@ slack:
     exempt_users:
     - k8s-publishing-bot
   - repos:
+    - kubernetes/pod-security-admission
+    channels:
+    - sig-auth
+    exempt_users:
+    - k8s-publishing-bot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
@@ -320,7 +326,8 @@ milestone_applier:
   kubernetes/k8s.io:
     main: v1.22
   kubernetes/kops:
-    master: v1.21
+    master: v1.22
+    release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
     release-1.18: v1.18
@@ -895,6 +902,10 @@ plugins:
     - wip
     - yuks
 
+  kubernetes-security/cvelist-public:
+    plugins:
+    - trigger
+
   kubernetes-sigs:
     plugins:
     - approve
@@ -1031,6 +1042,10 @@ plugins:
   kubernetes-sigs/kubebuilder:
     plugins:
     - override
+
+  kubernetes-sigs/hierarchical-namespaces:
+    plugins:
+    - milestone
 
   containerd/cri:
     plugins:

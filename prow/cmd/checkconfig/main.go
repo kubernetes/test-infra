@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -42,6 +41,7 @@ import (
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/kube"
@@ -63,8 +63,8 @@ import (
 )
 
 type options struct {
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -109,6 +109,9 @@ const (
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
 	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
+
+	defaultHourlyTokens = 3000
+	defaultAllowedBurst = 100
 )
 
 var defaultWarnings = []string{
@@ -134,6 +137,8 @@ var expensiveWarnings = []string{
 	verifyOwnersFilePresence,
 }
 
+var throttlerDefaults = flagutil.ThrottlerDefaults(defaultHourlyTokens, defaultAllowedBurst)
+
 func getAllWarnings() []string {
 	var all []string
 	all = append(all, defaultWarnings...)
@@ -144,8 +149,10 @@ func getAllWarnings() []string {
 
 func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
-	if err := o.config.Validate(false); err != nil {
-		return err
+	for _, validate := range []interface{ Validate(bool) error }{&o.config, &o.pluginsConfig} {
+		if err := validate.Validate(false); err != nil {
+			return err
+		}
 	}
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
@@ -181,16 +188,17 @@ func parseOptions() (options, error) {
 }
 
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
-	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	o.pluginsConfig.CheckUnknownPlugins = true
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlags(flag)
+	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
+	o.pluginsConfig.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -244,10 +252,10 @@ func validate(o options) error {
 		}
 	}
 
-	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
-	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err := o.pluginsConfig.PluginAgent()
+		if err != nil {
 			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
@@ -271,7 +279,6 @@ func validate(o options) error {
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
-		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
 		// 404s are expected to happen, no point in retrying
 		githubClient.SetMax404Retries(0)
 
@@ -343,11 +350,11 @@ func validate(o options) error {
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
+		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginsConfig.PluginConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -368,8 +375,8 @@ func validate(o options) error {
 	}
 
 	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
-		for _, supplementalProwConfigDir := range o.config.SupplementalProwConfigDirs.Strings() {
-			errs = append(errs, validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, os.DirFS("./")))
+		if err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(os.DirFS("./"), o.config.SupplementalProwConfigDirs.Strings(), o.pluginsConfig.SupplementalPluginsConfigDirs.Strings(), o.config.SupplementalProwConfigsFileNameSuffix, o.pluginsConfig.SupplementalPluginsConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
@@ -1119,7 +1126,24 @@ func validateCluster(cfg *config.Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS) error {
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filesystem fs.FS, supplementalProwConfigDirs, supplementalPluginsConfigDirs []string, supplementalProwConfigsFileNameSuffix, supplementalPluginsConfigFileNameSuffix string) error {
+	var errs []error
+
+	for _, supplementalProwConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, filesystem, func() hierarchicalConfig { return &config.Config{} }, supplementalProwConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, supplementalPluginsConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalPluginsConfigDir, filesystem, func() hierarchicalConfig { return &plugins.Configuration{} }, supplementalPluginsConfigFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, target func() hierarchicalConfig, filesuffix string) error {
 	var errs []error
 	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -1139,7 +1163,7 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 
 		fs.ReadFile(filesystem, path)
 
-		if d.IsDir() || (filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml") {
+		if d.IsDir() || !strings.HasSuffix(path, filesuffix) {
 			return nil
 		}
 
@@ -1163,18 +1187,13 @@ func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(root string, file
 			return nil
 		}
 
-		rawCfg, err := fs.ReadFile(filesystem, path)
+		cfg := target()
+		isGlobal, targetedOrgs, targetedRepos, err := getSupplementalConfigScope(path, filesystem, cfg)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
-			return nil
-		}
-		var prowCfg config.ProwConfig
-		if err := yaml.Unmarshal(rawCfg, &prowCfg); err != nil {
-			errs = append(errs, fmt.Errorf("failed to deserialize config at %s: %w", path, err))
+			errs = append(errs, err)
 			return nil
 		}
 
-		isGlobal, targetedOrgs, targetedRepos := prowCfg.HasConfigFor()
 		if isOrgConfig {
 			expectedTargetOrg := pathElements[0]
 			if !isGlobal && len(targetedOrgs) == 1 && targetedOrgs.Has(expectedTargetOrg) && len(targetedRepos) == 0 {
@@ -1282,4 +1301,21 @@ func prefixWithAndIfNeeded(s string, needsAnd bool) string {
 		return " and" + s
 	}
 	return s
+}
+
+type hierarchicalConfig interface {
+	HasConfigFor() (bool, sets.String, sets.String)
+}
+
+func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
+	data, err := fs.ReadFile(filesystem, path)
+	if err != nil {
+		return false, nil, nil, fmt.Errorf("failed to read %s: %w", path, err)
+	}
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+		return false, nil, nil, fmt.Errorf("failed to unmarshal %s into %T: %w", path, cfg, err)
+	}
+
+	global, orgs, repos = cfg.HasConfigFor()
+	return global, orgs, repos, nil
 }

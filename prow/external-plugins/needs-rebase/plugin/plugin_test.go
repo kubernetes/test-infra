@@ -77,7 +77,7 @@ func (f *fghc) GetIssueLabels(org, repo string, number int) ([]github.Label, err
 	return f.initialLabels, nil
 }
 
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
+func (f *fghc) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
 	f.commentCreated[testKey(org, repo, number)] = true
 	return nil
 }
@@ -86,13 +86,13 @@ func (f *fghc) BotUserChecker() (func(candidate string) bool, error) {
 	return func(candidate string) bool { return candidate == "k8s-ci-robot" }, nil
 }
 
-func (f *fghc) AddLabel(org, repo string, number int, label string) error {
+func (f *fghc) AddLabelWithContext(_ context.Context, org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
 	f.IssueLabelsAdded[key] = append(f.IssueLabelsAdded[key], label)
 	return nil
 }
 
-func (f *fghc) RemoveLabel(org, repo string, number int, label string) error {
+func (f *fghc) RemoveLabelWithContext(_ context.Context, org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
 	f.IssueLabelsRemoved[key] = append(f.IssueLabelsRemoved[key], label)
 	return nil
@@ -102,7 +102,7 @@ func (f *fghc) IsMergeable(org, repo string, number int, sha string) (bool, erro
 	return f.mergeable, nil
 }
 
-func (f *fghc) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+func (f *fghc) DeleteStaleCommentsWithContext(_ context.Context, org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
 	f.commentDeleted[testKey(org, repo, number)] = true
 	return nil
 }

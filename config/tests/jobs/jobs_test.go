@@ -354,13 +354,10 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
 	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
-	const kubekinsImage = "gcr.io/k8s-testimages/kubekins-e2e"
 
 	for _, c := range spec.Containers {
-		if !strings.HasPrefix(c.Image, imagePushingImage+":") &&
-			!strings.HasPrefix(c.Image, kubekinsImage+":") {
-			return fmt.Errorf("must use a pinned version of %s or %s",
-				imagePushingImage, kubekinsImage)
+		if !strings.HasPrefix(c.Image, imagePushingImage+":") {
+			return fmt.Errorf("must use a pinned version of %s", imagePushingImage)
 		}
 	}
 
@@ -524,47 +521,6 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 			if isSecretUsed(secret, job) {
 				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
 			}
-		}
-	}
-}
-
-// Unit test jobs outside kubernetes-security do not use the security cluster
-// and that jobs inside kubernetes-security DO
-func TestConfigSecurityClusterRestricted(t *testing.T) {
-	for repo, jobs := range c.PresubmitsStatic {
-		if strings.HasPrefix(repo, "kubernetes-security/") {
-			for _, job := range jobs {
-				if job.Agent != "jenkins" && job.Cluster != "security" {
-					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
-				}
-			}
-		} else {
-			for _, job := range jobs {
-				if job.Cluster == "security" {
-					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
-				}
-			}
-		}
-	}
-	for repo, jobs := range c.PostsubmitsStatic {
-		if strings.HasPrefix(repo, "kubernetes-security/") {
-			for _, job := range jobs {
-				if job.Agent != "jenkins" && job.Cluster != "security" {
-					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
-				}
-			}
-		} else {
-			for _, job := range jobs {
-				if job.Cluster == "security" {
-					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
-				}
-			}
-		}
-	}
-	// TODO: this will need to be more complex if we ever add k-s periodic
-	for _, job := range c.AllPeriodics() {
-		if job.Cluster == "security" {
-			t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
 		}
 	}
 }

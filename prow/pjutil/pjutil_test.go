@@ -1023,6 +1023,7 @@ func TestJobURL(t *testing.T) {
 func TestCreateRefs(t *testing.T) {
 	pr := github.PullRequest{
 		Number:  42,
+		Title:   "hello world",
 		HTMLURL: "https://github.example.com/kubernetes/Hello-World/pull/42",
 		Head: github.PullRequestBranch{
 			SHA: "123456",
@@ -1054,6 +1055,7 @@ func TestCreateRefs(t *testing.T) {
 				Number:     42,
 				Author:     "ibzib",
 				SHA:        "123456",
+				Title:      "hello world",
 				Link:       "https://github.example.com/kubernetes/Hello-World/pull/42",
 				AuthorLink: "https://github.example.com/ibzib",
 				CommitLink: "https://github.example.com/kubernetes/Hello-World/pull/42/commits/123456",

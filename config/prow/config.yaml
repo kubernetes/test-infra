@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210506-a3602616e2"
-        initupload: "gcr.io/k8s-prow/initupload:v20210506-a3602616e2"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210506-a3602616e2"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210506-a3602616e2"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210607-a3457f6e65"
+        initupload: "gcr.io/k8s-prow/initupload:v20210607-a3457f6e65"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210607-a3457f6e65"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210607-a3457f6e65"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -115,6 +115,8 @@ managed_webhooks:
       token_created_after: 2020-07-24T00:00:00Z
     kubernetes-csi:
       token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-security:
+      token_created_after: 2021-05-19T00:00:00Z
     kubernetes-sigs:
       token_created_after: 2020-08-12T00:00:00Z
     containerd/containerd:
@@ -338,6 +340,11 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        pod-security-admission:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         sample-apiserver:
           restrictions:
             users: []
@@ -504,6 +511,7 @@ tide:
     - kubernetes/mount-utils
     - kubernetes/node-api
     - kubernetes/noderesourcetopology-api
+    - kubernetes/pod-security-admission
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
@@ -583,6 +591,7 @@ tide:
     kubernetes-sigs/minibroker: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
+    kubernetes/ingress-nginx: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -595,10 +604,6 @@ tide:
         repos:
           dashboard:
             from-branch-protection: true
-      kubernetes-sigs:
-        repos:
-          cluster-api-provider-openstack:
-            skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:

@@ -246,7 +246,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		name          string
 		config        func() config.Config
 		pj            *v1.ProwJob
-		expected      string
+		wantHost      string
+		wantChannel   string
 		emptyExpected bool
 	}{
 		{
@@ -254,6 +255,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 			config: func() config.Config {
 				slackCfg := map[string]config.SlackReporter{
 					"*": {
+						Host:    "global-default-host",
 						Channel: "global-default",
 					},
 				}
@@ -263,8 +265,9 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 					},
 				}
 			},
-			pj:       &v1.ProwJob{Spec: v1.ProwJobSpec{}},
-			expected: "global-default",
+			pj:          &v1.ProwJob{Spec: v1.ProwJobSpec{}},
+			wantHost:    "global-default-host",
+			wantChannel: "global-default",
 		},
 		{
 			name: "org/repo for ref exists in config, use it",
@@ -274,6 +277,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 						Channel: "global-default",
 					},
 					"istio/proxy": {
+						Host:    "global-default-host",
 						Channel: "org-repo-config",
 					},
 				}
@@ -290,7 +294,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 						Repo: "proxy",
 					},
 				}},
-			expected: "org-repo-config",
+			wantHost:    "global-default-host",
+			wantChannel: "org-repo-config",
 		},
 		{
 			name: "org for ref exists in config, use it",
@@ -316,7 +321,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 						Repo: "proxy",
 					},
 				}},
-			expected: "org-config",
+			wantHost:    "*",
+			wantChannel: "org-config",
 		},
 		{
 			name: "org/repo takes precedence over org",
@@ -345,7 +351,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 						Repo: "proxy",
 					},
 				}},
-			expected: "org-repo-config",
+			wantHost:    "*",
+			wantChannel: "org-repo-config",
 		},
 		{
 			name: "Job-level config present, use it",
@@ -376,7 +383,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 					},
 				},
 			},
-			expected: "team-a",
+			wantHost:    "*",
+			wantChannel: "team-a",
 		},
 		{
 			name: "No matching slack config",
@@ -402,6 +410,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 						Repo: "unknownrepo",
 					},
 				}},
+			wantHost:      "*",
 			emptyExpected: true,
 		},
 		{
@@ -426,7 +435,8 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 					}},
 				},
 			},
-			expected: "org-repo-config",
+			wantHost:    "*",
+			wantChannel: "org-repo-config",
 		},
 	}
 
@@ -441,8 +451,12 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 
 			prowSlackCfg := sr.getConfig(tc.pj)
 			jobSlackCfg := jobConfig(tc.pj)
-			if result := channel(prowSlackCfg, jobSlackCfg); result != tc.expected {
-				t.Fatalf("Expected result to be %q, was %q", tc.expected, result)
+			gotHost, gotChannel := channel(prowSlackCfg, jobSlackCfg)
+			if gotHost != tc.wantHost {
+				t.Fatalf("Expected host: %q, got: %q", tc.wantHost, gotHost)
+			}
+			if gotChannel != tc.wantChannel {
+				t.Fatalf("Expected channel: %q, got: %q", tc.wantChannel, gotChannel)
 			}
 		})
 	}
@@ -499,6 +513,7 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 			State: v1.SuccessState,
 		},
 	}
+	fsc := &fakeSlackClient{}
 	sr := slackReporter{
 		config: func(r *v1.Refs) config.SlackReporter {
 			if r.Org == "org" {
@@ -511,13 +526,13 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 			}
 			return config.SlackReporter{}
 		},
-		client: &fakeSlackClient{},
+		clients: map[string]slackClient{defaultHostName: fsc},
 	}
 
 	if _, _, err := sr.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
 		t.Fatalf("reporting failed: %v", err)
 	}
-	if sr.client.(*fakeSlackClient).messages["emercengy"] != "there you go" {
-		t.Errorf("expected the channel 'emergency' to contain message 'there you go' but wasn't the case, all messages: %v", sr.client.(*fakeSlackClient).messages)
+	if fsc.messages["emercengy"] != "there you go" {
+		t.Errorf("expected the channel 'emergency' to contain message 'there you go' but wasn't the case, all messages: %v", fsc.messages)
 	}
 }

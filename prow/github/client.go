@@ -94,10 +94,13 @@ type HookClient interface {
 // CommentClient interface for comment related API actions
 type CommentClient interface {
 	CreateComment(org, repo string, number int, comment string) error
+	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, id int) error
+	DeleteCommentWithContext(ctx context.Context, org, repo string, id int) error
 	EditComment(org, repo string, id int, comment string) error
 	CreateCommentReaction(org, repo string, id int, reaction string) error
 	DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error
+	DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error
 }
 
 // IssueClient interface for issue related API actions
@@ -105,6 +108,7 @@ type IssueClient interface {
 	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
 	CreateIssueReaction(org, repo string, id int, reaction string) error
 	ListIssueComments(org, repo string, number int) ([]IssueComment, error)
+	ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
 	ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error)
 	AssignIssue(org, repo string, number int, logins []string) error
@@ -165,8 +169,11 @@ type RepositoryClient interface {
 	DeleteRepoLabel(org, repo, label string) error
 	GetRepoLabels(org, repo string) ([]Label, error)
 	AddLabel(org, repo string, number int, label string) error
+	AddLabelWithContext(ctx context.Context, org, repo string, number int, label string) error
 	AddLabels(org, repo string, number int, labels ...string) error
+	AddLabelsWithContext(ctx context.Context, org, repo string, number int, labels ...string) error
 	RemoveLabel(org, repo string, number int, label string) error
+	RemoveLabelWithContext(ctx context.Context, org, repo string, number int, label string) error
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
 	IsCollaborator(org, repo, user string) (bool, error)
@@ -250,7 +257,7 @@ type Client interface {
 	ListAppInstallations() ([]AppInstallation, error)
 	GetApp() (*App, error)
 
-	Throttle(hourlyTokens, burst int)
+	Throttle(hourlyTokens, burst int, org ...string) error
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 
@@ -387,14 +394,14 @@ type throttler struct {
 }
 
 type throttlerDelegate struct {
-	ticker   *time.Ticker
-	throttle chan time.Time
+	ticker   map[string]*time.Ticker
+	throttle map[string]chan time.Time
 	http     httpClient
-	slow     int32 // Helps log once when requests start/stop being throttled
+	slow     map[string]*int32 // Helps log once when requests start/stop being throttled
 	lock     sync.RWMutex
 }
 
-func (t *throttler) Wait() {
+func (t *throttler) Wait(ctx context.Context, org string) error {
 	start := time.Now()
 	log := logrus.WithFields(logrus.Fields{"client": "github", "throttled": true})
 	defer func() {
@@ -408,40 +415,65 @@ func (t *throttler) Wait() {
 	}()
 	t.lock.RLock()
 	defer t.lock.RUnlock()
+	if _, found := t.ticker[org]; !found {
+		org = throttlerGlobalKey
+	}
+	if _, hasThrottler := t.ticker[org]; !hasThrottler {
+		return nil
+	}
+
 	var more bool
 	select {
-	case _, more = <-t.throttle:
+	case _, more = <-t.throttle[org]:
 		// If we were throttled and the channel is now somewhat (25%+) full, note this
-		if len(t.throttle) > cap(t.throttle)/4 && atomic.CompareAndSwapInt32(&t.slow, 1, 0) {
+		if len(t.throttle[org]) > cap(t.throttle[org])/4 && atomic.CompareAndSwapInt32(t.slow[org], 1, 0) {
 			log.Debug("Unthrottled")
 		}
 		if !more {
 			log.Debug("Throttle channel closed")
 		}
-		return
+		return nil
 	default: // Do not wait if nothing is available right now
 	}
 	// If this is the first time we are waiting, note this
-	if slow := atomic.SwapInt32(&t.slow, 1); slow == 0 {
+	if slow := atomic.SwapInt32(t.slow[org], 1); slow == 0 {
 		log.Debug("Throttled")
 	}
-	_, more = <-t.throttle
-	if !more {
-		log.Debug("Throttle channel closed")
+
+	select {
+	case _, more = <-t.throttle[org]:
+		if !more {
+			log.Debug("Throttle channel closed")
+		}
+	case <-ctx.Done():
+		return ctx.Err()
 	}
+
+	return nil
 }
 
-func (t *throttler) Refund() {
+const throttlerGlobalKey = "*"
+
+func (t *throttler) Refund(org string) {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
+	if _, found := t.ticker[org]; !found {
+		org = throttlerGlobalKey
+	}
+	if _, hasThrottler := t.ticker[org]; !hasThrottler {
+		return
+	}
 	select {
-	case t.throttle <- time.Now():
+	case t.throttle[org] <- time.Now():
 	default:
 	}
 }
 
 func (t *throttler) Do(req *http.Request) (*http.Response, error) {
-	t.Wait()
+	org := extractOrgFromContext(req.Context())
+	if err := t.Wait(req.Context(), org); err != nil {
+		return nil, err
+	}
 	resp, err := t.http.Do(req)
 	if err == nil {
 		cacheMode := ghcache.CacheResponseMode(resp.Header.Get(ghcache.CacheModeHeader))
@@ -453,7 +485,7 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 				"throttled":  true,
 				"cache-mode": string(cacheMode),
 			}).Debug("Throttler refunding token for free response from ghcache.")
-			t.Refund()
+			t.Refund(org)
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"client":     "github",
@@ -469,7 +501,9 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (t *throttler) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
-	t.Wait()
+	if err := t.Wait(ctx, extractOrgFromContext(ctx)); err != nil {
+		return err
+	}
 	return t.graph.QueryWithGitHubAppsSupport(ctx, q, vars, org)
 }
 
@@ -482,19 +516,28 @@ func (t *throttler) forUserAgent(userAgent string) gqlClient {
 
 // Throttle client to a rate of at most hourlyTokens requests per hour,
 // allowing burst tokens.
-func (c *client) Throttle(hourlyTokens, burst int) {
-	c.log("Throttle", hourlyTokens, burst)
+func (c *client) Throttle(hourlyTokens, burst int, orgs ...string) error {
+	org := "*"
+	if len(orgs) > 0 {
+		if !c.usesAppsAuth {
+			return errors.New("passing an org to the throttler is only allowed when using github apps auth")
+		}
+		if len(orgs) > 1 {
+			return fmt.Errorf("may only pass one org for throttling, got %d", len(orgs))
+		}
+		org = orgs[0]
+	}
+	c.log("Throttle", hourlyTokens, burst, org)
 	c.throttle.lock.Lock()
 	defer c.throttle.lock.Unlock()
-	previouslyThrottled := c.throttle.ticker != nil
 	if hourlyTokens <= 0 || burst <= 0 { // Disable throttle
-		if previouslyThrottled { // Unwrap clients if necessary
-			c.client = c.throttle.http
-			c.gqlc = c.throttle.graph
-			c.throttle.ticker.Stop()
-			c.throttle.ticker = nil
+		if c.throttle.throttle[org] != nil {
+			delete(c.throttle.throttle, org)
+			delete(c.throttle.slow, org)
+			c.throttle.ticker[org].Stop()
+			delete(c.throttle.ticker, org)
 		}
-		return
+		return nil
 	}
 	rate := time.Hour / time.Duration(hourlyTokens)
 	ticker := time.NewTicker(rate)
@@ -511,14 +554,30 @@ func (c *client) Throttle(hourlyTokens, burst int) {
 			}
 		}
 	}()
-	if !previouslyThrottled { // Wrap clients if we haven't already
+	if c.throttle.http == nil { // Wrap clients if we haven't already
 		c.throttle.http = c.client
 		c.throttle.graph = c.gqlc
 		c.client = &c.throttle
 		c.gqlc = &c.throttle
 	}
-	c.throttle.ticker = ticker
-	c.throttle.throttle = throttle
+
+	if c.throttle.ticker == nil {
+		c.throttle.ticker = map[string]*time.Ticker{}
+	}
+	c.throttle.ticker[org] = ticker
+
+	if c.throttle.throttle == nil {
+		c.throttle.throttle = map[string]chan time.Time{}
+	}
+	c.throttle.throttle[org] = throttle
+
+	if c.throttle.slow == nil {
+		c.throttle.slow = map[string]*int32{}
+	}
+	var i int32
+	c.throttle.slow[org] = &i
+
+	return nil
 }
 
 func (c *client) SetMax404Retries(max int) {
@@ -786,7 +845,11 @@ func IsNotFound(err error) bool {
 // Make a request with retries. If ret is not nil, unmarshal the response body
 // into it. Returns an error if the exit code is not one of the provided codes.
 func (c *client) request(r *request, ret interface{}) (int, error) {
-	statusCode, b, err := c.requestRaw(r)
+	return c.requestWithContext(context.Background(), r, ret)
+}
+
+func (c *client) requestWithContext(ctx context.Context, r *request, ret interface{}) (int, error) {
+	statusCode, b, err := c.requestRawWithContext(ctx, r)
 	if err != nil {
 		return statusCode, err
 	}
@@ -801,10 +864,14 @@ func (c *client) request(r *request, ret interface{}) (int, error) {
 // requestRaw makes a request with retries and returns the response body.
 // Returns an error if the exit code is not one of the provided codes.
 func (c *client) requestRaw(r *request) (int, []byte, error) {
+	return c.requestRawWithContext(context.Background(), r)
+}
+
+func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []byte, error) {
 	if c.fake || (c.dry && r.method != http.MethodGet) {
 		return r.exitCodes[0], nil, nil
 	}
-	resp, err := c.requestRetry(r.method, r.path, r.accept, r.org, r.requestBody)
+	resp, err := c.requestRetryWithContext(ctx, r.method, r.path, r.accept, r.org, r.requestBody)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -834,6 +901,10 @@ func (c *client) requestRaw(r *request) (int, []byte, error) {
 // ratelimit exceeded, and retries 404s a couple times.
 // This function closes the response body iff it also returns an error.
 func (c *client) requestRetry(method, path, accept, org string, body interface{}) (*http.Response, error) {
+	return c.requestRetryWithContext(context.Background(), method, path, accept, org, body)
+}
+
+func (c *client) requestRetryWithContext(ctx context.Context, method, path, accept, org string, body interface{}) (*http.Response, error) {
 	var hostIndex int
 	var resp *http.Response
 	var err error
@@ -842,7 +913,7 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 		if retries > 0 && resp != nil {
 			resp.Body.Close()
 		}
-		resp, err = c.doRequest(method, c.bases[hostIndex]+path, accept, org, body)
+		resp, err = c.doRequest(ctx, method, c.bases[hostIndex]+path, accept, org, body)
 		if err == nil {
 			if resp.StatusCode == 404 && retries < c.max404Retries {
 				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
@@ -927,6 +998,9 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 		} else if errors.Is(err, &appsAuthError{}) {
 			c.logger.WithError(err).Error("Stopping retry due to appsAuthError")
 			return resp, err
+
+		} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return resp, err
 		} else {
 			// Connection problem. Try a different host.
 			oldHostIndex := hostIndex
@@ -944,7 +1018,7 @@ func (c *client) requestRetry(method, path, accept, org string, body interface{}
 	return resp, err
 }
 
-func (c *client) doRequest(method, path, accept, org string, body interface{}) (*http.Response, error) {
+func (c *client) doRequest(ctx context.Context, method, path, accept, org string, body interface{}) (*http.Response, error) {
 	var buf io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -954,7 +1028,7 @@ func (c *client) doRequest(method, path, accept, org string, body interface{}) (
 		b = c.censor(b)
 		buf = bytes.NewBuffer(b)
 	}
-	req, err := http.NewRequest(method, path, buf)
+	req, err := http.NewRequestWithContext(ctx, method, path, buf)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
@@ -1581,11 +1655,15 @@ func (c *client) RemoveOrgMembership(org, user string) error {
 //
 // See https://developer.github.com/v3/issues/comments/#create-a-comment
 func (c *client) CreateComment(org, repo string, number int, comment string) error {
+	return c.CreateCommentWithContext(context.Background(), org, repo, number, comment)
+}
+
+func (c *client) CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error {
 	c.log("CreateComment", org, repo, number, comment)
 	ic := IssueComment{
 		Body: comment,
 	}
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number),
 		org:         org,
@@ -1599,8 +1677,12 @@ func (c *client) CreateComment(org, repo string, number int, comment string) err
 //
 // See https://developer.github.com/v3/issues/comments/#delete-a-comment
 func (c *client) DeleteComment(org, repo string, id int) error {
+	return c.DeleteCommentWithContext(context.Background(), org, repo, id)
+}
+
+func (c *client) DeleteCommentWithContext(ctx context.Context, org, repo string, id int) error {
 	c.log("DeleteComment", org, repo, id)
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:    http.MethodDelete,
 		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		org:       org,
@@ -1705,11 +1787,15 @@ func (c *client) CreateIssueReaction(org, repo string, id int, reaction string) 
 // DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
 // function identifies as stale. If 'comments' is nil, the comments will be fetched from GitHub.
 func (c *client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
+	return c.DeleteStaleCommentsWithContext(context.Background(), org, repo, number, comments, isStale)
+}
+
+func (c *client) DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
 	var err error
 	if comments == nil {
-		comments, err = c.ListIssueComments(org, repo, number)
+		comments, err = c.ListIssueCommentsWithContext(ctx, org, repo, number)
 		if err != nil {
-			return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+			return fmt.Errorf("failed to list comments while deleting stale comments. err: %w", err)
 		}
 	}
 	for _, comment := range comments {
@@ -1729,20 +1815,28 @@ func (c *client) DeleteStaleComments(org, repo string, number int, comments []Is
 //
 // Returns an error any call to GitHub or object marshalling fails.
 func (c *client) readPaginatedResults(path, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
+	return c.readPaginatedResultsWithContext(context.Background(), path, accept, org, newObj, accumulate)
+}
+
+func (c *client) readPaginatedResultsWithContext(ctx context.Context, path, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
 	values := url.Values{
 		"per_page": []string{"100"},
 	}
-	return c.readPaginatedResultsWithValues(path, values, accept, org, newObj, accumulate)
+	return c.readPaginatedResultsWithValuesWithContext(ctx, path, values, accept, org, newObj, accumulate)
 }
 
 // readPaginatedResultsWithValues is an override that allows control over the query string.
 func (c *client) readPaginatedResultsWithValues(path string, values url.Values, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
+	return c.readPaginatedResultsWithValuesWithContext(context.Background(), path, values, accept, org, newObj, accumulate)
+}
+
+func (c *client) readPaginatedResultsWithValuesWithContext(ctx context.Context, path string, values url.Values, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
 	pagedPath := path
 	if len(values) > 0 {
 		pagedPath += "?" + values.Encode()
 	}
 	for {
-		resp, err := c.requestRetry(http.MethodGet, pagedPath, accept, org, nil)
+		resp, err := c.requestRetryWithContext(ctx, http.MethodGet, pagedPath, accept, org, nil)
 		if err != nil {
 			return err
 		}
@@ -1796,13 +1890,18 @@ func (c *client) readPaginatedResultsWithValues(path string, values url.Values, 
 //
 // See https://developer.github.com/v3/issues/comments/#list-comments-on-an-issue
 func (c *client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {
+	return c.ListIssueCommentsWithContext(context.Background(), org, repo, number)
+}
+
+func (c *client) ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]IssueComment, error) {
 	c.log("ListIssueComments", org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
 	var comments []IssueComment
-	err := c.readPaginatedResults(
+	err := c.readPaginatedResultsWithContext(
+		ctx,
 		path,
 		acceptNone,
 		org,
@@ -2583,17 +2682,25 @@ func (c *client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
 //
 // See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *client) AddLabel(org, repo string, number int, label string) error {
-	return c.AddLabels(org, repo, number, label)
+	return c.AddLabelWithContext(context.Background(), org, repo, number, label)
+}
+
+func (c *client) AddLabelWithContext(ctx context.Context, org, repo string, number int, label string) error {
+	return c.AddLabelsWithContext(ctx, org, repo, number, label)
 }
 
 // AddLabels adds one or more labels to org/repo#number, returning an error on a bad response code.
 //
 // See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *client) AddLabels(org, repo string, number int, labels ...string) error {
+	return c.AddLabelsWithContext(context.Background(), org, repo, number, labels...)
+}
+
+func (c *client) AddLabelsWithContext(ctx context.Context, org, repo string, number int, labels ...string) error {
 	durationLogger := c.log("AddLabels", org, repo, number, labels)
 	defer durationLogger()
 
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 		org:         org,
@@ -2611,10 +2718,14 @@ type githubError struct {
 //
 // See https://developer.github.com/v3/issues/labels/#remove-a-label-from-an-issue
 func (c *client) RemoveLabel(org, repo string, number int, label string) error {
+	return c.RemoveLabelWithContext(context.Background(), org, repo, number, label)
+}
+
+func (c *client) RemoveLabelWithContext(ctx context.Context, org, repo string, number int, label string) error {
 	durationLogger := c.log("RemoveLabel", org, repo, number, label)
 	defer durationLogger()
 
-	code, body, err := c.requestRaw(&request{
+	code, body, err := c.requestRawWithContext(ctx, &request{
 		method: http.MethodDelete,
 		path:   fmt.Sprintf("/repos/%s/%s/issues/%d/labels/%s", org, repo, number, label),
 		org:    org,
@@ -3976,7 +4087,7 @@ func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit
 //
 // GitHub API docs: https://developer.github.com/v3/pulls#update-a-pull-request-branch
 func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error {
-	durationLogger := c.log("UpdatePullRequestBranch", org, repo, *expectedHeadSha)
+	durationLogger := c.log("UpdatePullRequestBranch", org, repo)
 	defer durationLogger()
 
 	data := struct {
@@ -3988,7 +4099,6 @@ func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedH
 		ExpectedHeadSha: expectedHeadSha,
 	}
 
-	ge := githubError{}
 	code, err := c.request(&request{
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/update-branch", org, repo, number),
@@ -3996,13 +4106,17 @@ func (c *client) UpdatePullRequestBranch(org, repo string, number int, expectedH
 		org:         org,
 		requestBody: &data,
 		exitCodes:   []int{202, 422},
-	}, &ge)
+	}, nil)
 	if err != nil {
 		return err
 	}
 
 	if code == http.StatusUnprocessableEntity {
-		return fmt.Errorf("mismatch expected head sha: %s", *expectedHeadSha)
+		msg := "mismatch expected head sha"
+		if expectedHeadSha != nil {
+			msg = fmt.Sprintf("%s: %s", msg, *expectedHeadSha)
+		}
+		return errors.New(msg)
 	}
 
 	return nil

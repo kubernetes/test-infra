@@ -43,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	slackclient "k8s.io/test-infra/prow/slack"
 )
 
 type options struct {
@@ -63,7 +64,8 @@ type options struct {
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
 
-	slackTokenFile string
+	slackTokenFile            string
+	additionalSlackTokenFiles slackclient.HostsFlag
 
 	storage prowflagutil.StorageClientOptions
 
@@ -152,6 +154,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.Var(&o.additionalSlackTokenFiles, "additional-slack-token-files", "Map of additional slack token files. example: --additional-slack-token-files=foo=/etc/foo-slack-tokens/token, repeat flag for each host")
 	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
 	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
 	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
@@ -238,7 +241,14 @@ func main() {
 			logrus.WithError(err).Fatal("could not read slack token")
 		}
 		hasReporter = true
-		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile))
+		var additionalSlackSecretsGetter map[string]func() []byte
+		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
+			additionalSlackSecretsGetter[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
+			if err := secretAgent.Add(additionalTokenFile); err != nil {
+				logrus.WithError(err).Fatal("could not read slack token")
+			}
+		}
+		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile), additionalSlackSecretsGetter)
 		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
 		}
