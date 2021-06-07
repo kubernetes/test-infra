@@ -401,7 +401,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					State:       wantState,
 					Description: wantDesc,
 					TargetURL:   targetURL(c, pr, log),
-				}); err != nil {
+				}); err != nil && !github.IsNotFound(err) {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q and description from %q to %q",
 					actualState,

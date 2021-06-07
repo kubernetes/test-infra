@@ -791,6 +791,7 @@ type request struct {
 }
 
 type requestError struct {
+	StatusCode  int
 	ClientError error
 	ErrorString string
 }
@@ -832,6 +833,10 @@ func IsNotFound(err error) bool {
 	var requestErr requestError
 	if !errors.As(err, &requestErr) {
 		return false
+	}
+
+	if requestErr.StatusCode == http.StatusNotFound {
+		return true
 	}
 
 	for _, errorMsg := range requestErr.ErrorMessages() {
@@ -890,6 +895,7 @@ func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []
 	if !okCode {
 		clientError := unmarshalClientError(b)
 		err = requestError{
+			StatusCode:  resp.StatusCode,
 			ClientError: clientError,
 			ErrorString: fmt.Sprintf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b)),
 		}
