@@ -11,12 +11,13 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: golang:1.13
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - bash
+        - make
         args:
-        - -c
-        - "cd groups && go test"
+        - -C
+        - ./groups
+        - test
         env:
         - name: GO111MODULE
           value: "on"
@@ -37,9 +38,10 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20210331-c732583
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - hack/verify-terraform.sh
+        args:
         - infra/gcp/clusters/projects/kubernetes-public/aaa
         resources:
           limits:
@@ -65,9 +67,10 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20210331-c732583
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - hack/verify-terraform.sh
+        args:
         - infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build
         resources:
           limits:
@@ -93,9 +96,10 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20210331-c732583
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - hack/verify-terraform.sh
+        args:
         - infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted
         resources:
           limits:
@@ -112,8 +116,6 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - runner.sh
-        args:
         - ./hack/verify.sh

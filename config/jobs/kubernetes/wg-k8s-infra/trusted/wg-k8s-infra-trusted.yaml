@@ -15,12 +15,15 @@ periodics:
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
-    - image: golang:1.13
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       command:
-      - bash
+      - make
       args:
-      - -c
-      - "cd groups && make run -- --confirm"
+      - -C
+      - groups
+      - run
+      - --
+      - --confirm
 - name: ci-k8sio-audit
   interval: 6h
   cluster: k8s-infra-prow-build-trusted
@@ -46,7 +49,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcp-auditor
     containers:
-    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.16
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       imagePullPolicy: Always
       command:
       - ./audit/create-or-update-audit-pr.sh
@@ -82,12 +85,15 @@ postsubmits:
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
-      - image: golang:1.13
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - bash
+        - make
         args:
-        - -c
-        - "cd groups && make run -- --confirm"
+        - -C
+        - groups
+        - run
+        - --
+        - --confirm
   - name: post-k8sio-dns-update
     cluster: k8s-infra-prow-build-trusted
     decorate: true
@@ -134,7 +140,7 @@ postsubmits:
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - bash
         args:
@@ -144,9 +150,16 @@ postsubmits:
           if [[ -x ./deploy.sh ]]; then
             ./deploy.sh
           else
-            gcloud container clusters get-credentials prow-build --project=k8s-infra-prow-build --region=us-central1
-            kubectl --context=gke_k8s-infra-prow-build_us-central1_prow-build \
-              apply -f ./prow-build/resources --recursive
+            gcloud \
+              container clusters get-credentials \
+              --project=k8s-infra-prow-build \
+              --region=us-central1 \
+              prow-build
+            kubectl \
+              --context=gke_k8s-infra-prow-build_us-central1_prow-build \
+              apply \
+                -f ./prow-build/resources \
+                --recursive
           fi
   - name: post-k8sio-deploy-prow-build-trusted-resources
     cluster: k8s-infra-prow-build-trusted
@@ -169,7 +182,7 @@ postsubmits:
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - bash
         args:
@@ -179,7 +192,14 @@ postsubmits:
           if [[ -x ./deploy.sh ]]; then
             ./deploy.sh
           else
-            gcloud container clusters get-credentials prow-build-trusted --project=k8s-infra-prow-build-trusted --region=us-central1
-            kubectl --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
-              apply -f ./prow-build-trusted/resources --recursive
+            gcloud \
+              container clusters get-credentials \
+              --project=k8s-infra-prow-build-trusted \
+              --region=us-central1 \
+              prow-build-trusted
+            kubectl \
+              --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
+              apply \
+                -f ./prow-build-trusted/resources \
+                --recursive
           fi
