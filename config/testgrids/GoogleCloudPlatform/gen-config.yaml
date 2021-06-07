@@ -6,6 +6,7 @@ dashboard_groups:
   - googleoss-esp-v2-periodic
   - googleoss-grpc-transcoder
   - googleoss-http-pattern-matcher
+  - googleoss-secrets-store-csi-driver-provider-gcp
   name: googleoss
 - dashboard_names:
   - googleoss-kubeflow-pipelines
@@ -75,6 +76,17 @@ dashboards:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-oss-test-infra-autobump-monitoring'
+    name: update-monitoring
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-oss-test-infra-autobump-monitoring
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-oss-test-infra-autobump-prow'
     name: autobump-prow
     open_bug_template:
@@ -82,6 +94,17 @@ dashboards:
     open_test_template:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-oss-test-infra-autobump-prow
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: ci-oss-test-infra-autobump-prow-for-auto-deploy'
+    name: autobump-prow-for-auto-deploy
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-oss-test-infra-autobump-prow-for-auto-deploy
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: ci-oss-test-infra-heartbeat'
@@ -102,6 +125,17 @@ dashboards:
     open_test_template:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: testgrid-canary-autobump
+  - alert_options:
+      alert_mail_to_addresses: k8s-infra-oncall@google.com
+    code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: post-oss-test-infra-create-testgrid-config'
+    name: testgrid-gcs-upload
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: post-oss-test-infra-create-testgrid-config
   - alert_options:
       alert_mail_to_addresses: k8s-infra-oncall@google.com
     code_search_url_template:
@@ -135,17 +169,6 @@ dashboards:
     open_test_template:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-oss-test-infra-reconcile-hmacs
-  - alert_options:
-      alert_mail_to_addresses: k8s-infra-oncall@google.com
-    code_search_url_template:
-      url: https://github.com/GoogleCloudPlatform/oss-test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: post-oss-test-infra-upload-testgrid-config'
-    name: testgrid-upload
-    open_bug_template:
-      url: https://github.com/GoogleCloudPlatform/oss-test-infra/issues/
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: post-oss-test-infra-upload-testgrid-config
   - code_search_url_template:
       url: https://github.com/GoogleCloudPlatform/testgrid/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: post-testgrid-deploy-canary'
@@ -596,6 +619,17 @@ dashboards:
       url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     test_group_name: http-pattern-matcher-presubmit
   name: googleoss-http-pattern-matcher
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/secrets-store-csi-driver-provider-gcp/compare/<start-custom-0>...<end-custom-0>
+    description: Runs E2E tests on the main branch continuously.
+    name: periodic
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/secrets-store-csi-driver-provider-gcp/issues/
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: prow-e2e-tests-periodic
+  name: googleoss-secrets-store-csi-driver-provider-gcp
 test_groups:
 - gcs_prefix: oss-prow/logs/ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
   name: ESPv2-continuous-anthos-cloud-run-e2e-cloud-run-http-bookstore
@@ -634,9 +668,15 @@ test_groups:
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-knative-prow
   name: ci-oss-test-infra-autobump-knative-prow
   num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-monitoring
+  name: ci-oss-test-infra-autobump-monitoring
+  num_failures_to_alert: 3
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow
   name: ci-oss-test-infra-autobump-prow
   num_failures_to_alert: 3
+- gcs_prefix: oss-prow/logs/ci-oss-test-infra-autobump-prow-for-auto-deploy
+  name: ci-oss-test-infra-autobump-prow-for-auto-deploy
+  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/ci-oss-test-infra-heartbeat
   name: ci-oss-test-infra-heartbeat
 - gcs_prefix: oss-prow/logs/grpc-transcoder-periodic
@@ -649,6 +689,8 @@ test_groups:
 - gcs_prefix: oss-prow/logs/kubeflow-pipelines-periodic-project-cleanup
   name: kubeflow-pipelines-periodic-project-cleanup
   num_failures_to_alert: 5
+- gcs_prefix: oss-prow/logs/prow-e2e-tests-periodic
+  name: prow-e2e-tests-periodic
 - gcs_prefix: oss-prow/logs/testgrid-canary-autobump
   name: testgrid-canary-autobump
   num_failures_to_alert: 3
@@ -656,6 +698,9 @@ test_groups:
   name: apt-transport-build
 - gcs_prefix: oss-prow/logs/yum-plugin-build
   name: yum-plugin-build
+- gcs_prefix: oss-prow/logs/post-oss-test-infra-create-testgrid-config
+  name: post-oss-test-infra-create-testgrid-config
+  num_failures_to_alert: 1
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-deploy-knative-prow
   name: post-oss-test-infra-deploy-knative-prow
   num_failures_to_alert: 2
@@ -665,9 +710,6 @@ test_groups:
 - gcs_prefix: oss-prow/logs/post-oss-test-infra-reconcile-hmacs
   name: post-oss-test-infra-reconcile-hmacs
   num_failures_to_alert: 1
-- gcs_prefix: oss-prow/logs/post-oss-test-infra-upload-testgrid-config
-  name: post-oss-test-infra-upload-testgrid-config
-  num_failures_to_alert: 2
 - gcs_prefix: oss-prow/logs/post-testgrid-deploy-canary
   name: post-testgrid-deploy-canary
 - gcs_prefix: oss-prow/logs/post-testgrid-deploy-prod
