@@ -172,13 +172,15 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 		return nil, fmt.Errorf("failed to get prowjob %s: %w", req.String(), err)
 	}
 
+	log = log.WithField("jobName", pj.Spec.Job)
+
 	if !r.shouldHandle(&pj) {
+		log.Debug("Skip reporting as shouldHandle returned false")
 		return nil, nil
 	}
 
-	log = log.WithField("jobName", pj.Spec.Job)
-
 	if !pj.Spec.Report || !r.reporter.ShouldReport(ctx, log, &pj) {
+		log.Debug("Skip reporting as shouldReport returned false")
 		return nil, nil
 	}
 
