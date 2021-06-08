@@ -111,6 +111,10 @@ func (c *Client) GetName() string {
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
 func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) bool {
+	if !pj.Spec.Report {
+		return false
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
