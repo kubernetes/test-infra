@@ -114,7 +114,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-kops-upgrade
-- interval: 1h # TODO(justinsb): reduce once working
+- interval: 2h # TODO(justinsb): reduce once working
   name: e2e-kops-aws-upgrade-k119-ko119-to-k120-ko120
   always_run: false
   labels:
@@ -166,7 +166,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-misc, kops-kubetest2
     testgrid-days-of-results: "30"
     testgrid-tab-name: kops-aws-upgrade-k119-ko119-to-k120-ko120
-- interval: 1h # TODO(justinsb): reduce once working
+- interval: 2h # TODO(justinsb): reduce once working
   name: e2e-kops-aws-upgrade-k120-ko120-to-k121-ko121
   always_run: false
   labels:
