@@ -213,34 +213,54 @@ func validateOptions(o *options) error {
 	return nil
 }
 
+func isOncallActive(oncallAddress, oncallGroup string) bool {
+	_, oncallActive, _ := getOncallInfo(oncallAddress, oncallGroup)
+	return oncallActive
+}
+
 func getAssignment(oncallAddress, oncallGroup string) string {
+	curtOncall, _, err := getOncallInfo(oncallAddress, oncallGroup)
+	if err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err.Error())
+	}
+	if curtOncall == "" {
+		return noOncallMsg
+	}
+	return curtOncall
+}
+
+func getOncallInfo(oncallAddress, oncallGroup string) (string, bool, error) {
 	if oncallAddress == "" {
-		return ""
+		return "", false, nil
 	}
 
 	req, err := http.Get(oncallAddress)
 	if err != nil {
-		return fmt.Sprintf(errOncallMsgTempl, err)
+		return "", false, err
 	}
 	defer req.Body.Close()
 	if req.StatusCode != http.StatusOK {
-		return fmt.Sprintf(errOncallMsgTempl,
-			fmt.Sprintf("Error requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status))
+		return "", false, fmt.Errorf("requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status)
 	}
 	oncall := struct {
 		Oncall map[string]string `json:"Oncall"`
+		Active map[string]bool   `json:"Active"`
 	}{}
 	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
-		return fmt.Sprintf(errOncallMsgTempl, err)
+		return "", false, err
 	}
 	curtOncall, ok := oncall.Oncall[oncallGroup]
 	if !ok {
-		return fmt.Sprintf(errOncallMsgTempl, fmt.Sprintf("Oncall map doesn't contain group '%s'", oncallGroup))
+		return "", false, fmt.Errorf("oncall map doesn't contain group '%s'", oncallGroup)
+	}
+	oncallActive, ok := oncall.Active[oncallGroup]
+	if !ok {
+		return "", false, fmt.Errorf("oncall map doesn't contain group '%s'", oncallGroup)
 	}
 	if curtOncall != "" {
-		return "/cc @" + curtOncall
+		return "/cc @" + curtOncall, oncallActive, nil
 	}
-	return noOncallMsg
+	return "", false, nil
 }
 
 // updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
@@ -530,10 +550,9 @@ func main() {
 	}
 
 	if o.SkipIfNoOncall {
-		if oncall := getAssignment(o.OncallAddress, o.OncallGroup); len(oncall) == 0 ||
-			oncall == noOncallMsg || strings.Contains(oncall, "An error occurred while finding an assignee") {
+		if !isOncallActive(o.OncallAddress, o.OncallGroup) {
 
-			logrus.WithField("oncall", oncall).Info("`skip-if-no-oncall` is configured and there is no oncall. Skip bumping.")
+			logrus.Info("`skip-if-no-oncall` is configured and there is no active oncall. Skip bumping.")
 			return
 		}
 	}
