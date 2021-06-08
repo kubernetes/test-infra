@@ -40,6 +40,7 @@ func TestGetAssignment(t *testing.T) {
 		oncallGroup          string
 		oncallServerResponse string
 		expectResKeyword     string
+		expectOncallActive   bool
 	}{
 		{
 			description:          "empty oncall URL will return an empty string",
@@ -66,14 +67,14 @@ func TestGetAssignment(t *testing.T) {
 			description:          "a valid response will return the oncaller from default group",
 			oncallURL:            "auto",
 			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"}}`,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":false}}`,
 			expectResKeyword:     "fake-oncall-name",
 		},
 		{
 			description:          "a valid response will return the oncaller from non-default group",
 			oncallURL:            "auto",
 			oncallGroup:          "another-group",
-			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"},"Active":{"another-group":false}}`,
 			expectResKeyword:     "fake-oncall-name2",
 		},
 		{
@@ -87,8 +88,16 @@ func TestGetAssignment(t *testing.T) {
 			description:          "a valid response with empty oncall will return on oncall message",
 			oncallURL:            "auto",
 			oncallGroup:          defaultOncallGroup,
-			oncallServerResponse: `{"Oncall":{"testinfra":""}}`,
+			oncallServerResponse: `{"Oncall":{"testinfra":""},"Active":{"testinfra":false}}`,
 			expectResKeyword:     "Nobody",
+		},
+		{
+			description:          "oncall active",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":true}}`,
+			expectResKeyword:     "fake-oncall-name",
+			expectOncallActive:   true,
 		},
 	}
 
@@ -106,6 +115,9 @@ func TestGetAssignment(t *testing.T) {
 			res := getAssignment(tc.oncallURL, tc.oncallGroup)
 			if !strings.Contains(res, tc.expectResKeyword) {
 				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
+			}
+			if got, want := isOncallActive(tc.oncallURL, tc.oncallGroup), tc.expectOncallActive; got != want {
+				t.Errorf("Expect oncall active. Want: %v, got: %v", want, got)
 			}
 		})
 	}
