@@ -102,5 +102,5 @@ presubmits:
           export GO111MODULE=on;
           go get sigs.k8s.io/kubetest2@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
           kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --parallel=30 --test-args='--minStartupPods=8' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
