@@ -47,7 +47,12 @@ func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway,
 	// Setting the default prometheus registry in controller-runtime is unfortunately not an option, because that would
 	// result in all metrics that got registered in controller-runtime via an init to vanish, as inits of dependencies
 	// always get executed before our own init.
+	// Exempted from linting, it uses a deprecated Prometheus function but must match what controller-runtime does so
+	// we can not change it.
+
+	//nolint:staticcheck
 	ctrlruntimemetrics.Registry.Unregister(prometheus.NewGoCollector())
+	//nolint:staticcheck
 	ctrlruntimemetrics.Registry.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	if reg == nil {

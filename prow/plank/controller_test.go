@@ -1512,7 +1512,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			ExpectedState:    prowapi.PendingState,
 			ExpectedComplete: false,
-			ExpectedNumPods:  1,
+			ExpectedNumPods:  0,
 		},
 	}
 
