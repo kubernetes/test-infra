@@ -215,7 +215,7 @@ func matchingConfigs(org, repo, branch, label string, allConfigs []plugins.Requi
 		}
 		// If we are reacting to a label event, see if it is relevant.
 		if label != "" && !cfg.Re.MatchString(label) {
-			continuefiltered
+			continue
 		}
 		filtered = append(filtered, cfg)
 	}
