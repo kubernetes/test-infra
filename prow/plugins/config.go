@@ -1782,7 +1782,7 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 		errs = append(errs, fmt.Errorf("failed to merge .plugins from supplemental config: %w", err))
 	}
 
-	if err := (&(c.Bugzilla)).mergeFrom(&other.Bugzilla); err != nil {
+	if err := c.Bugzilla.mergeFrom(&other.Bugzilla); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .bugzilla from supplemental config: %w", err))
 	}
 
@@ -1817,48 +1817,46 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 
 	var errs []error
 	if other.Default != nil {
-		if (*p).Default != nil {
+		if p.Default != nil {
 			errs = append(errs, errors.New("configuration of global default defined in multiple places"))
 		} else {
-			(*p).Default = other.Default
+			p.Default = other.Default
 		}
 	}
-	if len(other.Orgs) != 0 && (*p).Orgs == nil {
-		newConfig := (*p)
-		newConfig.Orgs = make(map[string]BugzillaOrgOptions)
-		(*p) = newConfig
+	if len(other.Orgs) != 0 && p.Orgs == nil {
+		p.Orgs = make(map[string]BugzillaOrgOptions)
 	}
 	for org, orgConfig := range other.Orgs {
-		if _, ok := (*p).Orgs[org]; !ok {
-			(*p).Orgs[org] = BugzillaOrgOptions{}
+		if _, ok := p.Orgs[org]; !ok {
+			p.Orgs[org] = BugzillaOrgOptions{}
 		}
 		if orgConfig.Default != nil {
-			if (*p).Orgs[org].Default != nil {
+			if p.Orgs[org].Default != nil {
 				errs = append(errs, fmt.Errorf("found duplicate organization config for bugzilla.%s", org))
 				continue
 			}
-			newConfig := (*p).Orgs[org]
+			newConfig := p.Orgs[org]
 			newConfig.Default = orgConfig.Default
-			(*p).Orgs[org] = newConfig
+			p.Orgs[org] = newConfig
 		}
-		if len(orgConfig.Repos) != 0 && (*p).Orgs[org].Repos == nil {
-			newConfig := (*p).Orgs[org]
+		if len(orgConfig.Repos) != 0 && p.Orgs[org].Repos == nil {
+			newConfig := p.Orgs[org]
 			newConfig.Repos = make(map[string]BugzillaRepoOptions)
-			(*p).Orgs[org] = newConfig
+			p.Orgs[org] = newConfig
 		}
 		for repo, repoConfig := range orgConfig.Repos {
-			if _, ok := (*p).Orgs[org].Repos[repo]; ok {
+			if _, ok := p.Orgs[org].Repos[repo]; ok {
 				errs = append(errs, fmt.Errorf("found duplicate repository config for bugzilla.%s/%s", org, repo))
 				continue
 			}
-			(*p).Orgs[org].Repos[repo] = repoConfig
+			p.Orgs[org].Repos[repo] = repoConfig
 		}
 	}
 	return utilerrors.NewAggregate(errs)
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins}) {
+	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1868,6 +1866,15 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			repos.Insert(orgOrRepo)
 		} else {
 			orgs.Insert(orgOrRepo)
+		}
+	}
+
+	for org, orgConfig := range c.Bugzilla.Orgs {
+		if orgConfig.Default != nil {
+			orgs.Insert(org)
+		}
+		for repo := range orgConfig.Repos {
+			repos.Insert(repo)
 		}
 	}
 

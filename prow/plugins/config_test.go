@@ -1991,15 +1991,18 @@ func TestHasConfigFor(t *testing.T) {
 		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String)
 	}{
 		{
-			name: "Any non-empty config with empty Plugins is considered to be global",
+			name: "Any non-empty config with empty Plugins and Bugzilla is considered to be global",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.Plugins = nil
+				fuzzedConfig.Bugzilla = Bugzilla{}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
 		{
 			name: "Any config with plugins is considered to be for the orgs and repos references there",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				// exclude non-plugins configs to test plugins specifically
+				fuzzedConfig.Bugzilla = Bugzilla{}
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for orgOrRepo := range fuzzedConfig.Plugins {
 					if strings.Contains(orgOrRepo, "/") {
@@ -2009,6 +2012,23 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Plugins: fuzzedConfig.Plugins}), expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with bugzilla is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				// exclude non-plugins configs to test bugzilla specifically
+				fuzzedConfig.Plugins = nil
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				for org, orgConfig := range fuzzedConfig.Bugzilla.Orgs {
+					if orgConfig.Default != nil {
+						expectOrgs.Insert(org)
+					}
+					for repo := range orgConfig.Repos {
+						expectRepos.Insert(repo)
+					}
+				}
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Bugzilla: fuzzedConfig.Bugzilla}), expectOrgs, expectRepos
 			},
 		},
 	}
