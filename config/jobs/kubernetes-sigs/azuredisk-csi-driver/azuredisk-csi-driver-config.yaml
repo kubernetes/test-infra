@@ -569,7 +569,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.21
         - --aksengine-location=westeurope
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/external-e2e/manifest/single-az.json
         - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
         # Specific test args
         - --test-azure-disk-csi-driver
