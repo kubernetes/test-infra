@@ -29,8 +29,8 @@ postsubmits:
               privileged: true
             resources:
               requests:
-                cpu: 1
-                memory: "4Gi"
+                cpu: 2
+                memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: ci-e2e
@@ -63,8 +63,8 @@ postsubmits:
               privileged: true
             resources:
               requests:
-                cpu: 1
-                memory: "4Gi"
+                cpu: 2
+                memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: ci-e2e-conformance
