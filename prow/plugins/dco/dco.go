@@ -113,7 +113,7 @@ type gitHubClient interface {
 	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetRepo(owner, name string) (github.FullRepo, error)
+	GetDefaultBranch(org, repo string) (string, error)
 	BotUserChecker() (func(candidate string) bool, error)
 }
 
@@ -205,15 +205,12 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 // current state.
 func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	// Get default branch for repo to construct link to CONTRIBUTING.md (default: master)
-	repoObj, err := gc.GetRepo(org, repo)
-	defaultBranch := "master"
+	defaultBranch, err := gc.GetDefaultBranch(org, repo)
 	if err != nil {
-		l.Debugf("Error retrieving repo to find default branch: %v", err)
-	} else {
-		defaultBranch = repoObj.Repo.DefaultBranch
-		if defaultBranch == "" {
-			defaultBranch = "master"
-		}
+		l.Debugf("Error retrieving default branch: %v", err)
+	}
+	if defaultBranch == "" {
+		defaultBranch = "master"
 	}
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/%s/CONTRIBUTING.md", org, repo, defaultBranch)
 

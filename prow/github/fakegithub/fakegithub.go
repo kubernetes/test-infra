@@ -58,6 +58,7 @@ type FakeClient struct {
 	CreatedStatuses            map[string][]github.Status
 	IssueEvents                map[int][]github.ListedIssueEvent
 	Commits                    map[string]github.RepositoryCommit
+	DefaultBranch              string
 
 	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
@@ -850,6 +851,13 @@ func (f *FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
 			Description:   fmt.Sprintf("Test Repo: %s", name),
 		},
 	}, nil
+}
+
+func (f *FakeClient) GetDefaultBranch(org string, repo string) (string, error) {
+	if f.DefaultBranch == "" {
+		return "master", nil
+	}
+	return f.DefaultBranch, nil
 }
 
 // MoveProjectCard moves a specific project card to a specified column in the same project

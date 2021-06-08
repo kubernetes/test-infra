@@ -36,6 +36,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -161,6 +162,7 @@ type RepositoryClient interface {
 	GetRepo(owner, name string) (FullRepo, error)
 	GetRepos(org string, isUser bool) ([]Repo, error)
 	GetBranches(org, repo string, onlyProtected bool) ([]Branch, error)
+	GetDefaultBranch(org, repo string) (string, error)
 	GetBranchProtection(org, repo, branch string) (*BranchProtection, error)
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error
@@ -347,6 +349,11 @@ func (c *client) WithFields(fields logrus.Fields) Client {
 		delegate:   c.delegate,
 	}
 }
+
+// In-memory caching (https://github.com/patrickmn/go-cache)
+var (
+	memCache = cache.New(20*time.Minute, 30*time.Minute)
+)
 
 var (
 	teamRe = regexp.MustCompile(`^(.*)/(.*)$`)
@@ -2473,6 +2480,34 @@ func (c *client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 		return nil, err
 	}
 	return branches, nil
+}
+
+// GetDefaultBranch returns default branch of the repo.
+// Uses a memory cache for performance, storing repos with key `org_repo_defaultBranch`.
+//
+// See https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+func (c *client) GetDefaultBranch(org, repo string) (string, error) {
+	durationLogger := c.log("GetDefaultBranch", org, repo)
+	defer durationLogger()
+
+	var repoKey = org + "_" + repo + "_defaultBranch"
+	var defaultBranch string
+
+	// Retrieve default branch from cache;
+	// otherwise retrieve repo and set default branch in cache
+	cacheValue, found := memCache.Get(repoKey)
+	if found {
+		defaultBranch = cacheValue.(string)
+	} else {
+		repoObj, err := c.GetRepo(org, repo)
+		if err != nil {
+			return "", err
+		}
+		defaultBranch = repoObj.Repo.DefaultBranch
+		memCache.Set(repoKey, defaultBranch, 0)
+	}
+
+	return defaultBranch, nil
 }
 
 // GetBranchProtection returns current protection object for the branch
