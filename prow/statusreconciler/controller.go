@@ -31,24 +31,25 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitDenylist sets.String, opener io.Opener, configPath, jobConfigPath, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configOpts configflagutil.ConfigOptions, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
 	sc := &statusController{
-		logger:        logrus.WithField("client", "statusController"),
-		opener:        opener,
-		statusURI:     statusURI,
-		configPath:    configPath,
-		jobConfigPath: jobConfigPath,
+		logger:     logrus.WithField("client", "statusController"),
+		opener:     opener,
+		statusURI:  statusURI,
+		configOpts: configOpts,
 	}
 
 	return &Controller{
-		continueOnError:        continueOnError,
-		addedPresubmitDenylist: addedPresubmitDenylist,
+		continueOnError:           continueOnError,
+		addedPresubmitDenylist:    addedPresubmitDenylist,
+		addedPresubmitDenylistAll: addedPresubmitDenylistAll,
 		prowJobTriggerer: &kubeProwJobTriggerer{
 			prowJobClient: prowJobClient,
 			githubClient:  githubClient,
@@ -145,13 +146,14 @@ func (c *githubTrustedChecker) trustedPullRequest(author, org, repo string, num 
 
 // Controller reconciles statuses on PRs when config changes impact blocking presubmits
 type Controller struct {
-	continueOnError        bool
-	addedPresubmitDenylist sets.String
-	prowJobTriggerer       prowJobTriggerer
-	githubClient           githubClient
-	statusMigrator         statusMigrator
-	trustedChecker         trustedChecker
-	statusClient           statusClient
+	continueOnError           bool
+	addedPresubmitDenylist    sets.String
+	addedPresubmitDenylistAll sets.String
+	prowJobTriggerer          prowJobTriggerer
+	githubClient              githubClient
+	statusMigrator            statusMigrator
+	trustedChecker            trustedChecker
+	statusClient              statusClient
 }
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
@@ -189,7 +191,7 @@ func (c *Controller) reconcile(delta config.Delta, log *logrus.Entry) error {
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
+	if err := c.retireRemovedContexts(removedPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, log)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
@@ -219,7 +221,8 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		}
 
 		org, repo := parts[0], parts[1]
-		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) {
+		if c.addedPresubmitDenylist.Has(org) || c.addedPresubmitDenylist.Has(orgrepo) ||
+			c.addedPresubmitDenylistAll.Has(org) || c.addedPresubmitDenylistAll.Has(orgrepo) {
 			continue
 		}
 		prs, err := c.githubClient.GetPullRequests(org, repo)
@@ -293,6 +296,9 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 			continue
 		}
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitDenylistAll.Has(org) || c.addedPresubmitDenylistAll.Has(orgrepo) {
+			continue
+		}
 		for _, presubmit := range presubmits {
 			log.WithFields(logrus.Fields{
 				"org":     org,
@@ -320,6 +326,9 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 			continue
 		}
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitDenylistAll.Has(org) || c.addedPresubmitDenylistAll.Has(orgrepo) {
+			continue
+		}
 		for _, migration := range migrations {
 			log.WithFields(logrus.Fields{
 				"org":  org,
@@ -392,19 +401,12 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus
 	return added, log
 }
 
-// removedBlockingPresubmits determines stale blocking presubmits based on a
-// config update. Presubmits that are no longer blocking due to no longer
-// reporting or being optional require no action as Tide will honor those
-// statuses correctly.
-func removedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
+// removedPresubmits determines stale presubmits based on a config update.
+func removedPresubmits(old, new map[string][]config.Presubmit, log *logrus.Entry) (map[string][]config.Presubmit, *logrus.Entry) {
 	removed := map[string][]config.Presubmit{}
-
 	for repo, oldPresubmits := range old {
 		removed[repo] = []config.Presubmit{}
 		for _, oldPresubmit := range oldPresubmits {
-			if !oldPresubmit.ContextRequired() {
-				continue
-			}
 			var found bool
 			for _, newPresubmit := range new[repo] {
 				if oldPresubmit.Name == newPresubmit.Name {

@@ -1,4 +1,6 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("//prow:def.bzl", "prow_image")
 
 container_image(
     name = "image",
@@ -23,7 +25,35 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//testgrid/cmd/transfigure/cmd:all-srcs",
+    ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/testgrid/cmd/transfigure",
+    visibility = ["//visibility:private"],
+    deps = ["//testgrid/cmd/transfigure/cmd:go_default_library"],
+)
+
+go_binary(
+    name = "transfigure",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+prow_image(
+    name = "prow-image",
+    base = "@bazel-base//image",
+    component = "transfigure",
+    files = [
+        "//robots/pr-creator",
+        "//testgrid/cmd/configurator",
+    ],
     visibility = ["//visibility:public"],
 )

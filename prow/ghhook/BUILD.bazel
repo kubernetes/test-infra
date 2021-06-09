@@ -16,6 +16,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["ghhook_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//prow/flagutil:go_default_library",

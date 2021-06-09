@@ -26,6 +26,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -50,10 +52,6 @@ import (
 var (
 	fakeJa        *jobs.JobAgent
 	fakeGCSServer *fakestorage.Server
-)
-
-const (
-	testSrc = "gs://test-bucket/logs/example-ci-run/403"
 )
 
 type fkc []prowapi.ProwJob
@@ -231,11 +229,11 @@ func (dumpLens) Config() lenses.LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (dumpLens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -248,7 +246,7 @@ func (dumpLens) Body(artifacts []api.Artifact, resourceDir string, data string, 
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (dumpLens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
@@ -883,16 +881,17 @@ func TestRunToPR(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-						"*": {
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-								PathStrategy: "legacy",
+					DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+						map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+									PathStrategy: "legacy",
+								},
 							},
-						},
-					},
+						}),
 				},
 			},
 		})
@@ -1101,14 +1100,15 @@ func TestGCSPathRoundTrip(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-							"*": {
-								GCSConfiguration: &prowapi.GCSConfiguration{
-									DefaultOrg:  tc.defaultOrg,
-									DefaultRepo: tc.defaultRepo,
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowapi.DecorationConfig{
+								"*": {
+									GCSConfiguration: &prowapi.GCSConfiguration{
+										DefaultOrg:  tc.defaultOrg,
+										DefaultRepo: tc.defaultRepo,
+									},
 								},
-							},
-						},
+							}),
 					},
 				},
 			},
@@ -1276,6 +1276,9 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 	fakeConfigAgent := fca{
 		c: config.Config{
 			ProwConfig: config.ProwConfig{
+				Deck: config.Deck{
+					AllKnownStorageBuckets: sets.NewString("job", "kubernetes-jenkins", "multi-container-one-log"),
+				},
 				Plank: config.Plank{
 					JobURLPrefixConfig: map[string]string{"*": "https://gubernator.example.com/build/"},
 				},
@@ -1559,7 +1562,15 @@ func TestExtraLinks(t *testing.T) {
 			defer gcsServer.Stop()
 
 			gcsClient := gcsServer.Client()
-			fakeConfigAgent := fca{}
+			fakeConfigAgent := fca{
+				c: config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							AllKnownStorageBuckets: sets.NewString("test-bucket"),
+						},
+					},
+				},
+			}
 			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 			fakeJa.Start()
 			sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(gcsClient), false)

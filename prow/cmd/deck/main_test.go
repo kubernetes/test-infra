@@ -34,6 +34,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -50,6 +51,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -86,7 +89,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "minimal set ok",
 			input: options{
-				configPath: "test",
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
 			},
 			expectedErr: false,
 		},
@@ -98,7 +101,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "ok with oauth",
 			input: options{
-				configPath:            "test",
+				config:                configflagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 				cookieSecretFile:      "yum",
@@ -108,7 +111,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing github config with oauth",
 			input: options{
-				configPath:       "test",
+				config:           configflagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:         "website",
 				cookieSecretFile: "yum",
 			},
@@ -117,7 +120,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing cookie with oauth",
 			input: options{
-				configPath:            "test",
+				config:                configflagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 			},
@@ -538,7 +541,8 @@ func TestRerun(t *testing.T) {
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
-			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
+			rc := fakegithub.NewFakeClient()
+			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
 			pca := plugins.NewFakeConfigAgent()
 			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
@@ -772,7 +776,7 @@ func Test_gatherOptions(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -800,7 +804,15 @@ func Test_gatherOptions(t *testing.T) {
 		ghoptions.AllowDirectAccess = true
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath:            "yo",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
 				githubOAuthConfigFile: "/etc/github/secret",
 				cookieSecretFile:      "",
 				staticFilesLocation:   "/static",
@@ -808,11 +820,7 @@ func Test_gatherOptions(t *testing.T) {
 				spyglassFilesLocation: "/lenses",
 				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
-				instrumentation: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				instrumentation:       flagutil.DefaultInstrumentationOptions(),
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
@@ -842,7 +850,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("\n%#v\n!= expected\n%#v", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}
@@ -923,11 +931,11 @@ func TestHandleConfig(t *testing.T) {
 
 func TestHandlePluginConfig(t *testing.T) {
 	c := plugins.Configuration{
-		Plugins: map[string][]string{
-			"org/repo": {
+		Plugins: plugins.Plugins{
+			"org/repo": {Plugins: []string{
 				"approve",
 				"lgtm",
-			},
+			}},
 		},
 		Blunderbuss: plugins.Blunderbuss{
 			ExcludeApprovers: true,
@@ -1125,9 +1133,8 @@ func TestCanTriggerJob(t *testing.T) {
 	}
 	pcfgGetter := func() *plugins.Configuration { return pcfg }
 
-	ghc := &fakegithub.FakeClient{
-		OrgMembers: map[string][]string{org: {trustedUser}},
-	}
+	ghc := fakegithub.NewFakeClient()
+	ghc.OrgMembers = map[string][]string{org: {trustedUser}}
 
 	pj := prowapi.ProwJob{
 		Spec: prowapi.ProwJobSpec{
@@ -1185,6 +1192,14 @@ func TestHttpStatusForError(t *testing.T) {
 				error:      errors.New("some error message"),
 				statusCode: http.StatusGone,
 			},
+			expectedStatus: http.StatusGone,
+		},
+		{
+			name: "httpError_wrapped",
+			input: fmt.Errorf("wrapped error: %w", httpError{
+				error:      errors.New("some error message"),
+				statusCode: http.StatusGone,
+			}),
 			expectedStatus: http.StatusGone,
 		},
 	}

@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/common"
@@ -33,7 +34,7 @@ import (
 func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, error) {
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return []string{}, fmt.Errorf("error parsing src: %v", err)
+		return []string{}, fmt.Errorf("error parsing src: %w", err)
 	}
 	gcsKey := ""
 	switch keyType {
@@ -51,15 +52,21 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	}
 
 	artifactNames, err := s.StorageArtifactFetcher.artifacts(ctx, gcsKey)
-	if err != nil {
-		logrus.Warningf("error retrieving artifact names from gcs storage: %v", err)
+	// Don't care errors that are not supposed logged as http errors, for example
+	// context cancelled error due to user cancelled request.
+	if err != nil && err != context.Canceled {
+		if config.IsNotAllowedBucketError(err) {
+			logrus.WithError(err).Debug("error retrieving artifact names from gcs storage")
+		} else {
+			logrus.WithError(err).Warn("error retrieving artifact names from gcs storage")
+		}
 	}
 
 	artifactNamesSet := sets.NewString(artifactNames...)
 
 	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
-		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %v", err)
+		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %w", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)

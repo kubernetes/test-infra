@@ -21,17 +21,24 @@ readonly IMAGES=(
     apparmor-loader
     busybox
     cuda-vector-add
+    cuda-vector-add-old
     echoserver
+    glusterdynamic-provisioner
+    httpd
+    httpd-new
     ipc-utils
     jessie-dnsutils
     kitten
     metadata-concealment
     nautilus
+    nginx
+    nginx-new
     node-perf/tf-wide-deep
     node-perf/npb-ep
     node-perf/npb-is
     nonewprivs
     nonroot
+    perl
     pets/redis-installer
     pets/peer-finder
     pets/zookeeper-installer
@@ -77,7 +84,7 @@ for image in "${IMAGES[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -133,7 +140,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
         command:
           - /run.sh
         args:

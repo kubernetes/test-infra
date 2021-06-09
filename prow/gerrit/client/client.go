@@ -19,6 +19,7 @@ limitations under the License.
 package client
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"sort"
@@ -40,6 +41,8 @@ const (
 	GerritInstance = "prow.k8s.io/gerrit-instance"
 	// GerritRevision is the SHA of current patchset from a gerrit change
 	GerritRevision = "prow.k8s.io/gerrit-revision"
+	// GerritPatchset is the numeric ID of the current patchset
+	GerritPatchset = "prow.k8s.io/gerrit-patchset"
 	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
 	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 
@@ -88,6 +91,7 @@ type gerritChange interface {
 	QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error)
 	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
 	ListChangeComments(changeID string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error)
+	GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error)
 }
 
 type gerritProjects interface {
@@ -185,17 +189,8 @@ func (c *Client) authenticateOnce(previousToken string) string {
 	logrus.Info("New gerrit token, updating handler authentication...")
 
 	// update auth token for each instance
-	for instance, handler := range c.handlers {
-		log := handler.log
+	for _, handler := range c.handlers {
 		handler.authService.SetCookieAuth("o", current)
-
-		self, _, err := handler.accountService.GetAccount("self")
-		if err != nil {
-			log.WithError(err).Error("GetAccount() failed with new authentication")
-			continue
-		}
-		log.WithField("name", self.Name).Info("Authentication successful")
-		c.accounts[instance] = self
 	}
 	return current
 }
@@ -261,11 +256,23 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 			continue
 		}
 
-		for _, change := range changes {
-			result[h.instance] = append(result[h.instance], change)
-		}
+		result[h.instance] = append(result[h.instance], changes...)
 	}
 	return result
+}
+
+func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
+	h, ok := c.handlers[instance]
+	if !ok {
+		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	info, _, err := h.changeService.GetChange(id, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting current change: %w", err)
+	}
+
+	return info, nil
 }
 
 // SetReview writes a review comment base on the change id + revision
@@ -301,8 +308,25 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 }
 
 // Account returns gerrit account for the given instance
-func (c *Client) Account(instance string) *gerrit.AccountInfo {
-	return c.accounts[instance]
+func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if existing, ok := c.accounts[instance]; ok {
+		return existing, nil
+	}
+
+	handler, ok := c.handlers[instance]
+	if !ok {
+		return nil, errors.New("no handlers found")
+	}
+
+	self, _, err := handler.accountService.GetAccount("self")
+	if err != nil {
+		return nil, fmt.Errorf("GetAccount() failed with new authentication: %v", err)
+
+	}
+	c.accounts[instance] = self
+	return c.accounts[instance], nil
 }
 
 // private handler implementation details

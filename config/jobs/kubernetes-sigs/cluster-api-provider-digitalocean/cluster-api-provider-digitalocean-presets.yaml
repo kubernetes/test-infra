@@ -1,5 +1,5 @@
 presets:
-# Credentials for using DigitalOcean test account. Used for cluster-api-provider-digitalocean tests.
+# Credentials for using DigitalOcean test account. Used for cluster-api-provider-digitalocean/kops tests.
 - labels:
     preset-do-credential: "true"
   env:

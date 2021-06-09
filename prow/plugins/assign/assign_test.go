@@ -48,9 +48,7 @@ func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	var missing github.MissingUsers
 	sort.Strings(assignees)
 	if len(assignees) > 10 {
-		for _, who := range assignees[10:] {
-			missing.Users = append(missing.Users, who)
-		}
+		missing.Users = append(missing.Users, assignees[10:]...)
 		for _, who := range assignees[:10] {
 			c.assigned[who]++
 		}

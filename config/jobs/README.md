@@ -66,6 +66,15 @@ files here. eg:
 - [the default preset with no labels] is used to set the `GOPROXY` env var
   for all jobs by default
 
+## Secrets
+
+Prow jobs can use secrets located in the same namespace within the cluster
+where the jobs are executed, by using the [same mechanism of
+podspec](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets).
+The secrets used in prow jobs can be source controlled and synced from any major
+secret manager provider, such as google secret manager, see
+[prow_secret](./prow/prow_secrets.md) for instructions.
+
 ## Job Examples
 
 A presubmit job named "pull-community-verify" that will run against all PRs to

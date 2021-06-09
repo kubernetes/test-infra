@@ -90,7 +90,7 @@ var cacheEntryAge = prometheus.NewHistogramVec(
 	[]string{"token_hash", "path", "user_agent"},
 )
 
-var muxTokenUsage, muxRequestMetrics sync.Mutex
+var muxTokenUsage sync.Mutex
 var lastGitHubResponse time.Time
 
 func init() {

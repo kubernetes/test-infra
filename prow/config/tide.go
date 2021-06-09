@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -103,6 +104,11 @@ type Tide struct {
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
 
+	// TargetURLs is a map from "*", <org>, or <org/repo> to the URL for the tide status contexts.
+	// The most specific key that matches will be used.
+	// This field is mutually exclusive with TargetURL.
+	TargetURLs map[string]string `json:"target_urls,omitempty"`
+
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
@@ -145,16 +151,56 @@ type Tide struct {
 	ContextOptions TideContextPolicyOptions `json:"context_options,omitempty"`
 
 	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
-	// integer batch size limit as the value. The empty string key can be used as
-	// a global default.
+	// integer batch size limit as the value. Use "*" as key to set a global default.
 	// Special values:
 	//  0 => unlimited batch size
 	// -1 => batch merging disabled :(
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
 
-	// Priority is an ordered list of labels that would be prioritized before other PRs
-	// PRs should match all labels contained in a list to be prioritized
+	// Priority is an ordered list of sets of labels that would be prioritized before other PRs
+	// PRs should match all labels contained in a set to be prioritized. The first entry has
+	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
+
+	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
+	// testing pre-existing batches instead of immediately including new PRs as they become
+	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
+	// starting a new one requires to start new instances of all tests.
+	// Use '*' as key to set this globally. Defaults to true.
+	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+}
+
+func (t *Tide) mergeFrom(additional *Tide) error {
+	if t.MergeType == nil {
+		t.MergeType = additional.MergeType
+		return nil
+	}
+
+	var errs []error
+	for orgOrRepo, mergeMethod := range additional.MergeType {
+		if _, alreadyConfigured := t.MergeType[orgOrRepo]; alreadyConfigured {
+			errs = append(errs, fmt.Errorf("config for org or repo %s passed more than once", orgOrRepo))
+			continue
+		}
+		t.MergeType[orgOrRepo] = mergeMethod
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func (t *Tide) PrioritizeExistingBatches(repo OrgRepo) bool {
+	if val, set := t.PrioritizeExistingBatchesMap[repo.String()]; set {
+		return val
+	}
+	if val, set := t.PrioritizeExistingBatchesMap[repo.Org]; set {
+		return val
+	}
+
+	if val, set := t.PrioritizeExistingBatchesMap["*"]; set {
+		return val
+	}
+
+	return true
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
@@ -195,31 +241,43 @@ func (t *Tide) MergeCommitTemplate(repo OrgRepo) TideMergeCommitTemplate {
 func (t *Tide) GetPRStatusBaseURL(repo OrgRepo) string {
 	if byOrgRepo, ok := t.PRStatusBaseURLs[repo.String()]; ok {
 		return byOrgRepo
-	} else if byOrg, ok := t.PRStatusBaseURLs[repo.Org]; ok {
+	}
+	if byOrg, ok := t.PRStatusBaseURLs[repo.Org]; ok {
 		return byOrg
 	}
 
 	return t.PRStatusBaseURLs["*"]
 }
 
+func (t *Tide) GetTargetURL(repo OrgRepo) string {
+	if byOrgRepo, ok := t.TargetURLs[repo.String()]; ok {
+		return byOrgRepo
+	}
+	if byOrg, ok := t.TargetURLs[repo.Org]; ok {
+		return byOrg
+	}
+
+	return t.TargetURLs["*"]
+}
+
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
 type TideQuery struct {
-	Orgs          []string `json:"orgs,omitempty"`
-	Repos         []string `json:"repos,omitempty"`
-	ExcludedRepos []string `json:"excludedRepos,omitempty"`
-
 	Author string `json:"author,omitempty"`
-
-	ExcludedBranches []string `json:"excludedBranches,omitempty"`
-	IncludedBranches []string `json:"includedBranches,omitempty"`
 
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
 
+	ExcludedBranches []string `json:"excludedBranches,omitempty"`
+	IncludedBranches []string `json:"includedBranches,omitempty"`
+
 	Milestone string `json:"milestone,omitempty"`
 
 	ReviewApprovedRequired bool `json:"reviewApprovedRequired,omitempty"`
+
+	Orgs          []string `json:"orgs,omitempty"`
+	Repos         []string `json:"repos,omitempty"`
+	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 }
 
 // constructQuery returns a map[org][]orgSpecificQueryParts (org, repo, -repo), remainingQueryString

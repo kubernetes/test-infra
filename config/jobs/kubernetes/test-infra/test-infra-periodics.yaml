@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20201028-8000225-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
       command:
       - hack/bazel.sh
       args:
@@ -19,6 +19,9 @@ periodics:
       - --config=ci
       - --nobuild_tests_only
       - //...
+      env:
+      - name: BAZEL_FETCH_PLEASE
+        value: //...
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: ci-bazel

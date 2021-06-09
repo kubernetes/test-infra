@@ -31,6 +31,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
@@ -42,6 +43,7 @@ type options struct {
 	github                 prowflagutil.GitHubOptions
 	labels                 prowflagutil.Strings
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	logLevel               string
 
 	webhookSecretFile string
 	prowAssignments   bool
@@ -67,6 +69,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.Var(&o.labels, "labels", "Labels to apply to the cherrypicked PR.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
 	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
@@ -79,14 +82,17 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit()
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
+	logLevel, err := logrus.ParseLevel(o.logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to parse loglevel")
+	}
+	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", pluginName)
 
 	secretAgent := &secret.Agent{}

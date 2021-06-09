@@ -130,7 +130,7 @@ func (af *StorageArtifactFetcher) newStorageJobSource(storagePath string) (*stor
 func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
 	src, err := af.newStorageJobSource(key)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %w", key, err)
 	}
 
 	listStart := time.Now()
@@ -199,7 +199,7 @@ func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, er
 func (af *StorageArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
 	src, err := af.newStorageJobSource(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get GCS job source from %s: %v", key, err)
+		return nil, fmt.Errorf("failed to get GCS job source from %s: %w", key, err)
 	}
 
 	_, prefix := extractBucketPrefixPair(src.jobPath())

@@ -12,8 +12,10 @@ dashboard_groups:
   dashboard_names:
   - sig-testing-misc
   - sig-testing-canaries
+  - sig-testing-e2e-framework
   - sig-testing-fejtabot
   - sig-testing-kind
+  - sig-testing-kubetest2
   - sig-testing-maintenance
   - sig-testing-prow
   - sig-testing-images
@@ -28,8 +30,10 @@ dashboards:
   - name: ci-kubernetes-coverage-unit
     test_group_name: ci-kubernetes-coverage-unit
     base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
+- name: sig-testing-e2e-framework
 - name: sig-testing-fejtabot
 - name: sig-testing-kind
+- name: sig-testing-kubetest2
 - name: sig-testing-maintenance
 - name: sig-testing-prow
 - name: sig-testing-images

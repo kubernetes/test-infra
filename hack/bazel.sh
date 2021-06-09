@@ -20,6 +20,19 @@ set -o errexit
 set -o pipefail
 
 code=0
+# Remove retries after
+# https://github.com/bazelbuild/bazel/issues/12599
+if [ -n "${BAZEL_FETCH_PLEASE:-}" ]; then
+  for i in {1..3}; do
+    if (set -o xtrace && bazel fetch "${BAZEL_FETCH_PLEASE}"); then
+      break
+    elif [[ "$i" == 3 ]]; then
+      echo "Failed"
+      exit 1
+    fi
+    echo "Failed fetch attempt $i, retrying ..."
+  done
+fi
 (set -o xtrace && bazel "$@") || code=$?
 coalesce=$(dirname "${BASH_SOURCE[0]}")/coalesce.py
 (set -o xtrace && "$coalesce") || true

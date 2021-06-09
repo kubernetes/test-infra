@@ -164,12 +164,12 @@ func (o Options) ExecuteProcess() (int, error) {
 	case <-time.After(timeout):
 		logrus.Errorf("Process did not finish before %s timeout", timeout)
 		cancelled = true
-		gracefullyTerminate(command, done, gracePeriod)
+		gracefullyTerminate(command, done, gracePeriod, nil)
 	case s := <-interrupt:
 		logrus.Errorf("Entrypoint received interrupt: %v", s)
 		cancelled = true
 		aborted = true
-		gracefullyTerminate(command, done, gracePeriod)
+		gracefullyTerminate(command, done, gracePeriod, &s)
 	}
 
 	var returnCode int
@@ -238,9 +238,14 @@ func optionOrDefault(option, defaultValue time.Duration) time.Duration {
 	return option
 }
 
-func gracefullyTerminate(command *exec.Cmd, done <-chan error, gracePeriod time.Duration) {
+func gracefullyTerminate(command *exec.Cmd, done <-chan error, gracePeriod time.Duration, signal *os.Signal) {
 	if err := command.Process.Signal(os.Interrupt); err != nil {
 		logrus.WithError(err).Error("Could not interrupt process after timeout")
+	}
+	if signal != nil {
+		if err := command.Process.Signal(*signal); err != nil {
+			logrus.WithError(err).Errorf("Could not send signal %v to process after timeout", signal)
+		}
 	}
 	select {
 	case <-done:

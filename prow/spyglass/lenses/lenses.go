@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -66,13 +67,13 @@ type Lens interface {
 	// Config returns a LensConfig that describes the lens.
 	Config() LensConfig
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string
+	Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
+	Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
+	Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 }
 
 // ResourceDirForLens returns the path to a lens's public resource directory.

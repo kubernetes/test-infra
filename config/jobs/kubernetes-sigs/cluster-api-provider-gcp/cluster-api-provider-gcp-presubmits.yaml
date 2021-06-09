@@ -5,9 +5,12 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -22,9 +25,12 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -42,9 +48,12 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -66,6 +75,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     always_run: true
     optional: false
     decorate: true
@@ -78,7 +90,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -107,6 +119,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     always_run: false
     optional: true
     decorate: true
@@ -123,7 +138,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"

@@ -1,0 +1,11 @@
+# Dashboard Group
+#
+dashboard_groups:
+- name: sig-security
+  dashboard_names:
+  - sig-security-cvelist-public
+
+# Dashboards
+#
+dashboards:
+- name: sig-security-cvelist-public

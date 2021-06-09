@@ -64,12 +64,6 @@ dashboards:
       description: storage gci gce alpha enabled default features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
-    - name: gce-multizone
-      test_group_name: ci-kubernetes-e2e-gce-multizone
-      base_options: include-filter-by-regex=Volume%7Cstorage
-      description: storage gce multizone e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
     - name: gce-iscsi
       test_group_name: ci-kubernetes-e2e-gce-iscsi
       base_options: include-filter-by-regex=Volume%7Cstorage

@@ -1,6 +1,6 @@
 periodics:
 - name: ci-k8sio-groups
-  interval: 24h
+  interval: 6h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
@@ -11,17 +11,56 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: k8s.io
-    base_ref: master
+    base_ref: main
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
-    - name: groups
-      image: golang:1.13
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       command:
-      - bash
+      - make
       args:
-      - -c
-      - "cd groups && make run -- --confirm"
+      - -C
+      - groups
+      - run
+      - --
+      - --confirm
+- name: ci-k8sio-audit
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes
+      slug: wg-k8s-infra-leads
+    - org: kubernetes
+      slug: k8s-infra-gcp-auditors
+  spec:
+    serviceAccountName: k8s-infra-gcp-auditor
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      imagePullPolicy: Always
+      command:
+      - ./audit/create-or-update-audit-pr.sh
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: cncf-ci-github-token
 
 postsubmits:
   kubernetes/k8s.io:
@@ -29,34 +68,48 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: '^groups/groups.yaml'
+    run_if_changed: '^groups/'
+    branches:
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: k8s-infra-group-admins
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
-      - name: groups
-        image: golang:1.13
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - bash
+        - make
         args:
-        - -c
-        - "cd groups && make run -- --confirm"
+        - -C
+        - groups
+        - run
+        - --
+        - --confirm
   - name: post-k8sio-dns-update
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
     run_if_changed: "^dns/zone-configs/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
@@ -70,47 +123,83 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources/"
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - bash
         args:
         - -c
         - |
-          gcloud container clusters get-credentials prow-build --project=k8s-infra-prow-build --region=us-central1
-          kubectl --context=gke_k8s-infra-prow-build_us-central1_prow-build \
-            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build/resources
+          cd ./infra/gcp/clusters/projects/k8s-infra-prow-build
+          if [[ -x ./deploy.sh ]]; then
+            ./deploy.sh
+          else
+            gcloud \
+              container clusters get-credentials \
+              --project=k8s-infra-prow-build \
+              --region=us-central1 \
+              prow-build
+            kubectl \
+              --context=gke_k8s-infra-prow-build_us-central1_prow-build \
+              apply \
+                -f ./prow-build/resources \
+                --recursive
+          fi
   - name: post-k8sio-deploy-prow-build-trusted-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources/"
+    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/"
     branches:
-    - ^master$
+    - ^main$
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: wg-k8s-infra-leads
+      - org: kubernetes
+        slug: test-infra-admins
     spec:
       serviceAccountName: prow-deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - bash
         args:
         - -c
         - |
-          gcloud container clusters get-credentials prow-build-trusted --project=k8s-infra-prow-build-trusted --region=us-central1
-          kubectl --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
-            apply -f ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/resources
+          cd ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted
+          if [[ -x ./deploy.sh ]]; then
+            ./deploy.sh
+          else
+            gcloud \
+              container clusters get-credentials \
+              --project=k8s-infra-prow-build-trusted \
+              --region=us-central1 \
+              prow-build-trusted
+            kubectl \
+              --context=gke_k8s-infra-prow-build-trusted_us-central1_prow-build-trusted \
+              apply \
+                -f ./prow-build-trusted/resources \
+                --recursive
+          fi

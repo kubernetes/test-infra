@@ -163,13 +163,10 @@ func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 	filtered := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
 		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos())
-		var ignored []string
 		if needsHide && ta.showHidden {
 			filtered = append(filtered, pool)
 		} else if needsHide == ta.hiddenOnly {
 			filtered = append(filtered, pool)
-		} else {
-			ignored = append(ignored, pool.Org+"/"+pool.Repo)
 		}
 	}
 	return filtered

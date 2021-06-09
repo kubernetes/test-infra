@@ -17,16 +17,23 @@ limitations under the License.
 package plugins
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/genyaml"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
@@ -182,11 +189,11 @@ type Agent struct {
 }
 
 // NewAgent bootstraps a new config.Agent struct from the passed dependencies.
-func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, githubOrg string, metrics *Metrics, logger *logrus.Entry, plugin string) Agent {
 	logger = logger.WithField("plugin", plugin)
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
-	gitHubClient := clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)
+	gitHubClient := &githubV4OrgAddingWrapper{org: githubOrg, Client: clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)}
 	return Agent{
 		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
@@ -249,13 +256,64 @@ func NewFakeConfigAgent() ConfigAgent {
 // the file can't be read or the configuration is invalid.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
+func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 	np := &Configuration{}
 	if err := yaml.Unmarshal(b, np); err != nil {
+		return err
+	}
+
+	var errs []error
+	for _, supplementalPluginConfigDir := range supplementalPluginConfigDirs {
+		if supplementalPluginConfigFileSuffix == "" {
+			break
+		}
+		if err := filepath.Walk(supplementalPluginConfigDir, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+			// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+			// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+			// get duplicate data.
+			if strings.HasPrefix(info.Name(), "..") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
+			if info.IsDir() || !strings.HasSuffix(path, supplementalPluginConfigFileSuffix) {
+				return nil
+			}
+
+			data, err := ioutil.ReadFile(path)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
+				return nil
+			}
+
+			cfg := &Configuration{}
+			if err := yaml.Unmarshal(data, cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to unmarshal %s: %w", path, err))
+				return nil
+			}
+
+			if err := np.mergeFrom(cfg); err != nil {
+				errs = append(errs, fmt.Errorf("failed to merge config from %s into main config: %w", path, err))
+			}
+
+			return nil
+
+		}); err != nil {
+			errs = append(errs, fmt.Errorf("failed to walk %s: %w", supplementalPluginConfigDir, err))
+		}
+	}
+	if err := utilerrors.NewAggregate(errs); err != nil {
 		return err
 	}
 
@@ -293,14 +351,14 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 // then start returns the error. Future errors will halt updates but not stop.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Start(path string, checkUnknownPlugins bool) error {
-	if err := pa.Load(path, checkUnknownPlugins); err != nil {
+func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
+	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
 		return err
 	}
-	ticker := time.Tick(1 * time.Minute)
+	ticker := time.NewTicker(time.Minute)
 	go func() {
-		for range ticker {
-			if err := pa.Load(path, checkUnknownPlugins); err != nil {
+		for range ticker.C {
+			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}
@@ -431,8 +489,10 @@ func (pa *ConfigAgent) getPlugins(owner, repo string) []string {
 	var plugins []string
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
-	plugins = append(plugins, pa.configuration.Plugins[owner]...)
-	plugins = append(plugins, pa.configuration.Plugins[fullName]...)
+	if !sets.NewString(pa.configuration.Plugins[owner].ExcludedRepos...).Has(repo) {
+		plugins = append(plugins, pa.configuration.Plugins[owner].Plugins...)
+	}
+	plugins = append(plugins, pa.configuration.Plugins[fullName].Plugins...)
 
 	return plugins
 }
@@ -488,4 +548,13 @@ func NewMetrics() *Metrics {
 	return &Metrics{
 		ConfigMapGauges: configMapSizeGauges,
 	}
+}
+
+type githubV4OrgAddingWrapper struct {
+	org string
+	github.Client
+}
+
+func (c *githubV4OrgAddingWrapper) Query(ctx context.Context, q interface{}, args map[string]interface{}) error {
+	return c.QueryWithGitHubAppsSupport(ctx, q, args, c.org)
 }

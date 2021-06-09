@@ -38,6 +38,9 @@ listergen=$PWD/$4
 go_bindata=$PWD/$5
 do_clean=${6:-}
 
+# Ensure correct go binary is on path
+PATH=$go_sdk/bin:${PATH:-}
+
 cleanup() {
   if [[ -n ${fake_gopath:-} ]]; then chmod u+rwx -R $fake_gopath && rm -rf $fake_gopath; fi
   if [[ -n ${TEMP_GOCACHE:-} ]]; then rm -rf $TEMP_GOCACHE; fi

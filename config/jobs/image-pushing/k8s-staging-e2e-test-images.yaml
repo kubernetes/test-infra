@@ -24,7 +24,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -63,7 +63,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -102,7 +102,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -141,7 +141,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -158,6 +158,45 @@ postsubmits:
             # We override that with the cuda-vector-add image.
             - name: WHAT
               value: "cuda-vector-add"
+    - name: post-kubernetes-push-e2e-cuda-vector-add-old-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/cuda-vector-add-old\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the cuda-vector-add-old image.
+            - name: WHAT
+              value: "cuda-vector-add-old"
     - name: post-kubernetes-push-e2e-echoserver-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -180,7 +219,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -197,6 +236,123 @@ postsubmits:
             # We override that with the echoserver image.
             - name: WHAT
               value: "echoserver"
+    - name: post-kubernetes-push-e2e-glusterdynamic-provisioner-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the glusterdynamic-provisioner image.
+            - name: WHAT
+              value: "glusterdynamic-provisioner"
+    - name: post-kubernetes-push-e2e-httpd-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/httpd\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the httpd image.
+            - name: WHAT
+              value: "httpd"
+    - name: post-kubernetes-push-e2e-httpd-new-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/httpd-new\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the httpd-new image.
+            - name: WHAT
+              value: "httpd-new"
     - name: post-kubernetes-push-e2e-ipc-utils-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -219,7 +375,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -258,7 +414,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -297,7 +453,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -336,7 +492,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -375,7 +531,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -392,6 +548,84 @@ postsubmits:
             # We override that with the nautilus image.
             - name: WHAT
               value: "nautilus"
+    - name: post-kubernetes-push-e2e-nginx-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/nginx\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the nginx image.
+            - name: WHAT
+              value: "nginx"
+    - name: post-kubernetes-push-e2e-nginx-new-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/nginx-new\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the nginx-new image.
+            - name: WHAT
+              value: "nginx-new"
     - name: post-kubernetes-push-e2e-node-perf-tf-wide-deep-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -414,7 +648,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -453,7 +687,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -492,7 +726,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -531,7 +765,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -570,7 +804,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -587,6 +821,45 @@ postsubmits:
             # We override that with the nonroot image.
             - name: WHAT
               value: "nonroot"
+    - name: post-kubernetes-push-e2e-perl-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/perl\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+            # By default, the E2E test image's WHAT is all-conformance.
+            # We override that with the perl image.
+            - name: WHAT
+              value: "perl"
     - name: post-kubernetes-push-e2e-pets-redis-installer-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -609,7 +882,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -648,7 +921,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -687,7 +960,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -726,7 +999,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -765,7 +1038,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -804,7 +1077,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -843,7 +1116,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -882,7 +1155,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -921,7 +1194,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -960,7 +1233,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -999,7 +1272,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -1038,7 +1311,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -1090,7 +1363,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
         command:
           - /run.sh
         args:

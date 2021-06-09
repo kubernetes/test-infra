@@ -44,7 +44,7 @@ const retryCount = 4
 // Upload uploads all of the data in the
 // uploadTargets map to blob storage in parallel. The map is
 // keyed on blob storage path under the bucket
-func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
+func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
 	parsedBucket, err := url.Parse(bucket)
 	if err != nil {
 		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
@@ -53,7 +53,6 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 		parsedBucket.Scheme = providers.GS
 	}
 
-	ctx := context.Background()
 	opener, err := pkgio.NewOpener(ctx, gcsCredentialsFile, s3CredentialsFile)
 	if err != nil {
 		return fmt.Errorf("new opener: %w", err)
@@ -66,8 +65,7 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map
 // is keyed on file path under the exportDir.
-func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
-	ctx := context.Background()
+func LocalExport(ctx context.Context, exportDir string, uploadTargets map[string]UploadFunc) error {
 	opener, err := pkgio.NewOpener(ctx, "", "")
 	if err != nil {
 		return fmt.Errorf("new opener: %w", err)

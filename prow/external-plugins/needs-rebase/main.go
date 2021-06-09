@@ -26,38 +26,51 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/pjutil"
-
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/labels"
-
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
-	"k8s.io/test-infra/prow/plugins"
 )
 
 type options struct {
 	port int
 
-	pluginConfig           string
+	pluginsConfig          pluginsflagutil.PluginOptions
 	dryRun                 bool
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	logLevel               string
+
+	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
+	hourlyTokens int
 
 	updatePeriod time.Duration
 
 	webhookSecretFile string
 }
 
+const defaultHourlyTokens = 360
+
 func (o *options) Validate() error {
 	for idx, group := range []flagutil.OptionGroup{&o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return fmt.Errorf("%d: %w", idx, err)
 		}
+	}
+
+	if o.hourlyTokens != defaultHourlyTokens {
+		if o.github.ThrottleHourlyTokens != defaultHourlyTokens {
+			return fmt.Errorf("--hourlytokens cannot be specified with together with --github-hourly-tokens: use just the latter")
+		}
+		logrus.Warn("--hourly-tokens is deprecated: use --github-hourly-tokens instead")
+		o.github.ThrottleHourlyTokens = o.hourlyTokens
 	}
 
 	return nil
@@ -67,12 +80,16 @@ func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
+	fs.IntVar(&o.hourlyTokens, "hourly-tokens", defaultHourlyTokens, "The number of hourly tokens need-rebase may use. DEPRECATED: use --github-allowed-burst")
 
-	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
+	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultHourlyTokens, defaultHourlyTokens))
+
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	for _, group := range []flagutil.OptionGroup{&o.instrumentationOptions, &o.pluginsConfig} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -80,31 +97,37 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit()
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.InfoLevel)
+	logLevel, err := logrus.ParseLevel(o.logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to parse loglevel")
+	}
+	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
+	secrets := []string{o.webhookSecretFile}
+	if o.github.TokenPath != "" {
+		secrets = append(secrets, o.github.TokenPath)
+	}
+	if err := secretAgent.Start(secrets); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	pa := &plugins.ConfigAgent{}
-	if err := pa.Start(o.pluginConfig, false); err != nil {
-		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
+	pa, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
+		log.WithError(err).Fatal("Error loading plugin config")
 	}
 
 	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	githubClient.Throttle(360, 360)
 
 	server := &Server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
@@ -116,7 +139,7 @@ func main() {
 
 	interrupts.TickLiteral(func() {
 		start := time.Now()
-		if err := plugin.HandleAll(log, githubClient, pa.Config()); err != nil {
+		if err := plugin.HandleAll(log, githubClient, pa.Config(), o.github.AppID != ""); err != nil {
 			log.WithError(err).Error("Error during periodic update of all PRs.")
 		}
 		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")

@@ -1,4 +1,8 @@
 test_groups:
+- name: osde2e-stage-aws-conformance-default
+  gcs_prefix: origin-ci-test/logs/osde2e-stage-aws-conformance-default
+  column_header:
+  - configuration_value: cluster-version
 - name: osde2e-int-aws-e2e-upgrade-to-latest-z
   gcs_prefix: origin-ci-test/logs/osde2e-int-aws-e2e-upgrade-to-latest-z
   column_header:
@@ -201,12 +205,32 @@ test_groups:
 dashboards:
 - name: redhat-osd
   dashboard_tab:
+  - name: osde2e-stage-aws-conformance-default
+    description: OpenShift conformance tests on OSD
+    test_group_name: osde2e-stage-aws-conformance-default
+    base_options: width=10
+    open_test_template: # The URL template to visit after clicking on a cell
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    file_bug_template: # The URL template to visit when filing a bug
+      url: https://github.com/openshift/osde2e/issues/new
+      options:
+        - key: title
+          value: 'E2E: <test-name>'
+        - key: body
+          value: <test-url>
+    open_bug_template: # The URL template to visit when visiting an associated bug
+      url: https://github.com/openshift/osde2e/issues/
+    results_url_template: # The URL template to visit after clicking
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
+    code_search_url_template: # The URL template to visit when searching for changelists
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osde2e-int-aws-e2e-upgrade-to-latest-z
     description: OSD test
     test_group_name: osde2e-int-aws-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -226,7 +250,7 @@ dashboards:
     test_group_name: osde2e-int-aws-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -246,7 +270,7 @@ dashboards:
     test_group_name: osde2e-int-aws-e2e-upgrade-to-latest-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -266,7 +290,7 @@ dashboards:
     test_group_name: osde2e-int-aws-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -286,7 +310,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -306,7 +330,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-informing-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -326,7 +350,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-informing-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -346,7 +370,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-to-latest
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -366,7 +390,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-one-to-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -386,7 +410,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-two-to-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -406,7 +430,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-three-to-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -426,7 +450,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-prod-minus-four-to-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -446,7 +470,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-upgrade-prod-plus-one-to-latest
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -466,7 +490,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-middle-imageset
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -486,7 +510,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -506,7 +530,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-informing-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -526,7 +550,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-informing-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -546,7 +570,7 @@ dashboards:
     test_group_name: osde2e-prod-aws-e2e-oldest-imageset
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -566,7 +590,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -586,7 +610,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -606,7 +630,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-upgrade-to-latest
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -626,7 +650,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-middle-imageset
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -646,7 +670,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -666,7 +690,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -686,7 +710,7 @@ dashboards:
     test_group_name: osde2e-stage-aws-e2e-oldest-imageset
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -706,7 +730,7 @@ dashboards:
     test_group_name: osde2e-int-gcp-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -726,7 +750,7 @@ dashboards:
     test_group_name: osde2e-int-gcp-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -746,7 +770,7 @@ dashboards:
     test_group_name: osde2e-int-gcp-e2e-upgrade-to-latest-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -766,7 +790,7 @@ dashboards:
     test_group_name: osde2e-int-gcp-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -786,7 +810,7 @@ dashboards:
     test_group_name: osde2e-int-moa-e2e-osd-default-plus-one-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -806,7 +830,7 @@ dashboards:
     test_group_name: osde2e-int-moa-e2e-osd-default-plus-two-nightly
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -826,7 +850,7 @@ dashboards:
     test_group_name: osde2e-stage-gcp-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -846,7 +870,7 @@ dashboards:
     test_group_name: osde2e-stage-gcp-e2e-upgrade-to-latest
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -866,7 +890,7 @@ dashboards:
     test_group_name: osde2e-stage-gcp-e2e-upgrade-to-latest-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -886,7 +910,7 @@ dashboards:
     test_group_name: osde2e-stage-gcp-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -906,7 +930,7 @@ dashboards:
     test_group_name: osde2e-stage-gcp-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -926,7 +950,7 @@ dashboards:
     test_group_name: osde2e-stage-moa-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -946,7 +970,7 @@ dashboards:
     test_group_name: osde2e-stage-moa-e2e-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -966,7 +990,7 @@ dashboards:
     test_group_name: osde2e-stage-moa-e2e-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -986,7 +1010,7 @@ dashboards:
     test_group_name: osde2e-prod-gcp-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -1006,7 +1030,7 @@ dashboards:
     test_group_name: osde2e-prod-gcp-e2e-upgrade-to-next-y
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -1026,7 +1050,7 @@ dashboards:
     test_group_name: osde2e-prod-gcp-e2e-upgrade-to-next-z
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -1046,7 +1070,7 @@ dashboards:
     test_group_name: osde2e-prod-gcp-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -1066,7 +1090,7 @@ dashboards:
     test_group_name: osde2e-prod-moa-e2e-default
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:
@@ -1086,7 +1110,7 @@ dashboards:
     test_group_name: osde2e-prod-moa-e2e-next
     base_options: width=10
     open_test_template: # The URL template to visit after clicking on a cell
-      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+      url: https://prow.svc.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
       url: https://github.com/openshift/osde2e/issues/new
       options:

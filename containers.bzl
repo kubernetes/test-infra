@@ -65,8 +65,8 @@ def repositories():
 
     container_pull(
         name = "bazel-base",
-        digest = "sha256:2e8163b61f3759f6ff0e4df43c40d092dae331b1c2d5326f05f78e72a68d3203",
+        digest = "sha256:e006f1c3658dd11d5176d5f7a862df4d5b9c06cfe014d5b8a86bb64b20a6f8be",
         registry = "gcr.io",
         repository = "k8s-testimages/launcher.gcr.io/google/bazel",
-        tag = "v20200609-e7bfd25-test-infra",
+        tag = "v20210128-721ee66-test-infra",
     )

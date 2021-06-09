@@ -77,7 +77,7 @@ func TestPartitioningRoundTripper(t *testing.T) {
 			defer wg.Done()
 			_, err := partitioningRoundTripper.RoundTrip(request)
 			if err != nil {
-				t.Fatalf("RoundTrip: %v", err)
+				t.Errorf("RoundTrip: %v", err)
 			}
 		}()
 	}

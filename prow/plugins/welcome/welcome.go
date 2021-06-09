@@ -84,6 +84,7 @@ type githubClient interface {
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type client struct {

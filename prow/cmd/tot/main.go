@@ -32,9 +32,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -49,8 +51,7 @@ type options struct {
 	useFallback bool
 	fallbackURI string
 
-	configPath             string
-	jobConfigPath          string
+	config                 configflagutil.ConfigOptions
 	fallbackBucket         string
 	instrumentationOptions prowflagutil.InstrumentationOptions
 }
@@ -66,8 +67,7 @@ func gatherOptions() options {
 		"URL template to fallback to for jobs that lack a last vended build number.",
 	)
 
-	flag.StringVar(&o.configPath, "config-path", "", "Path to prow config.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	o.config.AddFlags(flag.CommandLine)
 	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
 		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
@@ -77,10 +77,10 @@ func gatherOptions() options {
 }
 
 func (o *options) Validate() error {
-	if o.configPath != "" && o.fallbackBucket == "" {
-		return errors.New("you need to provide a bucket to fallback to when the prow config is specified")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
-	if o.configPath == "" && o.fallbackBucket != "" {
+	if o.config.ConfigPath == "" && o.fallbackBucket != "" {
 		return errors.New("you need to provide the prow config when a fallback bucket is specified")
 	}
 	return nil
@@ -281,7 +281,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	s, err := newStore(o.storagePath)
@@ -291,9 +291,10 @@ func main() {
 
 	if o.useFallback {
 		var configAgent *config.Agent
-		if o.configPath != "" {
-			configAgent = &config.Agent{}
-			if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		if o.config.ConfigPath != "" {
+			var err error
+			configAgent, err = o.config.ConfigAgent()
+			if err != nil {
 				logrus.WithError(err).Fatal("Error starting config agent.")
 			}
 		}

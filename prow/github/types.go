@@ -215,6 +215,10 @@ const (
 	PullRequestActionLocked PullRequestEventAction = "locked"
 	// PullRequestActionUnlocked means labels were removed
 	PullRequestActionUnlocked PullRequestEventAction = "unlocked"
+	// PullRequestActionAutoMergeEnabled means auto merge was enabled
+	PullRequestActionAutoMergeEnabled PullRequestEventAction = "auto_merge_enabled"
+	// PullRequestActionAutoMergeDisabled means auto merge was disabled
+	PullRequestActionAutoMergeDisabled PullRequestEventAction = "auto_merge_disabled"
 )
 
 // GenericEvent is a lightweight struct containing just Sender, Organization and Repo as
@@ -242,6 +246,11 @@ type PullRequestEvent struct {
 	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
+
+const (
+	PullRequestStateOpen   = "open"
+	PullRequestStateClosed = "closed"
+)
 
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
@@ -273,8 +282,9 @@ type PullRequest struct {
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
 	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
-	Milestone *Milestone `json:"milestone,omitempty"`
-	Commits   int        `json:"commits"`
+	Milestone         *Milestone `json:"milestone,omitempty"`
+	Commits           int        `json:"commits"`
+	AuthorAssociation string     `json:"author_association,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -342,6 +352,17 @@ type Repo struct {
 	// is being used, if listing a team's repos this will be for the
 	// team's privilege level in the repo
 	Permissions RepoPermissions `json:"permissions"`
+	Parent      ParentRepo      `json:"parent"`
+}
+
+// ParentRepo contains a small subsection of general repository information: it
+// just includes the information needed to confirm that a parent repo exists
+// and what the name of that repo is.
+type ParentRepo struct {
+	Owner    User   `json:"owner"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	HTMLURL  string `json:"html_url"`
 }
 
 // Repo contains detailed repository information, including items
@@ -449,10 +470,12 @@ func (r RepoUpdateRequest) Defined() bool {
 // repo. At most one of the booleans here should be true.
 type RepoPermissions struct {
 	// Pull is equivalent to "Read" permissions in the web UI
-	Pull bool `json:"pull"`
+	Pull   bool `json:"pull"`
+	Triage bool `json:"triage"`
 	// Push is equivalent to "Edit" permissions in the web UI
-	Push  bool `json:"push"`
-	Admin bool `json:"admin"`
+	Push     bool `json:"push"`
+	Maintain bool `json:"maintain"`
+	Admin    bool `json:"admin"`
 }
 
 // RepoPermissionLevel is admin, write, read or none.
@@ -460,11 +483,20 @@ type RepoPermissions struct {
 // See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
 type RepoPermissionLevel string
 
+// For more information on access levels, see:
+// https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization
 const (
 	// Read allows pull but not push
 	Read RepoPermissionLevel = "read"
+	// Triage allows Read and managing issues
+	// pull requests but not push
+	Triage RepoPermissionLevel = "triage"
 	// Write allows Read plus push
 	Write RepoPermissionLevel = "write"
+	// Maintain allows Write along with managing
+	// repository without access to sensitive or
+	// destructive instructions.
+	Maintain RepoPermissionLevel = "maintain"
 	// Admin allows Write plus change others' rights.
 	Admin RepoPermissionLevel = "admin"
 	// None disallows everything
@@ -472,10 +504,12 @@ const (
 )
 
 var repoPermissionLevels = map[RepoPermissionLevel]bool{
-	Read:  true,
-	Write: true,
-	Admin: true,
-	None:  true,
+	Read:     true,
+	Triage:   true,
+	Write:    true,
+	Maintain: true,
+	Admin:    true,
+	None:     true,
 }
 
 // MarshalText returns the byte representation of the permission
@@ -496,9 +530,11 @@ func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
 type TeamPermission string
 
 const (
-	RepoPull  TeamPermission = "pull"
-	RepoPush  TeamPermission = "push"
-	RepoAdmin TeamPermission = "admin"
+	RepoPull     TeamPermission = "pull"
+	RepoTriage   TeamPermission = "triage"
+	RepoMaintain TeamPermission = "maintain"
+	RepoPush     TeamPermission = "push"
+	RepoAdmin    TeamPermission = "admin"
 )
 
 // Branch contains general branch information.
@@ -663,7 +699,8 @@ type IssueEvent struct {
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
 	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
-	Label Label `json:"label"`
+	Label  Label `json:"label"`
+	Sender User  `json:"sender"`
 
 	// GUID is included in the header of the request received by GitHub.
 	GUID string
@@ -899,6 +936,17 @@ type ReviewCommentEvent struct {
 	GUID string
 }
 
+// DiffSide enumerates the sides of the diff that the PR's changes appear on.
+// See also: https://docs.github.com/en/rest/reference/pulls#create-a-review-comment-for-a-pull-request
+type DiffSide string
+
+const (
+	// DiffSideLeft means left side of the diff.
+	DiffSideLeft = "LEFT"
+	// DiffSideRight means right side of the diff.
+	DiffSideRight = "RIGHT"
+)
+
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
 	ID        int       `json:"id"`
@@ -911,7 +959,11 @@ type ReviewComment struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// Position will be nil if the code has changed such that the comment is no
 	// longer relevant.
-	Position *int `json:"position"`
+	Position  *int     `json:"position,omitempty"`
+	Side      DiffSide `json:"side,omitempty"`
+	StartSide DiffSide `json:"start_side,omitempty"`
+	Line      int      `json:"line,omitempty"`
+	StartLine int      `json:"start_line,omitempty"`
 }
 
 // ReviewAction is the action that a review can be made with.
@@ -1033,6 +1085,62 @@ type OrgInvitation struct {
 	TeamMember
 	Email   string     `json:"email"`
 	Inviter TeamMember `json:"inviter"`
+}
+
+// UserRepoInvitation is returned by repo invitation obtained by user.
+type UserRepoInvitation struct {
+	InvitationID int                 `json:"id"`
+	Repository   *Repo               `json:"repository,omitempty"`
+	Permission   RepoPermissionLevel `json:"permissions"`
+}
+
+// OrgPermissionLevel is admin, and member
+//
+// See https://docs.github.com/en/rest/reference/orgs#set-organization-membership-for-a-user
+type OrgPermissionLevel string
+
+const (
+	// OrgMember is the member
+	OrgMember OrgPermissionLevel = "member"
+	// OrgAdmin manages the org
+	OrgAdmin OrgPermissionLevel = "admin"
+	// OrgUnaffiliated probably means user not a member yet, this was returned
+	// from an org invitation, had to add it so unmarshal doesn't crash
+	OrgUnaffiliated OrgPermissionLevel = "unaffiliated"
+)
+
+var orgPermissionLevels = map[OrgPermissionLevel]bool{
+	OrgMember:       true,
+	OrgAdmin:        true,
+	OrgUnaffiliated: true,
+}
+
+// MarshalText returns the byte representation of the permission
+func (l OrgPermissionLevel) MarshalText() ([]byte, error) {
+	return []byte(l), nil
+}
+
+// UnmarshalText validates the text is a valid string
+func (l *OrgPermissionLevel) UnmarshalText(text []byte) error {
+	v := OrgPermissionLevel(text)
+	if _, ok := orgPermissionLevels[v]; !ok {
+		return fmt.Errorf("bad org permission: %s not in %v", v, orgPermissionLevels)
+	}
+	*l = v
+	return nil
+}
+
+// UserOrganization contains info consumed by UserOrgInvitation.
+type UserOrganization struct {
+	// Login is the name of org
+	Login string `json:"login"`
+}
+
+// UserOrgInvitation is returned by org invitation obtained by user.
+type UserOrgInvitation struct {
+	State string             `json:"state"`
+	Role  OrgPermissionLevel `json:"role"`
+	Org   UserOrganization   `json:"organization"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.

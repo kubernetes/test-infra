@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -234,6 +235,8 @@ func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
 	}, nil
 }
 
+const maxLen = 140
+
 func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
 	if d := s.Description; len(d) > maxLen {
 		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)
@@ -323,7 +326,7 @@ func TestReportStatus(t *testing.T) {
 			report:           true,
 			expectedStatuses: []string{"pending"},
 			desc:             shout(maxLen), // resulting string will exceed maxLen
-			expectedDesc:     truncate(shout(maxLen)),
+			expectedDesc:     config.ContextDescriptionWithBaseSha(shout(maxLen), ""),
 		},
 		{
 			name: "Successful postsubmit job with report true should set success status",
@@ -385,99 +388,6 @@ func TestReportStatus(t *testing.T) {
 				if i == 0 && status.Description != tc.expectedDesc {
 					t.Errorf("description %d %s != expected %s", i, status.Description, tc.expectedDesc)
 				}
-			}
-		})
-	}
-}
-
-func TestTruncate(t *testing.T) {
-	if el := len(elide) * 2; maxLen < el {
-		t.Fatalf("maxLen must be at least %d (twice %s), got %d", el, elide, maxLen)
-	}
-	if s := shout(maxLen); len(s) <= maxLen {
-		t.Fatalf("%s should be at least %d, got %d", s, maxLen, len(s))
-	}
-	big := shout(maxLen)
-	outLen := maxLen
-	if (maxLen-len(elide))%2 == 1 {
-		outLen--
-	}
-	cases := []struct {
-		name   string
-		in     string
-		out    string
-		outLen int
-		front  string
-		back   string
-		middle string
-	}{
-		{
-			name: "do not change short strings",
-			in:   "foo",
-			out:  "foo",
-		},
-		{
-			name: "do not change at boundary",
-			in:   big[:maxLen],
-			out:  big[:maxLen],
-		},
-		{
-			name: "do not change boundary-1",
-			in:   big[:maxLen-1],
-			out:  big[:maxLen-1],
-		},
-		{
-			name:   "truncated messages have the right length",
-			in:     big,
-			outLen: outLen,
-		},
-		{
-			name:  "truncated message include beginning",
-			in:    big,
-			front: big[:maxLen/4], // include a lot of the start
-		},
-		{
-			name: "truncated messages include ending",
-			in:   big,
-			back: big[len(big)-maxLen/4:],
-		},
-		{
-			name:   "truncated messages include a ...",
-			in:     big,
-			middle: elide,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			out := truncate(tc.in)
-			exact := true
-			if tc.front != "" {
-				exact = false
-				if !strings.HasPrefix(out, tc.front) {
-					t.Errorf("%s does not start with %s", out, tc.front)
-				}
-			}
-			if tc.middle != "" {
-				exact = false
-				if !strings.Contains(out, tc.middle) {
-					t.Errorf("%s does not contain %s", out, tc.middle)
-				}
-			}
-			if tc.back != "" {
-				exact = false
-				if !strings.HasSuffix(out, tc.back) {
-					t.Errorf("%s does not end with %s", out, tc.back)
-				}
-			}
-			if tc.outLen > 0 {
-				exact = false
-				if len(out) != tc.outLen {
-					t.Errorf("%s len %d != expected %d", out, len(out), tc.outLen)
-				}
-			}
-			if exact && out != tc.out {
-				t.Errorf("%s != expected %s", out, tc.out)
 			}
 		})
 	}

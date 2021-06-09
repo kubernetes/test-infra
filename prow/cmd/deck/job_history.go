@@ -33,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -53,7 +54,7 @@ const (
 )
 
 var (
-	linkRe = regexp.MustCompile("/([0-9]+)\\.txt$")
+	linkRe = regexp.MustCompile(`/([0-9]+)\.txt$`)
 )
 
 type buildData struct {
@@ -66,6 +67,7 @@ type buildData struct {
 	Duration     time.Duration
 	Result       string
 	commitHash   string
+	Pull         *prowv1.Pull
 }
 
 // storageBucket is an abstraction for unit testing
@@ -211,6 +213,9 @@ func (bucket blobStorageBucket) listSubDirs(ctx context.Context, prefix string) 
 
 // Lists all keys with given prefix.
 func (bucket blobStorageBucket) listAll(ctx context.Context, prefix string) ([]string, error) {
+	if !strings.HasSuffix(prefix, "/") {
+		prefix = prefix + "/"
+	}
 	it, err := bucket.Opener.Iterator(ctx, fmt.Sprintf("%s://%s/%s", bucket.storageProvider, bucket.name, prefix), "")
 	if err != nil {
 		return nil, err
@@ -358,6 +363,16 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 			}
 		}
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
+	}
+
+	pj := prowapi.ProwJob{}
+	err = readJSON(ctx, bucket, path.Join(dir, prowv1.ProwJobFile), &pj)
+	if err != nil {
+		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
+	} else {
+		if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
+			b.Pull = &pj.Spec.Refs.Pulls[0]
+		}
 	}
 
 	if commitHash, err := getPullCommitHash(started.Pull); err == nil {

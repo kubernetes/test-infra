@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -29,26 +28,25 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
-	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	pipelineset "k8s.io/test-infra/prow/pipeline/clientset/versioned"
 	pipelineinfo "k8s.io/test-infra/prow/pipeline/informers/externalversions"
 	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
-	"k8s.io/test-infra/prow/pjutil"
-
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 )
 
 type options struct {
 	allContexts            bool
 	buildCluster           string
-	configPath             string
+	config                 configflagutil.ConfigOptions
 	kubeconfig             string
 	totURL                 string
 	instrumentationOptions prowflagutil.InstrumentationOptions
@@ -63,16 +61,17 @@ func parseOptions() options {
 }
 
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
+	o.config.ConfigPathFlagName = "config"
 	flags.BoolVar(&o.allContexts, "all-contexts", false, "Monitor all cluster contexts, not just default")
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
-	flags.StringVar(&o.configPath, "config", "", "Path to prow config.yaml")
 	o.instrumentationOptions.AddFlags(flags)
+	o.config.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("Parse flags: %v", err)
 	}
-	if o.configPath == "" {
-		return errors.New("--config is mandatory, set --config to prow config.yaml file")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
 	return nil
 }
@@ -112,11 +111,10 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
-	configAgent := &config.Agent{}
-	const ignoreJobConfig = ""
-	if err := configAgent.Start(o.configPath, ignoreJobConfig); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
@@ -156,8 +154,10 @@ func main() {
 			logrus.WithError(err).Infof("Ignoring cluster context %s: tekton pipeline CRD not deployed", context)
 			continue
 		}
+		// Don't panic when a build cluster cannot be reached
 		if err != nil {
-			logrus.WithError(err).Fatalf("Failed to create %s pipeline client", context)
+			logrus.WithError(err).Warningf("Failed to create %s pipeline client", context)
+			continue
 		}
 		pipelineConfigs[context] = *bc
 	}

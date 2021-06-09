@@ -6,27 +6,28 @@ approve:
 # Plugins enabled for each repo.
 plugins:
   k8s-ci-staging-robot:
-  - approve
-  - assign
-  - blunderbuss
-  - buildifier
-  - cat
-  - dog
-  - golint
-  - heart
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle
-  - milestone
-  - owners-label
-  - project
-  - shrug
-  - size
-  - skip
-  - trigger
-  - verify-owners
-  - welcome
-  - wip
-  - yuks
+    plugins:
+    - approve
+    - assign
+    - blunderbuss
+    - buildifier
+    - cat
+    - dog
+    - golint
+    - heart
+    - help
+    - hold
+    - label
+    - lgtm
+    - lifecycle
+    - milestone
+    - owners-label
+    - project
+    - shrug
+    - size
+    - skip
+    - trigger
+    - verify-owners
+    - welcome
+    - wip
+    - yuks

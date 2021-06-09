@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -335,6 +336,55 @@ func TestGetComments(t *testing.T) {
 	}
 	if invalidIDBug != nil {
 		t.Errorf("expected no bug, got: %v", invalidIDBug)
+	}
+}
+
+func TestCreateComment(t *testing.T) {
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodPost {
+			t.Errorf("incorrect method to create a comment: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !regexp.MustCompile(`^/rest/bug/\d+/comment$`).MatchString(r.URL.Path) {
+			t.Errorf("incorrect path to create a comment: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		raw, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("failed to read request body: %v", err)
+			http.Error(w, "500 Server Error", http.StatusInternalServerError)
+			return
+		}
+		payload := &CommentCreate{}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			t.Errorf("malformed JSONRPC payload: %s", string(raw))
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if _, err := w.Write([]byte(`{"id" : 12345}`)); err != nil {
+			t.Fatalf("failed to send JSONRPC response: %v", err)
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	// this should create a new comment
+	if id, err := client.CreateComment(&CommentCreate{ID: 2, Comment: "This is a test bug"}); err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	} else if id != 12345 {
+		t.Errorf("expected id of 12345, got %d", id)
 	}
 }
 
@@ -1167,6 +1217,40 @@ func TestGetRootForClone(t *testing.T) {
 			}
 			if root.ID != tc.expectedRoot {
 				t.Errorf("ID of root incorrect.")
+			}
+		})
+	}
+}
+
+func TestClone(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name     string
+		original *Bug
+		expected Bug
+	}{
+		{
+			name:     "Simple",
+			original: &Bug{ID: 1},
+			expected: Bug{DependsOn: []int{1}},
+		},
+		{
+			name:     "Copy blocks field",
+			original: &Bug{ID: 1, Blocks: []int{0}},
+			expected: Bug{DependsOn: []int{1}, Blocks: []int{0}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &Fake{Bugs: map[int]Bug{0: {}}, BugComments: map[int][]Comment{1: {{}}}}
+			newID, err := clone(client, tc.original)
+			if err != nil {
+				t.Fatalf("cloning failed: %v", err)
+			}
+			tc.expected.ID = newID
+			if diff := cmp.Diff(tc.expected, client.Bugs[newID]); diff != "" {
+				t.Errorf("expected clone differs from actual clone: %s", diff)
 			}
 		})
 	}

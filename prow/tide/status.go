@@ -43,8 +43,8 @@ import (
 )
 
 const (
-	statusContext string = "tide"
-	statusInPool         = "In merge pool."
+	statusContext = "tide"
+	statusInPool  = "In merge pool."
 	// statusNotInPool is a format string used when a PR is not in a tide pool.
 	// The '%s' field is populated with the reason why the PR is not in a
 	// tide pool or the empty string if the reason is unknown. See requirementDiff.
@@ -79,6 +79,11 @@ type statusController struct {
 	// lastSyncStart is used to ensure that the status update period is at least
 	// the minimum status update period.
 	lastSyncStart time.Time
+
+	// dontUpdateStatus contains all PRs for which the Tide sync controller
+	// updated the status to success prior to merging. As the name suggests,
+	// the status controller must not update their status.
+	dontUpdateStatus threadSafePRSet
 
 	sync.Mutex
 	poolPRs          map[string]PullRequest
@@ -127,22 +132,22 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	// Weight incorrect branches with very high diff so that we select the query
 	// for the correct branch.
-	targetBranchBlacklisted := false
+	targetBranchDenied := false
 	for _, excludedBranch := range q.ExcludedBranches {
 		if string(pr.BaseRef.Name) == excludedBranch {
-			targetBranchBlacklisted = true
+			targetBranchDenied = true
 			break
 		}
 	}
-	// if no whitelist is configured, the target is OK by default
-	targetBranchWhitelisted := len(q.IncludedBranches) == 0
+	// if no allowlist is configured, the target is OK by default
+	targetBranchAllowed := len(q.IncludedBranches) == 0
 	for _, includedBranch := range q.IncludedBranches {
 		if string(pr.BaseRef.Name) == includedBranch {
-			targetBranchWhitelisted = true
+			targetBranchAllowed = true
 			break
 		}
 	}
-	if targetBranchBlacklisted || !targetBranchWhitelisted {
+	if targetBranchDenied || !targetBranchAllowed {
 		diff += 1000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
@@ -323,9 +328,10 @@ func retestingStatus(retested []string) string {
 // the administrative Prow overview.
 func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideURL := c.Tide.TargetURL; tideURL != "" {
+	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+	if tideURL := c.Tide.GetTargetURL(orgRepo); tideURL != "" {
 		link = tideURL
-	} else if baseURL := c.Tide.GetPRStatusBaseURL(config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}); baseURL != "" {
+	} else if baseURL := c.Tide.GetPRStatusBaseURL(orgRepo); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -385,7 +391,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithField("original-desc", original).Warn("GitHub status description needed to be truncated to fit GH API limit")
 		}
 		actualState = githubql.StatusState(strings.ToLower(string(actualState)))
-		if wantState != string(actualState) || wantDesc != actualDesc {
+		if !sc.dontUpdateStatus.has(string(pr.Repository.Owner.Login), string(pr.Repository.Name), int(pr.Number)) && (wantState != string(actualState) || wantDesc != actualDesc) {
 			if err := sc.ghc.CreateStatus(
 				org,
 				repo,
@@ -395,7 +401,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					State:       wantState,
 					Description: wantDesc,
 					TargetURL:   targetURL(c, pr, log),
-				}); err != nil {
+				}); err != nil && !github.IsNotFound(err) {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q and description from %q to %q",
 					actualState,
@@ -558,7 +564,8 @@ func (sc *statusController) search() []PullRequest {
 		sc.PreviousQuery = query
 	}
 
-	prs, err := search(sc.ghc.Query, sc.logger, query, sc.LatestPR.Time, now)
+	// TODO @alvaroaleman: Add github apps support
+	prs, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, sc.LatestPR.Time, now, "")
 	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
 	if err != nil {
 		log := log.WithError(err)
@@ -640,4 +647,37 @@ func contextCheckerGetterFactory(cfg *config.Config, gc git.ClientFactory, org, 
 		contextPolicy.RequiredContexts = requiredContexts
 		return contextPolicy, nil
 	}
+}
+
+type pullRequestIdentifier struct {
+	org    string
+	repo   string
+	number int
+}
+
+type threadSafePRSet struct {
+	data map[pullRequestIdentifier]struct{}
+	lock sync.RWMutex
+}
+
+func (s *threadSafePRSet) reset() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.data = map[pullRequestIdentifier]struct{}{}
+}
+
+func (s *threadSafePRSet) has(org, repo string, number int) bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	_, ok := s.data[pullRequestIdentifier{org: org, repo: repo, number: number}]
+	return ok
+}
+
+func (s *threadSafePRSet) insert(org, repo string, number int) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	if s.data == nil {
+		s.data = map[pullRequestIdentifier]struct{}{}
+	}
+	s.data[pullRequestIdentifier{org: org, repo: repo, number: number}] = struct{}{}
 }

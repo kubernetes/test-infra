@@ -72,11 +72,11 @@ func helpProvider(c *plugins.Configuration, orgRepo []config.OrgRepo) (*pluginhe
 	defaultFilenames := c.OwnersFilenames("", "")
 	descriptionFor := func(filenames ownersconfig.Filenames) string {
 		description := fmt.Sprintf("%s and %s files are validated.", filenames.Owners, filenames.OwnersAliases)
-		if c.Owners.LabelsBlackList != nil {
-			description = fmt.Sprintf(`%s The verify-owners plugin will complain if %s files contain any of the following blacklisted labels: %s.`,
+		if c.Owners.LabelsDenyList != nil {
+			description = fmt.Sprintf(`%s The verify-owners plugin will complain if %s files contain any of the following banned labels: %s.`,
 				description,
 				filenames.Owners,
-				strings.Join(c.Owners.LabelsBlackList, ", "))
+				strings.Join(c.Owners.LabelsDenyList, ", "))
 		}
 		return description
 	}
@@ -116,6 +116,7 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type commentPruner interface {
@@ -154,7 +155,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		number:       pre.Number,
 	}
 
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -171,10 +172,10 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 		}
 	}
 
-	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
 }
 
-func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {
+func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, bannedLabels []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || !ce.IsPR || ce.Action != github.GenericCommentActionCreated {
 		return nil
@@ -196,7 +197,7 @@ func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoowners
 		return err
 	}
 
-	return handle(ghc, gc, roc, log, pr, prInfo, labelsBlackList, triggerConfig, skipTrustedUserCheck, cp, resolver)
+	return handle(ghc, gc, roc, log, pr, prInfo, bannedLabels, triggerConfig, skipTrustedUserCheck, cp, resolver)
 }
 
 type messageWithLine struct {
@@ -204,7 +205,7 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, info info, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {
+func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, info info, bannedLabels []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {
 	org := info.org
 	repo := info.repo
 	number := info.number
@@ -284,7 +285,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 
 	for _, c := range modifiedOwnersFiles {
 		path := filepath.Join(r.Directory(), c.Filename)
-		msg, owners := parseOwnersFile(oc, path, c, log, labelsBlackList, filenames)
+		msg, owners := parseOwnersFile(oc, path, c, log, bannedLabels, filenames)
 		if msg != nil {
 			wrongOwnersFiles[c.Filename] = *msg
 			continue
@@ -363,7 +364,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	return nil
 }
 
-func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, log *logrus.Entry, labelsBlackList []string, filenames ownersconfig.Filenames) (*messageWithLine, []string) {
+func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, log *logrus.Entry, bannedLabels []string, filenames ownersconfig.Filenames) (*messageWithLine, []string) {
 	var reviewers []string
 	var approvers []string
 	var labels []string
@@ -411,11 +412,11 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 		approvers = simple.Config.Approvers
 		labels = simple.Config.Labels
 	}
-	// Check labels against blacklist
-	if sets.NewString(labels...).HasAny(labelsBlackList...) {
+	// Check labels against ban list
+	if sets.NewString(labels...).HasAny(bannedLabels...) {
 		return &messageWithLine{
 			lineNumber,
-			fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List()),
+			fmt.Sprintf("File contains banned labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(bannedLabels...)).List()),
 		}, nil
 	}
 	// Check approvers isn't empty

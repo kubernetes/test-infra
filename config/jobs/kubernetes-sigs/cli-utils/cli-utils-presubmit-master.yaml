@@ -8,7 +8,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.16.4
         command:
         - make
         args:
@@ -31,7 +31,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - runner.sh
         - make

@@ -107,7 +107,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 // references with the decimal notation. See https://www.w3.org/TR/html401/charset.html#h-5.3.1
 func escapeMarkdown(s string) string {
 	var b bytes.Buffer
-	for _, r := range []rune(s) {
+	for _, r := range s {
 		// Check for simple characters as they are considered safe, otherwise we escape the rune.
 		c := string(r)
 		if simple.MatchString(c) {

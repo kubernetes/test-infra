@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,11 +47,7 @@ type gerritClient interface {
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	Account(instance string) *gerrit.AccountInfo
-}
-
-type configAgent interface {
-	Config() *config.Config
+	Account(instance string) (*gerrit.AccountInfo, error)
 }
 
 // Controller manages gerrit changes.
@@ -258,9 +255,10 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
-		account := c.gc.Account(instance)
-		if account == nil {
-			return errors.New("account not found") // Should not happen, since this means auth failed
+		account, err := c.gc.Account(instance)
+		if err != nil {
+			// This would happen if authenticateOnce hasn't done register this instance yet
+			return fmt.Errorf("account not found for %q: %v", instance, err)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
@@ -302,6 +300,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
@@ -326,20 +325,49 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	// comment back to gerrit if Report is set for any of the jobs
 	var reportingJobs int
-	var message string
+	var jobList string
 	for _, job := range triggeredJobs {
 		if job.report {
-			message += fmt.Sprintf("\n  * Name: %s", job.name)
+			jobList += fmt.Sprintf("\n  * Name: %s", job.name)
 			reportingJobs++
 		}
 	}
 
 	if reportingJobs > 0 {
-		message = fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting):", len(triggeredJobs), len(triggeredJobs)-reportingJobs) + message
+		message := fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting): ", len(triggeredJobs), len(triggeredJobs)-reportingJobs)
+		// If we have a Deck URL, link to all results for the CL, otherwise list the triggered jobs.
+		link, err := deckLinkForPR(c.config().Gerrit.DeckURL, refs, change.Status)
+		if err != nil {
+			logger.WithError(err).Error("Failed to generate link to job results on Deck.")
+		}
+		if link != "" && err == nil {
+			message = message + link
+		} else {
+			message = message + jobList
+		}
 		if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func deckLinkForPR(deckURL string, refs prowapi.Refs, changeStatus string) (string, error) {
+	if deckURL == "" || changeStatus == client.Merged {
+		return "", nil
+	}
+
+	parsed, err := url.Parse(deckURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse gerrit.deck_url (impossible: this should have been caught at load time): %v", err)
+	}
+	query := parsed.Query()
+	query.Set("repo", fmt.Sprintf("%s/%s", refs.Org, refs.Repo))
+	if len(refs.Pulls) != 1 {
+		return "", fmt.Errorf("impossible: triggered jobs for a Gerrit change, but refs.pulls was empty")
+	}
+	query.Set("pull", strconv.Itoa(refs.Pulls[0].Number))
+	parsed.RawQuery = query.Encode()
+	return parsed.String(), nil
 }

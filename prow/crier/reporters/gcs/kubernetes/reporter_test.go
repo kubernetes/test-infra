@@ -353,15 +353,16 @@ func TestReportPodInfo(t *testing.T) {
 			fca := testutil.Fca{C: config.Config{ProwConfig: config.ProwConfig{
 				PodNamespace: "test-pods",
 				Plank: config.Plank{
-					DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-						GCSConfiguration: &prowv1.GCSConfiguration{
-							Bucket:       "kubernetes-jenkins",
-							PathPrefix:   "some-prefix",
-							PathStrategy: prowv1.PathStrategyLegacy,
-							DefaultOrg:   "kubernetes",
-							DefaultRepo:  "kubernetes",
-						},
-					}},
+					DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+						map[string]*prowv1.DecorationConfig{"*": {
+							GCSConfiguration: &prowv1.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								PathPrefix:   "some-prefix",
+								PathStrategy: prowv1.PathStrategyLegacy,
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+							},
+						}}),
 				},
 			}}}
 

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: fakeghserver
+  labels:
+    app: fakeghserver
+spec:
+  selector:
+    matchLabels:
+      app: fakeghserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fakeghserver
+    spec:
+      containers:
+      - name: fakeghserver
+        image: localhost:5000/fakeghserver
+        ports:
+        - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fakeghserver
+  namespace: default
+  name: fakeghserver
+spec:
+  ports:
+  - name: main
+    port: 80
+    protocol: TCP
+    targetPort: 8888
+  - name: metrics
+    port: 9090
+  selector:
+    app: fakeghserver
+  type: ClusterIP

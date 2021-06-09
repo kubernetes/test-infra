@@ -32,6 +32,16 @@ import (
 
 type Clients func() (*LocalGit, v2.ClientFactory, error)
 
+func DefaultBranch(dir string) string {
+	cmd := exec.Command("git", "config", "init.defaultBranch")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	if err != nil {
+		return "master"
+	}
+	return strings.TrimSpace(string(out))
+}
+
 // LocalGit stores the repos in a temp dir. Create with New and delete with
 // Clean.
 type LocalGit struct {
@@ -39,6 +49,8 @@ type LocalGit struct {
 	Dir string
 	// Git is the location of the git binary.
 	Git string
+	// InitialBranch is sent to git init
+	InitialBranch string
 }
 
 // New creates a LocalGit and a client factory from a git.Client pointing at it.
@@ -101,7 +113,11 @@ func (lg *LocalGit) MakeFakeRepo(org, repo string) error {
 		return err
 	}
 
-	if err := runCmd(lg.Git, rdir, "init"); err != nil {
+	initArgs := []string{"init"}
+	if lg.InitialBranch != "" {
+		initArgs = append(initArgs, "--initial-branch", lg.InitialBranch)
+	}
+	if err := runCmd(lg.Git, rdir, initArgs...); err != nil {
 		return err
 	}
 	if err := runCmd(lg.Git, rdir, "config", "user.email", "test@test.test"); err != nil {

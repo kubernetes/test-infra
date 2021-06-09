@@ -91,6 +91,9 @@ const (
 	// FinishedStatusFile is the JSON file that stores information about the build
 	// after its completion. See testgrid/metadata/job.go for more details.
 	FinishedStatusFile = "finished.json"
+
+	// ProwJobFile is the JSON file that stores the prowjob information.
+	ProwJobFile = "prowjob.json"
 )
 
 // +genclient
@@ -259,10 +262,10 @@ func (rac *RerunAuthConfig) Validate() error {
 		return nil
 	}
 
-	hasWhiteList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
+	hasAllowList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
 
-	// If a whitelist is specified, the user probably does not intend for anyone to be able to rerun any job.
-	if rac.AllowAnyone && hasWhiteList {
+	// If an allowlist is specified, the user probably does not intend for anyone to be able to rerun any job.
+	if rac.AllowAnyone && hasAllowList {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
 
@@ -283,6 +286,7 @@ type ReporterConfig struct {
 }
 
 type SlackReporterConfig struct {
+	Host              string         `json:"host,omitempty"`
 	Channel           string         `json:"channel,omitempty"`
 	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
 	ReportTemplate    string         `json:"report_template,omitempty"`
@@ -344,10 +348,13 @@ type DecorationConfig struct {
 	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials.
-	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+	GCSCredentialsSecret *string `json:"gcs_credentials_secret,omitempty"`
 	// S3CredentialsSecret is the name of the Kubernetes secret
 	// that holds blob storage push credentials.
-	S3CredentialsSecret string `json:"s3_credentials_secret,omitempty"`
+	S3CredentialsSecret *string `json:"s3_credentials_secret,omitempty"`
+	// DefaultServiceAccountName is the name of the Kubernetes service account
+	// that should be used by the pod if one is not specified in the podspec.
+	DefaultServiceAccountName *string `json:"default_service_account_name,omitempty"`
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process.
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
@@ -364,6 +371,78 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+
+	// CensorSecrets enables censoring output logs and artifacts.
+	CensorSecrets *bool `json:"censor_secrets,omitempty"`
+
+	// CensoringOptions exposes options for censoring output logs and artifacts.
+	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
+
+	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+	// hope that the test process exits cleanly before starting an upload.
+	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+}
+
+type CensoringOptions struct {
+	// CensoringConcurrency is the maximum number of goroutines that should be censoring
+	// artifacts and logs at any time. If unset, defaults to 10.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is the size in bytes of the buffer allocated for every file
+	// being censored. We want to keep as little of the file in memory as possible in
+	// order for censoring to be reasonably performant in space. However, to guarantee
+	// that we censor every instance of every secret, our buffer size must be at least
+	// two times larger than the largest secret we are about to censor. While that size
+	// is the smallest possible buffer we could use, if the secrets being censored are
+	// small, censoring will not be performant as the number of I/O actions per file
+	// would increase. If unset, defaults to 10MiB.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+
+	// IncludeDirectories are directories which should have their content censored. If
+	// present, only content in these directories will be censored. Entries in this list
+	// are relative to $ARTIFACTS and are parsed with the go-zglob library, allowing for
+	// globbed matches.
+	IncludeDirectories []string `json:"include_directories,omitempty"`
+
+	// ExcludeDirectories are directories which should not have their content censored. If
+	// present, content in these directories will not be censored even if the directory also
+	// matches a glob in IncludeDirectories. Entries in this list are relative to $ARTIFACTS,
+	// and are parsed with the go-zglob library, allowing for globbed matches.
+	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
+}
+
+// ApplyDefault applies the defaults for CensoringOptions decorations. If a field has a zero value,
+// it replaces that with the value set in def.
+func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions {
+	if g == nil && def == nil {
+		return nil
+	}
+	var merged CensoringOptions
+	if g != nil {
+		merged = *g.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if g == nil || def == nil {
+		return &merged
+	}
+
+	if merged.CensoringConcurrency == nil {
+		merged.CensoringConcurrency = def.CensoringConcurrency
+	}
+
+	if merged.CensoringBufferSize == nil {
+		merged.CensoringBufferSize = def.CensoringBufferSize
+	}
+
+	if merged.IncludeDirectories == nil {
+		merged.IncludeDirectories = def.IncludeDirectories
+	}
+
+	if merged.ExcludeDirectories == nil {
+		merged.ExcludeDirectories = def.ExcludeDirectories
+	}
+	return &merged
+
 }
 
 // Resources holds resource requests and limits for
@@ -427,6 +506,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
 	merged.Resources = merged.Resources.ApplyDefault(def.Resources)
 	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
+	merged.CensoringOptions = merged.CensoringOptions.ApplyDefault(def.CensoringOptions)
 
 	if merged.Timeout == nil {
 		merged.Timeout = def.Timeout
@@ -434,11 +514,14 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
 	}
-	if merged.GCSCredentialsSecret == "" {
+	if merged.GCSCredentialsSecret == nil {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret
 	}
-	if merged.S3CredentialsSecret == "" {
+	if merged.S3CredentialsSecret == nil {
 		merged.S3CredentialsSecret = def.S3CredentialsSecret
+	}
+	if merged.DefaultServiceAccountName == nil {
+		merged.DefaultServiceAccountName = def.DefaultServiceAccountName
 	}
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = def.SSHKeySecrets
@@ -454,6 +537,13 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.OauthTokenSecret == nil {
 		merged.OauthTokenSecret = def.OauthTokenSecret
+	}
+	if merged.CensorSecrets == nil {
+		merged.CensorSecrets = def.CensorSecrets
+	}
+
+	if merged.UploadIgnoresInterrupts == nil {
+		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
 	}
 
 	return &merged
@@ -792,7 +882,7 @@ type Refs struct {
 	// `https://github.com/org/repo.git`.
 	CloneURI string `json:"clone_uri,omitempty"`
 	// SkipSubmodules determines if submodules should be
-	// cloned when the job is run. Defaults to true.
+	// cloned when the job is run. Defaults to false.
 	SkipSubmodules bool `json:"skip_submodules,omitempty"`
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.

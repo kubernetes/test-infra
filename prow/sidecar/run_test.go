@@ -274,11 +274,9 @@ func TestWaitParallelContainers(t *testing.T) {
 
 			if tc.missing {
 				go func() {
-					select {
-					case <-time.After(missingMarkerTimeout):
-						cancel()
-						errCh <- nil
-					}
+					time.Sleep(missingMarkerTimeout)
+					cancel()
+					errCh <- nil
 				}()
 			}
 

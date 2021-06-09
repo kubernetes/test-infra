@@ -40,6 +40,7 @@ var githubToSlack = map[string]string{
 	"fejta":          "U0E2KHQ13",
 	"katharine":      "UBTBNJ6GL",
 	"michelle192837": "U3TRY5WV7",
+	"mpherman2":      "U01AJA1N8NL",
 	"mushuee":        "U013TPFJWC8",
 	"spiffxp":        "U09R2FL93",
 }

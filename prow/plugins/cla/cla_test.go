@@ -152,11 +152,10 @@ func TestCLALabels(t *testing.T) {
 			issues[issue.Number] = &issue
 		}
 
-		fc := &fakegithub.FakeClient{
-			PullRequests:  pullRequests,
-			Issues:        issues,
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.PullRequests = pullRequests
+		fc.Issues = issues
+		fc.IssueComments = make(map[int][]github.IssueComment)
 		se := github.StatusEvent{
 			Context: tc.context,
 			SHA:     tc.statusSHA,
@@ -340,10 +339,9 @@ func TestCheckCLA(t *testing.T) {
 			for _, pr := range tc.pullRequests {
 				pullRequests[pr.Number] = &pr
 			}
-			fc := &fakegithub.FakeClient{
-				CreatedStatuses: make(map[string][]github.Status),
-				PullRequests:    pullRequests,
-			}
+			fc := fakegithub.NewFakeClient()
+			fc.CreatedStatuses = make(map[string][]github.Status)
+			fc.PullRequests = pullRequests
 			e := &github.GenericCommentEvent{
 				Action:     github.GenericCommentEventAction(tc.action),
 				Body:       tc.body,

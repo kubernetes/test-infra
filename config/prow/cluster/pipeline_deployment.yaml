@@ -18,11 +18,14 @@ spec:
       serviceAccountName: prow-pipeline
       containers:
       - name: pipeline
-        image: gcr.io/k8s-prow/pipeline:v20210122-d4ead73bf2
+        image: gcr.io/k8s-prow/pipeline:v20210608-953d79c16d
         args:
         - --all-contexts
         - --config=/etc/prow-config/config.yaml
-        - --kubeconfig=/etc/kubeconfig/config
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig

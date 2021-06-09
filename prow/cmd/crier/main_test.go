@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func TestOptions(t *testing.T) {
@@ -34,11 +35,6 @@ func TestOptions(t *testing.T) {
 
 	defaultGerritProjects := make(map[string][]string)
 
-	defaultInstrumentationOptions := flagutil.InstrumentationOptions{
-		MetricsPort: prowflagutil.DefaultMetricsPort,
-		PProfPort:   prowflagutil.DefaultPProfPort,
-		HealthPort:  prowflagutil.DefaultHealthPort,
-	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -63,10 +59,15 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:             "foo",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -81,10 +82,15 @@ func TestOptions(t *testing.T) {
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath:             "foo",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		//PubSub Reporter
@@ -92,12 +98,17 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "baz",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				pubsubWorkers:          7,
-				configPath:             "baz",
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -109,13 +120,18 @@ func TestOptions(t *testing.T) {
 			name: "slack workers, sets workers",
 			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:           13,
-				slackTokenFile:         "/bar/baz",
-				configPath:             "foo",
+				slackWorkers:   13,
+				slackTokenFile: "/bar/baz",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -128,15 +144,20 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				slackWorkers:   13,
 				slackTokenFile: "/bar/baz",
-				configPath:     "foo",
-				dryrun:         true,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				dryrun: true,
 				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -147,24 +168,34 @@ func TestOptions(t *testing.T) {
 			name: "k8s-gcs enables k8s-gcs",
 			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},
 			expected: &options{
-				k8sBlobStorageWorkers:  3,
-				configPath:             "foo",
+				k8sBlobStorageWorkers: 3,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
 			name: "k8s-gcs with report fraction sets report fraction",
 			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=0.5"},
 			expected: &options{
-				k8sBlobStorageWorkers:  3,
-				configPath:             "foo",
+				k8sBlobStorageWorkers: 3,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      0.5,
-				instrumentationOptions: defaultInstrumentationOptions,
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -216,12 +247,6 @@ func TestGitHubOptions(t *testing.T) {
 			args:              []string{"--github-workers=5", "--github-token-path=tkpath", "--config-path=foo"},
 			expectedWorkers:   5,
 			expectedTokenPath: "tkpath",
-		},
-		{
-			name:              "github missing --github-token-path, uses default",
-			args:              []string{"--github-workers=5", "--config-path=foo"},
-			expectedWorkers:   5,
-			expectedTokenPath: "/etc/github/oauth",
 		},
 	}
 

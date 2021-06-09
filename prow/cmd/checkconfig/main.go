@@ -21,9 +21,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -38,6 +40,8 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/kube"
@@ -59,9 +63,8 @@ import (
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	prowYAMLRepoName string
 	prowYAMLPath     string
@@ -88,22 +91,27 @@ func (o *options) warningEnabled(warning string) bool {
 }
 
 const (
-	mismatchedTideWarning        = "mismatched-tide"
-	mismatchedTideLenientWarning = "mismatched-tide-lenient"
-	tideStrictBranchWarning      = "tide-strict-branch"
-	tideContextPolicy            = "tide-context-policy"
-	nonDecoratedJobsWarning      = "non-decorated-jobs"
-	validDecorationConfigWarning = "valid-decoration-config"
-	jobNameLengthWarning         = "long-job-names"
-	jobRefsDuplicationWarning    = "duplicate-job-refs"
-	needsOkToTestWarning         = "needs-ok-to-test"
-	managedWebhooksWarning       = "managed-webhooks"
-	validateOwnersWarning        = "validate-owners"
-	missingTriggerWarning        = "missing-trigger"
-	validateURLsWarning          = "validate-urls"
-	unknownFieldsWarning         = "unknown-fields"
-	verifyOwnersFilePresence     = "verify-owners-presence"
-	validateClusterFieldWarning  = "validate-cluster-field"
+	mismatchedTideWarning                         = "mismatched-tide"
+	mismatchedTideLenientWarning                  = "mismatched-tide-lenient"
+	tideStrictBranchWarning                       = "tide-strict-branch"
+	tideContextPolicy                             = "tide-context-policy"
+	nonDecoratedJobsWarning                       = "non-decorated-jobs"
+	validDecorationConfigWarning                  = "valid-decoration-config"
+	jobNameLengthWarning                          = "long-job-names"
+	jobRefsDuplicationWarning                     = "duplicate-job-refs"
+	needsOkToTestWarning                          = "needs-ok-to-test"
+	managedWebhooksWarning                        = "managed-webhooks"
+	validateOwnersWarning                         = "validate-owners"
+	missingTriggerWarning                         = "missing-trigger"
+	validateURLsWarning                           = "validate-urls"
+	unknownFieldsWarning                          = "unknown-fields"
+	verifyOwnersFilePresence                      = "verify-owners-presence"
+	validateClusterFieldWarning                   = "validate-cluster-field"
+	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
+	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
+
+	defaultHourlyTokens = 3000
+	defaultAllowedBurst = 100
 )
 
 var defaultWarnings = []string{
@@ -121,11 +129,15 @@ var defaultWarnings = []string{
 	validateURLsWarning,
 	unknownFieldsWarning,
 	validateClusterFieldWarning,
+	validateSupplementalProwConfigOrgRepoHirarchy,
+	validateUnmanagedBranchConfigHasNoSubconfig,
 }
 
 var expensiveWarnings = []string{
 	verifyOwnersFilePresence,
 }
+
+var throttlerDefaults = flagutil.ThrottlerDefaults(defaultHourlyTokens, defaultAllowedBurst)
 
 func getAllWarnings() []string {
 	var all []string
@@ -137,8 +149,10 @@ func getAllWarnings() []string {
 
 func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	for _, validate := range []interface{ Validate(bool) error }{&o.config, &o.pluginsConfig} {
+		if err := validate.Validate(false); err != nil {
+			return err
+		}
 	}
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
@@ -174,17 +188,17 @@ func parseOptions() (options, error) {
 }
 
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	o.pluginsConfig.CheckUnknownPlugins = true
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlags(flag)
+	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
+	o.config.AddFlags(flag)
+	o.pluginsConfig.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -226,8 +240,8 @@ func validate(o options) error {
 		}
 	}
 
-	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		return fmt.Errorf("error loading prow config: %w", err)
 	}
 	cfg := configAgent.Config()
@@ -238,10 +252,10 @@ func validate(o options) error {
 		}
 	}
 
-	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
-	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err := o.pluginsConfig.PluginAgent()
+		if err != nil {
 			return fmt.Errorf("error loading Prow plugin config: %w", err)
 		}
 		pcfg = pluginAgent.Config()
@@ -257,17 +271,14 @@ func validate(o options) error {
 			return errors.New("cannot verify OWNERS file presence without a GitHub token")
 		}
 		secretAgent := &secret.Agent{}
-		if o.github.TokenPath != "" {
-			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				return fmt.Errorf("error starting secrets agent: %w", err)
-			}
+		if err := secretAgent.Start(nil); err != nil {
+			return fmt.Errorf("error starting secrets agent: %w", err)
 		}
 
 		githubClient, err := o.github.GitHubClient(secretAgent, false)
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
-		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
 		// 404s are expected to happen, no point in retrying
 		githubClient.SetMax404Retries(0)
 
@@ -330,20 +341,20 @@ func validate(o options) error {
 		}
 	}
 	if o.warningEnabled(unknownFieldsWarning) {
-		cfgBytes, err := ioutil.ReadFile(o.configPath)
+		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
-		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.configPath); err != nil {
+		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.config.ConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginConfig)
+		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
-		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginConfig); err != nil {
+		if err := validateUnknownFields(&plugins.Configuration{}, pcfgBytes, o.pluginsConfig.PluginConfigPath); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -359,6 +370,18 @@ func validate(o options) error {
 	}
 	if o.warningEnabled(validateClusterFieldWarning) {
 		if err := validateCluster(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(validateSupplementalProwConfigOrgRepoHirarchy) {
+		if err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(os.DirFS("./"), o.config.SupplementalProwConfigDirs.Strings(), o.pluginsConfig.SupplementalPluginsConfigDirs.Strings(), o.config.SupplementalProwConfigsFileNameSuffix, o.pluginsConfig.SupplementalPluginsConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(validateUnmanagedBranchConfigHasNoSubconfig) {
+		if err := validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(cfg.BranchProtection); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -409,10 +432,10 @@ func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
 		// Done partitioning the repos.
 
 		if policyIsStrict(org.Policy) {
-			// This org is strict, record with repo exceptions (blacklist).
+			// This org is strict, record with repo exceptions ("denylist")
 			strictOrgExceptions[orgName] = nonStrictExplicitRepos
 		} else {
-			// The org is not strict, record member repos that are (whitelist).
+			// The org is not strict, record member repos that are allowed
 			strictRepos.Insert(strictExplicitRepos.UnsortedList()...)
 		}
 	}
@@ -575,7 +598,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
 			plugin{name: bugzilla.PluginName, label: labels.InvalidBug, matcher: forbids},
 			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
-			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
+			plugin{name: releasenote.PluginName, label: labels.ReleaseNoteLabelNeeded, matcher: forbids},
 			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
 			plugin{name: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
 			plugin{name: needsrebase.PluginName, label: labels.NeedsRebase, external: true, matcher: forbids},
@@ -621,11 +644,11 @@ func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *
 }
 
 // orgRepoConfig describes a set of repositories with an explicit
-// whitelist and a mapping of blacklists for owning orgs
+// allowlist and a mapping of denied repos for owning orgs
 type orgRepoConfig struct {
-	// orgExceptions holds explicit blacklists of repos for owning orgs
+	// orgExceptions holds explicit denylists of repos for owning orgs
 	orgExceptions map[string]sets.String
-	// repos is a whitelist of repos
+	// repos is an allowed list of repos
 	repos sets.String
 }
 
@@ -723,10 +746,10 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts1 := range c.orgExceptions {
-		// keep only items in both blacklists that are not in the
-		// explicit repo whitelists for the other configuration;
+		// keep only items in both denylists that are not in the
+		// explicit repo allowlist for the other configuration;
 		// we know from how the orgRepoConfigs are constructed that
-		// a org blacklist won't intersect it's own repo whitelist
+		// a org denylist won't intersect it's own repo allowlist
 		pruned := excepts1.Difference(c2.repos)
 		if excepts2, ok := c2.orgExceptions[org]; ok {
 			res.orgExceptions[org] = pruned.Intersection(excepts2.Difference(c.repos))
@@ -736,15 +759,15 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	}
 
 	for org, excepts2 := range c2.orgExceptions {
-		// update any blacklists not previously updated
+		// update any denylists not previously updated
 		if _, exists := res.orgExceptions[org]; !exists {
 			res.orgExceptions[org] = excepts2.Difference(c.repos)
 		}
 	}
 
-	// we need to prune out repos in the whitelists which are
+	// we need to prune out repos in the allowed lists which are
 	// covered by an org already; we know from above that no
-	// org blacklist in the result will contain a repo whitelist
+	// org denylist in the result will contain a repo allowlist
 	for _, repo := range c.repos.Union(c2.repos).UnsortedList() {
 		parts := strings.SplitN(repo, "/", 2)
 		if len(parts) != 2 {
@@ -763,14 +786,15 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 		orgs  []string
 		repos []string
 	)
+	var orgMap map[string]sets.String
 	if external {
 		orgs, repos = c.EnabledReposForExternalPlugin(plugin)
+		orgMap = make(map[string]sets.String, len(orgs))
+		for _, org := range orgs {
+			orgMap[org] = nil
+		}
 	} else {
-		orgs, repos = c.EnabledReposForPlugin(plugin)
-	}
-	orgMap := make(map[string]sets.String, len(orgs))
-	for _, org := range orgs {
-		orgMap[org] = nil
+		_, repos, orgMap = c.EnabledReposForPlugin(plugin)
 	}
 	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
 }
@@ -805,19 +829,19 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
 	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
-		if presubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, presubmit.JobBase.UtilityConfig) {
+		if presubmit.Agent == string(v1.KubernetesAgent) && !*presubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
 	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
-		if postsubmit.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, postsubmit.JobBase.UtilityConfig) {
+		if postsubmit.Agent == string(v1.KubernetesAgent) && !*postsubmit.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
 	for _, periodic := range cfg.AllPeriodics() {
-		if periodic.Agent == string(v1.KubernetesAgent) && !config.ShouldDecorate(&cfg.JobConfig, periodic.JobBase.UtilityConfig) {
+		if periodic.Agent == string(v1.KubernetesAgent) && !*periodic.JobBase.UtilityConfig.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
 	}
@@ -1100,4 +1124,198 @@ func validateCluster(cfg *config.Config) error {
 		}
 	}
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(filesystem fs.FS, supplementalProwConfigDirs, supplementalPluginsConfigDirs []string, supplementalProwConfigsFileNameSuffix, supplementalPluginsConfigFileNameSuffix string) error {
+	var errs []error
+
+	for _, supplementalProwConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalProwConfigDir, filesystem, func() hierarchicalConfig { return &config.Config{} }, supplementalProwConfigsFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, supplementalPluginsConfigDir := range supplementalPluginsConfigDirs {
+		if err := validateAdditionalConfigIsInOrgRepoDirectoryStructure(supplementalPluginsConfigDir, filesystem, func() hierarchicalConfig { return &plugins.Configuration{} }, supplementalPluginsConfigFileNameSuffix); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesystem fs.FS, target func() hierarchicalConfig, filesuffix string) error {
+	var errs []error
+	errs = append(errs, fs.WalkDir(filesystem, root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			errs = append(errs, fmt.Errorf("error when walking: %w", err))
+			return nil
+		}
+		// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+		// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+		// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+		// get duplicate data.
+		if strings.HasPrefix(d.Name(), "..") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+
+		fs.ReadFile(filesystem, path)
+
+		if d.IsDir() || !strings.HasSuffix(path, filesuffix) {
+			return nil
+		}
+
+		pathWithoutRoot := strings.TrimPrefix(path, root)
+		pathWithoutRoot = strings.TrimPrefix(pathWithoutRoot, "/")
+
+		pathElements := strings.Split(pathWithoutRoot, "/")
+		nestingDepth := len(pathElements) - 1
+
+		var isOrgConfig, isRepoConfig bool
+		switch nestingDepth {
+		case 0:
+			// Global config, might contain anything or not even be a Prow config
+			return nil
+		case 1:
+			isOrgConfig = true
+		case 2:
+			isRepoConfig = true
+		default:
+			errs = append(errs, fmt.Errorf("config %s is at an invalid location. All configs must be below %s. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.", path, root))
+			return nil
+		}
+
+		cfg := target()
+		isGlobal, targetedOrgs, targetedRepos, err := getSupplementalConfigScope(path, filesystem, cfg)
+		if err != nil {
+			errs = append(errs, err)
+			return nil
+		}
+
+		if isOrgConfig {
+			expectedTargetOrg := pathElements[0]
+			if !isGlobal && len(targetedOrgs) == 1 && targetedOrgs.Has(expectedTargetOrg) && len(targetedRepos) == 0 {
+				return nil
+			}
+			errMsg := fmt.Sprintf("config %s is invalid: Must contain only config for org %s, but", path, expectedTargetOrg)
+			var needsAnd bool
+			if isGlobal {
+				errMsg += " contains global config"
+				needsAnd = true
+			}
+			for _, org := range targetedOrgs.Delete(expectedTargetOrg).List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
+				needsAnd = true
+			}
+			for _, repo := range targetedRepos.List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
+				needsAnd = true
+			}
+			errs = append(errs, errors.New(errMsg))
+			return nil
+		}
+
+		if isRepoConfig {
+			expectedTargetRepo := pathElements[0] + "/" + pathElements[1]
+			if !isGlobal && len(targetedOrgs) == 0 && len(targetedRepos) == 1 && targetedRepos.Has(expectedTargetRepo) {
+				return nil
+			}
+
+			errMsg := fmt.Sprintf("config %s is invalid: Must only contain config for repo %s, but", path, expectedTargetRepo)
+			var needsAnd bool
+			if isGlobal {
+				errMsg += " contains global config"
+				needsAnd = true
+			}
+			for _, org := range targetedOrgs.List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
+				needsAnd = true
+			}
+			for _, repo := range targetedRepos.Delete(expectedTargetRepo).List() {
+				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
+				needsAnd = true
+			}
+			errs = append(errs, errors.New(errMsg))
+			return nil
+		}
+
+		// We should have left the function earlier. Error out so bugs in this code can not be abused.
+		return fmt.Errorf("BUG: You should never see this. Path: %s, isGlobal: %t, targetedOrgs: %v, targetedRepos: %v", path, isGlobal, targetedOrgs, targetedRepos)
+	}))
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(bp config.BranchProtection) error {
+	var errs []error
+	if bp.Unmanaged != nil && *bp.Unmanaged {
+		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) {
+			errs = append(errs, errors.New("branch protection is globally set to unmanaged, but has configuration"))
+		}
+		for org := range bp.Orgs {
+			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s", org))
+		}
+	}
+	for orgName, orgConfig := range bp.Orgs {
+		if orgConfig.Unmanaged != nil && *orgConfig.Unmanaged {
+			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) {
+				errs = append(errs, fmt.Errorf("branch protection config for org %s is set to unmanaged, but it defines settings", orgName))
+			}
+			for repo := range orgConfig.Repos {
+				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s", orgName, repo, orgName))
+			}
+		}
+
+		for repoName, repoConfig := range orgConfig.Repos {
+			if repoConfig.Unmanaged != nil && *repoConfig.Unmanaged {
+				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) {
+					errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is set to unmanaged, but it defines settings", orgName, repoName))
+				}
+
+				for branchName := range repoConfig.Branches {
+					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s", orgName, repoName, branchName))
+				}
+
+			}
+
+			for branchName, branchConfig := range repoConfig.Branches {
+				if branchConfig.Unmanaged != nil && *branchConfig.Unmanaged && doesUnmanagedBranchprotectionPolicyHaveSettings(branchConfig.Policy) {
+					errs = append(errs, fmt.Errorf("branch protection config for branch %s in repo %s/%s is set to unmanaged but defines settings", branchName, orgName, repoName))
+				}
+			}
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func doesUnmanagedBranchprotectionPolicyHaveSettings(p config.Policy) bool {
+	emptyRef := config.Policy{Unmanaged: p.Unmanaged}
+	return !reflect.DeepEqual(p, emptyRef)
+}
+
+func prefixWithAndIfNeeded(s string, needsAnd bool) string {
+	if needsAnd {
+		return " and" + s
+	}
+	return s
+}
+
+type hierarchicalConfig interface {
+	HasConfigFor() (bool, sets.String, sets.String)
+}
+
+func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
+	data, err := fs.ReadFile(filesystem, path)
+	if err != nil {
+		return false, nil, nil, fmt.Errorf("failed to read %s: %w", path, err)
+	}
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+		return false, nil, nil, fmt.Errorf("failed to unmarshal %s into %T: %w", path, cfg, err)
+	}
+
+	global, orgs, repos = cfg.HasConfigFor()
+	return global, orgs, repos, nil
 }

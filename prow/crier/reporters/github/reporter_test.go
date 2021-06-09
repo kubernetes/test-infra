@@ -115,7 +115,7 @@ func TestShouldReport(t *testing.T) {
 // threadsafe.
 func TestPresumitReportingLocks(t *testing.T) {
 	reporter := NewReporter(
-		&fakegithub.FakeClient{},
+		fakegithub.NewFakeClient(),
 		func() *config.Config {
 			return &config.Config{
 				ProwConfig: config.ProwConfig{
@@ -186,11 +186,15 @@ func TestReport(t *testing.T) {
 		},
 		{
 			name:        "Maximum sha error gets swallowed",
-			githubError: errors.New("This SHA and context has reached the maximum number of statuses"),
+			githubError: errors.New(`This SHA and context has reached the maximum number of statuses`),
 		},
 		{
 			name:        "Error from user side gets swallowed",
-			githubError: errors.New("error setting status: status code 404 not one of [201], body: {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}"),
+			githubError: errors.New(`error setting status: status code 404 not one of [201], body: {"message":"Not Found","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
+		},
+		{
+			name:        "Error from user side gets swallowed2",
+			githubError: errors.New(`failed to report job: error setting status: status code 422 not one of [201], body: {"message":"No commit found for SHA: 9d04799d1a22e9e604c50f6bbbec067aaccc1b32","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
 		},
 		{
 			name:          "Other error get returned",
@@ -201,8 +205,10 @@ func TestReport(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			fghc := fakegithub.NewFakeClient()
+			fghc.Error = tc.githubError
 			c := Client{
-				gc: &fakegithub.FakeClient{Error: tc.githubError},
+				gc: fghc,
 				config: func() *config.Config {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{

@@ -42,6 +42,21 @@ container_image(
     ],
 )
 
+sh_test(
+    name = "validate-static-files",
+    srcs = [
+        "validate-static-files.sh",
+    ],
+    args = [
+        "$(locations :templates)",
+        "$(locations //prow/cmd/deck/static)",
+    ],
+    data = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
+)
+
 go_binary(
     name = NAME,
     data = [
@@ -70,6 +85,8 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/flagutil:go_default_library",
+        "//prow/flagutil/config:go_default_library",
+        "//prow/flagutil/plugins:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/githuboauth:go_default_library",
@@ -118,6 +135,8 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/flagutil:go_default_library",
+        "//prow/flagutil/config:go_default_library",
+        "//prow/flagutil/plugins:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
@@ -129,6 +148,7 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//prow/pjutil/pprof:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/trigger:go_default_library",
@@ -142,7 +162,9 @@ go_library(
         "//prow/spyglass/lenses/buildlog:go_default_library",
         "//prow/spyglass/lenses/common:go_default_library",
         "//prow/spyglass/lenses/coverage:go_default_library",
+        "//prow/spyglass/lenses/html:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
+        "//prow/spyglass/lenses/links:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/spyglass/lenses/podinfo:go_default_library",
         "//prow/spyglass/lenses/restcoverage:go_default_library",

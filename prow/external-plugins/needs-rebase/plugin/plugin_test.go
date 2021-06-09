@@ -25,9 +25,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
@@ -76,7 +77,7 @@ func (f *fghc) GetIssueLabels(org, repo string, number int) ([]github.Label, err
 	return f.initialLabels, nil
 }
 
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
+func (f *fghc) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
 	f.commentCreated[testKey(org, repo, number)] = true
 	return nil
 }
@@ -85,13 +86,13 @@ func (f *fghc) BotUserChecker() (func(candidate string) bool, error) {
 	return func(candidate string) bool { return candidate == "k8s-ci-robot" }, nil
 }
 
-func (f *fghc) AddLabel(org, repo string, number int, label string) error {
+func (f *fghc) AddLabelWithContext(_ context.Context, org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
 	f.IssueLabelsAdded[key] = append(f.IssueLabelsAdded[key], label)
 	return nil
 }
 
-func (f *fghc) RemoveLabel(org, repo string, number int, label string) error {
+func (f *fghc) RemoveLabelWithContext(_ context.Context, org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
 	f.IssueLabelsRemoved[key] = append(f.IssueLabelsRemoved[key], label)
 	return nil
@@ -101,12 +102,12 @@ func (f *fghc) IsMergeable(org, repo string, number int, sha string) (bool, erro
 	return f.mergeable, nil
 }
 
-func (f *fghc) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+func (f *fghc) DeleteStaleCommentsWithContext(_ context.Context, org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
 	f.commentDeleted[testKey(org, repo, number)] = true
 	return nil
 }
 
-func (f *fghc) Query(_ context.Context, q interface{}, _ map[string]interface{}) error {
+func (f *fghc) QueryWithGitHubAppsSupport(_ context.Context, q interface{}, _ map[string]interface{}, _ string) error {
 	query, ok := q.(*searchQuery)
 	if !ok {
 		return errors.New("invalid query format")
@@ -170,8 +171,9 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 		pr   *github.PullRequest
 
 		mergeable bool
-		merged    bool
 		labels    []string
+		state     string
+		merged    bool
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -186,18 +188,21 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			pr:        pr(),
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     github.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -207,14 +212,23 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			pr:        pr(),
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     github.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 		{
-			name:   "merged pr is ignored",
-			pr:     pr(),
-			merged: true,
+			name:      "merged pr is ignored",
+			pr:        pr(),
+			mergeable: false,
+			state:     github.PullRequestStateClosed,
+			merged:    true,
+		},
+		{
+			name:      "closed pr is ignored",
+			pr:        pr(),
+			mergeable: false,
+			state:     github.PullRequestStateClosed,
 		},
 	}
 
@@ -225,6 +239,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 			if tc.pr != nil {
 				ice.Issue.PullRequest = &struct{}{}
 				tc.pr.Merged = tc.merged
+				tc.pr.State = tc.state
 			}
 			if err := HandleIssueCommentEvent(logrus.WithField("plugin", PluginName), fake, ice); err != nil {
 				t.Fatalf("error handling issue comment event: %v", err)
@@ -243,8 +258,9 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		name string
 
 		mergeable bool
-		merged    bool
 		labels    []string
+		state     string
+		merged    bool
 
 		expectedAdded   []string
 		expectedRemoved []string
@@ -255,16 +271,19 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "mergeable no-op",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     github.PullRequestStateOpen,
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
 			labels:    []string{labels.LGTM, labels.Approved},
+			state:     github.PullRequestStateOpen,
 
 			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
@@ -273,6 +292,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
+			state:     github.PullRequestStateOpen,
 
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
@@ -280,6 +300,11 @@ func TestHandlePullRequestEvent(t *testing.T) {
 		{
 			name:   "merged pr is ignored",
 			merged: true,
+			state:  github.PullRequestStateClosed,
+		},
+		{
+			name:  "closed pr is ignored",
+			state: github.PullRequestStateClosed,
 		},
 	}
 
@@ -295,6 +320,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 					},
 				},
 				Merged: tc.merged,
+				State:  tc.state,
 				Number: 5,
 			},
 		}
@@ -310,20 +336,29 @@ func TestHandleAll(t *testing.T) {
 	testPRs := []struct {
 		labels    []string
 		mergeable bool
+		state     githubql.PullRequestState
 
 		expectedAdded, expectedRemoved []string
 		expectComment, expectDeletion  bool
 	}{
 		{
-			mergeable: true,
+			mergeable: false,
+			state:     githubql.PullRequestStateMerged,
 			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
 			mergeable: false,
+			state:     githubql.PullRequestStateClosed,
+			labels:    []string{labels.LGTM, labels.Approved},
+		},
+		{
+			mergeable: false,
+			state:     githubql.PullRequestStateClosed,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
+			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved},
 
 			expectedAdded: []string{labels.NeedsRebase},
@@ -331,6 +366,7 @@ func TestHandleAll(t *testing.T) {
 		},
 		{
 			mergeable: true,
+			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 
 			expectedRemoved: []string{labels.NeedsRebase},
@@ -342,6 +378,7 @@ func TestHandleAll(t *testing.T) {
 	for i, testPR := range testPRs {
 		pr := pullRequest{
 			Number: githubql.Int(i),
+			State:  testPR.state,
 		}
 		if testPR.mergeable {
 			pr.Mergeable = githubql.MergeableStateMergeable
@@ -360,15 +397,154 @@ func TestHandleAll(t *testing.T) {
 	}
 	fake := newFakeClient(prs, nil, false, nil)
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{"/": {labels.LGTM, PluginName}},
+		Plugins: plugins.Plugins{"/": {Plugins: []string{labels.LGTM, PluginName}}},
 
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}
 
-	if err := HandleAll(logrus.WithField("plugin", PluginName), fake, config); err != nil {
+	if err := HandleAll(logrus.WithField("plugin", PluginName), fake, config, false); err != nil {
 		t.Fatalf("Unexpected error handling all prs: %v.", err)
 	}
 	for i, pr := range testPRs {
 		fake.compareExpected(t, "", "", i, pr.expectedAdded, pr.expectedRemoved, pr.expectComment, pr.expectDeletion)
+	}
+}
+
+func TestConstructQueries(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name         string
+		orgs         []string
+		repos        []string
+		usesAppsAuth bool
+
+		expected map[string][]string
+	}{
+		{
+			name: "Kubernetes and Kubernetes-Sigs org, no repos",
+			orgs: []string{"kubernetes", "kubernetes-sigs"},
+
+			expected: map[string][]string{
+				"kubernetes": {
+					`archived:false is:pr is:open org:"kubernetes" -repo:"kubernetes/kubernetes"`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:>=0000-11-02`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:<0000-11-02`,
+				},
+				"kubernetes-sigs": {`archived:false is:pr is:open org:"kubernetes-sigs"`},
+			},
+		},
+		{
+			name:         "Kubernetes and Kubernetes-Sigs org, no repos, apps auth",
+			orgs:         []string{"kubernetes", "kubernetes-sigs"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"kubernetes": {
+					`archived:false is:pr is:open org:"kubernetes" -repo:"kubernetes/kubernetes"`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:>=0000-11-02`,
+					`archived:false is:pr is:open repo:"kubernetes/kubernetes" created:<0000-11-02`,
+				},
+				"kubernetes-sigs": {`archived:false is:pr is:open org:"kubernetes-sigs"`},
+			},
+		},
+		{
+			name: "Other orgs, no repos",
+			orgs: []string{"other", "other-sigs"},
+
+			expected: map[string][]string{
+				"other":      {`archived:false is:pr is:open org:"other"`},
+				"other-sigs": {`archived:false is:pr is:open org:"other-sigs"`},
+			},
+		},
+		{
+			name:         "Other org, no repos, apps auth",
+			orgs:         []string{"other", "other-sigs"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"other":      {`archived:false is:pr is:open org:"other"`},
+				"other-sigs": {`archived:false is:pr is:open org:"other-sigs"`},
+			},
+		},
+		{
+			name:  "Some repos, no orgs",
+			repos: []string{"org/repo", "other/repo"},
+
+			expected: map[string][]string{"": {`archived:false is:pr is:open repo:"org/repo" repo:"other/repo"`}},
+		},
+		{
+			name:         "Some repos, no orgs, apps auth",
+			repos:        []string{"org/repo", "other/repo"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"org":   {`archived:false is:pr is:open repo:"org/repo"`},
+				"other": {`archived:false is:pr is:open repo:"other/repo"`},
+			},
+		},
+		{
+			name:  "Invalid repo is ignored",
+			repos: []string{"repo"},
+		},
+		{
+			name:  "Org and repo in that org, repo is ignored",
+			orgs:  []string{"org"},
+			repos: []string{"org/repo"},
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open org:"org"`}},
+		},
+		{
+			name:  "Org and repo in that org, repo is ignored, apps auth",
+			orgs:  []string{"org"},
+			repos: []string{"org/repo"},
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open org:"org"`}},
+		},
+		{
+			name:  "Some orgs and some repos",
+			orgs:  []string{"org", "other"},
+			repos: []string{"repoorg/repo", "otherrepoorg/repo"},
+
+			expected: map[string][]string{
+				"":      {`archived:false is:pr is:open repo:"repoorg/repo" repo:"otherrepoorg/repo"`},
+				"org":   {`archived:false is:pr is:open org:"org"`},
+				"other": {`archived:false is:pr is:open org:"other"`},
+			},
+		},
+		{
+			name:         "Some orgs and some repos, apps auth",
+			orgs:         []string{"org", "other"},
+			repos:        []string{"repoorg/repo", "otherrepoorg/repo"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{
+				"org":          {`archived:false is:pr is:open org:"org"`},
+				"other":        {`archived:false is:pr is:open org:"other"`},
+				"otherrepoorg": {`archived:false is:pr is:open repo:"otherrepoorg/repo"`},
+				"repoorg":      {`archived:false is:pr is:open repo:"repoorg/repo"`},
+			},
+		},
+		{
+			name:  "Multiple repos in the same org",
+			repos: []string{"org/a", "org/b"},
+
+			expected: map[string][]string{"": {`archived:false is:pr is:open repo:"org/a" repo:"org/b"`}},
+		},
+		{
+			name:         "Multiple repos in the same org, apps auth",
+			repos:        []string{"org/a", "org/b"},
+			usesAppsAuth: true,
+
+			expected: map[string][]string{"org": {`archived:false is:pr is:open repo:"org/a" repo:"org/b"`}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := constructQueries(logrus.WithField("test", tc.name), time.Time{}, tc.orgs, tc.repos, tc.usesAppsAuth)
+			if diff := cmp.Diff(tc.expected, result, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected result differs from actual: %s", diff)
+			}
+		})
 	}
 }

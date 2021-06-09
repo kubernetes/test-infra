@@ -24,11 +24,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -41,34 +43,53 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			opt: options{
-				config: "dummy",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
+				github: flagutil.GitHubOptions{TokenPath: "fake", ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "no config",
 			opt: options{
-				config: "",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				github: flagutil.GitHubOptions{TokenPath: "fake", ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "no token, allow",
 			opt: options{
-				config: "dummy",
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
+				github: flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
 		},
 		{
-			name: "override default tokens allowed",
+			name: "legacy override default tokens allowed only when new-style options are default)",
 			opt: options{
-				config:     "dummy",
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
 				tokens:     5000,
 				tokenBurst: 200,
+				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
 			},
 			expectedErr: false,
+		},
+		{
+			name: "legacy override default tokens not allowed with new-style options",
+			opt: options{
+				config: configflagutil.ConfigOptions{
+					ConfigPath: "dummy",
+				},
+				tokens:     5000,
+				tokenBurst: 200,
+				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens + 100, ThrottleAllowBurst: defaultBurst + 10},
+			},
+			expectedErr: true,
 		},
 	}
 
@@ -119,20 +140,17 @@ func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.
 	if !ok {
 		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
 	}
-	var out []github.Branch
 	if onlyProtected {
 		for _, item := range b {
 			if !item.Protected {
 				continue
 			}
-			out = append(out, item)
 		}
 	} else {
 		// when !onlyProtected, github does not set Protected
 		// match that behavior here to ensure we handle this correctly
 		for _, item := range b {
 			item.Protected = false
-			out = append(out, item)
 		}
 	}
 	return b, nil
@@ -301,6 +319,8 @@ func TestProtect(t *testing.T) {
 		teams                  []github.Team
 		skipVerifyRestrictions bool
 		errors                 int
+
+		enabled func(org, repo string) bool
 	}{
 		{
 			name: "nothing",
@@ -496,6 +516,68 @@ branch-protection:
 				},
 			},
 			branchProtections: map[string]github.BranchProtection{"org/skip=master": {}},
+		},
+		{
+			name:     "protect org but branchprotector is not enabled for this org, nothing happens",
+			branches: []string{"org/repo1=master", "org/repo1=branch"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			enabled: func(org, repo string) bool { return org != "org" },
+		},
+		{
+			name:     "protect org, branchprotector is disabled for different org, org gets protected",
+			branches: []string{"org/repo1=master", "org/repo1=branch"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+				{
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+			},
+			enabled: func(org, repo string) bool { return org != "other-org" },
+		},
+		{
+			name:     "protect org, branchprotector is disabled for one repo so it gets skipped",
+			branches: []string{"org/repo1=master", "org/repo2=master"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			expected: []requirements{{
+				Org:    "org",
+				Repo:   "repo1",
+				Branch: "master",
+				Request: &github.BranchProtectionRequest{
+					EnforceAdmins: &no,
+				},
+			}},
+			enabled: func(org, repo string) bool { return org == "org" && repo != "repo2" },
 		},
 		{
 			name:     "protect org but skip a repo due to archival",
@@ -1159,6 +1241,87 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "Global unmanaged: true makes us not do anything",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  unmanaged: true
+  orgs:
+    cfgdef:
+      repos:
+        repo1:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+`,
+		},
+		{
+			name:     "Org-level unmanaged: true makes us ignore everything in that org",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  orgs:
+    cfgdef:
+      unmanaged: true
+      repos:
+        repo1:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+`,
+		},
+		{
+			name:     "Repo-level unmanaged: true makes us ignore everything in that repo",
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
+			config: `
+branch-protection:
+  orgs:
+    cfgdef:
+      repos:
+        repo1:
+          unmanaged: true
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              required_status_checks:
+                contexts:
+                - foo
+        repo2:
+          required_status_checks:
+            contexts:
+            - foo
+          branches:
+            master:
+              protect: true
+              required_status_checks:
+                contexts:
+                - foo
+`,
+			expected: []requirements{
+				{
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{Contexts: []string{"foo"}},
+						EnforceAdmins:        &no,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -1195,6 +1358,10 @@ branch-protection:
 			if err := yaml.Unmarshal([]byte(tc.config), &cfg); err != nil {
 				t.Fatalf("failed to parse config: %v", err)
 			}
+
+			if tc.enabled == nil {
+				tc.enabled = func(org, repo string) bool { return true }
+			}
 			p := protector{
 				client:             &fc,
 				cfg:                &cfg,
@@ -1203,6 +1370,7 @@ branch-protection:
 				done:               make(chan []error),
 				completedRepos:     make(map[string]bool),
 				verifyRestrictions: !tc.skipVerifyRestrictions,
+				enabled:            tc.enabled,
 			}
 			go func() {
 				p.protect()
@@ -1220,7 +1388,7 @@ branch-protection:
 			switch {
 			case len(actual) != len(tc.expected):
 				t.Errorf("%+v %+v", cfg.BranchProtection, actual)
-				t.Errorf("actual updates %v != expected %v", actual, tc.expected)
+				t.Errorf("actual updates differ from expected: %s", cmp.Diff(actual, tc.expected))
 			default:
 				for _, a := range actual {
 					found := false
@@ -1300,6 +1468,7 @@ branch-protection:
 		updates:        make(chan requirements),
 		done:           make(chan []error),
 		completedRepos: make(map[string]bool),
+		enabled:        func(org, repo string) bool { return true },
 	}
 	go func() {
 		p.protect()
@@ -1361,6 +1530,7 @@ branch-protection:
 		updates:        make(chan requirements),
 		done:           make(chan []error),
 		completedRepos: make(map[string]bool),
+		enabled:        func(org, repo string) bool { return true },
 	}
 	go func() {
 		p.protect()

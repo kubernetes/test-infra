@@ -32,12 +32,14 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: needs-rebase
-        image: gcr.io/k8s-prow/needs-rebase:v20210122-d4ead73bf2
+        image: gcr.io/k8s-prow/needs-rebase:v20210608-953d79c16d
         imagePullPolicy: Always
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/oauth
+        - --update-period=6h
         ports:
           - name: http
             containerPort: 8888

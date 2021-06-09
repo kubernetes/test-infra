@@ -2,13 +2,13 @@
 
 reviewers:
 - font
-- madhusudancs
-- perotinus
 - pmorie
 approvers:
 - font
-- madhusudancs
-- perotinus
 - pmorie
 labels:
 - sig/multicluster
+
+emeritus_approvers:
+- madhusudancs
+- perotinus

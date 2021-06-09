@@ -132,16 +132,16 @@ func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 			}{
 				opts.LensTitle,
 				request.ResourceRoot,
-				template.HTML(lens.Header(artifacts, opts.LensResourcesDir, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)),
-				template.HTML(lens.Body(artifacts, opts.LensResourcesDir, "", opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)),
+				template.HTML(lens.Header(artifacts, opts.LensResourcesDir, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)),
+				template.HTML(lens.Body(artifacts, opts.LensResourcesDir, "", opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)),
 			})
 
 		case api.RequestActionRerender:
 			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			w.Write([]byte(lens.Body(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)))
+			w.Write([]byte(lens.Body(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)))
 
 		case api.RequestActionCallBack:
-			w.Write([]byte(lens.Callback(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config)))
+			w.Write([]byte(lens.Callback(artifacts, opts.LensResourcesDir, request.Data, opts.ConfigGetter().Deck.Spyglass.Lenses[request.LensIndex].Lens.Config, opts.ConfigGetter().Deck.Spyglass)))
 
 		default:
 			w.WriteHeader(http.StatusBadRequest)
@@ -223,7 +223,9 @@ func FetchArtifacts(
 
 	for _, logName := range logsNeeded {
 		art, err := podLogArtifactFetcher.Artifact(ctx, src, logName, sizeLimit)
-		if err != nil {
+		if config.IsNotAllowedBucketError(err) {
+			logrus.Debugf("Failed to fetch pod log: %v", err)
+		} else if err != nil {
 			logrus.Errorf("Failed to fetch pod log: %v", err)
 		} else {
 			arts = append(arts, art)

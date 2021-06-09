@@ -20,10 +20,16 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	fuzz "github.com/google/gofuzz"
+
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
@@ -1434,6 +1440,285 @@ func TestConfigUpdaterResolve(t *testing.T) {
 			if diff := cmp.Diff(tc.expectedConfig, tc.in); diff != "" {
 				t.Errorf("expected config differs from actual config: %s", diff)
 			}
+		})
+	}
+}
+
+func TestEnabledReposForPlugin(t *testing.T) {
+	pluginsYaml := []byte(`
+orgA:
+ excluded_repos:
+ - repoB
+ plugins:
+ - pluginCommon
+ - pluginNotForRepoB
+orgA/repoB:
+ plugins:
+ - pluginCommon
+ - pluginOnlyForRepoB
+`)
+	var p Plugins
+	err := yaml.Unmarshal(pluginsYaml, &p)
+	if err != nil {
+		t.Errorf("cannot unmarshal plugins config: %v", err)
+	}
+	cfg := Configuration{
+		Plugins: p,
+	}
+	testCases := []struct {
+		name              string
+		wantOrgs          []string
+		wantRepos         []string
+		wantExcludedRepos map[string]sets.String
+	}{
+		{
+			name:              "pluginCommon",
+			wantOrgs:          []string{"orgA"},
+			wantRepos:         []string{"orgA/repoB"},
+			wantExcludedRepos: map[string]sets.String{"orgA": {}},
+		},
+		{
+			name:              "pluginNotForRepoB",
+			wantOrgs:          []string{"orgA"},
+			wantRepos:         nil,
+			wantExcludedRepos: map[string]sets.String{"orgA": {"orgA/repoB": {}}},
+		},
+		{
+			name:              "pluginOnlyForRepoB",
+			wantOrgs:          nil,
+			wantRepos:         []string{"orgA/repoB"},
+			wantExcludedRepos: map[string]sets.String{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			orgs, repos, excludedRepos := cfg.EnabledReposForPlugin(tc.name)
+			if diff := cmp.Diff(tc.wantOrgs, orgs); diff != "" {
+				t.Errorf("expected wantOrgs differ from actual: %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantRepos, repos); diff != "" {
+				t.Errorf("expected repos differ from actual: %s", diff)
+			}
+			if diff := cmp.Diff(tc.wantExcludedRepos, excludedRepos); diff != "" {
+				t.Errorf("expected excludedRepos differ from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestPluginsUnmarshalFailed(t *testing.T) {
+	badPluginsYaml := []byte(`
+orgA:
+ excluded_repos = [ repoB ]
+ plugins:
+ - pluginCommon
+ - pluginNotForRepoB
+orgA/repoB:
+ plugins:
+ - pluginCommon
+ - pluginOnlyForRepoB
+`)
+	var p Plugins
+	err := p.UnmarshalJSON(badPluginsYaml)
+	if err == nil {
+		t.Error("expected unmarshal error but didn't get one")
+	}
+}
+
+func TestConfigMergingProperties(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		makeMergeable func(*Configuration)
+	}{
+		{
+			name: "Plugins config",
+			makeMergeable: func(c *Configuration) {
+				*c = Configuration{Plugins: c.Plugins}
+			},
+		},
+	}
+
+	expectedProperties := []struct {
+		name         string
+		verification func(t *testing.T, fuzzedConfig *Configuration)
+	}{
+		{
+			name: "Merging into empty config always succeeds and makes the empty config equal to the one that was merged in",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				newConfig := &Configuration{}
+				if err := newConfig.mergeFrom(fuzzedMergeableConfig); err != nil {
+					t.Fatalf("merging fuzzed mergeable config into empty config failed: %v", err)
+				}
+				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig); diff != "" {
+					t.Errorf("after merging config into an empty config, the config that was merged into differs from the one we merged from:\n%s\n", diff)
+				}
+			},
+		},
+		{
+			name: "Merging empty config in always succeeds",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				if err := fuzzedMergeableConfig.mergeFrom(&Configuration{}); err != nil {
+					t.Errorf("merging empty config in failed: %v", err)
+				}
+			},
+		},
+		{
+			name: "Merging a config into itself always fails",
+			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+				if apiequality.Semantic.DeepEqual(fuzzedMergeableConfig, &Configuration{}) {
+					return
+				}
+
+				if err := fuzzedMergeableConfig.mergeFrom(fuzzedMergeableConfig); err == nil {
+					serialized, serializeErr := yaml.Marshal(fuzzedMergeableConfig)
+					if serializeErr != nil {
+						t.Fatalf("merging non-empty config into itself did not yield an error and serializing it afterwards failed: %v. Raw object: %+v", serializeErr, fuzzedMergeableConfig)
+					}
+					t.Errorf("merging a config into itself did not produce an error. Serialized config:\n%s", string(serialized))
+				}
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, propertyTest := range expectedProperties {
+				propertyTest := propertyTest
+				t.Run(propertyTest.name, func(t *testing.T) {
+					t.Parallel()
+
+					for i := 0; i < 100; i++ {
+						fuzzedConfig := &Configuration{}
+						fuzzer.Fuzz(fuzzedConfig)
+
+						tc.makeMergeable(fuzzedConfig)
+
+						propertyTest.verification(t, fuzzedConfig)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestPluginsMergeFrom(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name string
+
+		from *Plugins
+		to   *Plugins
+
+		expected       *Plugins
+		expectedErrMsg string
+	}{
+		{
+			name: "Merging for two different repos succeeds",
+
+			from: &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+			to:   &Plugins{"org/repo-2": OrgPlugins{Plugins: []string{"wip"}}},
+
+			expected: &Plugins{
+				"org/repo-1": OrgPlugins{Plugins: []string{"wip"}},
+				"org/repo-2": OrgPlugins{Plugins: []string{"wip"}},
+			},
+		},
+		{
+			name: "Merging the same repo fails",
+
+			from: &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+			to:   &Plugins{"org/repo-1": OrgPlugins{Plugins: []string{"wip"}}},
+
+			expectedErrMsg: "found duplicate config for plugins.org/repo-1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %s", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expexcted config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestHasConfigFor(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name            string
+		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String)
+	}{
+		{
+			name: "Any non-empty config with empty Plugins is considered to be global",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig.Plugins = nil
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
+			},
+		},
+		{
+			name: "Any config with plugins is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				for orgOrRepo := range fuzzedConfig.Plugins {
+					if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Plugins: fuzzedConfig.Plugins}), expectOrgs, expectRepos
+			},
+		},
+	}
+
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for i := 0; i < 100; i++ {
+				fuzzedConfig := &Configuration{}
+				fuzzer.Fuzz(fuzzedConfig)
+
+				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
+				actualIsGlobal, actualOrgs, actualRepos := fuzzedAndManipulatedConfig.HasConfigFor()
+
+				if expectIsGlobal != actualIsGlobal {
+					t.Errorf("exepcted isGlobal: %t, got: %t", expectIsGlobal, actualIsGlobal)
+				}
+
+				if diff := cmp.Diff(expectOrgs, actualOrgs); diff != "" {
+					t.Errorf("expected orgs differ from actual: %s", diff)
+				}
+
+				if diff := cmp.Diff(expectRepos, actualRepos); diff != "" {
+					t.Errorf("expected repos differ from actual: %s", diff)
+				}
+			}
+
 		})
 	}
 }

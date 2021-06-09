@@ -22,8 +22,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/sirupsen/logrus"
-
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -61,12 +59,6 @@ func NewStorageArtifact(ctx context.Context, handle artifactHandle, link string,
 		path:      path,
 		sizeLimit: sizeLimit,
 		ctx:       ctx,
-	}
-}
-
-func fieldsFor(a *StorageArtifact) logrus.Fields {
-	return logrus.Fields{
-		"artifact": a.path,
 	}
 }
 

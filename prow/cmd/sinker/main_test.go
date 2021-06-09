@@ -38,6 +38,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -864,18 +865,15 @@ func TestFlags(t *testing.T) {
 				"--config-path": "/random/path",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/path"
+				o.config.ConfigPath = "/random/path"
 			},
 		},
 		{
-			name: "expicitly set --dry-run=false",
+			name: "explicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Explicit: true,
-				}
 			},
 		},
 		{
@@ -893,18 +891,19 @@ func TestFlags(t *testing.T) {
 				"--deck-url": "http://whatever",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Value:    true,
-					Explicit: true,
-				}
+				o.dryRun = true
 				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 		{
-			name: "dry run defaults to false", // TODO(fejta): change to true in April
-			del:  sets.NewString("--dry-run"),
+			name: "dry run defaults to true",
+			args: map[string]string{
+				"--deck-url": "http://whatever",
+			},
+			del: sets.NewString("--dry-run"),
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{}
+				o.dryRun = true
+				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 	}
@@ -912,15 +911,14 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath: "yo",
-				dryRun: flagutil.Bool{
-					Explicit: true,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				dryRun:                 false,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
@@ -951,7 +949,7 @@ func TestFlags(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
 			}
 		})
 	}

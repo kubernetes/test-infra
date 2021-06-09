@@ -41,13 +41,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-features-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-2
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cos-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e
   test_name_config:
@@ -79,10 +72,6 @@ test_groups:
   num_columns_recent: 3
   num_failures_to_alert: 1
 
-# Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
-- name: canonical-kubernetes-e2e-gce
-  gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
-
 # CRI-O
 - name: test_pull_request_crio_e2e_fedora
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
@@ -97,25 +86,14 @@ dashboards:
 - name: vmware-conformance-cloud-provider
 - name: vmware-cluster-api-provider-vsphere
 
-- name: canonical-ubuntu1-k8sbeta
-- name: canonical-ubuntu1-k8sstable1
-- name: canonical-ubuntu1-k8sstable2
-- name: canonical-ubuntu1-k8sstable3
-- name: canonical-ubuntu2-k8sbeta
-- name: canonical-ubuntu2-k8sstable1
-- name: canonical-ubuntu2-k8sstable2
-- name: canonical-ubuntu2-k8sstable3
-- name: canonical-cdk
-  dashboard_tab:
-  - name: cdk-gce-node
-    test_group_name: canonical-kubernetes-e2e-gce
-
 - name: google-aws
 - name: google-gce
 - name: google-gce-compute-image-tools
   dashboard_tab:
   - name: ci-daisy-e2e
     test_group_name: ci-daisy-e2e
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com    
     file_bug_template:
@@ -127,6 +105,8 @@ dashboards:
         value: <test-url>
   - name: ci-daisy-e2e-daily
     test_group_name: ci-daisy-e2e-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com       
     file_bug_template:
@@ -138,6 +118,8 @@ dashboards:
         value: <test-url>
   - name: ci-images-import-export-cli-e2e-tests
     test_group_name: ci-images-import-export-cli-e2e-tests
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com   
     file_bug_template:
@@ -149,6 +131,8 @@ dashboards:
         value: <test-url>
   - name: ci-ovf-import-e2e-tests-daily
     test_group_name: ci-ovf-import-e2e-tests-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     alert_options:
       alert_mail_to_addresses: gcedaisy+alerts@google.com
     file_bug_template:
@@ -158,8 +142,23 @@ dashboards:
         value: 'ci-ovf-import-e2e-tests-daily issue: <test-name>'
       - key: body
         value: <test-url>
+  - name: ci-ovf-export-e2e-tests-daily
+    test_group_name: ci-ovf-export-e2e-tests-daily
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+    alert_options:
+      alert_mail_to_addresses: gcedaisy+alerts@google.com
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+      options:
+      - key: title
+        value: 'ci-ovf-export-e2e-tests-daily issue: <test-name>'
+      - key: body
+        value: <test-url>
   - name: ci-windows-upgrade-e2e-tests
     test_group_name: ci-windows-upgrade-e2e-tests
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -169,6 +168,8 @@ dashboards:
         value: <test-url>
   - name: ci-v2v-adapt-e2e
     test_group_name: ci-v2v-adapt-e2e
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
@@ -185,6 +186,8 @@ dashboards:
   dashboard_tab:
   - name: osconfig-unstable
     test_group_name: osconfig-unstable
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -194,6 +197,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-staging
     test_group_name: osconfig-staging
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -203,6 +208,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-stable
     test_group_name: osconfig-stable
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -212,6 +219,8 @@ dashboards:
         value: <test-url>
   - name: osconfig-head-images
     test_group_name: osconfig-head-images
+    open_test_template:
+      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -252,18 +261,6 @@ dashboards:
 #
 
 dashboard_groups:
-- name: canonical
-  dashboard_names:
-  - canonical-ubuntu1-k8sbeta
-  - canonical-ubuntu1-k8sstable1
-  - canonical-ubuntu1-k8sstable2
-  - canonical-ubuntu1-k8sstable3
-  - canonical-ubuntu2-k8sbeta
-  - canonical-ubuntu2-k8sstable1
-  - canonical-ubuntu2-k8sstable2
-  - canonical-ubuntu2-k8sstable3
-  - canonical-cdk
-
 - name: google
   dashboard_names:
   - google-aws

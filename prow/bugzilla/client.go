@@ -59,6 +59,9 @@ type Client interface {
 	// CreateBug creates a new bug on the server.
 	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 	CreateBug(bug *BugCreate) (int, error)
+	// CreateComment creates a new bug on the server.
+	// https://bugzilla.redhat.com/docs/en/html/api/core/v1/comment.html#create-comments
+	CreateComment(bug *CommentCreate) (int, error)
 	// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 	CloneBug(bug *Bug) (int, error)
 	// UpdateBug updates the fields of a bug on the server
@@ -251,29 +254,6 @@ func getClones(c Client, bug *Bug) ([]*Bug, error) {
 // GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
 func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
 	return getClones(c, bug)
-}
-
-// Gets children clones recursively using a mechanism similar to bfs
-func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
-	var errs []error
-	var bug *Bug
-	clones := []*Bug{}
-	childrenQ := []*Bug{}
-	childrenQ = append(childrenQ, root)
-	// FYI Cannot think of any situation for circular clones
-	// But might need to revisit in case there are infinite loops at any point
-	for len(childrenQ) > 0 {
-		bug, childrenQ = childrenQ[0], childrenQ[1:]
-		clones = append(clones, bug)
-		children, err := getClones(c, bug)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("Error finding clones Bug#%d: %v", bug.ID, err))
-		}
-		if len(children) > 0 {
-			childrenQ = append(childrenQ, children...)
-		}
-	}
-	return clones, utilerrors.NewAggregate(errs)
 }
 
 // getImmediateParents gets the Immediate parents of bugs with a matching summary
@@ -553,6 +533,31 @@ func (c *client) CreateBug(bug *BugCreate) (int, error) {
 	return idStruct.ID, nil
 }
 
+func (c *client) CreateComment(comment *CommentCreate) (int, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "CreateComment", "bug": comment.ID})
+	body, err := json.Marshal(comment)
+	if err != nil {
+		return 0, fmt.Errorf("failed to marshal create payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/rest/bug/%d/comment", c.endpoint, comment.ID), bytes.NewBuffer(body))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return 0, err
+	}
+	var idStruct struct {
+		ID int `json:"id,omitempty"`
+	}
+	err = json.Unmarshal(resp, &idStruct)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unmarshal server response: %v", err)
+	}
+	return idStruct.ID, nil
+}
+
 func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comment) *BugCreate {
 	newBug := &BugCreate{
 		Alias:           bug.Alias,
@@ -623,12 +628,18 @@ func clone(c Client, bug *Bug) (int, error) {
 	if err != nil {
 		return id, err
 	}
-	depends := BugUpdate{
+	bugUpdate := BugUpdate{
 		DependsOn: &IDUpdate{
 			Add: []int{bug.ID},
 		},
 	}
-	err = c.UpdateBug(id, depends)
+	for _, originalBlocks := range bug.Blocks {
+		if bugUpdate.Blocks == nil {
+			bugUpdate.Blocks = &IDUpdate{}
+		}
+		bugUpdate.Blocks.Add = append(bugUpdate.Blocks.Add, originalBlocks)
+	}
+	err = c.UpdateBug(id, bugUpdate)
 	return id, err
 }
 

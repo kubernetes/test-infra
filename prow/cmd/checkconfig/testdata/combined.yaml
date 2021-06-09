@@ -31,7 +31,7 @@ deck:
       - artifacts/junit.*\.xml
 plank:
   job_url_prefix_config:
-    '*': "https://prow.maistra.io/view/gcs/"
+    '*': "https://prow.maistra.io/view/"
   default_decoration_configs:
     '*':
       timeout: 2h

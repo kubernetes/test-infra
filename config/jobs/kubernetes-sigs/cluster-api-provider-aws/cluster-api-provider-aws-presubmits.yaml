@@ -1,13 +1,17 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: pull-cluster-api-provider-aws-test
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +24,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -28,12 +32,16 @@ presubmits:
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-aws-verify
     always_run: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
         command:
         - "make"
         - "verify"
@@ -42,6 +50,10 @@ presubmits:
       testgrid-tab-name: verify
   # conformance test
   - name: pull-cluster-api-provider-aws-e2e-conformance
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -68,7 +80,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -84,15 +96,18 @@ presubmits:
             requests:
               # these are both a bit below peak usage during build
               # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
+              memory: "9Gi"
+              cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-conformance
       testgrid-num-columns-recent: '20'
-  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
+  # conformance test against kubernetes main branch with `kind` + cluster-api-provider-aws
   - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -108,7 +123,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -123,13 +138,17 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "4Gi"
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-conformance-k8s-master
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -145,7 +164,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -160,13 +179,17 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "4Gi"
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -182,7 +205,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
@@ -197,8 +220,8 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "4Gi"
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-eks

@@ -30,6 +30,7 @@ readonly REPOS=(
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
+    kubernetes-csi/csi-driver-iscsi
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
@@ -38,7 +39,6 @@ readonly REPOS=(
 # Repos which should eventually enable cloud image builds but currently
 # don't.
 readonly BROKEN_REPOS=(
-    kubernetes-csi/csi-driver-iscsi
     kubernetes-csi/csi-proxy
     kubernetes-sigs/container-object-storage-interface-controller
     kubernetes-sigs/container-object-storage-interface-provisioner-sidecar
@@ -56,6 +56,14 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
     cat >>"${OUTPUT}" <<EOF
   ${org}/${repo}:
     - name: post-${repo}-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -72,7 +80,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
             command:
               - /run.sh
             args:
@@ -118,7 +126,7 @@ cat >>"${OUTPUT}" <<EOF
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
         command:
           - /run.sh
         env:

@@ -25,6 +25,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
@@ -441,7 +443,7 @@ func createConfigGetter(bucketNames ...string) config.Getter {
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
 			Deck: config.Deck{
-				AdditionalAllowedBuckets: bucketNames,
+				AllKnownStorageBuckets: sets.NewString(bucketNames...),
 			},
 		},
 	})

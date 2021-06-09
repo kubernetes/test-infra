@@ -27,8 +27,10 @@ import traceback
 import time
 
 import multiprocessing.pool
+import ruamel.yaml as yaml
 
 try:
+    from google.api_core import exceptions as api_exceptions
     from google.cloud import bigquery
     from google.cloud import pubsub_v1
     import google.cloud.exceptions
@@ -40,23 +42,31 @@ import model
 import make_db
 import make_json
 
-MAX_ROW_UPLOAD = 25
 
-def process_changes(results):
+MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2855
+
+
+def should_exclude(object_id, bucket_id, buckets):
+    # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
+    if bucket_id not in buckets:
+        return False
+    return any(f'/{job}/' in object_id for job in buckets[bucket_id].get('exclude_jobs', []))
+
+
+def process_changes(results, buckets):
     """Split GCS change events into trivial ack_ids and builds to further process."""
     ack_ids = []  # pubsub rec_message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
     # process results, find finished builds to process
     for rec_message in results:
-        if rec_message.message.attributes['eventType'] != 'OBJECT_FINALIZE':
+        object_id = rec_message.message.attributes['objectId']
+        bucket_id = rec_message.message.attributes['bucketId']
+        exclude = should_exclude(object_id, bucket_id, buckets)
+        if not object_id.endswith('/finished.json') or exclude:
             ack_ids.append(rec_message.ack_id)
             continue
-        obj = rec_message.message.attributes['objectId']
-        if not obj.endswith('/finished.json'):
-            ack_ids.append(rec_message.ack_id)
-            continue
-        job, build = obj[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (rec_message.message.attributes['bucketId'], job)
+        job, build = object_id[:-len('/finished.json')].rsplit('/', 1)
+        job = 'gs://%s/%s' % (bucket_id, job)
         todo.append((rec_message.ack_id, job, build))
     return ack_ids, todo
 
@@ -98,6 +108,12 @@ def retry(func, *args, **kwargs):
             # retry with exponential backoff
             traceback.print_exc()
             time.sleep(1.4 ** attempt)
+        except api_exceptions.BadRequest as err:
+            args_size = sys.getsizeof(args)
+            kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
+            print(f"Error running {func.__name__} \
+                   ([bytes in args]{args_size} with {kwargs_str}) : {err}")
+            return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
 
@@ -131,9 +147,9 @@ def insert_data(bq_client, table, rows_iter):
         # Insert rows with row_ids into table, retrying as necessary.
         errors = retry(bq_client.insert_rows, table, chunk, skip_invalid_rows=True)
         if not errors:
-            print('Loaded {} builds into {}'.format(len(chunk), table.full_table_id))
+            print(f'Loaded {len(chunk)} builds into {table.full_table_id}')
         else:
-            print('Errors:')
+            print(f'Errors on Chunk: {chunk}')
             pprint.pprint(errors)
             pprint.pprint(table.schema)
 
@@ -146,6 +162,7 @@ def main(
         subscription_path,
         bq_client,
         tables,
+        buckets,
         client_class=make_db.GCSClient,
         stop=None,
     ):
@@ -176,7 +193,7 @@ def main(
 
         print('PULLED', len(results))
 
-        ack_ids, todo = process_changes(results)
+        ack_ids, todo = process_changes(results, buckets)
 
         if ack_ids:
             print('ACK irrelevant', len(ack_ids))
@@ -234,7 +251,8 @@ def load_schema(schemafield):
 
     Only used for new tables."""
     basedir = os.path.dirname(__file__)
-    schema_json = json.load(open(os.path.join(basedir, 'schema.json')))
+    with open(os.path.join(basedir, 'schema.json')) as json_file:
+        schema_json = json.load(json_file)
     def make_field(spec):
         spec['field_type'] = spec.pop('type')
         if 'fields' in spec:
@@ -284,6 +302,14 @@ class StopWhen:
         return now != last and now == self.target
 
 
+def _make_bucket_map(path):
+    bucket_map = yaml.safe_load(open(path))
+    bucket_to_attrs = dict()
+    for k, v in bucket_map.items():
+        bucket = k.rsplit('/')[2] # of form gs://<bucket>/...
+        bucket_to_attrs[bucket] = v
+    return bucket_to_attrs
+
 def get_options(argv):
     """Process command line arguments."""
     parser = argparse.ArgumentParser()
@@ -307,6 +333,12 @@ def get_options(argv):
         type=int,
         help='Terminate when this hour (0-23) rolls around (in local time).'
     )
+    parser.add_argument(
+        '--buckets',
+        type=str,
+        default='buckets.yaml',
+        help='Path to bucket configuration.'
+    )
     return parser.parse_args(argv)
 
 
@@ -315,4 +347,5 @@ if __name__ == '__main__':
     main(model.Database(),
          *load_sub(OPTIONS.poll),
          *load_tables(OPTIONS.dataset, OPTIONS.tables),
+         _make_bucket_map(OPTIONS.buckets),
          stop=StopWhen(OPTIONS.stop_at))

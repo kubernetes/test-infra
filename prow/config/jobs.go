@@ -237,7 +237,7 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+// ShouldRun returns true if the input branch matches, given the allow/deny list.
 func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
@@ -418,7 +418,7 @@ type UtilityConfig struct {
 	// `https://github.com/org/repo.git`.
 	CloneURI string `json:"clone_uri,omitempty"`
 	// SkipSubmodules determines if submodules should be
-	// cloned when the job is run. Defaults to true.
+	// cloned when the job is run. Defaults to false.
 	SkipSubmodules bool `json:"skip_submodules,omitempty"`
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.
@@ -551,9 +551,7 @@ func (c *JobConfig) AllStaticPostsubmits(repos []string) []Postsubmit {
 func (c *JobConfig) AllPeriodics() []Periodic {
 	listPeriodic := func(ps []Periodic) []Periodic {
 		var res []Periodic
-		for _, p := range ps {
-			res = append(res, p)
-		}
+		res = append(res, ps...)
 		return res
 	}
 

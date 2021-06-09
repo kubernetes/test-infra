@@ -74,15 +74,16 @@ func TestReportJobFinished(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -152,15 +153,16 @@ func TestReportJobStarted(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -214,15 +216,16 @@ func TestReportProwJob(t *testing.T) {
 	cfg := testutil.Fca{C: config.Config{
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
-				DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-					GCSConfiguration: &prowv1.GCSConfiguration{
-						Bucket:       "kubernetes-jenkins",
-						PathPrefix:   "some-prefix",
-						PathStrategy: prowv1.PathStrategyLegacy,
-						DefaultOrg:   "kubernetes",
-						DefaultRepo:  "kubernetes",
-					},
-				}},
+				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+					map[string]*prowv1.DecorationConfig{"*": {
+						GCSConfiguration: &prowv1.GCSConfiguration{
+							Bucket:       "kubernetes-jenkins",
+							PathPrefix:   "some-prefix",
+							PathStrategy: prowv1.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+					}}),
 			},
 		},
 	}}.Config
@@ -253,17 +256,17 @@ func TestReportProwJob(t *testing.T) {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
-	if !strings.HasSuffix(ta.Path, "/prowjob.json") {
-		t.Errorf("Expected prowjob to be written to prowjob.json, got %q", ta.Path)
+	if !strings.HasSuffix(ta.Path, fmt.Sprintf("/%s", prowv1.ProwJobFile)) {
+		t.Errorf("Expected prowjob to be written to %s, got %q", prowv1.ProwJobFile, ta.Path)
 	}
 
 	if !ta.Overwrite {
-		t.Errorf("Expected prowjob.json to be written with overwrite enabled, but it was not.")
+		t.Errorf("Expected %s to be written with overwrite enabled, but it was not.", prowv1.ProwJobFile)
 	}
 
 	var result prowv1.ProwJob
 	if err := json.Unmarshal(ta.Content, &result); err != nil {
-		t.Fatalf("Couldn't unmarshal prowjob.json: %v", err)
+		t.Fatalf("Couldn't unmarshal %s: %v", prowv1.ProwJobFile, err)
 	}
 	if !cmp.Equal(*pj, result) {
 		t.Fatalf("Input prowjob mismatches output prowjob:\n%s", cmp.Diff(*pj, result))

@@ -29,6 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -67,7 +68,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header executes the "header" section of the template.
-func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
 	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
@@ -162,7 +163,7 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 }
 
 // Body returns the <body> content for a build log (or multiple build logs)
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
 	buildLogsView := BuildLogsView{
 		LogViews: []LogArtifactView{},
 	}
@@ -189,7 +190,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 }
 
 // Callback is used to retrieve new log segments
-func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
 	var request LineRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {

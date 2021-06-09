@@ -18,6 +18,7 @@ package bugzilla
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -79,31 +80,44 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if c.BugErrors.Has(id) {
 		return c.bugErrorMsg(id, "injected error updating bug")
 	}
-	if bug, exists := c.Bugs[id]; exists {
-		bug.Status = update.Status
-		bug.Resolution = update.Resolution
-		if update.Version != "" {
-			bug.Version = []string{update.Version}
-		}
-		if update.TargetRelease != nil {
-			bug.TargetRelease = update.TargetRelease
-		}
-		if update.DependsOn != nil {
-			if len(update.DependsOn.Set) > 0 {
-				bug.DependsOn = update.DependsOn.Set
-			} else {
-				bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
-			}
-			for _, blockerID := range bug.DependsOn {
-				blockerBug := c.Bugs[blockerID]
-				blockerBug.Blocks = append(blockerBug.Blocks, id)
-				c.Bugs[blockerID] = blockerBug
-			}
-		}
-		c.Bugs[id] = bug
-		return nil
+	bug, exists := c.Bugs[id]
+	if !exists {
+		return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
-	return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+	bug.Status = update.Status
+	bug.Resolution = update.Resolution
+	if update.Version != "" {
+		bug.Version = []string{update.Version}
+	}
+	if update.TargetRelease != nil {
+		bug.TargetRelease = update.TargetRelease
+	}
+	if update.DependsOn != nil {
+		if len(update.DependsOn.Set) > 0 {
+			bug.DependsOn = update.DependsOn.Set
+		} else {
+			bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
+		}
+		for _, blockerID := range bug.DependsOn {
+			blockerBug := c.Bugs[blockerID]
+			blockerBug.Blocks = append(blockerBug.Blocks, id)
+			c.Bugs[blockerID] = blockerBug
+		}
+	}
+	if update.Blocks != nil {
+		if len(update.Blocks.Set) > 0 {
+			bug.Blocks = update.Blocks.Set
+		} else {
+			bug.Blocks = sets.NewInt(bug.Blocks...).Insert(update.Blocks.Add...).Delete(update.Blocks.Remove...).List()
+		}
+		for _, blockerID := range bug.Blocks {
+			blockerBug := c.Bugs[blockerID]
+			blockerBug.DependsOn = append(blockerBug.DependsOn, id)
+			c.Bugs[blockerID] = blockerBug
+		}
+	}
+	c.Bugs[id] = bug
+	return nil
 }
 
 // AddPullRequestAsExternalBug adds an external bug to the Bugzilla bug,
@@ -214,6 +228,27 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 	return newID, nil
 }
 
+func (c *Fake) CreateComment(comment *CommentCreate) (int, error) {
+	// add new comment one ID newer than highest existing CommentID
+	newCommentID := 0
+	for _, comments := range c.BugComments {
+		for _, comment := range comments {
+			if comment.ID >= newCommentID {
+				newCommentID = comment.ID + 1
+			}
+		}
+	}
+	newComment := Comment{
+		ID:        newCommentID,
+		BugID:     comment.ID,
+		Count:     len(c.BugComments[comment.ID]),
+		Text:      comment.Comment,
+		IsPrivate: comment.IsPrivate,
+	}
+	c.BugComments[comment.ID] = append(c.BugComments[comment.ID], newComment)
+	return newCommentID, nil
+}
+
 // GetComments retrieves the bug comments, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {
@@ -223,7 +258,7 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 	if comments, exists := c.BugComments[id]; exists {
 		return comments, nil
 	}
-	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
+	return nil, &requestError{statusCode: http.StatusNotFound, message: fmt.Sprintf("bug comments for id %d not registered in the fake", id)}
 }
 
 // CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug

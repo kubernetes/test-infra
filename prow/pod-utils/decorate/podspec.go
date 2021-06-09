@@ -91,27 +91,45 @@ func PodUtilsContainerNames() sets.String {
 //
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
 func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
-	jobNameForLabel := spec.Job
-	if len(jobNameForLabel) > validation.LabelValueMaxLength {
-		// TODO(fejta): consider truncating middle rather than end.
-		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], ".-")
-		logrus.WithFields(logrus.Fields{
-			"job":       spec.Job,
-			"key":       kube.ProwJobAnnotation,
-			"value":     spec.Job,
-			"truncated": jobNameForLabel,
-		}).Info("Cannot use full job name, will truncate.")
-	}
+	log := logrus.WithFields(logrus.Fields{
+		"job": spec.Job,
+		"id":  extraLabels[kube.ProwBuildIDLabel],
+	})
 	labels := map[string]string{
-		kube.CreatedByProw:     "true",
-		kube.ProwJobTypeLabel:  string(spec.Type),
-		kube.ProwJobAnnotation: jobNameForLabel,
+		kube.CreatedByProw:    "true",
+		kube.ProwJobTypeLabel: string(spec.Type),
 	}
-	if spec.Type != prowapi.PeriodicJob && spec.Refs != nil {
-		labels[kube.OrgLabel] = spec.Refs.Org
-		labels[kube.RepoLabel] = spec.Refs.Repo
-		if len(spec.Refs.Pulls) > 0 {
-			labels[kube.PullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+	annotations := map[string]string{}
+	for key, value := range map[string]string{
+		kube.ProwJobAnnotation: spec.Job,
+		kube.ContextAnnotation: spec.Context,
+	} {
+		maybeTruncated := value
+		if len(value) > validation.LabelValueMaxLength {
+			// TODO(fejta): consider truncating middle rather than end.
+			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], "._-")
+			log.WithFields(logrus.Fields{
+				"key":            key,
+				"value":          value,
+				"maybeTruncated": maybeTruncated,
+			}).Info("Cannot use full value, will truncate.")
+		}
+		labels[key] = maybeTruncated
+		annotations[key] = value
+	}
+
+	var refs *prowapi.Refs
+	if spec.Refs != nil {
+		refs = spec.Refs
+	} else if len(spec.ExtraRefs) > 0 {
+		refs = &spec.ExtraRefs[0]
+	}
+	if refs != nil {
+		labels[kube.OrgLabel] = refs.Org
+		labels[kube.RepoLabel] = refs.Repo
+		labels[kube.BaseRefLabel] = refs.BaseRef
+		if len(refs.Pulls) > 0 {
+			labels[kube.PullLabel] = strconv.Itoa(refs.Pulls[0].Number)
 		}
 	}
 
@@ -128,7 +146,7 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 				labels[key] = base
 				continue
 			}
-			logrus.WithFields(logrus.Fields{
+			log.WithFields(logrus.Fields{
 				"key":    key,
 				"value":  value,
 				"errors": errs,
@@ -137,9 +155,6 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 		}
 	}
 
-	annotations := map[string]string{
-		kube.ProwJobAnnotation: spec.Job,
-	}
 	for k, v := range extraAnnotations {
 		annotations[k] = v
 	}
@@ -376,9 +391,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	if pj.Spec.Refs != nil {
 		refs = append(refs, *pj.Spec.Refs)
 	}
-	for _, r := range pj.Spec.ExtraRefs {
-		refs = append(refs, r)
-	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
 	if len(refs) == 0 { // nothing to clone
 		return nil, nil, nil, nil
 	}
@@ -539,12 +552,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 
 	var volumes []coreapi.Volume
 	var mounts []coreapi.VolumeMount
-	if dc.GCSCredentialsSecret != "" {
+	if dc.GCSCredentialsSecret != nil && *dc.GCSCredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: gcsCredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.GCSCredentialsSecret,
+					SecretName: *dc.GCSCredentialsSecret,
 				},
 			},
 		})
@@ -554,12 +567,12 @@ func BlobStorageOptions(dc prowapi.DecorationConfig, localMode bool) ([]coreapi.
 		})
 		opt.StorageClientOptions.GCSCredentialsFile = fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath)
 	}
-	if dc.S3CredentialsSecret != "" {
+	if dc.S3CredentialsSecret != nil && *dc.S3CredentialsSecret != "" {
 		volumes = append(volumes, coreapi.Volume{
 			Name: s3CredentialsMountName,
 			VolumeSource: coreapi.VolumeSource{
 				Secret: &coreapi.SecretVolumeSource{
-					SecretName: dc.S3CredentialsSecret,
+					SecretName: *dc.S3CredentialsSecret,
 				},
 			},
 		})
@@ -702,10 +715,24 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
 	}
 
+	secretVolumes := sets.NewString()
+	for _, volume := range spec.Volumes {
+		if volume.VolumeSource.Secret != nil {
+			secretVolumes.Insert(volume.Name)
+		}
+	}
+	containsSecretData := func(volumeName string) bool {
+		if censor := pj.Spec.DecorationConfig.CensorSecrets; censor == nil || !*censor {
+			return false
+		}
+		return secretVolumes.Has(volumeName)
+	}
+
 	const (
 		previous = ""
 		exitZero = false
 	)
+	var secretVolumeMounts []coreapi.VolumeMount
 	var wrappers []wrapper.Options
 
 	for i, container := range spec.Containers {
@@ -717,10 +744,17 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		if err != nil {
 			return fmt.Errorf("wrap container: %v", err)
 		}
+		for _, volumeMount := range spec.Containers[i].VolumeMounts {
+			if containsSecretData(volumeMount.Name) {
+				secretVolumeMounts = append(secretVolumeMounts, volumeMount)
+			}
+		}
 		wrappers = append(wrappers, *wrapperOptions)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, !IgnoreInterrupts, wrappers...)
+	ignoreInterrupts := pj.Spec.DecorationConfig.UploadIgnoresInterrupts != nil && *pj.Spec.DecorationConfig.UploadIgnoresInterrupts
+
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, ignoreInterrupts, secretVolumeMounts, wrappers...)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -742,8 +776,17 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	spec.Containers = append(spec.Containers, *sidecar)
 
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
-		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds())
+		// Unless the user's asked for something specific, we want to set the grace period on the Pod to
+		// a reasonable value, as the overall grace period for the Pod must encompass both the time taken
+		// to gracefully terminate the test process *and* the time taken to process and upload the resulting
+		// artifacts to the cloud. As a reasonable rule of thumb, assume a 80/20 split between these tasks.
+		gracePeriodSeconds := int64(pj.Spec.DecorationConfig.GracePeriod.Seconds()) * 5 / 4
 		spec.TerminationGracePeriodSeconds = &gracePeriodSeconds
+	}
+
+	defaultSA := pj.Spec.DecorationConfig.DefaultServiceAccountName
+	if spec.ServiceAccountName == "" && defaultSA != nil {
+		spec.ServiceAccountName = *defaultSA
 	}
 
 	return nil
@@ -762,23 +805,37 @@ func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 const (
 	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
 	RequirePassingEntries = true
-	// IgnoreInterrupts causes sidecar to ignore interrupts and hope that the test process exits cleanly before starting an upload.
-	IgnoreInterrupts = true
 )
 
-func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blobStorageMounts []coreapi.VolumeMount, logMount coreapi.VolumeMount, outputMount *coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries, ignoreInterrupts bool, secretVolumeMounts []coreapi.VolumeMount, wrappers ...wrapper.Options) (*coreapi.Container, error) {
+	var secretVolumePaths []string
+	for _, volumeMount := range secretVolumeMounts {
+		secretVolumePaths = append(secretVolumePaths, volumeMount.MountPath)
+	}
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
+	censoringOptions := &sidecar.CensoringOptions{
+		SecretDirectories: secretVolumePaths,
+	}
+	if config.CensoringOptions != nil {
+		censoringOptions.CensoringConcurrency = config.CensoringOptions.CensoringConcurrency
+		censoringOptions.CensoringBufferSize = config.CensoringOptions.CensoringBufferSize
+		censoringOptions.IncludeDirectories = config.CensoringOptions.IncludeDirectories
+		censoringOptions.ExcludeDirectories = config.CensoringOptions.ExcludeDirectories
+	}
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions:       &gcsOptions,
 		Entries:          wrappers,
 		EntryError:       requirePassingEntries,
 		IgnoreInterrupts: ignoreInterrupts,
+		CensoringOptions: censoringOptions,
 	})
+
 	if err != nil {
 		return nil, err
 	}
 	mounts := []coreapi.VolumeMount{logMount}
 	mounts = append(mounts, blobStorageMounts...)
+	mounts = append(mounts, secretVolumeMounts...)
 	if outputMount != nil {
 		mounts = append(mounts, *outputMount)
 	}

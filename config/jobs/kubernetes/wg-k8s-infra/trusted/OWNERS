@@ -4,7 +4,6 @@ options:
 
 reviewers:
 - wg-k8s-infra-oncall
-- bartsmykla
 approvers:
 - wg-k8s-infra-oncall
 - test-infra-oncall

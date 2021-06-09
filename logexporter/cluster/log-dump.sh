@@ -864,10 +864,10 @@ function dump_logs() {
 function main() {
   setup
   kube::util::ensure-temp-dir
-  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
     report_dir="${KUBE_TEMP}/logs"
     mkdir -p "${report_dir}"
-    echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.txt"
+    echo "${gcs_artifacts_dir}" > "${local_report_dir}/master-and-node-logs.link.txt"
     echo "Dumping logs temporarily to '${report_dir}'. Will upload to '${gcs_artifacts_dir}' later."
   else
     report_dir="${local_report_dir}"
@@ -875,32 +875,36 @@ function main() {
 
   dump_logs
 
-  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]]; then
-    echo "Uploading '${report_dir}' to '${gcs_artifacts_dir}'"
+  if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
+    if [[ "$(ls -A ${report_dir})" ]]; then
+      echo "Uploading '${report_dir}' to '${gcs_artifacts_dir}'"
 
-    if gsutil ls "${gcs_artifacts_dir}" > /dev/null; then
-      # If "${gcs_artifacts_dir}" exists, the simple call:
-      # `gsutil cp -r /tmp/dir/logs ${gcs_artifacts_dir}` will
-      #  create subdirectory 'logs' in ${gcs_artifacts_dir}
-      #
-      # If "${gcs_artifacts_dir}" exists, we want to merge its content
-      # with local logs. To do that we do the following trick:
-      # * Let's say that ${gcs_artifacts_dir} == 'gs://a/b/c'.
-      # * We rename 'logs' to 'c'
-      # * Call `gsutil cp -r /tmp/dir/c gs://a/b/`
-      #
-      # Similar pattern is used in bootstrap.py#L409-L416.
-      # It is a known issue that gsutil cp behavior is that complex.
-      # For more information on this, see:
-      # https://cloud.google.com/storage/docs/gsutil/commands/cp#how-names-are-constructed
-      remote_dir=$(dirname ${gcs_artifacts_dir})
-      remote_basename=$(basename ${gcs_artifacts_dir})
-      mv ${report_dir} "${KUBE_TEMP}/${remote_basename}"
-      gsutil -m cp -r -c -z log,txt,xml "${KUBE_TEMP}/${remote_basename}" "${remote_dir}"
-      rm -rf "${KUBE_TEMP}/${remote_basename}"
-    else  # ${gcs_artifacts_dir} doesn't exist.
-      gsutil -m cp -r -c -z log,txt,xml "${report_dir}" "${gcs_artifacts_dir}"
-      rm -rf "${report_dir}"
+      if gsutil ls "${gcs_artifacts_dir}" > /dev/null; then
+        # If "${gcs_artifacts_dir}" exists, the simple call:
+        # `gsutil cp -r /tmp/dir/logs ${gcs_artifacts_dir}` will
+        #  create subdirectory 'logs' in ${gcs_artifacts_dir}
+        #
+        # If "${gcs_artifacts_dir}" exists, we want to merge its content
+        # with local logs. To do that we do the following trick:
+        # * Let's say that ${gcs_artifacts_dir} == 'gs://a/b/c'.
+        # * We rename 'logs' to 'c'
+        # * Call `gsutil cp -r /tmp/dir/c gs://a/b/`
+        #
+        # Similar pattern is used in bootstrap.py#L409-L416.
+        # It is a known issue that gsutil cp behavior is that complex.
+        # For more information on this, see:
+        # https://cloud.google.com/storage/docs/gsutil/commands/cp#how-names-are-constructed
+        remote_dir=$(dirname ${gcs_artifacts_dir})
+        remote_basename=$(basename ${gcs_artifacts_dir})
+        mv ${report_dir} "${KUBE_TEMP}/${remote_basename}"
+        gsutil -m cp -r -c -z log,txt,xml "${KUBE_TEMP}/${remote_basename}" "${remote_dir}"
+        rm -rf "${KUBE_TEMP}/${remote_basename}"
+      else  # ${gcs_artifacts_dir} doesn't exist.
+        gsutil -m cp -r -c -z log,txt,xml "${report_dir}" "${gcs_artifacts_dir}"
+        rm -rf "${report_dir}"
+      fi
+    else
+      echo "Skipping upload of '${report_dir}' as it's empty."
     fi
   fi
 

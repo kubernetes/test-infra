@@ -19,12 +19,21 @@ def repositories():
     if not native.existing_rule("io_k8s_repo_infra"):
         http_archive(
             name = "io_k8s_repo_infra",
-            strip_prefix = "repo-infra-0.1.3",
-            sha256 = "46933bedbd22bc6a26ec6116d0d3e1475ad6b23447648d19abd6493241323311",
+            sha256 = "ae75a3a8de9698df30dd5a177c61f31ae9dd3a5da96ec951f0d6e60b2672d5fe",
+            strip_prefix = "repo-infra-0.2.2",
             urls = [
-                "https://github.com/kubernetes/repo-infra/archive/v0.1.3.tar.gz",
+                "https://github.com/kubernetes/repo-infra/archive/v0.2.2.tar.gz",
             ],
         )
+
+    http_archive(
+        name = "io_bazel_rules_go",
+        sha256 = "69de5c704a05ff37862f7e0f5534d4f479418afc21806c887db544a316f3cb6b",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+            "https://github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+        ],
+    )
 
     http_archive(
         name = "io_bazel_rules_docker",
@@ -43,8 +52,8 @@ def repositories():
     # https://github.com/bazelbuild/rules_nodejs
     http_archive(
         name = "build_bazel_rules_nodejs",
-        sha256 = "9abd649b74317c9c135f4810636aaa838d5bea4913bfa93a85c2f52a919fdaf3",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.36.0/rules_nodejs-0.36.0.tar.gz"],
+        sha256 = "dd4dc46066e2ce034cba0c81aa3e862b27e8e8d95871f567359f7a534cccb666",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.1.0/rules_nodejs-3.1.0.tar.gz"],
     )
 
     # Python setup
@@ -66,18 +75,22 @@ def repositories():
     )
 
     new_git_repository(
-        name = "com_github_operator_framework_community_operators",
+        name = "com_github_prometheus_operator",
         build_file_content = """
 exports_files([
-    "upstream-community-operators/prometheus/alertmanager.crd.yaml",
-    "upstream-community-operators/prometheus/prometheus.crd.yaml",
-    "upstream-community-operators/prometheus/prometheusrule.crd.yaml",
-    "upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml",
 ])
 """,
-        commit = "efda5dc98fd580ab5f1115a50a28825ae4fe6562",
-        remote = "https://github.com/operator-framework/community-operators.git",
-        shallow_since = "1568320223 +0200",
+        commit = "5555f492df250168657b72bb8cb60bec071de71f",  # Latest of release-0.45 branch
+        remote = "https://github.com/prometheus-operator/prometheus-operator.git",
+        shallow_since = "1610438400 +0200",
     )
 
     http_archive(

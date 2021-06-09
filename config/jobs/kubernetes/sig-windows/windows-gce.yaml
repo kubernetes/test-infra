@@ -8,6 +8,8 @@ presets:
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
 - labels:
     preset-e2e-gce-windows: "true"
   env:
@@ -18,10 +20,12 @@ presets:
 - labels:
     preset-e2e-gce-windows-containerd: "true"
   env:
-  - name: KUBE_CONTAINER_RUNTIME
+  - name: KUBE_WINDOWS_CONTAINER_RUNTIME
     value: "containerd"
   - name: PREPULL_TIMEOUT
     value: "30m"
+  - name: WINDOWS_ENABLE_DSR
+    value: "true"
 - labels:
     preset-load-gce-windows: "true"
   env:
@@ -53,17 +57,21 @@ presets:
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-2019
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -78,37 +86,42 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-releases, sig-release-master-informing
+    testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master
     description: Runs tests on a Kubernetes cluster with Windows 2019 nodes on GCE
 
-- name: ci-kubernetes-e2e-windows-gce-1909
+- name: ci-kubernetes-e2e-windows-gce-20h2
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -123,37 +136,44 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win1909"
+        value: "win20h2"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: google-windows, sig-windows-sac, sig-windows-gce, sig-release-master-informing
-    testgrid-tab-name: gce-windows-1909-master
-    description: Runs tests on a Kubernetes cluster with Windows 1909 nodes on GCE
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
+    testgrid-tab-name: gce-windows-20h2-master
+    description: Runs tests on a Kubernetes cluster with Windows 20H2 nodes on GCE
 
-- name: ci-kubernetes-e2e-windows-gce-alpha-features
+- name: ci-kubernetes-e2e-windows-gce-2004
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -168,10 +188,63 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
+      - --timeout=180m
+      env:
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2004"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"
+      - name: PREPULL_YAML
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
+    testgrid-tab-name: gce-windows-2004-master
+    description: Runs tests on a Kubernetes cluster with Windows 2004 nodes on GCE
+
+- name: ci-kubernetes-e2e-windows-gce-alpha-features
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
@@ -180,7 +253,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -194,13 +267,15 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -215,17 +290,18 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=350m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -238,7 +314,7 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   interval: 4h
   labels:
     preset-k8s-ssh: "true"
@@ -246,6 +322,8 @@ periodics:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -260,70 +338,71 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=230m
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
-- name: ci-kubernetes-e2e-windows-containerd-gce-1-18
+- name: ci-kubernetes-e2e-windows-containerd-gce-1-21
   decorate: true
   decoration_config:
-    timeout: 4h0m0s
+    timeout: 4h
   extra_refs:
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: k8s.io/windows-testing
+  - org: kubernetes-sigs
     repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
   interval: 4h
   labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
-    - args:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/latest-1.18
+      - --extract=ci/latest-1.21
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|device.plugin.for.Windows|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|device.plugin.for.Windows|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
+      - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=230m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: win2019
+        value: "win2019"
       - name: PREPULL_YAML
-        value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
-      name: ""
-      resources: {}
+        value: "prepull-head.yaml"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.21
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-containerd, sig-node-containerd
-    testgrid-tab-name: gce-windows-2019-containerd-1.18
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
+    testgrid-tab-name: gce-windows-2019-containerd-1.21
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE using 1.21 branch
 
 - name: ci-kubernetes-e2e-windows-node-throughput
   interval: 6h
@@ -342,7 +421,7 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   - org: kubernetes
     repo: perf-tests
     base_ref: master
@@ -352,12 +431,12 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
       env:
       - name: CL2_CONTAINER_IMAGE
-        value: "gcr.io/gke-release/pause-win:1.2.1"
+        value: "k8s.gcr.io/pause:3.4.1"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+        value: "https://github.com/prometheus-community/windows_exporter/releases/download/v0.16.0/windows_exporter-0.16.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       args:
@@ -368,7 +447,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=1
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/load-test.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
@@ -396,7 +475,7 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
   - org: kubernetes
     repo: perf-tests
     base_ref: master
@@ -406,12 +485,12 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
       - name: CL2_WMI_EXPORTER_URL
-        value: "https://github.com/martinlindhe/wmi_exporter/releases/download/v0.11.0/wmi_exporter-0.11.0-amd64.exe"
+        value: "https://github.com/prometheus-community/windows_exporter/releases/download/v0.16.0/windows_exporter-0.16.0-amd64.exe"
       - name: CL2_WMI_EXPORTER_ENABLED_COLLECTORS
         value: "process,cs"
       - name: CL2_POD_COUNT
@@ -424,7 +503,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=1
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/load-test.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
@@ -450,15 +529,15 @@ presubmits:
     - org: kubernetes-sigs
       repo: windows-testing
       base_ref: master
-      path_alias: k8s.io/windows-testing
+      path_alias: sigs.k8s.io/windows-testing
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-windows-repo-list-master: "true"
+      preset-windows-private-registry-cred: "true"
     always_run: false
     optional: true
     branches:
@@ -469,7 +548,7 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=release
+        - --build=quick
         - --check-leaked-resources
         - --cluster=
         - --extract=local
@@ -479,17 +558,20 @@ presubmits:
         - --gcp-nodes=2
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-windows-gce
         - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
-        - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+        - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+        - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
+        - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
         - --timeout=200m
         env:
+        - name: KUBE_BUILD_PLATFORMS
+          value: "linux/amd64 windows/amd64"
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

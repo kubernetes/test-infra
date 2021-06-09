@@ -346,16 +346,25 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: false,
 			expectedReason:  (notMember | notSecondaryMember).String(),
 		},
+		{
+			name:            "Self as bot is trusted",
+			user:            "k8s-ci-robot",
+			expectedTrusted: true,
+		},
+		{
+			name:            "Self as app is trusted",
+			user:            "k8s-ci-robot[bot]",
+			expectedTrusted: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
-				Collaborators: []string{"test-collaborator"},
+			fc := fakegithub.NewFakeClient()
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
 			}
+			fc.Collaborators = []string{"test-collaborator"}
 
 			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {

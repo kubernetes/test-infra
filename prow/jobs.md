@@ -40,6 +40,10 @@ periodics:
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   # Alternatively use a cron instead of an interval, for example:
   # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
+  extra_ref:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
+  - org: org
+    repo: repo
+    base_ref: main
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
@@ -53,7 +57,7 @@ postsubmits:
     spec: {}              # As for periodics.
     max_concurrency: 10   # Run no more than this number concurrently.
     branches:             # Regexps, only run against these branches.
-    - ^master$
+    - ^main$
     skip_branches:        # Regexps, do not run against these branches.
     - ^release-.*$
 ```
@@ -119,6 +123,20 @@ presets:
   - name: bar
     mountPath: /etc/bar
     readOnly: true
+```
+
+And to use the preset, add corresponding label in prow job definition like:
+
+```yaml
+- name: obfsucated-job-with-mysteriously-hidden-side-effects
+  labels:
+    preset-foo-bar: "true"
+```
+
+Alternatively, annonymous presets can be applied to all jobs, the config looks
+like:
+
+```yaml
 - env:                     # a preset with no labels is applied to all jobs
   - name: BAZ
     value: qux
@@ -224,22 +242,22 @@ runs on Kubernetes, the variables will be injected into every container in
 your pod, If the job is run in Jenkins, Prow will supply them as parameters to
 the build.
 
-Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
---- |:---:|:---:|:---:|:---:| --- | ---
-`CI` | ✓ | ✓ | ✓ | ✓ | Represents whether the current environment is a CI environment | `true`
-`ARTIFACTS` | ✓ | ✓ | ✓ | ✓ | Directory in which to place files to be uploaded when the job completes | `/logs/artifacts`
-`JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
-`JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`
-`JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
-`BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
-`PROW_JOB_ID` | ✓ | ✓ | ✓ | ✓ | Unique identifier for the owning Prow Job. | `1ce07fa2-0831-11e8-b07e-0a58ac101036`
-`REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
-`REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
-`PULL_BASE_REF` | | ✓ | ✓ | ✓ | Ref name of the base branch. | `master`
-`PULL_BASE_SHA` | | ✓ | ✓ | ✓ | Git SHA of the base branch. | `123abc`
-`PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
-`PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
-`PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
+| Variable        | Periodic | Postsubmit | Batch | Presubmit | Description                                                             | Example                                |
+| --------------- | :------: | :--------: | :---: | :-------: | ----------------------------------------------------------------------- | -------------------------------------- |
+| `CI`            |    ✓     |     ✓      |   ✓   |     ✓     | Represents whether the current environment is a CI environment          | `true`                                 |
+| `ARTIFACTS`     |    ✓     |     ✓      |   ✓   |     ✓     | Directory in which to place files to be uploaded when the job completes | `/logs/artifacts`                      |
+| `JOB_NAME`      |    ✓     |     ✓      |   ✓   |     ✓     | Name of the job.                                                        | `pull-test-infra-bazel`                |
+| `JOB_TYPE`      |    ✓     |     ✓      |   ✓   |     ✓     | Type of job.                                                            | `presubmit`                            |
+| `JOB_SPEC`      |    ✓     |     ✓      |   ✓   |     ✓     | JSON-encoded job specification.                                         | see below                              |
+| `BUILD_ID`      |    ✓     |     ✓      |   ✓   |     ✓     | Unique build number for each run.                                       | `12345`                                |
+| `PROW_JOB_ID`   |    ✓     |     ✓      |   ✓   |     ✓     | Unique identifier for the owning Prow Job.                              | `1ce07fa2-0831-11e8-b07e-0a58ac101036` |
+| `REPO_OWNER`    |          |     ✓      |   ✓   |     ✓     | GitHub org that triggered the job.                                      | `kubernetes`                           |
+| `REPO_NAME`     |          |     ✓      |   ✓   |     ✓     | GitHub repo that triggered the job.                                     | `test-infra`                           |
+| `PULL_BASE_REF` |          |     ✓      |   ✓   |     ✓     | Ref name of the base branch.                                            | `master`                               |
+| `PULL_BASE_SHA` |          |     ✓      |   ✓   |     ✓     | Git SHA of the base branch.                                             | `123abc`                               |
+| `PULL_REFS`     |          |     ✓      |   ✓   |     ✓     | All refs to test.                                                       | `master:123abc,5:qwe456`               |
+| `PULL_NUMBER`   |          |            |       |     ✓     | Pull request number.                                                    | `5`                                    |
+| `PULL_PULL_SHA` |          |            |       |     ✓     | Pull request head SHA.                                                  | `qwe456`                               |
 
 Examples of the JSON-encoded job specification follow for the different
 job types:

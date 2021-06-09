@@ -39,7 +39,7 @@ import (
 )
 
 var (
-	titleMatch           = regexp.MustCompile(`(?i)Bug ([0-9]+):`)
+	titleMatch           = regexp.MustCompile(`(?i)Bug\s+([0-9]+):`)
 	refreshCommandMatch  = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
 	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
 	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
@@ -677,27 +677,30 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			}
 			response += "</details>"
 
-			// if bug is valid and qa command was used, identify qa contact via email
-			if e.assign || e.cc {
-				if bug.QAContactDetail == nil {
+			// identify qa contact via email if possible
+			explicitQARequest := e.assign || e.cc
+			if bug.QAContactDetail == nil {
+				if explicitQARequest {
 					response += fmt.Sprintf(bugLink+" does not have a QA contact, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else if bug.QAContactDetail.Email == "" {
+				}
+			} else if bug.QAContactDetail.Email == "" {
+				if explicitQARequest {
 					response += fmt.Sprintf("QA contact for "+bugLink+" does not have a listed email, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else {
-					query := &emailToLoginQuery{}
-					email := bug.QAContactDetail.Email
-					queryVars := map[string]interface{}{
-						"email": githubql.String(email),
-					}
-					err := gc.Query(context.Background(), query, queryVars)
-					if err != nil {
-						log.WithError(err).Error("Failed to run graphql github query")
-						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
-					}
-					response += fmt.Sprint("\n\n", processQuery(query, email, log))
-					if e.assign {
-						response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
-					}
+				}
+			} else {
+				query := &emailToLoginQuery{}
+				email := bug.QAContactDetail.Email
+				queryVars := map[string]interface{}{
+					"email": githubql.String(email),
+				}
+				err := gc.Query(context.Background(), query, queryVars)
+				if err != nil {
+					log.WithError(err).Error("Failed to run graphql github query")
+					return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
+				}
+				response += fmt.Sprint("\n\n", processQuery(query, email, log))
+				if e.assign {
+					response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
 				}
 			}
 		} else {
@@ -1184,22 +1187,33 @@ func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
 		}
 		if options.StateAfterClose != nil {
-			links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+			bug, err := bc.GetBug(e.bugId)
 			if err != nil {
-				log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
-				return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
+				log.WithError(err).Warn("Unexpected error getting Bugzilla bug.")
+				return comment(formatError("getting bug", bc.Endpoint(), e.bugId, err))
 			}
-			if len(links) == 0 {
-				bug, err := getBug(bc, e.bugId, log, comment)
-				if err != nil || bug == nil {
-					return err
+			if bug.Status != "CLOSED" {
+				links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+				if err != nil {
+					log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
+					return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
 				}
-				if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
-					if err := bc.UpdateBug(e.bugId, *update); err != nil {
-						log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
-						return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+				if len(links) == 0 {
+					bug, err := getBug(bc, e.bugId, log, comment)
+					if err != nil || bug == nil {
+						return err
 					}
-					response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
+						if err := bc.UpdateBug(e.bugId, *update); err != nil {
+							log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+							return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+						}
+						response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					}
+					bzComment := &bugzilla.CommentCreate{ID: bug.ID, Comment: fmt.Sprintf("Bug status changed to %s as previous linked PR https://github.com/%s/%s/pull/%d has been closed", options.StateAfterClose.Status, e.org, e.repo, e.number), IsPrivate: true}
+					if _, err := bc.CreateComment(bzComment); err != nil {
+						response += "\nWarning: Failed to comment on Bugzilla bug with reason for changed state."
+					}
 				}
 			}
 		}

@@ -1,0 +1,36 @@
+run:
+  deadline: 13m
+  skip-dirs:
+  - .git
+  - .tool
+  - vendor
+  - verify
+
+linters-settings:
+  dupl:
+    threshold: 100
+  gocyclo:
+    min-complexity: 50
+
+linters:
+  enable:
+  - govet
+  - deadcode
+  - misspell
+  - ineffassign
+  - staticcheck
+  - gosimple
+  disable-all: true
+
+issues:
+  exclude-rules:
+  - linters:
+    - golint
+    text: ".*should not use dot dot imports"
+  - linters:
+    - staticcheck
+    text: "SA1019: fakectrlruntimeclient.NewFakeClient is deprecated"
+  - linters:
+    - staticcheck
+    # TODO: Is this really supposed to be deprecated? Ref https://github.com/kubernetes/test-infra/issues/14875
+    text: "SA1019: t.*.TrustedOrg is deprecated: TrustedOrg functionality is deprecated and will be removed in January 2020"

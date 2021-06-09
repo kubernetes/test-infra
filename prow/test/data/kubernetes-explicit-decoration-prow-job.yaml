@@ -2,16 +2,19 @@ apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
   annotations:
+    prow.k8s.io/context: kubernetes-explicit-decoration
     prow.k8s.io/job: kubernetes-explicit-decoration
   creationTimestamp: null
   labels:
     created-by-prow: "true"
+    prow.k8s.io/context: kubernetes-explicit-decoration
     prow.k8s.io/job: kubernetes-explicit-decoration
+    prow.k8s.io/refs.base_ref: master
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
     prow.k8s.io/refs.repo: test-repo
     prow.k8s.io/type: presubmit
-  name: 2d005bf9-8170-11e8-a34f-54ee753e2644
+  name: 05bf42bb-a444-11eb-903c-98fa9bcb3ca2
 spec:
   agent: kubernetes
   cluster: default
@@ -53,5 +56,5 @@ spec:
   rerun_command: /test kubernetes-explicit-decoration
   type: presubmit
 status:
-  startTime: 2018-07-06T22:59:02Z
+  startTime: "2021-04-23T14:56:02Z"
   state: triggered

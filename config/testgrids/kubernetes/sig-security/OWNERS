@@ -1,0 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+# This is the owner of the security related code.  The test data itself is owned by sig-security.
+reviewers:
+  - tallclair
+approvers:
+  - tallclair
+labels:
+  - sig/security

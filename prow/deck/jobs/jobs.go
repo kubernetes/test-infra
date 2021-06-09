@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"sort"
 	"sync"
 	"time"
@@ -192,8 +191,6 @@ func (ja *JobAgent) ProwJobs() []prowapi.ProwJob {
 	copy(res, ja.prowJobs)
 	return res
 }
-
-var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
 // GetProwJob finds the corresponding Prowjob resource from the provided job name and build ID
 func (ja *JobAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {

@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -36,12 +37,13 @@ import (
 	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
+	slackclient "k8s.io/test-infra/prow/slack"
 )
 
 type options struct {
@@ -51,8 +53,7 @@ type options struct {
 	github           prowflagutil.GitHubOptions
 	githubEnablement prowflagutil.GitHubEnablementOptions
 
-	configPath    string
-	jobConfigPath string
+	config configflagutil.ConfigOptions
 
 	gerritWorkers         int
 	pubsubWorkers         int
@@ -63,7 +64,8 @@ type options struct {
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
 
-	slackTokenFile string
+	slackTokenFile            string
+	additionalSlackTokenFiles slackclient.HostsFlag
 
 	storage prowflagutil.StorageClientOptions
 
@@ -76,9 +78,6 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
-	}
 
 	// TODO(krzyzacy): gerrit && github report are actually stateful..
 	// Need a better design to re-enable parallel reporting
@@ -136,7 +135,7 @@ func (o *options) validate() error {
 		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
 	}
 
-	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement} {
+	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
 		if err := opt.Validate(o.dryrun); err != nil {
 			return err
 		}
@@ -155,6 +154,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.Var(&o.additionalSlackTokenFiles, "additional-slack-token-files", "Map of additional slack token files. example: --additional-slack-token-files=foo=/etc/foo-slack-tokens/token, repeat flag for each host")
 	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
 	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
 	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
@@ -163,12 +163,10 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
 
+	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
 	o.storage.AddFlags(fs)
@@ -197,16 +195,16 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{}); err != nil {
+	if err := secretAgent.Start(nil); err != nil {
 		logrus.WithError(err).Fatal("unable to start secret agent")
 	}
 
@@ -233,7 +231,7 @@ func main() {
 
 	var hasReporter bool
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
+		if cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
 		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
@@ -243,7 +241,14 @@ func main() {
 			logrus.WithError(err).Fatal("could not read slack token")
 		}
 		hasReporter = true
-		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile))
+		var additionalSlackSecretsGetter map[string]func() []byte
+		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
+			additionalSlackSecretsGetter[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
+			if err := secretAgent.Add(additionalTokenFile); err != nil {
+				logrus.WithError(err).Fatal("could not read slack token")
+			}
+		}
+		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile), additionalSlackSecretsGetter)
 		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
 		}

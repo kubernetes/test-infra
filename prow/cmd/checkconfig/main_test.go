@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
@@ -37,6 +38,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -346,19 +349,19 @@ func TestOrgRepoUnion(t *testing.T) {
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": sets.NewString()}, sets.NewString("4/1", "4/2", "5/1")),
 		},
 		{
-			name:     "keep only common blacklist items for an org",
+			name:     "keep only common denied items for an org",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/bar")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 		},
 		{
-			name:     "remove items from an org blacklist if they're in a repo whitelist",
+			name:     "remove items from an org denylist if they're in a repo allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
 			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/repo")),
 			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString()}, sets.NewString()),
 		},
 		{
-			name:     "remove repos when they're covered by an org whitelist",
+			name:     "remove repos when they're covered by an org allowlist",
 			a:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2", "4/3")),
 			b:        newOrgRepoConfig(map[string]sets.String{"4": sets.NewString("4/2")}, sets.NewString()),
 			expected: newOrgRepoConfig(map[string]sets.String{"4": sets.NewString()}, sets.NewString()),
@@ -1077,29 +1080,101 @@ func TestVerifyOwnersPresence(t *testing.T) {
 		expected string
 	}{
 		{
+			description: "org with blunderbuss enabled contains a repo without OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"blunderbuss"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with approve enable contains a repo without OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"approve"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains a repo without OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"owners-label"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains an *archived* repo without OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"owners-label"}})},
+			gh: fakeGH{
+				files:    fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+				archived: map[string]bool{"org/repo": true},
+			},
+			expected: "",
+		}, {
+			description: "repo with owners-label enabled does not contain OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"owners-label"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains only repos with OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"owners-label"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with owners-label enabled contains OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org": {"owners-label"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with unrelated plugin enabled does not contain OWNERS (legacy config)",
+			cfg:         &plugins.Configuration{Plugins: plugins.OldToNewPlugins(map[string][]string{"org/repo": {"cat"}})},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected:    "",
+		}, {
 			description: "org with blunderbuss enabled contains a repo without OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"blunderbuss"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org": {Plugins: []string{"blunderbuss"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with approve enable contains a repo without OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"approve"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org": {Plugins: []string{"approve"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
+			description: "org with approve excluded contains a repo without OWNERS",
+			cfg: &plugins.Configuration{Plugins: plugins.Plugins{"org": {
+				Plugins:       []string{"approve"},
+				ExcludedRepos: []string{"repo"},
+			}}},
+			gh:       fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "",
+		}, {
+			description: "org with approve repo-enabled contains a repo without OWNERS",
+			cfg: &plugins.Configuration{Plugins: plugins.Plugins{
+				"org": {
+					Plugins:       []string{"approve"},
+					ExcludedRepos: []string{"repo"},
+				},
+				"org/repo": {Plugins: []string{"approve"}},
+			}},
+			gh: fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
 			description: "org with owners-label enabled contains a repo without OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org": {Plugins: []string{"owners-label"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with owners-label enabled contains an *archived* repo without OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org": {Plugins: []string{"owners-label"}}}},
 			gh: fakeGH{
 				files:    fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
 				archived: map[string]bool{"org/repo": true},
@@ -1107,24 +1182,24 @@ func TestVerifyOwnersPresence(t *testing.T) {
 			expected: "",
 		}, {
 			description: "repo with owners-label enabled does not contain OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org/repo": {Plugins: []string{"owners-label"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with owners-label enabled contains only repos with OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org": {Plugins: []string{"owners-label"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
 			expected:    "",
 		}, {
 			description: "repo with owners-label enabled contains OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org/repo": {Plugins: []string{"owners-label"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
 			expected:    "",
 		}, {
 			description: "repo with unrelated plugin enabled does not contain OWNERS",
-			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"cat"}}},
+			cfg:         &plugins.Configuration{Plugins: plugins.Plugins{"org/repo": {Plugins: []string{"cat"}}}},
 			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected:    "",
 		},
@@ -1146,7 +1221,7 @@ func TestVerifyOwnersPresence(t *testing.T) {
 func TestOptions(t *testing.T) {
 
 	var defaultGitHubOptions flagutil.GitHubOptions
-	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
+	defaultGitHubOptions.AddCustomizedFlags(flag.NewFlagSet("", flag.ContinueOnError), throttlerDefaults)
 	defaultGitHubOptions.AllowAnonymous = true
 
 	StringsFlag := func(vals []string) flagutil.Strings {
@@ -1203,9 +1278,18 @@ func TestOptions(t *testing.T) {
 				"--expensive-checks=false",
 			},
 			expectedOptions: &options{
-				configPath:      "prow/config.yaml",
-				pluginConfig:    "prow/plugins/plugin.yaml",
-				jobConfigPath:   "config/jobs/org/job.yaml",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "prow/config.yaml",
+					JobConfigPath:                         "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "prow/plugins/plugin.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+					CheckUnknownPlugins:                      true,
+				},
 				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
 				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
 				strict:          true,
@@ -1223,9 +1307,18 @@ func TestOptions(t *testing.T) {
 				"--prow-yaml-repo-name=my/repo",
 			},
 			expectedOptions: &options{
-				configPath:       "prow/config.yaml",
-				pluginConfig:     "prow/plugins/plugin.yaml",
-				jobConfigPath:    "config/jobs/org/job.yaml",
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "prow/plugins/plugin.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+					CheckUnknownPlugins:                      true,
+				},
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "prow/config.yaml",
+					JobConfigPath:                         "config/jobs/org/job.yaml",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
 				prowYAMLRepoName: "my/repo",
 				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
 				github:           defaultGitHubOptions,
@@ -1253,7 +1346,7 @@ func TestOptions(t *testing.T) {
 			case actualErr != nil:
 				t.Errorf("unexpected error: %v", actualErr)
 			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
-				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actualOptions, *tc.expectedOptions, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}
@@ -1374,7 +1467,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 			t.Errorf("failed to close tempFile: %v", err)
 		}
 
-		cfg, err := config.Load(tempConfig.Name(), "")
+		cfg, err := config.Load(tempConfig.Name(), "", nil, "")
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}
@@ -1480,7 +1573,7 @@ func TestValidate(t *testing.T) {
 		{
 			name: "combined config",
 			opts: options{
-				configPath: "testdata/combined.yaml",
+				config: configflagutil.ConfigOptions{ConfigPath: "testdata/combined.yaml"},
 			},
 		},
 	}
@@ -1578,5 +1671,251 @@ func TestValidateClusterField(t *testing.T) {
 				t.Errorf("expected error %q, got error %q", tc.expectedError, errMsg)
 			}
 		})
+	}
+}
+
+func TestValidateAdditionalProwConfigIsInOrgRepoDirectoryStructure(t *testing.T) {
+	t.Parallel()
+	const root = "root"
+	const invalidConfig = `[]`
+	const validGlobalConfig = `
+sinker:
+  exclude_clusters:
+    - default`
+	const validOrgConfig = `
+branch-protection:
+  orgs:
+    my-org:
+      protect: true
+tide:
+  merge_method:
+    my-org: squash`
+	const validRepoConfig = `
+branch-protection:
+  orgs:
+    my-org:
+      repos:
+        my-repo:
+          protect: true
+tide:
+  merge_method:
+    my-org/my-repo: squash`
+	const validGlobalPluginsConfig = `
+blunderbuss:
+  max_request_count: 2
+  request_count: 2
+  use_status_availability: true`
+	const validOrgPluginsConfig = `
+plugins:
+  my-org:
+    plugins:
+    - assign`
+	const validRepoPluginsConfig = `
+plugins:
+  my-org/my-repo:
+    plugins:
+    - assign`
+
+	tests := []struct {
+		name string
+		fs   fstest.MapFS
+
+		expectedErrorMessage string
+	}{
+		{
+			name: "No configs, no error",
+			fs:   testfs(map[string]string{root + "/OWNERS": "some-owners"}),
+		},
+		{
+			name: "Config directly below root, no error",
+			fs: testfs(map[string]string{
+				root + "/cfg.yaml":     validGlobalConfig,
+				root + "/plugins.yaml": validGlobalPluginsConfig,
+			}),
+		},
+		{
+			name: "Valid org config",
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     validOrgConfig,
+				root + "/my-org/plugins.yaml": validOrgPluginsConfig,
+			}),
+		},
+		{
+			name: "Valid org config for wrong org",
+			fs: testfs(map[string]string{
+				root + "/my-other-org/cfg.yaml":     validOrgConfig,
+				root + "/my-other-org/plugins.yaml": validOrgPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-other-org/cfg.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org, config root/my-other-org/plugins.yaml is invalid: Must contain only config for org my-other-org, but contains config for org my-org]`,
+		},
+		{
+			name: "Invalid org config",
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     invalidConfig,
+				root + "/my-org/plugins.yaml": invalidConfig,
+			}),
+			expectedErrorMessage: `[failed to unmarshal root/my-org/cfg.yaml into *config.Config: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.Config, failed to unmarshal root/my-org/plugins.yaml into *plugins.Configuration: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type plugins.Configuration]`,
+		},
+		{
+			name: "Repo config at org level",
+			fs: testfs(map[string]string{
+				root + "/my-org/cfg.yaml":     validRepoConfig,
+				root + "/my-org/plugins.yaml": validRepoPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/cfg.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo, config root/my-org/plugins.yaml is invalid: Must contain only config for org my-org, but contains config for repo my-org/my-repo]`,
+		},
+		{
+			name: "Valid repo config",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     validRepoConfig,
+				root + "/my-org/my-repo/plugins.yaml": validRepoPluginsConfig,
+			}),
+		},
+		{
+			name: "Valid repo config for wrong repo",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-other-repo/cfg.yaml":     validRepoConfig,
+				root + "/my-org/my-other-repo/plugins.yaml": validRepoPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/my-other-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo, config root/my-org/my-other-repo/plugins.yaml is invalid: Must only contain config for repo my-org/my-other-repo, but contains config for repo my-org/my-repo]`,
+		},
+		{
+			name: "Invalid repo config",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     invalidConfig,
+				root + "/my-org/my-repo/plugins.yaml": invalidConfig,
+			}),
+			expectedErrorMessage: `[failed to unmarshal root/my-org/my-repo/cfg.yaml into *config.Config: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type config.Config, failed to unmarshal root/my-org/my-repo/plugins.yaml into *plugins.Configuration: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go value of type plugins.Configuration]`,
+		},
+		{
+			name: "Org config at repo level",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/cfg.yaml":     validOrgConfig,
+				root + "/my-org/my-repo/plugins.yaml": validOrgPluginsConfig,
+			}),
+			expectedErrorMessage: `[config root/my-org/my-repo/cfg.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org, config root/my-org/my-repo/plugins.yaml is invalid: Must only contain config for repo my-org/my-repo, but contains config for org my-org]`,
+		},
+		{
+			name: "Nested too deeply",
+			fs: testfs(map[string]string{
+				root + "/my-org/my-repo/nest/cfg.yaml":     validOrgConfig,
+				root + "/my-org/my-repo/nest/plugins.yaml": validOrgPluginsConfig,
+			}),
+
+			expectedErrorMessage: `[config root/my-org/my-repo/nest/cfg.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org., config root/my-org/my-repo/nest/plugins.yaml is at an invalid location. All configs must be below root. If they are org-specific, they must be in a folder named like the org. If they are repo-specific, they must be in a folder named like the repo below a folder named like the org.]`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := validateAdditionalProwConfigIsInOrgRepoDirectoryStructure(tc.fs, []string{root}, []string{root}, "cfg.yaml", "plugins.yaml")
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrorMessage != errMsg {
+				t.Errorf("expected error %s, got %s", tc.expectedErrorMessage, errMsg)
+			}
+		})
+	}
+}
+
+func testfs(files map[string]string) fstest.MapFS {
+	filesystem := fstest.MapFS{}
+	for path, content := range files {
+		filesystem[path] = &fstest.MapFile{Data: []byte(content)}
+	}
+	return filesystem
+}
+
+func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T) {
+	t.Parallel()
+	bpConfigWithSettingsOnAllLayers := func(m ...func(*config.BranchProtection)) config.BranchProtection {
+		cfg := config.BranchProtection{
+			Policy: config.Policy{Exclude: []string{"some-regex"}},
+			Orgs: map[string]config.Org{
+				"my-org": {
+					Policy: config.Policy{Exclude: []string{"some-regex"}},
+					Repos: map[string]config.Repo{
+						"my-repo": {
+							Policy: config.Policy{Exclude: []string{"some-regex"}},
+							Branches: map[string]config.Branch{
+								"my-branch": {
+									Policy: config.Policy{Exclude: []string{"some-regex"}},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		for _, modify := range m {
+			modify(&cfg)
+		}
+
+		return cfg
+	}
+
+	testCases := []struct {
+		name   string
+		config config.BranchProtection
+
+		expectedErrorMsg string
+	}{
+		{
+			name: "Empty config, no error",
+		},
+		{
+			name: "Globally disabled, errors for global and org config",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				bp.Unmanaged = utilpointer.BoolPtr(true)
+			}),
+
+			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org]`,
+		},
+		{
+			name: "Org-level disabled, errors for org policy and repos",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"] = p
+			}),
+
+			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org]`,
+		},
+
+		{
+			name: "Repo-level disabled, errors for repo policy and branches",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"].Repos["my-repo"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"] = p
+			}),
+
+			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch]`,
+		},
+
+		{
+			name: "Branch-level disabled, errors for branch policy",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
+				p.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
+			}),
+
+			expectedErrorMsg: `branch protection config for branch my-branch in repo my-org/my-repo is set to unmanaged but defines settings`,
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(tc.config)
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if tc.expectedErrorMsg != errMsg {
+			t.Errorf("expected error message\n%s\ngot error message\n%s", tc.expectedErrorMsg, errMsg)
+		}
 	}
 }

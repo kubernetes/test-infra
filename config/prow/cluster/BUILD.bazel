@@ -47,6 +47,21 @@ release(
     component("hook", "service", "deployment", "rbac"),
     component("horologium", "deployment", "rbac", "service"),
     component("ing", "ingress"),
+    component("kube-state-metrics", "deployment", "rbac", "service"),
+    component("kubernetes-external-secrets", "deployment", "rbac", "service", "crd"),
+    component(
+        "build_kubernetes-external-secrets",
+        "deployment",
+        "rbac",
+        "service",
+        "crd",
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "build_kubernetes-external-secrets_customresource",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
     component(
         "mem-limit-range",
         "limitrange",
@@ -64,8 +79,8 @@ release(
     component("statusreconciler", "deployment", "rbac"),
     component("tide", "service", "deployment", "rbac"),
     component("tls-ing", "ingress"),
-    component("tot", "service", "deployment"),  # TODO(fejta): delete tot
     component("trusted_serviceaccounts", MULTI_KIND),
+    component("kubernetes_external_secrets", MULTI_KIND),
     component(
         "tune-sysctls",
         "daemonset",

@@ -36,18 +36,6 @@ var (
 	unshrugRe = regexp.MustCompile(`(?mi)^/unshrug\s*$`)
 )
 
-type event struct {
-	org           string
-	repo          string
-	number        int
-	prAuthor      string
-	commentAuthor string
-	body          string
-	assignees     []github.User
-	hasLabel      func(label string) (bool, error)
-	htmlurl       string
-}
-
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }

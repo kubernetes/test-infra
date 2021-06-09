@@ -37,7 +37,8 @@ genrule(
            --prow-job-config=config/jobs \
            --default=$(location //config:testgrid_default) \
            --output=$@ \
-           --oneshot",
+           --oneshot \
+           --strict-unmarshal",
     tools = [
         "//testgrid/cmd/configurator",
     ],

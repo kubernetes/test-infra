@@ -75,6 +75,53 @@ type Options struct {
 	// longer than the `entrypoint` grace period for the test process and the time
 	// taken by `sidecar` to upload all relevant artifacts.
 	IgnoreInterrupts bool `json:"ignore_interrupts,omitempty"`
+
+	// WriteMemoryProfile makes the program write a memory profile periodically while
+	// it runs. Use the k8s.io/test-infra/hack/analyze-memory-profiles.py script to
+	// load the data into time series and plot it for analysis.
+	WriteMemoryProfile bool `json:"write_memory_profile,omitempty"`
+
+	// CensoringOptions are options that pertain to censoring output before upload.
+	CensoringOptions *CensoringOptions `json:"censoring_options,omitempty"`
+
+	// SecretDirectories is deprecated, use censoring_options.secret_directories instead.
+	SecretDirectories []string `json:"secret_directories,omitempty"`
+	// CensoringConcurrency is deprecated, use censoring_options.censoring_concurrency instead.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is deprecated, use censoring_options.censoring_buffer_size instead.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+}
+
+type CensoringOptions struct {
+	// SecretDirectories are paths to directories containing secret data. The contents
+	// of these secret data files will be censored from the logs and artifacts uploaded
+	// to the cloud.
+	SecretDirectories []string `json:"secret_directories,omitempty"`
+	// CensoringConcurrency is the maximum number of goroutines that should be censoring
+	// artifacts and logs at any time. If unset, defaults to 10.
+	CensoringConcurrency *int64 `json:"censoring_concurrency,omitempty"`
+	// CensoringBufferSize is the size in bytes of the buffer allocated for every file
+	// being censored. We want to keep as little of the file in memory as possible in
+	// order for censoring to be reasonably performant in space. However, to guarantee
+	// that we censor every instance of every secret, our buffer size must be at least
+	// two times larger than the largest secret we are about to censor. While that size
+	// is the smallest possible buffer we could use, if the secrets being censored are
+	// small, censoring will not be performant as the number of I/O actions per file
+	// would increase. If unset, defaults to 10MiB.
+	CensoringBufferSize *int `json:"censoring_buffer_size,omitempty"`
+
+	// IncludeDirectories are directories which should have their content censored, provided
+	// as relative path globs from the base of the artifact directory for the test. If
+	// present, only content in these directories will be censored. Entries in this list
+	// are parsed with the go-zglob library, allowing for globbed matches.
+	IncludeDirectories []string `json:"include_directories,omitempty"`
+
+	// ExcludeDirectories are directories which should not have their content censored,
+	// provided as relative path globs from the base of the artifact directory for the
+	// test. If present, content in these directories will not be censored even if the
+	// directory also matches a glob in IncludeDirectories. Entries in this list are
+	// parsed with the go-zglob library, allowing for globbed matches.
+	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {
@@ -88,6 +135,18 @@ func (o Options) entries() []wrapper.Options {
 // Validate ensures that the set of options are
 // self-consistent and valid
 func (o *Options) Validate() error {
+	opts := CensoringOptions{
+		SecretDirectories:    o.SecretDirectories,
+		CensoringConcurrency: o.CensoringConcurrency,
+		CensoringBufferSize:  o.CensoringBufferSize,
+	}
+	if o.SecretDirectories != nil || o.CensoringConcurrency != nil || o.CensoringBufferSize != nil {
+		if o.CensoringOptions != nil {
+			return errors.New("cannot use deprecated options (secret_directories, censoring_{concurrency,buffer_size}) and new options (censoring_options) at the same time")
+		}
+		o.CensoringOptions = &opts
+	}
+
 	ents := o.entries()
 	if len(ents) == 0 {
 		return errors.New("no wrapper.Option entries")

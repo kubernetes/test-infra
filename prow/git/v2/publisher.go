@@ -17,6 +17,7 @@ limitations under the License.
 package git
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -28,6 +29,8 @@ type Publisher interface {
 	Commit(title, body string) error
 	// PushToFork pushes the local state to the fork remote
 	PushToFork(branch string, force bool) error
+	// PushToNamedFork is used for when the fork has a different name than the original repp
+	PushToNamedFork(forkName, branch string, force bool) error
 	// PushToCentral pushes the local state to the central remote
 	PushToCentral(branch string, force bool) error
 }
@@ -64,6 +67,10 @@ func (p *publisher) Commit(title, body string) error {
 		}
 	}
 	return nil
+}
+
+func (p *publisher) PushToNamedFork(forkName, branch string, force bool) error {
+	return errors.New("pushToNamedFork is not implemented in the v2 client")
 }
 
 // PublishPush pushes the local state to the publish remote

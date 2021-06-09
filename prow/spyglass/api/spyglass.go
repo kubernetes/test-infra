@@ -18,6 +18,8 @@ package api
 
 import (
 	"encoding/json"
+
+	"k8s.io/test-infra/prow/config"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
@@ -29,13 +31,13 @@ const (
 // Lens defines the interface that lenses are required to implement in order to be used by Spyglass.
 type Lens interface {
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []Artifact, resourceRoot string, config json.RawMessage) string
+	Header(artifacts []Artifact, resourceRoot string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage) string
+	Body(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage) string
+	Callback(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 }
 
 // Artifact represents some output of a prow job

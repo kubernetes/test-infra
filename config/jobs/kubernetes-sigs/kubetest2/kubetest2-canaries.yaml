@@ -6,6 +6,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
+      preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     extra_refs:
@@ -14,7 +15,7 @@ presubmits:
       repo: cloud-provider-gcp
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         command:
         - "runner.sh"
         args:

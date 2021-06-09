@@ -72,6 +72,7 @@ func TestSimplify(t *testing.T) {
 				),
 			),
 		),
+		L("labels", VGreedy("labelname")),
 	))
 
 	var testCases = []struct {
@@ -125,6 +126,14 @@ func TestSimplify(t *testing.T) {
 			name:     "repo branches protection (restrictions for users) by name ",
 			path:     "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users",
 			expected: "/repos/:owner/:repo/branches/:branch/protection/restrictions/users"},
+		{
+			name:     "Label without slash matches",
+			path:     "/labels/lgtm",
+			expected: "/labels/:labelname"},
+		{
+			name:     "Label with slash matches due to greedyness",
+			path:     "/labels/labels/do-not-merge/hold",
+			expected: "/labels/:labelname"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

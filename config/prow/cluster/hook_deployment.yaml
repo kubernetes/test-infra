@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20210122-d4ead73bf2
+        image: gcr.io/k8s-prow/hook:v20210608-953d79c16d
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -48,7 +48,10 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
-        - --kubeconfig=/etc/kubeconfig/config
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
         ports:
           - name: http
             containerPort: 8888

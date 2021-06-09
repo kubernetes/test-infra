@@ -68,8 +68,6 @@ type KubernetesOptions struct {
 	kubeconfigWatchEvents       <-chan fsnotify.Event
 }
 
-const inCluderTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-
 // AddKubeconfigChangeCallback adds a callback that gets called whenever the kubeconfig changes.
 // The main usecase for this is to exit components that can not reload a kubeconfig at runtime
 // so the kubelet restarts them
