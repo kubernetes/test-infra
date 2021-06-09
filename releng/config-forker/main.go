@@ -256,8 +256,14 @@ func performDeletion(args map[string]string, deletions string) map[string]string
 	return result
 }
 
+const masterSuffix = "-master"
+
+func replaceAllMaster(s, new string) string {
+	return strings.ReplaceAll(s, masterSuffix, new)
+}
+
 func fixImage(image, version string) string {
-	return strings.ReplaceAll(image, "-master", "-"+version)
+	return replaceAllMaster(image, "-"+version)
 }
 
 func fixBootstrapArgs(args []string, version string) []string {
@@ -352,27 +358,27 @@ func generateNameVariant(name, version string, generic bool) string {
 	if !generic {
 		suffix = "-" + strings.ReplaceAll(version, ".", "-")
 	}
-	if !strings.HasSuffix(name, "-master") {
+	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
 }
 
 func generatePresubmitNameVariant(name, version string) string {
 	suffix := "-" + version
-	if !strings.HasSuffix(name, "-master") {
+	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
 }
 
 func generatePresubmitContextVariant(name, context, version string) string {
 	suffix := "-" + version
 
 	if context != "" {
-		return strings.ReplaceAll(context, "-master", suffix)
+		return replaceAllMaster(context, suffix)
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
 }
 
 type options struct {
