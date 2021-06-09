@@ -1264,6 +1264,12 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 
 	nc.ProwYAMLGetter = defaultProwYAMLGetter
 
+	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
+		logrus.WithError(err).Error("failed to deduplicate tide queriees")
+	} else {
+		nc.Tide.Queries = deduplicatedTideQueries
+	}
+
 	if nc.InRepoConfig.AllowedClusters == nil {
 		nc.InRepoConfig.AllowedClusters = map[string][]string{}
 	}
@@ -2631,4 +2637,71 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 		Tide:             Tide{MergeType: pc.Tide.MergeType},
 	}
 	return cmp.Diff(pc, emptyReference) != ""
+}
+
+// tideQueryMap is a map[tideQueryConfig]*tideQueryTarget. Because slices are not comparable, they
+// or structs containing them are not allowed as map keys. We sidestep this by using a json serialization
+// of the object as key instead. This is pretty inefficient but also something  we only do once during
+// load.
+type tideQueryMap map[string]*tideQueryTarget
+
+func (tm tideQueryMap) queries() (TideQueries, error) {
+	var result TideQueries
+	for k, v := range tm {
+		var queryConfig tideQueryConfig
+		if err := json.Unmarshal([]byte(k), &queryConfig); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal %q: %w", k, err)
+		}
+		result = append(result, TideQuery{
+			Orgs:                   v.Orgs,
+			Repos:                  v.Repos,
+			ExcludedRepos:          v.ExcludedRepos,
+			Author:                 queryConfig.Author,
+			ExcludedBranches:       queryConfig.ExcludedBranches,
+			IncludedBranches:       queryConfig.IncludedBranches,
+			Labels:                 queryConfig.Labels,
+			MissingLabels:          queryConfig.MissingLabels,
+			Milestone:              queryConfig.Milestone,
+			ReviewApprovedRequired: queryConfig.ReviewApprovedRequired,
+		})
+
+	}
+
+	return result, nil
+}
+
+// sortStringSlice is a tiny wrapper that returns
+// the slice after sorting.
+func sortStringSlice(s []string) []string {
+	sort.Strings(s)
+	return s
+}
+
+func deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
+	m := tideQueryMap{}
+	for _, query := range queries {
+		key := tideQueryConfig{
+			Author:                 query.Author,
+			ExcludedBranches:       sortStringSlice(query.ExcludedBranches),
+			IncludedBranches:       sortStringSlice(query.IncludedBranches),
+			Labels:                 sortStringSlice(query.Labels),
+			MissingLabels:          sortStringSlice(query.MissingLabels),
+			Milestone:              query.Milestone,
+			ReviewApprovedRequired: query.ReviewApprovedRequired,
+		}
+		keyRaw, err := json.Marshal(key)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal %+v: %w", key, err)
+		}
+		val, ok := m[string(keyRaw)]
+		if !ok {
+			val = &tideQueryTarget{}
+			m[string(keyRaw)] = val
+		}
+		val.Orgs = append(val.Orgs, query.Orgs...)
+		val.Repos = append(val.Repos, query.Repos...)
+		val.ExcludedRepos = append(val.ExcludedRepos, query.ExcludedRepos...)
+	}
+
+	return m.queries()
 }
