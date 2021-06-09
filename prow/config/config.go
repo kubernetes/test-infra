@@ -1044,7 +1044,7 @@ type ManagedWebhooks struct {
 type SlackReporter struct {
 	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
 	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
-	Host              string                 `json:"host"`
+	Host              string                 `json:"host,omitempty"`
 	Channel           string                 `json:"channel"`
 	ReportTemplate    string                 `json:"report_template"`
 }
