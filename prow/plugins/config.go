@@ -1874,7 +1874,7 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			orgs.Insert(org)
 		}
 		for repo := range orgConfig.Repos {
-			repos.Insert(repo)
+			repos.Insert(org + "/" + repo)
 		}
 	}
 

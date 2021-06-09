@@ -2025,7 +2025,7 @@ func TestHasConfigFor(t *testing.T) {
 						expectOrgs.Insert(org)
 					}
 					for repo := range orgConfig.Repos {
-						expectRepos.Insert(repo)
+						expectRepos.Insert(org + "/" + repo)
 					}
 				}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Bugzilla: fuzzedConfig.Bugzilla}), expectOrgs, expectRepos
