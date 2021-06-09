@@ -2270,8 +2270,16 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 }
 
 func validateTriggering(job Presubmit) error {
-	if job.AlwaysRun && job.RunIfChanged != "" {
-		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+	if job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+		}
+		if job.SkipIfOnlyChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive", job.Name)
+		}
+	}
+	if job.RunIfChanged != "" && job.SkipIfOnlyChanged != "" {
+		return fmt.Errorf("job %s declares run_if_changed and skip_if_only_changed, which are mutually exclusive", job.Name)
 	}
 
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
@@ -2451,10 +2459,16 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 }
 
 func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
-	if cm.RunIfChanged != "" {
-		re, err := regexp.Compile(cm.RunIfChanged)
+	var reString, propName string
+	if reString = cm.RunIfChanged; reString != "" {
+		propName = "run_if_changed"
+	} else if reString = cm.SkipIfOnlyChanged; reString != "" {
+		propName = "skip_if_only_changed"
+	}
+	if reString != "" {
+		re, err := regexp.Compile(reString)
 		if err != nil {
-			return cm, fmt.Errorf("could not compile run_if_changed regex: %v", err)
+			return cm, fmt.Errorf("could not compile %s regex: %v", propName, err)
 		}
 		cm.reChanges = re
 	}

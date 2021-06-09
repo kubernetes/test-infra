@@ -156,7 +156,7 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
-func TestConditionalPresubmits(t *testing.T) {
+func TestRunIfChangedPresubmits(t *testing.T) {
 	PresubmitsStatic := []Presubmit{
 		{
 			JobBase: JobBase{
@@ -179,6 +179,45 @@ func TestConditionalPresubmits(t *testing.T) {
 		{[]string{"build.sh"}, true},
 		{[]string{"build.shoo"}, false},
 		{[]string{"Makefile"}, true},
+	}
+	for _, tc := range testcases {
+		actual := ps.RunsAgainstChanges(tc.changes)
+		if actual != tc.expected {
+			t.Errorf("wrong RunsAgainstChanges(%#v) result. Got %v, expected %v", tc.changes, actual, tc.expected)
+		}
+	}
+}
+
+func TestSkipIfOnlyChangedPresubmits(t *testing.T) {
+	PresubmitsStatic := []Presubmit{
+		{
+			JobBase: JobBase{
+				Name: "cross build",
+			},
+			RegexpChangeMatcher: RegexpChangeMatcher{
+				// Files satisfying any of:
+				// - in the top-level docs/ directory
+				// - with .md/.adoc extensions
+				// - with basename README or OWNERS
+				SkipIfOnlyChanged: `^docs/|\.(md|adoc)$|/?(README|OWNERS)$`,
+			},
+		},
+	}
+	SetPresubmitRegexes(PresubmitsStatic)
+	ps := PresubmitsStatic[0]
+	var testcases = []struct {
+		changes  []string
+		expected bool
+	}{
+		{[]string{"some random file"}, true},
+		{[]string{"./pkg/util/rlimit/rlimit_linux.go"}, true},
+		// Skips because in docs/, even though it's a go file. Caveat emptor.
+		{[]string{"docs/cobragen.go"}, false},
+		// Our regex isn't expecting paths to start with ./
+		{[]string{"./docs/cobragen.go"}, true},
+		{[]string{"README", "README.md", "OWNERS", "path/to/something.adoc", "path/to/README"}, false},
+		// Any non-matching file triggers the job
+		{[]string{"README", "README.md", "OWNERS", "path/to/something.adoc", "path/to/README", "foo"}, true},
 	}
 	for _, tc := range testcases {
 		actual := ps.RunsAgainstChanges(tc.changes)
@@ -734,13 +773,14 @@ func TestPresubmitShouldRun(t *testing.T) {
 			expectedRun: true,
 		},
 		{
-			name: "job with always_run: false and no run_if_changed should not run",
+			name: "job with always_run: false and no run_if_changed or skip_if_only_changed should not run",
 			job: Presubmit{
 				AlwaysRun:    false,
 				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
 				RerunCommand: "/test foo",
 				RegexpChangeMatcher: RegexpChangeMatcher{
-					RunIfChanged: "",
+					RunIfChanged:      "",
+					SkipIfOnlyChanged: "",
 				},
 			},
 			ref:         "master",
@@ -761,6 +801,21 @@ func TestPresubmitShouldRun(t *testing.T) {
 			expectedErr: true,
 		},
 		{
+			name: "job with skip_if_only_changed but file get errors should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
 			name: "job with run_if_changed not matching should not run",
 			job: Presubmit{
 				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
@@ -772,7 +827,21 @@ func TestPresubmitShouldRun(t *testing.T) {
 			ref:         "master",
 			fileChanges: []string{"something"},
 			expectedRun: false,
-		}, {
+		},
+		{
+			name: "job with skip_if_only_changed all matching should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file"},
+			expectedRun: false,
+		},
+		{
 			name: "job with run_if_changed not matching should run when default=true",
 			job: Presubmit{
 				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
@@ -787,6 +856,20 @@ func TestPresubmitShouldRun(t *testing.T) {
 			expectedRun: true,
 		},
 		{
+			name: "job with skip_if_only_changed all matching should run when default=true",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file"},
+			defaults:    true,
+			expectedRun: true,
+		},
+		{
 			name: "job with run_if_changed matching should run",
 			job: Presubmit{
 				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
@@ -797,6 +880,19 @@ func TestPresubmitShouldRun(t *testing.T) {
 			},
 			ref:         "master",
 			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+		{
+			name: "job with skip_if_all_changed partially matching should run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file.go"},
 			expectedRun: true,
 		},
 	}
@@ -892,6 +988,19 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			expectedErr: true,
 		},
 		{
+			name: "job with skip_if_only_changed but file get errors should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
 			name: "job with run_if_changed not matching should not run",
 			job: Postsubmit{
 				RegexpChangeMatcher: RegexpChangeMatcher{
@@ -903,6 +1012,17 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			expectedRun: false,
 		},
 		{
+			name: "job with skip_if_only_changed all matching should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file"},
+			expectedRun: false,
+		},
+		{
 			name: "job with run_if_changed matching should run",
 			job: Postsubmit{
 				RegexpChangeMatcher: RegexpChangeMatcher{
@@ -911,6 +1031,17 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			},
 			ref:         "master",
 			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+		{
+			name: "job with skip_if_only_changed partially matching should run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file.go"},
 			expectedRun: true,
 		},
 	}

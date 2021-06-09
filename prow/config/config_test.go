@@ -5649,6 +5649,38 @@ func TestValidatePresubmits(t *testing.T) {
 			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
 			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
 		},
+		{
+			name: "Mutually exclusive settings: always_run and run_if_changed",
+			presubmits: []Presubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           true,
+				RegexpChangeMatcher: RegexpChangeMatcher{RunIfChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares run_if_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: always_run and skip_if_only_changed",
+			presubmits: []Presubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           true,
+				RegexpChangeMatcher: RegexpChangeMatcher{SkipIfOnlyChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: run_if_changed and skip_if_only_changed",
+			presubmits: []Presubmit{{
+				JobBase:  JobBase{Name: "a"},
+				Reporter: Reporter{Context: "foo"},
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged:      `\.go$`,
+					SkipIfOnlyChanged: `\.md`,
+				},
+			}},
+			expectedError: "job a declares run_if_changed and skip_if_only_changed, which are mutually exclusive",
+		},
 	}
 
 	for _, tc := range testCases {

@@ -1755,6 +1755,14 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 								RunIfChanged: "CHANGED",
 							},
 						},
+						{
+							Reporter:     config.Reporter{Context: "if-changed"},
+							Trigger:      "/test if-changed",
+							RerunCommand: "/test if-changed",
+							RegexpChangeMatcher: config.RegexpChangeMatcher{
+								SkipIfOnlyChanged: "CHANGED1",
+							},
+						},
 					},
 				},
 			); err != nil {
