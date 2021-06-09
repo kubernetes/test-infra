@@ -867,7 +867,7 @@ periodics:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: autoupdate-patch
     description: Weekly module update to latest patched versions
-- cron: "05 16-22/6 * * 1-5"  # Bump with label `skip-review`. Run at 9:05 and 15:05 PST (16:05 UTC) Mon-Fri
+- cron: "05 17-22/30 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow-for-auto-deploy
   cluster: test-infra-trusted
   decorate: true
@@ -883,6 +883,7 @@ periodics:
       args:
       - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
       - --labels-override=skip-review # This label is used by tide for identifying trusted PR
+      - --skip-if-no-oncall # Only apply `skip-review` label when oncall is active
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
