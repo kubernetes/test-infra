@@ -220,9 +220,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
         args:
-        - --repo=k8s.io/kubernetes=master
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=440
         - --root=/go/src
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
