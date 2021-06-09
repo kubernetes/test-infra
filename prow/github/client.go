@@ -539,13 +539,18 @@ func (c *client) Throttle(hourlyTokens, burst int, orgs ...string) error {
 		}
 		return nil
 	}
-	rate := time.Hour / time.Duration(hourlyTokens)
-	ticker := time.NewTicker(rate)
+	period := time.Hour / time.Duration(hourlyTokens) // Duration between token refills
+	ticker := time.NewTicker(period)
 	throttle := make(chan time.Time, burst)
 	for i := 0; i < burst; i++ { // Fill up the channel
 		throttle <- time.Now()
 	}
 	go func() {
+		// Before refilling, wait the amount of time it would have taken to refill the burst channel.
+		// This prevents granting too many tokens in the first hour due to the initial burst.
+		for i := 0; i < burst; i++ {
+			<-ticker.C
+		}
 		// Refill the channel
 		for t := range ticker.C {
 			select {
