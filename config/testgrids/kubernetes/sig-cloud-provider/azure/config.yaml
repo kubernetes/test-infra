@@ -1,13 +1,3 @@
-test_groups:
-  - name: pull-kubernetes-e2e-aks-engine-conformance
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-conformance
-  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmas
-  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmss
-  - name: pull-kubernetes-e2e-aks-engine-azure-file
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-file
-
 dashboard_groups:
 - name: provider-azure
   dashboard_names:
