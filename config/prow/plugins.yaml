@@ -656,7 +656,24 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes-sigs
+  repo: kustomize
+  issues: true
+  prs: false
+  regexp: ^kind/
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: kustomize
+  issues: true
+  prs: false
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
 
+    SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 
 retitle:
   allow_closed_issues: true
@@ -958,6 +975,11 @@ plugins:
   kubernetes-sigs/kind:
     plugins:
     - override
+
+  kubernetes-sigs/kustomize:
+    plugins:
+    - require-matching-label
+    - merge-method-comment
 
   kubernetes-sigs/controller-runtime:
     plugins:
