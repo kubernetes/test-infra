@@ -95,6 +95,10 @@ presets:
     value: true
   - name: DUMP_TO_GCS_ONLY
     value: true
+  # Disable konnectivity in kubemark as it doesn't work (see https://github.com/kubernetes/perf-tests/issues/1828)
+  # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
+  - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
+    value: false
 
 ### kubemark-gce-scale
 - labels:
