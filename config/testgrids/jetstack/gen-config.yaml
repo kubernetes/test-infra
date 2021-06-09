@@ -351,21 +351,24 @@ dashboards:
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    description: Closes PRs and issues that are marked 'rotten' and have been inactive for 30d
+    description: Closes PRs and issues that are marked 'rotten' and have been inactive
+      for 30d
     name: periodic-testing-close
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-testing-close
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    description: Periodically comments /retest against approved and lgtm'd PRs that are failing
+    description: Periodically comments /retest against approved and lgtm'd PRs that
+      are failing
     name: periodic-testing-retester
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
     test_group_name: periodic-testing-retester
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    description: Marks PRs and issues that are marked 'stale' and have been inactive for 30d as 'rotten'
+    description: Marks PRs and issues that are marked 'stale' and have been inactive
+      for 30d as 'rotten'
     name: periodic-testing-rotten
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
