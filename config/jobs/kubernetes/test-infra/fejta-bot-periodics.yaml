@@ -297,39 +297,6 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
-- name: periodic-enhancements-unfreeze
-  interval: 30m
-  decorate: true
-  annotations:
-    testgrid-dashboards: sig-testing-fejtabot
-    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`y
-    testgrid-tab-name: enhancements-unfreeze
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/commenter:v20210608-953d79c16d
-      command:
-      - /app/robots/commenter/app.binary
-      args:
-      - |-
-        --query=repo:kubernetes/enhancements
-        label:lifecycle/frozen
-      - --updated=5m
-      - --token=/etc/token/bot-github-token
-      - |-
-        --comment=Enhancement issues opened in `kubernetes/enhancements` should never be marked as frozen.
-        Enhancement Owners can ensure that enhancements stay fresh by consistently updating their states across release cycles.
-
-        /remove-lifecycle frozen
-      - --ceiling=10
-      - --confirm
-      volumeMounts:
-      - name: token
-        mountPath: /etc/token
-    volumes:
-    - name: token
-      secret:
-        secretName: fejta-bot-token
-
 # periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
 - name: periodic-secping
   interval: 24h
