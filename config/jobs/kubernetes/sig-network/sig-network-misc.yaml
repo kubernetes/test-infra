@@ -109,6 +109,7 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
         - --ginkgo-parallel=15
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
@@ -659,6 +660,7 @@ periodics:
       - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
       - --ginkgo-parallel=15
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
