@@ -63,12 +63,16 @@ type client struct {
 	options
 }
 
+func escape(s string) string {
+	return strings.ReplaceAll(s, ".", "__d_o_t__")
+}
+
 func (c *client) gsmSecretName(clusterSecret *corev1.Secret) string {
 	// Use cluster name, namespace and secret name is almost unique identifier.
 	// However, if consider GCP allow creating clusters with the same name under
 	// different zones, probably will need to add zones to this. Will address if
 	// ever needed.
-	return fmt.Sprintf("%s__%s__%s", c.clusterContext, clusterSecret.Namespace, clusterSecret.Name)
+	return fmt.Sprintf("%s__%s__%s", c.clusterContext, clusterSecret.Namespace, escape(clusterSecret.Name))
 }
 
 // gatherOptions parses the command-line flags.
