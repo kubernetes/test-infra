@@ -315,8 +315,6 @@ presubmits:
             # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
             - name: CONFORMANCE_NODES
               value: "4"
-            - name: WIN_REPO_LIST
-              value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-master
           securityContext:
             privileged: true
           resources:
