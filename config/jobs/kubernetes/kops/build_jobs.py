@@ -98,7 +98,7 @@ periodic_template = """
 presubmit_template = """
   - name: {{job_name}}
     branches:
-    - master
+    - {{branch}}
     {%- if run_if_changed %}
     run_if_changed: '{{run_if_changed}}'
     {%- endif %}
@@ -486,7 +486,8 @@ def build_test(cloud='aws',
     return output, runs_per_week
 
 # Returns a string representing a presubmit prow job YAML
-def presubmit_test(cloud='aws',
+def presubmit_test(branch='master',
+                   cloud='aws',
                    distro='u2004',
                    networking=None,
                    container_runtime='containerd',
@@ -525,6 +526,7 @@ def presubmit_test(cloud='aws',
     tmpl = jinja2.Template(presubmit_template)
     job = tmpl.render(
         job_name=name,
+        branch=branch,
         cloud=cloud,
         kops_ssh_key_path=kops_ssh_key_path,
         kops_ssh_user=kops_ssh_user,
@@ -967,7 +969,7 @@ def generate_presubmits_network_plugins():
 ############################
 def generate_presubmits_e2e():
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
-    return [
+    jobs = [
         presubmit_test(
             container_runtime='docker',
             k8s_version='1.21',
@@ -1019,6 +1021,21 @@ def generate_presubmits_e2e():
             feature_flags=['GoogleCloudBucketACL'],
         ),
     ]
+    for branch in ['1.21']:
+        name_suffix = branch.replace('.', '-')
+        jobs.append(
+            presubmit_test(
+                branch='release-' + branch,
+                k8s_version=branch,
+                kops_channel='alpha',
+                name='pull-kops-e2e-kubernetes-aws-' + name_suffix,
+                networking='calico',
+                tab_name='e2e-' + name_suffix,
+                always_run=True,
+                skip_override=skip_regex,
+            )
+        )
+    return jobs
 
 ########################
 # YAML File Generation #
