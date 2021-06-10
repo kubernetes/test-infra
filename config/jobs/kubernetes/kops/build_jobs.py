@@ -692,11 +692,10 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="stable",
+                   k8s_version="latest",
                    runs_per_day=3,
                    feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
-                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true'],
+                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
