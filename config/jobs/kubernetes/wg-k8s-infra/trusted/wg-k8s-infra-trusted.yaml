@@ -25,7 +25,7 @@ periodics:
       - --
       - --confirm
 - name: ci-k8sio-audit
-  interval: 6h
+  interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
@@ -33,9 +33,6 @@ periodics:
   - org: kubernetes
     repo: k8s.io
     base_ref: main
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
   annotations:
     testgrid-dashboards: wg-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
