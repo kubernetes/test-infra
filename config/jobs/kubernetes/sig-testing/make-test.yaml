@@ -75,7 +75,7 @@ periodics:
       testgrid-num-failures-to-alert: '3'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-release-master-informing
+      testgrid-dashboards: sig-release-master-blocking
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
     decorate: true
     cluster: k8s-infra-prow-build
