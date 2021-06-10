@@ -66,7 +66,7 @@ members=($(
 
 want="serviceAccount:$project.svc.id.goog[$namespace/$name]"
 fix_policy=yes
-for member in "${members[@]}"; do
+for member in "${members[@]+"${members[@]}"}"; do
   if [[ "$want" == "$member" ]]; then
     fix_policy=
     break
