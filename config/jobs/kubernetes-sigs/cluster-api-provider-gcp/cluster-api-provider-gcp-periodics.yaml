@@ -5,7 +5,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
@@ -26,7 +26,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
@@ -55,7 +55,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   - org: kubernetes-sigs
     repo: image-builder
@@ -103,7 +103,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     - org: kubernetes-sigs
       repo: image-builder
