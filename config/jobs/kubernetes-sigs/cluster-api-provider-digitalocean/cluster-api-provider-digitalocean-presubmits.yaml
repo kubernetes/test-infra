@@ -7,7 +7,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -23,7 +22,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -39,7 +37,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -57,7 +54,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: golangci/golangci-lint:v1.32.2
@@ -82,7 +78,6 @@ presubmits:
       preset-do-credential: "true"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -112,7 +107,6 @@ presubmits:
       preset-do-credential: "true"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -145,7 +139,6 @@ presubmits:
       preset-do-credential: "true"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
