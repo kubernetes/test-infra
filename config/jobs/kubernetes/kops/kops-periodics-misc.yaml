@@ -51,7 +51,7 @@ periodics:
       command:
       - runner.sh
       args:
-      - ./tests/e2e/scenarios/k8s-upgrade/run-test.sh
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: CLOUD_PROVIDER
         value: aws
@@ -59,6 +59,14 @@ periodics:
         value: e2e-f9b0e6b3f9-bb3c3.test-cncf-aws.k8s.io
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
+      - name: KOPS_VERSION_A
+        value: "latest"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_A
+        value: v1.20.6
+      - name: K8S_VERSION_B
+        value: v1.21.0
       securityContext:
         privileged: true
       resources:
