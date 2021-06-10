@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
+    - ^main$
     - ^master$
     spec:
       containers:
@@ -26,7 +26,7 @@ presubmits:
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
+    - ^main$
     - ^master$
     spec:
       containers:
@@ -49,7 +49,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
+    - ^main$
     - ^master$
     spec:
       containers:
@@ -76,7 +76,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
+    - ^main$
     - ^master$
     always_run: true
     optional: false
@@ -120,7 +120,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
+    - ^main$
     - ^master$
     always_run: false
     optional: true
