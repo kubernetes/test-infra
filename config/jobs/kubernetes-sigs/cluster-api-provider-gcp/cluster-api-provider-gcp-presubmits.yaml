@@ -7,7 +7,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -27,7 +26,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -50,7 +48,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
@@ -77,7 +74,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^main$
-    - ^master$
     always_run: true
     optional: false
     decorate: true
@@ -121,7 +117,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^main$
-    - ^master$
     always_run: false
     optional: true
     decorate: true
