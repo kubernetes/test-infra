@@ -203,6 +203,36 @@ periodics:
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 
 - name: ci-kubernetes-node-kubelet-serial
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=240
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]|\[NodeFeature:Eviction\]"
+      - --timeout=180m
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-serial
+
+- name: ci-kubernetes-node-kubelet-eviction
   interval: 4h30m
   labels:
     preset-service-account: "true"
@@ -223,14 +253,14 @@ periodics:
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
+      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
       - --timeout=300m
       env:
       - name: GOPATH
         value: /go
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-serial
+    testgrid-tab-name: node-kubelet-eviction
 
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 4h
