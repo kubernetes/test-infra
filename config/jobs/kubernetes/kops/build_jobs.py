@@ -266,7 +266,7 @@ def k8s_version_info(k8s_version):
     return marker, k8s_deploy_url, test_package_bucket, test_package_dir
 
 def create_args(kops_channel, networking, container_runtime, extra_flags, kops_image):
-    args = f"--channel={kops_channel} --networking=" + (networking or "kubenet")
+    args = f"--channel={kops_channel} --networking=" + networking
     if container_runtime:
         args += f" --container-runtime={container_runtime}"
 
@@ -336,7 +336,7 @@ distros_ssh_user = {
 # Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
                distro='u2004',
-               networking=None,
+               networking='kubenet',
                container_runtime='containerd',
                k8s_version='latest',
                kops_channel='alpha',
@@ -399,7 +399,7 @@ def build_test(cloud='aws',
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud
-    if networking:
+    if networking and networking != "kubenet":
         suffix += "-" + networking
     if distro:
         suffix += "-" + distro
@@ -489,7 +489,7 @@ def build_test(cloud='aws',
 def presubmit_test(branch='master',
                    cloud='aws',
                    distro='u2004',
-                   networking=None,
+                   networking='kubenet',
                    container_runtime='containerd',
                    k8s_version='latest',
                    kops_channel='alpha',
@@ -591,7 +591,7 @@ def presubmit_test(branch='master',
 ####################
 
 networking_options = [
-    None,
+    'kubenet',
     'calico',
     'cilium',
     'flannel',

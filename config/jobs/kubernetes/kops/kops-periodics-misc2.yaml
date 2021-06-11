@@ -2,7 +2,7 @@
 # 13 jobs, total of 399 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-arm64
   cron: '33 16 * * *'
   labels:
@@ -62,12 +62,12 @@ periodics:
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: ''
+    test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004arm64, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true", "feature_flags": "UseServiceAccountIAM", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-service-account-iam
   cron: '45 6-23/8 * * *'
   labels:
@@ -129,7 +129,7 @@ periodics:
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: ''
+    test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-service-account-iam
@@ -199,7 +199,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-warm-pool
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "EnableExternalCloudController,SpecOverrideFlag", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-aws-cloud-controller-manager
   cron: '28 6-23/8 * * *'
   labels:
@@ -261,12 +261,12 @@ periodics:
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: ''
+    test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-latest, kops-misc, provider-aws-cloud-provider-aws, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.20", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.20", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-terraform
   cron: '14 4 * * *'
   labels:
@@ -326,7 +326,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.20'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: ''
+    test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.20, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-terraform
@@ -596,7 +596,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-arm64-conformance
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=c5.large --master-size=c5.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": null}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--node-size=c5.large --master-size=c5.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-misc-amd64-conformance
   cron: '24 3-23/8 * * *'
   labels:
@@ -659,7 +659,7 @@ periodics:
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: ''
+    test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-ci, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-misc-amd64-conformance
