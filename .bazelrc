@@ -5,7 +5,7 @@ build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
 
 # enable data race detection
-test --features=race --test_output=errors
+test --@io_bazel_rules_go//go/config:race --test_output=errors
 
 # only build tests when testing
 test --build_tests_only
