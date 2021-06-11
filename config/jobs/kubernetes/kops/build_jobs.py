@@ -281,6 +281,36 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
             args = f"--image='{kops_image}' {args}"
     return args.strip()
 
+def build_skip_regex(cloud, k8s_version, networking, distro):
+    regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+    if networking in ['kubenet', 'canal', 'weave', 'cilium']:
+        regex += r'|Services.*rejected.*endpoints'
+    if networking == "cilium":
+        # https://github.com/cilium/cilium/issues/10002
+        regex += r'|TCP.CLOSE_WAIT'
+        # https://github.com/cilium/cilium/issues/15361
+        regex += r'|external.IP.is.not.assigned.to.a.node'
+    elif networking != 'calico':
+        regex += r'|Services.*functioning.*NodePort'
+    if networking == 'kube-router':
+        regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
+    elif networking == 'kubenet':
+        regex += r'|Services.*affinity'
+    if 'arm64' in distro:
+        regex += r'|Simple.pod.should.handle.in-cluster.config'
+
+    if cloud == 'aws':
+        # TODO(rifelpet): Remove once k8s tags has been created that include
+        #  https://github.com/kubernetes/kubernetes/pull/101443
+        if k8s_version in ('stable', '1.21'):
+            regex += r'|Invalid.AWS.KMS.key'
+
+        # TODO(rifelpet): Remove once volume limits tests have been fixed
+        # https://github.com/kubernetes/kubernetes/issues/79660#issuecomment-854884112
+        if k8s_version in ('latest', '1.22'):
+            regex += r'|Volume.limits.should.verify.that.all.nodes.have.volume.limits'
+    return regex
+
 def latest_aws_image(owner, name):
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
@@ -351,7 +381,8 @@ def build_test(cloud='aws',
                test_timeout_minutes=60,
                skip_override=None,
                focus_regex=None,
-               runs_per_day=0):
+               runs_per_day=0,
+               use_new_skip_logic=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if kops_version is None:
@@ -377,24 +408,31 @@ def build_test(cloud='aws',
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
 
-    skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
-    if networking == "cilium":
-        # https://github.com/cilium/cilium/issues/10002
-        skip_regex += r'|TCP.CLOSE_WAIT'
-        # https://github.com/cilium/cilium/issues/15361
-        skip_regex += r'|external.IP.is.not.assigned.to.a.node'
-    if skip_override is not None:
-        skip_regex = skip_override
+    if use_new_skip_logic:
+        if skip_override is not None:
+            skip_regex = skip_override
+        else:
+            skip_regex = build_skip_regex(cloud, k8s_version, networking, distro)
+    else:
+        skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
+        if networking == "cilium":
+            # https://github.com/cilium/cilium/issues/10002
+            skip_regex += r'|TCP.CLOSE_WAIT'
+            # https://github.com/cilium/cilium/issues/15361
+            skip_regex += r'|external.IP.is.not.assigned.to.a.node'
 
-    # TODO(rifelpet): Remove once k8s tags has been created that include
-    #  https://github.com/kubernetes/kubernetes/pull/101443
-    if cloud == 'aws' and k8s_version in ('stable', '1.21') and skip_regex:
-        skip_regex += r'|Invalid.AWS.KMS.key'
+        if skip_override is not None:
+            skip_regex = skip_override
 
-    # TODO(rifelpet): Remove once volume limits tests have been fixed
-    # https://github.com/kubernetes/kubernetes/issues/79660#issuecomment-854884112
-    if cloud == 'aws' and k8s_version in ('latest', '1.22') and skip_regex:
-        skip_regex += r'|Volume.limits.should.verify.that.all.nodes.have.volume.limits'
+        # TODO(rifelpet): Remove once k8s tags has been created that include
+        #  https://github.com/kubernetes/kubernetes/pull/101443
+        if cloud == 'aws' and k8s_version in ('stable', '1.21') and skip_regex:
+            skip_regex += r'|Invalid.AWS.KMS.key'
+
+        # TODO(rifelpet): Remove once volume limits tests have been fixed
+        # https://github.com/kubernetes/kubernetes/issues/79660#issuecomment-854884112
+        if cloud == 'aws' and k8s_version in ('latest', '1.22') and skip_regex:
+            skip_regex += r'|Volume.limits.should.verify.that.all.nodes.have.volume.limits'
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -664,8 +702,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
 
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-service-account-iam",
@@ -677,7 +715,8 @@ def generate_misc():
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
                                 ],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
 
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
@@ -686,7 +725,8 @@ def generate_misc():
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--override=cluster.spec.warmPool.minSize=1'
                                 ],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
 
         # A special test for AWS Cloud-Controller-Manager
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
@@ -696,12 +736,14 @@ def generate_misc():
                    runs_per_day=3,
                    feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
+                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-grid-scenario-terraform",
                    k8s_version="1.20",
                    terraform_version="0.14.6",
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-ha-euwest1",
                    k8s_version="stable",
@@ -709,7 +751,8 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=8,
                    extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-arm64-release",
                    k8s_version="latest",
@@ -720,8 +763,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-arm64-ci",
                    k8s_version="ci",
@@ -732,8 +775,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
                    k8s_version="ci",
@@ -746,7 +789,8 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-amd64-conformance",
                    k8s_version="ci",
@@ -757,7 +801,8 @@ def generate_misc():
                                 "--master-size=c5.large"],
                    skip_override=r'\[Slow\]|\[Serial\]|\[Flaky\]',
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-aws-misc-updown",
                    k8s_version="stable",
@@ -771,7 +816,8 @@ def generate_misc():
                                 "--master-size=c5.large"],
                    skip_override=r'',
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-grid-scenario-cilium10-arm64",
                    cloud="aws",
@@ -782,8 +828,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Simple.pod.should.handle.in-cluster.config', # pylint: disable=line-too-long
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
 
         build_test(name_override="kops-grid-scenario-cilium10-amd64",
                    cloud="aws",
@@ -793,8 +839,8 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
-                   extra_dashboards=['kops-misc']),
-
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
     ]
     return results
 
