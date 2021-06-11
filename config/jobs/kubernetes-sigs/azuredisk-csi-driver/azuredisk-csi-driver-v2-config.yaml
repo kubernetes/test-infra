@@ -51,6 +51,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az-mainv2
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -103,6 +105,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az-mainv2
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -156,6 +160,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-mainv2
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -210,6 +216,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-windows-mainv2
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -268,6 +276,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-mainv2
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
