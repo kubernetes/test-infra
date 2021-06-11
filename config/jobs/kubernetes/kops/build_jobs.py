@@ -861,7 +861,7 @@ def generate_distros():
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
                        runs_per_day=3,
-                       skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
+                       use_new_skip_logic=True,
                        )
         )
     # pprint.pprint(results)
@@ -874,21 +874,8 @@ def generate_network_plugins():
 
     plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
     results = []
-    skip_base = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler'# pylint: disable=line-too-long
     for plugin in plugins:
-        networking_arg = plugin
-        skip_regex = skip_base
-        if plugin == 'amazon-vpc':
-            networking_arg = 'amazonvpc'
-        if plugin == 'cilium':
-            skip_regex += r'|should.set.TCP.CLOSE_WAIT'
-        else:
-            skip_regex += r'|Services.*functioning.*NodePort'
-        if plugin in ['calico', 'canal', 'weave', 'cilium']:
-            skip_regex += r'|Services.*rejected.*endpoints'
-        if plugin == 'kuberouter':
-            skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
-            networking_arg = 'kube-router'
+        networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         results.append(
             build_test(
                 k8s_version='stable',
@@ -898,7 +885,7 @@ def generate_network_plugins():
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
-                skip_override=skip_regex
+                use_new_skip_logic=True
             )
         )
     return results
