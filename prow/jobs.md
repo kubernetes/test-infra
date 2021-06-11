@@ -86,10 +86,12 @@ presubmits:
 ```
 
 If you only want to run tests when specific files are touched, you can use
-`run_if_changed`. A useful pattern when adding new jobs is to start with
-`always_run` set to false and `skip_report` set to true. Test it out a few
-times by manually triggering, then switch `always_run` to true. Watch for a
-couple days, then switch `skip_report` to false.
+`run_if_changed`. Conversely, if you want to _skip_ tests when a change set
+_only_ touches specific files, you can use `skip_if_only_changed`. A useful
+pattern when adding new jobs is to start with `always_run` set to false and
+`skip_report` set to true. Test it out a few times by manually triggering,
+then switch `always_run` to true. Watch for a couple days, then switch
+`skip_report` to false.
 
 The `trigger` is a regexp that matches the `rerun_command`. Users will be told
 to input the `rerun_command` when they want to rerun the job. Actually, anything
@@ -161,18 +163,60 @@ rules for protecting those contexts on branches.
  1. jobs that run unconditionally and automatically. All jobs that set
      `always_run: true` fall into this set.
  2. jobs that run conditionally, but automatically. All jobs that set
-    `run_if_changed` to some value fall into this set.
+    `run_if_changed` or `skip_if_only_changed` to some value fall into this
+    set.
  3. jobs that run conditionally, but not automatically. All jobs that set
-    `always_run: false` and do not set `run_if_changed` to any value fall
-    into this set and require a human to trigger them with a command.
+    `always_run: false` and do not set `run_if_changed`/`skip_if_only_changed`
+    to any value fall into this set and require a human to trigger them with a
+    command.
 
-By default, jobs fall into the third category and must have their `always_run` or
-`run_if_changed` configured to operate differently.
+By default, jobs fall into the third category and must have their `always_run`,
+`run_if_changed`, or `skip_if_only_changed` configured to operate differently.
 
 In the rest of this document, "a job running unconditionally" indicates that the
 job will run even if it is normally conditional and the conditions are not met.
 Similarly, "a job running conditionally" indicates that the job runs if all of its
 conditions are met.
+
+#### Triggering Jobs Based On Changes
+
+Jobs that set `always_run: false` may be configured to run conditionally based
+on the contents of the pull request. `run_if_changed` and
+`skip_if_only_changed` accept a (Golang-style) [regular expression] which is
+run against the path of each changed file.
+
+`run_if_changed` triggers the job if _any_ path matches. For example, you may
+wish to trigger a compilation job if the pull request changes any `*.c` or
+`*.h` file, or the `Makefile`:
+
+```yaml
+presubmits:
+  org/repo:
+  - name: compile-job
+    always_run: false
+    run_if_changed: "(\.[ch]|^Makefile)$"
+    ...
+```
+
+`skip_if_only_changed` _skips_ the job if _all_ paths match. For example, you
+may wish to skip a compilation job for pull requests that only change
+documentation files:
+
+```yaml
+presubmits:
+  org/repo:
+  - name: compile-job
+    always_run: false
+    skip_if_only_changed: "^docs/|\.(md|adoc)$|^(README|LICENSE)$"
+```
+
+Both of the above examples would trigger on a pull request containing
+`foo/bar.c` and `SECURITY.md`, but not one containing only `SECURITY.md`.
+
+Note:
+- `run_if_changed` and `skip_if_only_changed` are mutually exclusive.
+- Jobs which would otherwise be skipped based on this configuration can still
+  be triggered explicitly with comments (see below).
 
 #### Triggering Jobs With Comments
 
@@ -300,3 +344,4 @@ The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/bad
 [`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
 [`plugins.yaml`]: /config/prow/plugins.yaml
 [deployed]: https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md
+[regular expression]: https://golang.org/pkg/regexp/syntax/
