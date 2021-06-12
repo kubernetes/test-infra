@@ -105,7 +105,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Invalid.AWS.KMS.key"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -170,7 +170,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*rejected.*endpoints|Services.*functioning.*NodePort|Invalid.AWS.KMS.key"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -235,7 +235,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|Invalid.AWS.KMS.key"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -495,7 +495,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
           --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*rejected.*endpoints|Services.*functioning.*NodePort|Invalid.AWS.KMS.key"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
