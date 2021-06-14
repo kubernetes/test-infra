@@ -1335,6 +1335,7 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 			refs.Pulls,
 			prowapi.Pull{
 				Number: int(pr.Number),
+				Title:  string(pr.Title),
 				Author: string(pr.Author.Login),
 				SHA:    string(pr.HeadRefOID),
 			},
