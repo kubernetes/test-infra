@@ -14,7 +14,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -47,7 +47,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -79,7 +79,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -115,7 +115,7 @@ periodics:
     testgrid-tab-name: node-kubelet-features-master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -148,7 +148,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -178,7 +178,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -209,7 +209,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -239,7 +239,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=320
@@ -269,7 +269,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -300,7 +300,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -331,7 +331,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -362,7 +362,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -394,7 +394,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240

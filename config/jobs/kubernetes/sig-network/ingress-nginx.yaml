@@ -162,7 +162,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
         command:
           - wrapper.sh
           - bash
@@ -193,7 +193,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
         command:
           - wrapper.sh
           - bash
@@ -224,7 +224,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
         command:
           - wrapper.sh
           - bash
@@ -255,7 +255,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
         command:
           - wrapper.sh
           - bash
@@ -286,7 +286,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
         command:
           - wrapper.sh
           - bash
@@ -323,7 +323,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+    - image: gcr.io/k8s-testimages/krte:v20210610-c72cf72-master
       command:
         - wrapper.sh
         - bash
