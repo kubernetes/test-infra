@@ -17,12 +17,11 @@ presubmits:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
           command:
-            - runner.sh
-            - bash
-            - -c
-          args:
-            # TODO: stop depending on custom timeout
-            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=240s'
+            - make
+            - test
+            # TODO: enable KUBE_RACE by default or remove?
+            # ref: https://github.com/kubernetes/kubernetes/issues/102607
+            - KUBE_RACE=-race
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -56,9 +55,9 @@ presubmits:
           command:
             - make
             - test
+            # TODO: enable KUBE_RACE by default or remove?
+            # ref: https://github.com/kubernetes/kubernetes/issues/102607
             - KUBE_RACE=-race
-            # TODO: stop depending on custom timeout
-            - KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -90,9 +89,9 @@ periodics:
           command:
             - make
             - test
+            # todo: enable KUBE_RACE by default or remove?
+            # ref: https://github.com/kubernetes/kubernetes/issues/102607
             - KUBE_RACE=-race
-            # TODO: stop depending on custom timeout
-            - KUBE_TIMEOUT=--timeout=240s
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
