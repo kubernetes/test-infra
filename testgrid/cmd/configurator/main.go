@@ -220,14 +220,16 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 
 	pac := prowAwareConfigurator{
 		defaultTestgridConfig: d,
-		prowConfig:            prowConfigAgent.Config(),
 		updateDescription:     opt.updateDescription,
 		prowJobConfigPath:     opt.prowConfig.JobConfigPath,
 		prowJobURLPrefix:      opt.prowJobURLPrefix,
 	}
 
-	if err := pac.applyProwjobAnnotations(&c); err != nil {
-		return fmt.Errorf("could not apply prowjob annotations: %v", err)
+	if prowConfigAgent != nil {
+		pac.prowConfig = prowConfigAgent.Config()
+		if err := pac.applyProwjobAnnotations(&c); err != nil {
+			return fmt.Errorf("could not apply prowjob annotations: %v", err)
+		}
 	}
 
 	if opt.validateConfigFile {
@@ -319,7 +321,9 @@ func main() {
 	channel := make(chan []string)
 	// Monitor files for changes
 	go announceChanges(ctx, opt.inputs, channel)
-	go announceProwChanges(ctx, prowConfigAgent, channel)
+	if prowConfigAgent != nil {
+		go announceProwChanges(ctx, prowConfigAgent, channel)
+	}
 
 	// Wait for changed files
 	for changes := range channel {
