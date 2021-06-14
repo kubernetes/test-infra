@@ -54,7 +54,7 @@ const (
 )
 
 var (
-	checkRequiredLablesRe = regexp.MustCompile(`(?mi)^/check-required-labels\s*$`)
+	checkRequiredLabelsRe = regexp.MustCompile(`(?mi)^/check-required-labels\s*$`)
 )
 
 type githubClient interface {
