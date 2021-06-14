@@ -19,7 +19,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-1.19
         command:
         - runner.sh
         - kubetest
@@ -70,7 +70,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-1.19
         command:
         - runner.sh
         - kubetest
@@ -125,7 +125,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-1.19
         command:
         - runner.sh
         - kubetest
@@ -184,7 +184,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         command:
         - runner.sh
         - kubetest
