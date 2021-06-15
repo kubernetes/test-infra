@@ -289,7 +289,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: master
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-aws
   spec:
     serviceAccountName: gcb-builder
@@ -308,7 +308,7 @@ periodics:
           # We need to emulate a pull job for the cloud build to work the same
           # way as it usually does.
           - name: PULL_BASE_REF
-            value: master
+            value: main
   annotations:
     # this is the name of some testgrid dashboard to report to.
     testgrid-dashboards: sig-cluster-lifecycle-image-pushes
