@@ -4,8 +4,10 @@ dashboard_groups:
 - name: sig-security
   dashboard_names:
   - sig-security-cvelist-public
+  - sig-security-snyk-scan
 
 # Dashboards
 #
 dashboards:
 - name: sig-security-cvelist-public
+- name: sig-security-snyk-scan
