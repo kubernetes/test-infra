@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -24,6 +25,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -6445,6 +6447,88 @@ func TestProwConfigMergingProperties(t *testing.T) {
 						propertyTest.verification(t, fuzzedConfig)
 					}
 				})
+			}
+		})
+	}
+}
+
+// TestDeduplicateTideQueriesDoesntLoseData simply uses deduplicateTideQueries
+// on a single fuzzed tidequery, which should never result in any change as
+// there is nothing that could be deduplicated. This is mostly to ensure we
+// don't forget to change our code when new fields get added to the type.
+func TestDeduplicateTideQueriesDoesntLoseData(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			query := TideQuery{}
+			fuzz.New().Fuzz(&query)
+			result, err := deduplicateTideQueries(TideQueries{query})
+			if err != nil {
+				t.Fatalf("error: %v", err)
+			}
+
+			if diff := cmp.Diff(result[0], query); diff != "" {
+				t.Errorf("result differs from initial query: %s", diff)
+			}
+		})
+	}
+}
+
+func TestDeduplicateTideQueries(t *testing.T) {
+	testCases := []struct {
+		name     string
+		in       TideQueries
+		expected TideQueries
+	}{
+		{
+			name: "No overlap",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me-differently"}},
+			},
+			expected: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me-differently"}},
+			},
+		},
+		{
+			name: "Queries get deduplicated",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me"}},
+			},
+			expected: TideQueries{{Orgs: []string{"kubernetes", "kubernetes-priv"}, Labels: []string{"merge-me"}}},
+		},
+		{
+			name: "Queries get deduplicated regardless of element order",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"lgtm", "merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me", "lgtm"}},
+			},
+			expected: TideQueries{{Orgs: []string{"kubernetes", "kubernetes-priv"}, Labels: []string{"lgtm", "merge-me"}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := deduplicateTideQueries(tc.in)
+			if err != nil {
+				t.Fatalf("failed: %v", err)
+			}
+
+			sort.SliceStable(result, func(i, j int) bool {
+				iSerialized, err := json.Marshal(result[i])
+				if err != nil {
+					t.Fatalf("failed to marshal %+v: %v", result[i], err)
+				}
+				jSerialized, err := json.Marshal(result[j])
+				if err != nil {
+					t.Fatalf("failed to marshal %+v: %v", result[j], err)
+				}
+				return string(iSerialized) < string(jSerialized)
+			})
+
+			if diff := cmp.Diff(result, tc.expected); diff != "" {
+				t.Errorf("Result differs from expected: %v", diff)
 			}
 		})
 	}

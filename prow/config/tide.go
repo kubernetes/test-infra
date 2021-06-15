@@ -280,6 +280,25 @@ type TideQuery struct {
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 }
 
+// tideQueryConfig contains the subset of attributes by which we de-duplicate
+// tide queries. Together with tideQueryTarget it must contain the full set
+// of all TideQuery properties.
+type tideQueryConfig struct {
+	Author                 string
+	ExcludedBranches       []string
+	IncludedBranches       []string
+	Labels                 []string
+	MissingLabels          []string
+	Milestone              string
+	ReviewApprovedRequired bool
+}
+
+type tideQueryTarget struct {
+	Orgs          []string
+	Repos         []string
+	ExcludedRepos []string
+}
+
 // constructQuery returns a map[org][]orgSpecificQueryParts (org, repo, -repo), remainingQueryString
 func (tq *TideQuery) constructQuery() (map[string][]string, string) {
 	// map org->repo directives (if any)
