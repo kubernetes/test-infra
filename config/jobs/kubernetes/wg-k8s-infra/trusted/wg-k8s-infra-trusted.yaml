@@ -81,7 +81,7 @@ periodics:
       envFrom:
       - secretRef:
           # secret key should be defined as SNYK_TOKEN
-          name: snyk_token
+          name: snyk-token
       command:
       - /bin/bash
       args:
