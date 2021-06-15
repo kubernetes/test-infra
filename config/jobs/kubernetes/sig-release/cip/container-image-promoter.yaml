@@ -213,3 +213,30 @@ presubmits:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
+  # Build test and prod containers.
+  - name: build-cip
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    skip_report: false
+    always_run: true
+    # Because building images, must be isolated for every test.
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-cip-image-build
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
