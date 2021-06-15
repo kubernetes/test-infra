@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/secretutil"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -72,6 +74,24 @@ func TestCensoringFormatter(t *testing.T) {
 				t.Errorf("Expected '%s', got '%s'", tc.expected, string(censored))
 			}
 		})
+	}
+}
+
+func TestCensoringFormatterDelegateFormatter(t *testing.T) {
+	delegate := &logrus.JSONFormatter{}
+	censorer := secretutil.NewCensorer()
+	message := `COMPLEX 
+secret
+with "chars" that need fixing in JSON`
+	censorer.Refresh(message)
+	formatter := NewFormatterWithCensor(delegate, censorer)
+	censored, err := formatter.Format(&logrus.Entry{Message: message})
+	if err != nil {
+		t.Fatalf("got an error from censoring: %v", err)
+	}
+	if diff := cmp.Diff(string(censored), `{"level":"panic","msg":"*****************************************************","time":"0001-01-01T00:00:00Z"}
+`); diff != "" {
+		t.Errorf("got incorrect output after censoring: %v", diff)
 	}
 }
 
