@@ -234,3 +234,43 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-windows-dockershim
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+    - org: jsturtevant # TODO(jstur): change it to 'kubernetes-sigs'
+      repo: cluster-api-provider-azure
+      base_ref: windows-custom-binaries # TODO(jstur): change it to 'master'
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+        - name: WINDOWS
+          value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+        - name: CONFORMANCE_NODES
+          value: "4"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-dockershim
+      testgrid-num-columns-recent: '30'
