@@ -151,6 +151,7 @@ type KubernetesConfig struct {
 	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	NetworkMode                      string            `json:"networkMode,omitempty"`
 	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
