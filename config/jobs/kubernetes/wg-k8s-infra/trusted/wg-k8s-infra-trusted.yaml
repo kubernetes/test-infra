@@ -67,7 +67,7 @@ periodics:
 #   filtered from the snyk scan results and printed on stdout as well
 #   as "${ARTIFACTS}/snyk_results.json"
 - name: ci-kubernetes-snyk-master
-  interval: 6h
+  interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   extra_refs:
@@ -92,7 +92,9 @@ periodics:
         wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk; \
         mkdir -p "${ARTIFACTS}"; \
         [[ -z "${SNYK_TOKEN}" ]] && echo "SNYK_TOKEN env var is not set, required for snyk scan" && exit 1; \
-        snyk test --json-file-output=${ARTIFACTS}/result_all.json || echo "failed to run snyk scan, exit code $?" && exit 1; \
+        echo "$PWD"; \
+        echo "SNYK_TOKEN is present"; \
+        snyk test --json-file-output=${ARTIFACTS}/result_all.json || [[ $? -gt 1 ]] && echo "failed to run snyk scan" && exit 1; \
         cat ${ARTIFACTS}/result_all.json | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/snyk_results.json"
   annotations:
     testgrid-create-test-group: "true"
