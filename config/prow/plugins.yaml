@@ -302,6 +302,12 @@ slack:
     - kops-dev
     exempt_users:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/cluster-api-provider-aws
+    channels:
+    - cluster-api-aws
+    exempt_users:
+    - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
@@ -331,11 +337,16 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
+    main: v0.4
     master: v0.4
     release-0.4: v0.4
     operator-0.4: v0.4 # Remove this when it gets merged back.
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-aws:
+    main: v0.7.0
+    release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
+    main: v0.5.0
     master: v0.5.0
     release-0.4: v0.4.15
   kubernetes-sigs/cluster-api-provider-digitalocean:
@@ -671,6 +682,12 @@ require_matching_label:
     SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-priority
+  org: kubernetes-sigs
+  repo: cluster-api-provider-aws
+  issues: true
+  prs: true
+  regexp: ^priority/
 
 retitle:
   allow_closed_issues: true
@@ -989,9 +1006,13 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-aws:
     plugins:
+    - golint
+    - mergecommitblocker
     - milestone
+    - milestonestatus
     - override
     - release-note
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-azure:
     plugins:
