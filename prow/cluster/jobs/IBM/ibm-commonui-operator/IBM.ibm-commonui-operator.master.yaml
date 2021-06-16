@@ -3,6 +3,9 @@ presubmits:
   - name: build_ibm-commonui-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-commonui-operator
