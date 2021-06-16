@@ -2681,7 +2681,22 @@ func (tm tideQueryMap) queries() (TideQueries, error) {
 
 	}
 
-	return result, nil
+	// Sort the queries here to make sure that the de-duplication results
+	// in a deterministic order.
+	var errs []error
+	sort.SliceStable(result, func(i, j int) bool {
+		iSerialized, err := json.Marshal(result[i])
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to marshal %+v: %w", result[i], err))
+		}
+		jSerialized, err := json.Marshal(result[j])
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to marshal %+v: %w", result[j], err))
+		}
+		return string(iSerialized) < string(jSerialized)
+	})
+
+	return result, utilerrors.NewAggregate(errs)
 }
 
 // sortStringSlice is a tiny wrapper that returns

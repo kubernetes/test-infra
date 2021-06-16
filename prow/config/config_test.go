@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -25,7 +24,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -6546,18 +6544,6 @@ func TestDeduplicateTideQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed: %v", err)
 			}
-
-			sort.SliceStable(result, func(i, j int) bool {
-				iSerialized, err := json.Marshal(result[i])
-				if err != nil {
-					t.Fatalf("failed to marshal %+v: %v", result[i], err)
-				}
-				jSerialized, err := json.Marshal(result[j])
-				if err != nil {
-					t.Fatalf("failed to marshal %+v: %v", result[j], err)
-				}
-				return string(iSerialized) < string(jSerialized)
-			})
 
 			if diff := cmp.Diff(result, tc.expected); diff != "" {
 				t.Errorf("Result differs from expected: %v", diff)
