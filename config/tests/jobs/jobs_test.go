@@ -965,7 +965,7 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error)
 // - reports (aka does not skip reporting)
 // - always runs OR runs if some path changed
 func isMergeBlocking(job cfg.Presubmit) bool {
-	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
 func isKubernetesReleaseBlocking(job cfg.JobBase) bool {

@@ -56,6 +56,15 @@ func TestTestAllFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					AlwaysRun: false,
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -75,7 +84,7 @@ func TestTestAllFilter(t *testing.T) {
 					RerunCommand: "/test all",
 				},
 			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}, {false, false, false}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}, {false, false, false}},
 		},
 	}
 
@@ -226,6 +235,23 @@ func TestFilterPresubmits(t *testing.T) {
 				JobBase:             config.JobBase{Name: "errors"},
 				Reporter:            config.Reporter{Context: "first"},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{RunIfChanged: "oopsie"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError:      true,
+			expectedToTrigger: nil,
+			expectErr:         true,
+		},
+		{
+			name: "error detecting if something should run, nothing to skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, false, false
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:             config.JobBase{Name: "errors"},
+				Reporter:            config.Reporter{Context: "first"},
+				RegexpChangeMatcher: config.RegexpChangeMatcher{SkipIfOnlyChanged: "oopsie"},
 			}, {
 				JobBase:  config.JobBase{Name: "ignored"},
 				Reporter: config.Reporter{Context: "second"},
@@ -413,6 +439,17 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -422,7 +459,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}},
 		},
 		{
 			name:          "honored ok-to-test comment selects all tests that don't need an explicit trigger",
@@ -454,6 +491,17 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -463,7 +511,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}},
 		},
 		{
 			name:          "not honored ok-to-test comment selects no tests",
@@ -495,6 +543,17 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -504,7 +563,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{false, false, false}, {false, false, false}, {false, false, false}},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}},
 		},
 		{
 			name:       "statuses are not gathered unless retest is specified (will error but we should not see it)",
@@ -612,6 +671,19 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
+					RerunCommand: "/test trigger",
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -646,6 +718,19 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 				{
 					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
+					RerunCommand: "/test other-trigger",
+				},
+				{
+					JobBase: config.JobBase{
 						Name: "runs-if-triggered",
 					},
 					Reporter: config.Reporter{
@@ -655,7 +740,16 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test other-trigger",
 				},
 			},
-			expected: [][]bool{{true, true, true}, {true, true, true}, {true, true, true}, {false, false, false}, {false, false, false}, {false, false, false}},
+			expected: [][]bool{
+				{true, true, true},
+				{true, true, true},
+				{true, true, true},
+				{true, true, true},
+				{false, false, false},
+				{false, false, false},
+				{false, false, false},
+				{false, false, false},
+			},
 		},
 		{
 			name: "comments matching more than one case will select the union of presubmits",
@@ -686,6 +780,19 @@ func TestPresubmitFilter(t *testing.T) {
 					},
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "sometimes",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
+					RerunCommand: "/test other-trigger",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "existing-successful",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
 					},
 					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
 					RerunCommand: "/test other-trigger",
@@ -742,7 +849,17 @@ func TestPresubmitFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {true, true, true}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, false}},
+			expected: [][]bool{
+				{true, false, false},
+				{true, false, false},
+				{true, false, false},
+				{true, true, true},
+				{false, false, false},
+				{false, false, false},
+				{true, false, true},
+				{true, false, true},
+				{true, false, false},
+			},
 		},
 	}
 

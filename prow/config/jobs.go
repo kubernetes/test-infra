@@ -220,8 +220,12 @@ type Brancher struct {
 type RegexpChangeMatcher struct {
 	// RunIfChanged defines a regex used to select which subset of file changes should trigger this job.
 	// If any file in the changeset matches this regex, the job will be triggered
-	RunIfChanged string         `json:"run_if_changed,omitempty"`
-	reChanges    *regexp.Regexp // from RunIfChanged
+	RunIfChanged string `json:"run_if_changed,omitempty"`
+	// SkipIfOnlyChanged defines a regex used to select which subset of file changes should trigger this job.
+	// If all files in the changeset match this regex, the job will be skipped.
+	// In other words, this is the negation of RunIfChanged.
+	SkipIfOnlyChanged string         `json:"skip_if_only_changed,omitempty"`
+	reChanges         *regexp.Regexp // from RunIfChanged xor SkipIfOnlyChanged
 }
 
 type Reporter struct {
@@ -283,7 +287,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 
 // CouldRun determines if its possible for a set of changes to trigger this condition
 func (cm RegexpChangeMatcher) CouldRun() bool {
-	return cm.RunIfChanged != ""
+	return cm.RunIfChanged != "" || cm.SkipIfOnlyChanged != ""
 }
 
 // ShouldRun determines if we can know for certain that the job should run. We can either
@@ -300,10 +304,15 @@ func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (determine
 	return false, false, nil
 }
 
-// RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
+// RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex;
+// OR if any of the changed input paths *don't* match the skip_if_only_changed regex.
 func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	for _, change := range changes {
-		if cm.reChanges.MatchString(change) {
+		// RunIfChanged triggers the run if *any* change matches the supplied regex.
+		if cm.RunIfChanged != "" && cm.reChanges.MatchString(change) {
+			return true
+			// SkipIfOnlyChanged triggers the run if any change *doesn't* match the supplied regex.
+		} else if cm.SkipIfOnlyChanged != "" && !cm.reChanges.MatchString(change) {
 			return true
 		}
 	}
@@ -384,8 +393,8 @@ type githubClient interface {
 }
 
 // NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.
-// We only have to fetch the changes if there is at least one RunIfChanged job that is not being force run (due to
-// a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
+// We only have to fetch the changes if there is at least one RunIfChanged/SkipIfOnlyChanged job that is not being
+// force run (due to a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
 func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
 	var changedFiles []string
 	return func() ([]string, error) {

@@ -337,6 +337,16 @@ func TestBranchRequirements(t *testing.T) {
 					},
 				},
 				{
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						SkipIfOnlyChanged: "foo",
+					},
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "skip-if-only-changed",
+						SkipReport: false,
+					},
+				},
+				{
 					AlwaysRun: false,
 					Reporter: Reporter{
 						Context:    "not-always",
@@ -363,10 +373,10 @@ func TestBranchRequirements(t *testing.T) {
 				},
 			},
 			masterExpected:  []string{"always-run"},
-			masterIfPresent: []string{"run-if-changed", "not-always"},
+			masterIfPresent: []string{"run-if-changed", "skip-if-only-changed", "not-always"},
 			masterOptional:  []string{"optional"},
 			otherExpected:   []string{"always-run"},
-			otherIfPresent:  []string{"run-if-changed", "not-always"},
+			otherIfPresent:  []string{"run-if-changed", "skip-if-only-changed", "not-always"},
 			otherOptional:   []string{"skip-report", "optional"},
 		},
 	}

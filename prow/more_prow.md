@@ -15,8 +15,9 @@ Some Prow components expose prometheus metrics that can be used for monitoring, 
 You can easily make your Prow instance automatically update itself when changes
 are made to its component's kubernetes resource files. This is achieved with a
 postsubmit job that `kubectl apply`s the resource files whenever they are
-changed (based on a `run_if_changed` regexp). In order to `kubectl apply` to the
-cluster, the job will need to supply credentials (e.g. a kubeconfig file or
+changed (based on a `run_if_changed` or `skip_if_only_changed` regexp). In
+order to `kubectl apply` to the cluster, the job will need to supply credentials
+(e.g. a kubeconfig file or
 [GCP service account key-file](/prow/gcloud-deployer-service-account.sh)). Since
 this job requires priviledged credentials to deploy to the cluster, it is
 important that it is run in a separate build cluster that is isolated from all
