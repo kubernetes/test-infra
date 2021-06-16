@@ -277,7 +277,12 @@ func (opts *options) convertToLocal(ctx context.Context, log *logrus.Entry, pj p
 	}
 	// Add args for volume mounts.
 	for target, src := range volumeMounts {
-		localArgs = append(localArgs, "-v", src+":"+target)
+		// empty dirs have "" as src
+		if src == "" {
+			localArgs = append(localArgs, "-v", target)
+		} else {
+			localArgs = append(localArgs, "-v", src+":"+target)
+		}
 	}
 	// Add args for env vars.
 	for envKey, envVal := range envs {
