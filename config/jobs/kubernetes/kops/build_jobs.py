@@ -739,6 +739,19 @@ def generate_misc():
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'],
                    use_new_skip_logic=True),
 
+        # A special test for AWS Cloud-Controller-Manager and irsa
+        build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager-irsa",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="latest",
+                   runs_per_day=3,
+                   feature_flags=["UseServiceAccountIAM,EnableExternalCloudController,SpecOverrideFlag"], # pylint: disable=line-too-long
+                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
+                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'],
+                   use_new_skip_logic=True),
+
         build_test(name_override="kops-grid-scenario-terraform",
                    k8s_version="1.20",
                    terraform_version="0.14.6",
