@@ -963,7 +963,6 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    focus_regex = r'\[k8s.io\]\sNetworking.*\[Conformance\]'
     for version in ['master', '1.21', '1.20', '1.19']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
@@ -978,8 +977,9 @@ def generate_pipeline():
                 extra_dashboards=['kops-versions'],
                 runs_per_day=24,
                 skip_override=r'\[Slow\]|\[Serial\]',
-                focus_regex=focus_regex,
+                focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                 publish_version_marker=publish_version_marker,
+                use_new_skip_logic=True
             )
         )
     return results

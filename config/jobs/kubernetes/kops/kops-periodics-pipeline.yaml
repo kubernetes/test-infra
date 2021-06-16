@@ -42,7 +42,7 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
+          --skip-regex="\[Slow\]|\[Serial\]"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -108,7 +108,7 @@ periodics:
           --test-package-marker=stable-1.21.txt \
           --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|Invalid.AWS.KMS.key"
+          --skip-regex="\[Slow\]|\[Serial\]"
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
