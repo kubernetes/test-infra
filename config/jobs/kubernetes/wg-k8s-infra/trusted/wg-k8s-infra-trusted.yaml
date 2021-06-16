@@ -89,9 +89,11 @@ periodics:
       - |
         set -euo pipefail; \
         apt update && apt -y install jq; \
-        wget -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk; \
+        wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk; \
         mkdir -p "${ARTIFACTS}"; \
-        snyk test --json  | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/snyk_results.json"
+        [[ -z "${SNYK_TOKEN}" ]] && echo "SNYK_TOKEN env var is not set, required for snyk scan" && exit 1; \
+        snyk test --json-file-output=${ARTIFACTS}/result_all.json || echo "failed to run snyk scan, exit code $?" && exit 1; \
+        cat ${ARTIFACTS}/result_all.json | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/snyk_results.json"
   annotations:
     testgrid-create-test-group: "true"
     testgrid-dashboards: sig-security-snyk-scan
