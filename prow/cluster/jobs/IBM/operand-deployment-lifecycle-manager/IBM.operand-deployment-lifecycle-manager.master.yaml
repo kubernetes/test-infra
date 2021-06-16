@@ -5,6 +5,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test check-operand-deployment-lifecycle-manager
@@ -23,6 +26,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test test-operand-deployment-lifecycle-manager-amd64
@@ -42,6 +48,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test e2e-test-kind-operand-deployment-lifecycle-manager-amd64
@@ -62,6 +71,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     spec:
@@ -84,6 +96,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -102,6 +117,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -120,6 +138,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -138,6 +159,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"

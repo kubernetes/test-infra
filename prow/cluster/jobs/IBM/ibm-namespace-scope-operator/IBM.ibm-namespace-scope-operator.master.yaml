@@ -5,6 +5,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-namespace-scope-operator
     rerun_command: /test check-ibm-namespace-scope-operator
@@ -23,6 +26,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-namespace-scope-operator
     rerun_command: /test test-ibm-namespace-scope-operator-amd64
@@ -42,6 +48,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-namespace-scope-operator
     rerun_command: /test test-ibm-namespace-scope-operator-ppc64le
@@ -61,6 +70,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-namespace-scope-operator
     rerun_command: /test test-ibm-namespace-scope-operator-s390x
@@ -81,6 +93,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -99,6 +114,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -117,6 +135,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -135,6 +156,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     labels:
       preset-service-account: "true"
