@@ -24,6 +24,9 @@ presubmits:
   - name: check_ibm-commonui-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-commonui-operator
@@ -41,6 +44,9 @@ presubmits:
   - name: test_ibm-commonui-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-commonui-operator
@@ -62,6 +68,9 @@ postsubmits:
   - name: check_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-commonui-operator
     spec:
@@ -76,6 +85,9 @@ postsubmits:
   - name: test_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-commonui-operator
     spec:
@@ -91,6 +103,9 @@ postsubmits:
   - name: coverage_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-commonui-operator
     spec:
@@ -111,6 +126,9 @@ postsubmits:
   - name: build_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-commonui-operator
     spec:
@@ -126,6 +144,9 @@ postsubmits:
   - name: images_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-commonui-operator
     labels:
