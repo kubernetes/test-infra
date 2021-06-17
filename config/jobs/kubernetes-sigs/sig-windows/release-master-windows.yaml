@@ -752,6 +752,6 @@ periodics:
   annotations:
     fork-per-release: "true"
     testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd--1-5-master
+    testgrid-tab-name: aks-engine-windows-containerd-1-5-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
