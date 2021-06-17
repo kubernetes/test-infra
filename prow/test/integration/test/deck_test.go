@@ -31,14 +31,15 @@ func TestDeck(t *testing.T) {
 		t.Fatalf("Failed getting deck front end %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		t.Fatalf("Got status code %d, expected 200", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected response status code %d, got %d, ", http.StatusOK, resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Failed getting deck body response content %v", err)
 	}
-	if !strings.Contains(string(body), "<title>Prow Status</title>") {
-		t.Fatalf("Expected content not found in body %s", body)
+	if got, want := string(body), "<title>Prow Status</title>"; !strings.Contains(got, want) {
+		firstLines := strings.Join(strings.SplitN(strings.TrimSpace(got), "\n", 30), "\n")
+		t.Fatalf("Expected content %q not found in body %s [......]", want, firstLines)
 	}
 }
