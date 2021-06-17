@@ -111,8 +111,8 @@ func (o *options) validate() error {
 	}
 
 	if o.slackWorkers > 0 {
-		if o.slackTokenFile == "" {
-			return errors.New("--slack-token-file must be set")
+		if o.slackTokenFile == "" && len(o.additionalSlackTokenFiles) == 0 {
+			return errors.New("one of --slack-token-file or --additional-slack-token-files must be set")
 		}
 	}
 
@@ -237,18 +237,21 @@ func main() {
 		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
 			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
-		if err := secretAgent.Add(o.slackTokenFile); err != nil {
-			logrus.WithError(err).Fatal("could not read slack token")
+		tokensMap := make(map[string]func() []byte)
+		if o.slackTokenFile != "" {
+			tokensMap[slackreporter.DefaultHostName] = secretAgent.GetTokenGenerator(o.slackTokenFile)
+			if err := secretAgent.Add(o.slackTokenFile); err != nil {
+				logrus.WithError(err).Fatal("could not read slack token")
+			}
 		}
 		hasReporter = true
-		var additionalSlackSecretsGetter map[string]func() []byte
 		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
-			additionalSlackSecretsGetter[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
+			tokensMap[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
 			if err := secretAgent.Add(additionalTokenFile); err != nil {
 				logrus.WithError(err).Fatal("could not read slack token")
 			}
 		}
-		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile), additionalSlackSecretsGetter)
+		slackReporter := slackreporter.New(slackConfig, o.dryrun, tokensMap)
 		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
 		}

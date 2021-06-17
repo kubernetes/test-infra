@@ -526,7 +526,7 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 			}
 			return config.SlackReporter{}
 		},
-		clients: map[string]slackClient{defaultHostName: fsc},
+		clients: map[string]slackClient{DefaultHostName: fsc},
 	}
 
 	if _, _, err := sr.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), job); err != nil {
