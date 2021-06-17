@@ -6,6 +6,9 @@ postsubmits:
       decoration_config:
         timeout: 5h
       max_concurrency: 1
+      branches:
+        - ^master$
+        - ^release-0.6$
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
@@ -42,6 +45,9 @@ postsubmits:
       decoration_config:
         timeout: 3h
       max_concurrency: 1
+      branches:
+        - ^master$
+        - ^release-0.6$
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
