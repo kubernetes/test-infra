@@ -862,7 +862,7 @@ periodics:
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cgroupv2/image-config-cgroupv2.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/image-config-cgroupv2.yaml
       - --deployment=node
       - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
