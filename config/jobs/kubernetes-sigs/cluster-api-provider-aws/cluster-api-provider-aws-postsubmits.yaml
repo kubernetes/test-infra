@@ -1,6 +1,9 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
     - name: ci-cluster-api-provider-aws-e2e
+      branches:
+      # The script this job runs is not in all branches.
+      - ^main
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:
@@ -37,6 +40,9 @@ postsubmits:
         testgrid-num-columns-recent: '20'
         testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     - name: ci-cluster-api-provider-aws-e2e-conformance
+      branches:
+      # The script this job runs is not in all branches.
+      - ^main
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:
