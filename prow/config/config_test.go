@@ -6043,6 +6043,81 @@ tide:
   sync_period: 1m0s
 `,
 		},
+		{
+			name: "Additional tide queries get merged in and de-duplicated",
+			prowConfig: `
+tide:
+  queries:
+  - labels:
+    - lgtm
+    - approved
+    repos:
+    - a/repo
+`,
+			supplementalProwConfigs: []string{`
+tide:
+  queries:
+  - labels:
+    - lgtm
+    - approved
+    repos:
+    - another/repo
+`},
+			expectedProwConfig: `branch-protection: {}
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  queries:
+  - labels:
+    - approved
+    - lgtm
+    repos:
+    - a/repo
+    - another/repo
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`},
 	}
 
 	for _, tc := range testCases {
@@ -6212,10 +6287,11 @@ func TestHasConfigFor(t *testing.T) {
 		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String)
 	}{
 		{
-			name: "Any non-empty config with empty branchprotection and Tide merge_method properties is considered global",
+			name: "Any non-empty config with empty branchprotection and Tide properties is considered global",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
 				fuzzedConfig.Tide.MergeType = nil
+				fuzzedConfig.Tide.Queries = nil
 				return fuzzedConfig, true, nil, nil
 			},
 		},
@@ -6258,6 +6334,19 @@ func TestHasConfigFor(t *testing.T) {
 					} else {
 						expectOrgs.Insert(orgOrRepo)
 					}
+				}
+
+				return result, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config that is empty except for tide.queries is considered to be for those orgs or repos",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				result := &ProwConfig{Tide: Tide{Queries: fuzzedConfig.Tide.Queries}}
+				for _, query := range result.Tide.Queries {
+					expectOrgs.Insert(query.Orgs...)
+					expectRepos.Insert(query.Repos...)
 				}
 
 				return result, false, expectOrgs, expectRepos
@@ -6385,6 +6474,12 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				*pc = ProwConfig{Tide: Tide{MergeType: pc.Tide.MergeType}}
 			},
 		},
+		{
+			name: "Tide queries",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{Tide: Tide{Queries: pc.Tide.Queries}}
+			},
+		},
 	}
 
 	expectedProperties := []struct {
@@ -6418,9 +6513,17 @@ func TestProwConfigMergingProperties(t *testing.T) {
 					return
 				}
 
-				// One exception: A non-nil branchprotection config with only empty policies
+				// One exception: Tide queries can be merged into themselves, as we just de-duplicate them
+				// later on.
+				if len(fuzzedMergeableConfig.Tide.Queries) > 0 {
+					return
+				}
+
+				// Another exception: A non-nil branchprotection config with only empty policies
 				// can be merged into itself so make sure this can't happen.
-				fuzzedMergeableConfig.BranchProtection.Exclude = []string{"foo"}
+				if !apiequality.Semantic.DeepEqual(fuzzedMergeableConfig.BranchProtection, BranchProtection{}) {
+					fuzzedMergeableConfig.BranchProtection.Exclude = []string{"foo"}
+				}
 
 				if err := fuzzedMergeableConfig.mergeFrom(fuzzedMergeableConfig); err == nil {
 					serialized, serializeErr := yaml.Marshal(fuzzedMergeableConfig)

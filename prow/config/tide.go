@@ -171,6 +171,12 @@ type Tide struct {
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {
+
+	// Duplicate queries are pointless but not harmful, we
+	// have code to de-duplicate them down the line to not
+	// increase token usage needlessly.
+	t.Queries = append(t.Queries, additional.Queries...)
+
 	if t.MergeType == nil {
 		t.MergeType = additional.MergeType
 		return nil
