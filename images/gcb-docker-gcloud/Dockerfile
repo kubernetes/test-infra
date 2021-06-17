@@ -51,6 +51,9 @@ RUN mkdir -p  $HOME/.docker/cli-plugins \
 COPY --from=qemu-image /usr/bin /qemu-bin
 RUN cp /qemu-bin/qemu-* /usr/bin/ && \
     rm -rf /qemu-bin
+COPY --from=qemu-image /qemu-binfmt-conf.sh /qemu-binfmt-conf.sh
+COPY --from=qemu-image /register /register
+ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
 RUN apk add qemu
 
