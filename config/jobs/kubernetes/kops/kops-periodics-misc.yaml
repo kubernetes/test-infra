@@ -413,7 +413,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: aws
       - name: CLUSTER_NAME
-        value: e2e-f9b0e6b3f9-a6fg1.test-cncf-aws.k8s.io
+        value: e2e-f9b0e6b3f9-a6fg2.test-cncf-aws.k8s.io
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       - name: KOPS_IRSA
@@ -503,7 +503,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: aws
       - name: CLUSTER_NAME
-        value: e2e-f9b0e6b3f9-t6a91.test-cncf-aws.k8s.io
+        value: e2e-f9b0e6b3f9-t6a92.test-cncf-aws.k8s.io
       - name: KOPS_STATE_STORE
         value: s3://k8s-kops-prow
       - name: KOPS_IRSA
