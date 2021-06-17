@@ -33,7 +33,7 @@ import (
 
 const (
 	reporterName    = "slackreporter"
-	defaultHostName = "*"
+	DefaultHostName = "*"
 )
 
 type slackClient interface {
@@ -70,7 +70,7 @@ func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) (stri
 		channel = jobCfg.Channel
 	}
 	if len(host) == 0 {
-		host = defaultHostName
+		host = DefaultHostName
 	}
 	return host, channel
 }
@@ -162,12 +162,9 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	return shouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte, additionalTokens map[string]func() []byte) *slackReporter {
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokensMap map[string]func() []byte) *slackReporter {
 	clients := map[string]slackClient{}
-	if token != nil {
-		clients[defaultHostName] = slackclient.NewClient(token)
-	}
-	for key, val := range additionalTokens {
+	for key, val := range tokensMap {
 		clients[key] = slackclient.NewClient(val)
 	}
 	return &slackReporter{
