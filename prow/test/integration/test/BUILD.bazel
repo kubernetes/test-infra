@@ -6,11 +6,11 @@ go_test(
     name = "go_default_test",
     srcs = [
         "crier_test.go",
+        "deck_test.go",
         "hook_test.go",
         "horologium_test.go",
         "overall_test.go",
         "sinker_test.go",
-        "deck_test.go",
     ],
     data = [
         "//prow/test/integration/test:all-srcs",
