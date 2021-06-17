@@ -137,7 +137,7 @@ presubmits:
       description: kubernetes/kubernetes external test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
-    always_run: false
+    always_run: true
     decorate: true
     skip_branches:
       - gh-pages
