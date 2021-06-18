@@ -298,6 +298,7 @@ periodics:
   # expected to take ~6-8 hours, which should allow it to finish well before
   # the next kubemark-5000Nodes job (at 00:01 UTC).
   cron: '1 10 2-31/2 * *'
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -363,6 +364,9 @@ periodics:
         privileged: true
       resources:
         requests:
+          cpu: 6
+          memory: "16Gi"
+        limits:
           cpu: 6
           memory: "16Gi"
 
