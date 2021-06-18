@@ -12,6 +12,12 @@ replace (
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.3.1
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
+
+	// Upstream is unmaintained. This fork introduces two important changes:
+	// * We log an error if writing a cache key fails (e.G. because disk is full)
+	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
+	github.com/gregjones/httpcache => github.com/alvaroaleman/httpcache v0.0.0-20210618195546-ab9a1a3f8a38
+
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/client-go => k8s.io/client-go v0.21.1
@@ -46,7 +52,7 @@ require (
 	github.com/go-test/deep v1.0.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.4.4
-	github.com/gomodule/redigo v1.7.0
+	github.com/gomodule/redigo v1.8.5
 	github.com/google/go-cmp v0.5.5
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
@@ -69,7 +75,7 @@ require (
 	github.com/prometheus/common v0.26.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/tektoncd/pipeline v0.13.1-0.20200625065359-44f22a067b75
