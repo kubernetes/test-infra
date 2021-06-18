@@ -690,7 +690,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--feature-gates="WindowsHostProcessContainers=true"  --node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=WindowsHostProcessContainers --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --test_args=--feature-gates=WindowsHostProcessContainers=true  --node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=WindowsHostProcessContainers --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
