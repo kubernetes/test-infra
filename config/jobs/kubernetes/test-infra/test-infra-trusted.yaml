@@ -44,7 +44,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
+      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20210617-6d302b2
         command:
         - images/builder/ci-runner.sh
         args:
@@ -85,7 +85,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
+      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20210617-6d302b2
         command:
         - images/builder/ci-runner.sh
         args:
