@@ -283,9 +283,9 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
 
 def build_skip_regex(cloud, k8s_version, networking, distro):
     regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
-    if networking in ['kubenet', 'canal', 'weave', 'cilium']:
+    if networking in ['kubenet', 'canal', 'weave', 'cilium', 'cilium-etcd']:
         regex += r'|Services.*rejected.*endpoints'
-    if networking == "cilium":
+    if networking in ("cilium", "cilium-etcd"):
         # https://github.com/cilium/cilium/issues/10002
         regex += r'|TCP.CLOSE_WAIT'
         # https://github.com/cilium/cilium/issues/15361
@@ -396,7 +396,7 @@ def build_test(cloud='aws',
 
 
     # https://github.com/cilium/cilium/blob/71cfb265d53b63a2be3806fb3fd4425fa36262ff/Documentation/install/system_requirements.rst#centos-foot
-    if networking == "cilium" and distro not in ["u2004", "u2004arm64", "deb10", "rhel8"]:
+    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2004arm64", "deb10", "rhel8"]: # pylint: disable=line-too-long
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -415,7 +415,7 @@ def build_test(cloud='aws',
             skip_regex = build_skip_regex(cloud, k8s_version, networking, distro)
     else:
         skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*affinity' # pylint: disable=line-too-long
-        if networking == "cilium":
+        if networking in ("cilium", "cilium-etcd"):
             # https://github.com/cilium/cilium/issues/10002
             skip_regex += r'|TCP.CLOSE_WAIT'
             # https://github.com/cilium/cilium/issues/15361
@@ -632,6 +632,7 @@ networking_options = [
     'kubenet',
     'calico',
     'cilium',
+    'cilium-etcd',
     'flannel',
     'kopeio',
 ]
@@ -885,7 +886,7 @@ def generate_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
@@ -981,11 +982,11 @@ def generate_presubmits_network_plugins():
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
         skip_regex = skip_base
-        if plugin == 'cilium':
+        if plugin in ('cilium', 'cilium-etcd'):
             skip_regex += r'|should.set.TCP.CLOSE_WAIT'
         else:
             skip_regex += r'|Services.*functioning.*NodePort'
-        if plugin in ['calico', 'canal', 'weave', 'cilium']:
+        if plugin in ['calico', 'canal', 'weave', 'cilium', 'cilium-etcd']:
             skip_regex += r'|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols' # pylint: disable=line-too-long
         if plugin == 'kuberouter':
             skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
