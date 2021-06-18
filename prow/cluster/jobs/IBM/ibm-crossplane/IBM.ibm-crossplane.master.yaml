@@ -3,6 +3,9 @@ presubmits:
   - name: build_ibm-crossplane
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -23,6 +26,9 @@ presubmits:
   - name: check_ibm-crossplane
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-crossplane
@@ -40,6 +46,9 @@ presubmits:
   - name: test_ibm-crossplane
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-crossplane
@@ -61,6 +70,9 @@ postsubmits:
   - name: check_ibm-crossplane_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane
     spec:
@@ -75,6 +87,9 @@ postsubmits:
   - name: test_ibm-crossplane_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane
     spec:
@@ -90,6 +105,9 @@ postsubmits:
   - name: build_ibm-crossplane_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -107,6 +125,9 @@ postsubmits:
   - name: images_ibm-crossplane_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane
     labels:
