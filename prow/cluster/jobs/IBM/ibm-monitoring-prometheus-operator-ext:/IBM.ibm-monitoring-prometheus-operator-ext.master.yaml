@@ -3,6 +3,9 @@ presubmits:
   - name: build_ibm-monitoring-prometheus-operator-ext
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
@@ -21,6 +24,9 @@ presubmits:
   - name: check_ibm-monitoring-prometheus-operator-ext
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
@@ -38,6 +44,9 @@ presubmits:
   - name: test_ibm-monitoring-prometheus-operator-ext
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
@@ -59,6 +68,9 @@ postsubmits:
   - name: check_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
     spec:
@@ -73,6 +85,9 @@ postsubmits:
   - name: test_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
     spec:
@@ -88,6 +103,9 @@ postsubmits:
   - name: coverage_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
     spec:
@@ -108,6 +126,9 @@ postsubmits:
   - name: build_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
     spec:
@@ -123,6 +144,9 @@ postsubmits:
   - name: images_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
     labels:
