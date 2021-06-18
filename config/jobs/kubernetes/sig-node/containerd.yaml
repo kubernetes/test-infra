@@ -859,6 +859,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/containerd=master
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
