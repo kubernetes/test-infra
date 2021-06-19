@@ -9,12 +9,12 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
       args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --root=/go/src
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=execute
       - --
-      - --env=DEPLOY_DIR=master
+      - --env=DEPLOY_DIR=main
       - /go/src/github.com/containerd/containerd/test/build.sh
       # docker-in-docker needs privileged mode
       securityContext:
@@ -69,12 +69,12 @@ periodics:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
         args:
-          - --repo=github.com/containerd/containerd=master
+          - --repo=github.com/containerd/containerd=main
           - --root=/go/src
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
           - --
-          - --env=DEPLOY_DIR=master
+          - --env=DEPLOY_DIR=main
           - /go/src/github.com/containerd/containerd/test/build-test-images.sh
         # docker-in-docker needs privileged mode
         securityContext:
@@ -101,7 +101,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -175,7 +175,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -212,7 +212,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -288,7 +288,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -364,7 +364,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=300
       - --scenario=kubernetes_e2e
       - --
@@ -399,7 +399,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -435,7 +435,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -472,7 +472,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -505,7 +505,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -542,7 +542,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -577,7 +577,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -610,7 +610,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=170
       - --scenario=kubernetes_e2e
       - --
@@ -644,7 +644,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -681,7 +681,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -719,7 +719,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -757,7 +757,7 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
@@ -939,7 +939,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetesa.me
+      - --repo=k8s.io/kubernetes
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
