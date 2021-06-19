@@ -47,6 +47,9 @@ cleanup(){
 
 early_exit_handler() {
   >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
+  if [ -n "${WRAPPED_COMMAND_PID:-}" ]; then
+    kill -TERM "$WRAPPED_COMMAND_PID" || true
+  fi
   if [ -n "${EXIT_VALUE:-}" ]; then
     >&2 echo "Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
   fi
@@ -127,7 +130,9 @@ fi
 printf '%0.s=' {1..80}; echo
 >&2 echo "wrapper.sh] [TEST] Running Test Command: \`$*\` ..."
 set +o errexit
-"$@"
+"$@" &
+WRAPPED_COMMAND_PID=$!
+wait $WRAPPED_COMMAND_PID
 EXIT_VALUE=$?
 set -o errexit
 >&2 echo "wrapper.sh] [TEST] Test Command exit code: ${EXIT_VALUE}"
