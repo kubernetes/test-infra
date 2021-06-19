@@ -706,6 +706,21 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    use_new_skip_logic=True),
 
+        # A special test for IPv6
+        build_test(name_override="kops-grid-scenario-ipv6",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="stable",
+                   networking="calico",
+                   feature_flags=["AWSIPv6"],
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64', # pylint: disable=line-too-long
+                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                ],
+                   extra_dashboards=['kops-misc'],
+                   use_new_skip_logic=True),
+
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-service-account-iam",
                    cloud="aws",
