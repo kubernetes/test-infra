@@ -713,10 +713,11 @@ def generate_misc():
                    k8s_version="stable",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=3,
+                   runs_per_day=8,
                    extra_flags=['--ipv6',
                                 '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64', # pylint: disable=line-too-long
                                 '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable', # pylint: disable=line-too-long
                                 ],
                    extra_dashboards=['kops-misc'],
                    use_new_skip_logic=True),
