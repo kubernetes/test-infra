@@ -712,12 +712,16 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="stable",
                    networking="calico",
-                   feature_flags=["AWSIPv6"],
+                   feature_flags=["AWSIPv6",
+                                  "EnableExternalCloudController",
+                                  ],
                    runs_per_day=8,
                    extra_flags=['--ipv6',
-                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64', # pylint: disable=line-too-long
+                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
-                                '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable', # pylint: disable=line-too-long
+                                '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable',
                                 ],
                    extra_dashboards=['kops-misc'],
                    use_new_skip_logic=True),
