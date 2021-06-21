@@ -55,12 +55,27 @@ var (
 		Name: "ghcache_disk_total",
 		Help: "Total gb on github-cache disk",
 	})
+	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_free",
+		Help: "Free inodes on github-cache disk",
+	})
+	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_used",
+		Help: "Used inodes on github-cache disk",
+	})
+	diskInodeTotal = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_total",
+		Help: "Total inodes on github-cache disk",
+	})
 )
 
 func init() {
 	prometheus.MustRegister(diskFree)
 	prometheus.MustRegister(diskUsed)
 	prometheus.MustRegister(diskTotal)
+	prometheus.MustRegister(diskInodeFree)
+	prometheus.MustRegister(diskInodeUsed)
+	prometheus.MustRegister(diskInodeTotal)
 }
 
 // GitHub reverse proxy HTTP cache RoundTripper stack:
@@ -194,13 +209,16 @@ func diskMonitor(interval time.Duration, diskRoot string) {
 	ticker := time.NewTicker(interval)
 	for ; true; <-ticker.C {
 		logger.Info("tick")
-		_, bytesFree, bytesUsed, err := diskutil.GetDiskUsage(diskRoot)
+		_, bytesFree, bytesUsed, _, inodesFree, inodesUsed, err := diskutil.GetDiskUsage(diskRoot)
 		if err != nil {
 			logger.WithError(err).Error("Failed to get disk metrics")
 		} else {
 			diskFree.Set(float64(bytesFree) / 1e9)
 			diskUsed.Set(float64(bytesUsed) / 1e9)
 			diskTotal.Set(float64(bytesFree+bytesUsed) / 1e9)
+			diskInodeFree.Set(float64(inodesFree))
+			diskInodeUsed.Set(float64(inodesUsed))
+			diskInodeTotal.Set(float64(inodesFree + inodesUsed))
 		}
 	}
 }
