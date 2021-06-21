@@ -687,10 +687,10 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-ipv6",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="stable",
+                   k8s_version="latest",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=12,
+                   runs_per_day=24,
                    extra_flags=['--ipv6',
                                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
