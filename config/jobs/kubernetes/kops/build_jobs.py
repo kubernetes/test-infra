@@ -689,9 +689,7 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="stable",
                    networking="calico",
-                   feature_flags=["AWSIPv6",
-                                  "EnableExternalCloudController",
-                                  ],
+                   feature_flags=["AWSIPv6"],
                    runs_per_day=8,
                    extra_flags=['--ipv6',
                                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
@@ -729,7 +727,6 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="latest",
                    runs_per_day=3,
-                   feature_flags=["EnableExternalCloudController,SpecOverrideFlag"],
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
@@ -739,7 +736,7 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="latest",
                    runs_per_day=3,
-                   feature_flags=["UseServiceAccountIAM,EnableExternalCloudController,SpecOverrideFlag"], # pylint: disable=line-too-long
+                   feature_flags=["UseServiceAccountIAM"], # pylint: disable=line-too-long
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
