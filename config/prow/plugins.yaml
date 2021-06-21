@@ -14,10 +14,10 @@ triggers:
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
-  join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
+  join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
 - repos:
   - containerd/containerd
-  join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
+  join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
 - repos:
   - bazelbuild
 
