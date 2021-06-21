@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-100-adhoc
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

@@ -80,7 +80,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         command:
         - runner.sh
         args:
@@ -115,7 +115,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         command:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
@@ -178,7 +178,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         command:
         - "make"
         args:
