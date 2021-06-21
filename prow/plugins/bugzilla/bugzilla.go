@@ -337,7 +337,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err e
 	}
 	if event != nil {
 		options := pc.PluginConfig.Bugzilla.OptionsForBranch(event.org, event.repo, event.baseRef)
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -354,7 +354,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error
 		return err
 	}
 	if event != nil {
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -576,7 +576,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	}
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 	// check if bug is part of a restricted group
 	if !e.missing {
@@ -603,7 +603,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 	// merges follow a different pattern from the normal validation
 	if e.merged {
-		return handleMerge(e, gc, bc, options, log)
+		return handleMerge(e, gc, bc, options, log, allRepos)
 	}
 	// close events follow a different pattern from the normal validation
 	if e.closed && !e.merged {
@@ -917,7 +917,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 	return valid, validations, errors
 }
 
-func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 
 	if options.StateAfterMerge == nil {
@@ -964,6 +964,12 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			merged = e.merged
 			state = e.state
 		} else {
+			// This could be literally anything, only process PRs in repos that are mentioned in our config, otherwise this will potentially
+			// fail.
+			if !allRepos.Has(item.Org + "/" + item.Repo) {
+				logrus.WithField("pr", item.Org+"/"+item.Repo+"#"+strconv.Itoa(item.Num)).Debug("Not processing PR from third-party repo")
+				continue
+			}
 			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
 			if err != nil {
 				log.WithError(err).Warn("Unexpected error checking merge state of related pull request.")

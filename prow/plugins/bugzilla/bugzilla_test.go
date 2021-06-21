@@ -1173,6 +1173,36 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
+			name:   "External bug on rep that is not in our config is ignored, bug gets set to MODIFIED",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: "unreferenced/repo/pull/22",
+				Org:           "unreferenced", Repo: "repo", Num: 22,
+			}},
+			prs:         []github.PullRequest{{Number: 22, Merged: false, State: "open"}},
+			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{
+				{BugzillaBugID: 123, ExternalBugID: "unreferenced/repo/pull/22", Org: "unreferenced", Repo: "repo", Num: 22},
+			},
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
 			name:   "valid bug on merged PR with one external link but no status after merge configured does nothing",
 			merged: true,
 			bugs:   []bugzilla.Bug{{ID: 123}},
@@ -1736,7 +1766,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
