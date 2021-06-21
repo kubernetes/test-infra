@@ -255,6 +255,45 @@ func TestValidateOptions(t *testing.T) {
 	}
 }
 
+func TestDecorateToAvoidCache(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		num  int32
+		want string
+	}{
+		{
+			name: "base-case",
+			url:  "https://storage.googleapis.com/blob",
+			num:  12345,
+			want: "https://storage.googleapis.com/blob?meta=12345",
+		},
+		{
+			name: "query-append",
+			url:  "https://storage.googleapis.com/blob?a=b",
+			num:  23456,
+			want: "https://storage.googleapis.com/blob?a=b&meta=23456",
+		},
+		{
+			name: "not-gcs",
+			url:  "https://storage.somethingelse.com",
+			num:  23456,
+			want: "https://storage.somethingelse.com",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			randGenerator = func() int32 {
+				return tc.num
+			}
+			if got, want := decorateToAvoidCache(tc.url), tc.want; got != want {
+				t.Fatalf("Want: %s, got: %s", want, got)
+			}
+		})
+	}
+}
+
 type fakeImageBumperCli struct {
 	replacements map[string]string
 	tagCache     map[string]string

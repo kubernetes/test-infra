@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -56,6 +57,7 @@ var (
 )
 
 var _ bumper.PRHandler = (*client)(nil)
+var randGenerator func() int32 = rand.Int31 // For unit test purpose
 
 type client struct {
 	o        *options
@@ -234,7 +236,7 @@ func getOncallInfo(oncallAddress, oncallGroup string) (string, bool, error) {
 		return "", false, nil
 	}
 
-	req, err := http.Get(oncallAddress)
+	req, err := http.Get(decorateToAvoidCache(oncallAddress))
 	if err != nil {
 		return "", false, err
 	}
@@ -261,6 +263,21 @@ func getOncallInfo(oncallAddress, oncallGroup string) (string, bool, error) {
 		return "/cc @" + curtOncall, oncallActive, nil
 	}
 	return "", false, nil
+}
+
+// GCS by defaults sets cache of an object to 3600 seconds, see:
+// https://cloud.google.com/storage/docs/metadata#caching_data.
+// Decorating the url with a random string makes sure that it doesn't hit cache.
+func decorateToAvoidCache(url string) string {
+	query := "%s%smeta=%d"
+	connector, altConnector := "?", "&"
+	if !strings.HasPrefix(url, "https://storage.googleapis.com") {
+		return url
+	}
+	if strings.Contains(url, connector) {
+		connector = altConnector
+	}
+	return fmt.Sprintf(query, url, connector, randGenerator())
 }
 
 // updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
