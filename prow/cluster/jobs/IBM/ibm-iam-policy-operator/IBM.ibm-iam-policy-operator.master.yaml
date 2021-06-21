@@ -3,6 +3,8 @@ presubmits:
   - name: build_ibm-iam-policy-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -21,6 +23,8 @@ presubmits:
   - name: check_ibm-iam-policy-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -38,6 +42,8 @@ presubmits:
   - name: test_ibm-iam-policy-operator
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
@@ -59,6 +65,8 @@ postsubmits:
   - name: check_ibm-iam-policy-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -73,6 +81,8 @@ postsubmits:
   - name: test_ibm-iam-policy-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -88,6 +98,8 @@ postsubmits:
   - name: coverage_ibm-iam-policy-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -109,6 +121,8 @@ postsubmits:
   - name: build_ibm-iam-policy-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     spec:
@@ -124,6 +138,8 @@ postsubmits:
   - name: images_ibm-iam-policy-operator_postsubmit
     branches:
     - ^master$
+    - ^release-cd$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-policy-operator
     labels:
