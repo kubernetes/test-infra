@@ -19,7 +19,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210610-c72cf72-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
       resources:
         limits:
           cpu: 4
