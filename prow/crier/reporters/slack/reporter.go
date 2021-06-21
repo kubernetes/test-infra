@@ -42,11 +42,11 @@ type slackClient interface {
 
 type slackReporter struct {
 	clients map[string]slackClient
-	config  func(*prowapi.Refs) config.SlackReporter
+	config  func(*prowapi.Refs) *config.SlackReporter
 	dryRun  bool
 }
 
-func (sr *slackReporter) getConfig(pj *v1.ProwJob) config.SlackReporter {
+func (sr *slackReporter) getConfig(pj *v1.ProwJob) *config.SlackReporter {
 	refs := pj.Spec.Refs
 	if refs == nil && len(pj.Spec.ExtraRefs) > 0 {
 		refs = &pj.Spec.ExtraRefs[0]
@@ -61,8 +61,13 @@ func jobConfig(pj *v1.ProwJob) *v1.SlackReporterConfig {
 	return nil
 }
 
-func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) (string, string) {
-	host, channel := prowCfg.Host, prowCfg.Channel
+func channel(prowCfg *config.SlackReporter, jobCfg *v1.SlackReporterConfig) (string, string) {
+	var host, channel string
+	if prowCfg != nil {
+		host = prowCfg.Host
+		channel = prowCfg.Channel
+	}
+	// Prefer config in job
 	if jobCfg != nil && jobCfg.Host != "" {
 		host = jobCfg.Host
 	}
@@ -75,11 +80,16 @@ func channel(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) (stri
 	return host, channel
 }
 
-func reportTemplate(prowCfg config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
-	if jobCfg != nil && jobCfg.ReportTemplate != "" {
-		return jobCfg.ReportTemplate
+func reportTemplate(prowCfg *config.SlackReporter, jobCfg *v1.SlackReporterConfig) string {
+	var res string
+	if prowCfg != nil {
+		res = prowCfg.ReportTemplate
 	}
-	return prowCfg.ReportTemplate
+	// Prefer config in job
+	if jobCfg != nil && jobCfg.ReportTemplate != "" {
+		res = jobCfg.ReportTemplate
+	}
+	return res
 }
 
 func (sr *slackReporter) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
@@ -126,17 +136,19 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 
 	// The job needs to be reported, if its type has a match with the
 	// JobTypesToReport in the Prow config.
-	typeShouldReport := false
-	for _, typeToReport := range prowCfg.JobTypesToReport {
-		if typeToReport == pj.Spec.Type {
-			typeShouldReport = true
-			break
+	var typeShouldReport bool
+	if prowCfg != nil {
+		for _, typeToReport := range prowCfg.JobTypesToReport {
+			if typeToReport == pj.Spec.Type {
+				typeShouldReport = true
+				break
+			}
 		}
 	}
 
 	// If a user specifically put a channel on their job, they want
 	// it to be reported regardless of the job types setting.
-	jobShouldReport := false
+	var jobShouldReport bool
 	if jobCfg != nil && jobCfg.Channel != "" {
 		jobShouldReport = true
 	}
@@ -145,15 +157,17 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	// JobStatesToReport config.
 	// Note the JobStatesToReport configured in the Prow job can overwrite the
 	// Prow config.
-	jobStatesToReport := prowCfg.JobStatesToReport
-	if jobCfg != nil && len(jobCfg.JobStatesToReport) != 0 {
-		jobStatesToReport = jobCfg.JobStatesToReport
-	}
-	stateShouldReport := false
-	for _, stateToReport := range jobStatesToReport {
-		if pj.Status.State == stateToReport {
-			stateShouldReport = true
-			break
+	var stateShouldReport bool
+	if prowCfg != nil {
+		jobStatesToReport := prowCfg.JobStatesToReport
+		if jobCfg != nil && len(jobCfg.JobStatesToReport) != 0 {
+			jobStatesToReport = jobCfg.JobStatesToReport
+		}
+		for _, stateToReport := range jobStatesToReport {
+			if pj.Status.State == stateToReport {
+				stateShouldReport = true
+				break
+			}
 		}
 	}
 
@@ -162,7 +176,7 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	return shouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokensMap map[string]func() []byte) *slackReporter {
+func New(cfg func(refs *prowapi.Refs) *config.SlackReporter, dryRun bool, tokensMap map[string]func() []byte) *slackReporter {
 	clients := map[string]slackClient{}
 	for key, val := range tokensMap {
 		clients[key] = slackclient.NewClient(val)

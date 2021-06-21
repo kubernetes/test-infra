@@ -195,8 +195,8 @@ func TestShouldReport(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cfgGetter := func(*v1.Refs) config.SlackReporter {
-			return tc.config
+		cfgGetter := func(*v1.Refs) *config.SlackReporter {
+			return &tc.config
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			reporter := &slackReporter{
@@ -212,8 +212,8 @@ func TestShouldReport(t *testing.T) {
 
 func TestReloadsConfig(t *testing.T) {
 	cfg := config.SlackReporter{}
-	cfgGetter := func(*v1.Refs) config.SlackReporter {
-		return cfg
+	cfgGetter := func(*v1.Refs) *config.SlackReporter {
+		return &cfg
 	}
 
 	pj := &v1.ProwJob{
@@ -253,7 +253,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "No job-level config, use global default",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"*": {
 						Host:    "global-default-host",
 						Channel: "global-default",
@@ -272,7 +272,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "org/repo for ref exists in config, use it",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"*": {
 						Channel: "global-default",
 					},
@@ -300,7 +300,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "org for ref exists in config, use it",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"*": {
 						Channel: "global-default",
 					},
@@ -327,7 +327,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "org/repo takes precedence over org",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"*": {
 						Channel: "global-default",
 					},
@@ -357,7 +357,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "Job-level config present, use it",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"*": {
 						Channel: "global-default",
 					},
@@ -389,7 +389,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "No matching slack config",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"istio": {
 						Channel: "org-config",
 					},
@@ -416,7 +416,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 		{
 			name: "Refs unset but extra refs exist, use it",
 			config: func() config.Config {
-				slackCfg := map[string]config.SlackReporter{
+				slackCfg := map[string]*config.SlackReporter{
 					"istio/proxy": {
 						Channel: "org-repo-config",
 					},
@@ -442,7 +442,7 @@ func TestUsesChannelOverrideFromJob(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfgGetter := func(refs *v1.Refs) config.SlackReporter {
+			cfgGetter := func(refs *v1.Refs) *config.SlackReporter {
 				return tc.config().SlackReporterConfigs.GetSlackReporter(refs)
 			}
 			sr := slackReporter{
@@ -473,14 +473,14 @@ func TestShouldReportDefaultsToExtraRefs(t *testing.T) {
 		},
 	}
 	sr := slackReporter{
-		config: func(r *v1.Refs) config.SlackReporter {
+		config: func(r *v1.Refs) *config.SlackReporter {
 			if r.Org == "org" {
-				return config.SlackReporter{
+				return &config.SlackReporter{
 					JobTypesToReport:  []v1.ProwJobType{v1.PeriodicJob},
 					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 				}
 			}
-			return config.SlackReporter{}
+			return &config.SlackReporter{}
 		},
 	}
 
@@ -515,16 +515,16 @@ func TestReportDefaultsToExtraRefs(t *testing.T) {
 	}
 	fsc := &fakeSlackClient{}
 	sr := slackReporter{
-		config: func(r *v1.Refs) config.SlackReporter {
+		config: func(r *v1.Refs) *config.SlackReporter {
 			if r.Org == "org" {
-				return config.SlackReporter{
+				return &config.SlackReporter{
 					JobTypesToReport:  []v1.ProwJobType{v1.PeriodicJob},
 					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 					Channel:           "emercengy",
 					ReportTemplate:    "there you go",
 				}
 			}
-			return config.SlackReporter{}
+			return &config.SlackReporter{}
 		},
 		clients: map[string]slackClient{DefaultHostName: fsc},
 	}

@@ -3328,7 +3328,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Valid config w/ wildcard slack_reporter_configs - no error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"*": {
 						Channel: "my-channel",
 					},
@@ -3344,7 +3344,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Valid config w/ org/repo slack_reporter_configs - no error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"istio/proxy": {
 						Channel: "my-channel",
 					},
@@ -3360,7 +3360,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Valid config w/ repo slack_reporter_configs - no error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"proxy": {
 						Channel: "my-channel",
 					},
@@ -3376,7 +3376,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "No channel w/ slack_reporter_configs - error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"*": {
 						JobTypesToReport: []prowapi.ProwJobType{"presubmit"},
 					},
@@ -3392,7 +3392,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Empty config - no error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{}
+				slackCfg := map[string]*SlackReporter{}
 				return Config{
 					ProwConfig: ProwConfig{
 						SlackReporterConfigs: slackCfg,
@@ -3404,7 +3404,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Invalid template - error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"*": {
 						Channel:        "my-channel",
 						ReportTemplate: "{{ if .Spec.Name}}",
@@ -3421,7 +3421,7 @@ func TestSlackReporterValidation(t *testing.T) {
 		{
 			name: "Template accessed invalid property - error",
 			config: func() Config {
-				slackCfg := map[string]SlackReporter{
+				slackCfg := map[string]*SlackReporter{
 					"*": {
 						Channel:        "my-channel",
 						ReportTemplate: "{{ .Undef}}",

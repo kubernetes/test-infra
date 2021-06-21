@@ -1051,9 +1051,9 @@ type SlackReporter struct {
 
 // SlackReporterConfigs represents the config for the Slack reporter(s).
 // Use `org/repo`, `org` or `*` as key and an `SlackReporter` struct as value.
-type SlackReporterConfigs map[string]SlackReporter
+type SlackReporterConfigs map[string]*SlackReporter
 
-func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReporter {
+func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) *SlackReporter {
 	if refs == nil {
 		return cfg["*"]
 	}

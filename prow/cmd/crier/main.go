@@ -231,10 +231,11 @@ func main() {
 
 	var hasReporter bool
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporterConfigs == nil {
-			logrus.Fatal("slackreporter is enabled but has no config")
-		}
-		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
+		slackConfig := func(refs *prowapi.Refs) *config.SlackReporter {
+			if cfg().SlackReporterConfigs == nil {
+				logrus.Info("slackreporter is enabled but has no config")
+				return nil
+			}
 			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
 		tokensMap := make(map[string]func() []byte)
