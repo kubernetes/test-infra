@@ -1771,7 +1771,7 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Plugins: other.Plugins, Bugzilla: other.Bugzilla, Approve: other.Approve}); diff != "" {
+	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1786,13 +1786,10 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 		errs = append(errs, fmt.Errorf("failed to merge .bugzilla from supplemental config: %w", err))
 	}
 
-	c.mergeApproveFrom(other.Approve)
+	c.Approve = append(c.Approve, other.Approve...)
+	c.Lgtm = append(c.Lgtm, other.Lgtm...)
 
 	return utilerrors.NewAggregate(errs)
-}
-
-func (c *Configuration) mergeApproveFrom(other []Approve) {
-	c.Approve = append(c.Approve, other...)
 }
 
 func (p *Plugins) mergeFrom(other *Plugins) error {
@@ -1862,7 +1859,7 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla, Approve: c.Approve}) || c.Bugzilla.Default != nil {
+	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1886,6 +1883,16 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 
 	for _, approveConfig := range c.Approve {
 		for _, orgOrRepo := range approveConfig.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, lgtm := range c.Lgtm {
+		for _, orgOrRepo := range lgtm.Repos {
 			if strings.Contains(orgOrRepo, "/") {
 				repos.Insert(orgOrRepo)
 			} else {

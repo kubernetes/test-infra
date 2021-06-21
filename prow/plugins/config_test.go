@@ -1996,6 +1996,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Plugins = nil
 				fuzzedConfig.Bugzilla = Bugzilla{}
 				fuzzedConfig.Approve = nil
+				fuzzedConfig.Lgtm = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
@@ -2003,8 +2004,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any config with plugins is considered to be for the orgs and repos references there",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				// exclude non-plugins configs to test plugins specifically
-				fuzzedConfig.Bugzilla = Bugzilla{}
-				fuzzedConfig.Approve = nil
+				fuzzedConfig = &Configuration{Plugins: fuzzedConfig.Plugins}
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for orgOrRepo := range fuzzedConfig.Plugins {
 					if strings.Contains(orgOrRepo, "/") {
@@ -2020,8 +2020,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any config with bugzilla is considered to be for the orgs and repos references there",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				// exclude non-plugins configs to test bugzilla specifically
-				fuzzedConfig.Plugins = nil
-				fuzzedConfig.Approve = nil
+				fuzzedConfig = &Configuration{Bugzilla: fuzzedConfig.Bugzilla}
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for org, orgConfig := range fuzzedConfig.Bugzilla.Orgs {
 					if orgConfig.Default != nil {
@@ -2031,7 +2030,7 @@ func TestHasConfigFor(t *testing.T) {
 						expectRepos.Insert(org + "/" + repo)
 					}
 				}
-				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Bugzilla: fuzzedConfig.Bugzilla}), expectOrgs, expectRepos
+				return fuzzedConfig, len(fuzzedConfig.Bugzilla.Default) > 0, expectOrgs, expectRepos
 			},
 		},
 		{
@@ -2050,7 +2049,26 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 
-				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Approve: fuzzedConfig.Approve}), expectOrgs, expectRepos
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with lgtm is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Lgtm: fuzzedConfig.Lgtm}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, lgtm := range fuzzedConfig.Lgtm {
+					for _, orgOrRepo := range lgtm.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, false, expectOrgs, expectRepos
 			},
 		},
 	}
@@ -2086,61 +2104,46 @@ func TestHasConfigFor(t *testing.T) {
 	}
 }
 
-func TestApproveMergeFrom(t *testing.T) {
+func TestMergeFrom(t *testing.T) {
 	t.Parallel()
-
 	testCases := []struct {
-		name               string
-		org                string
-		repo               string
-		supplementalConfig []Approve
-		mainConfig         []Approve
-		expected           []Approve
+		name                string
+		in                  Configuration
+		supplementalConfigs []Configuration
+
+		expected Configuration
 	}{
 		{
-			name:               "happy org/repo case",
-			org:                "foo",
-			repo:               "bar",
-			supplementalConfig: []Approve{{Repos: []string{"foo/bar"}}},
-			expected:           []Approve{{Repos: []string{"foo/bar"}}},
-		},
-		{
-			name:               "happy org case",
-			org:                "foo",
-			supplementalConfig: []Approve{{Repos: []string{"foo"}}},
-			expected:           []Approve{{Repos: []string{"foo"}}},
-		},
-		{
-			name:               "happy org/repo case, merge with main config",
-			org:                "foo",
-			repo:               "bar",
-			mainConfig:         []Approve{{Repos: []string{"other/repo", "test/repo2"}}},
-			supplementalConfig: []Approve{{Repos: []string{"foo/bar"}}},
-			expected: []Approve{
-				{Repos: []string{"other/repo", "test/repo2"}},
+			name:                "Approve config gets merged",
+			in:                  Configuration{Approve: []Approve{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Approve: []Approve{{Repos: []string{"foo/baz"}}}}},
+
+			expected: Configuration{Approve: []Approve{
 				{Repos: []string{"foo/bar"}},
-			},
+				{Repos: []string{"foo/baz"}},
+			}},
 		},
 		{
-			name:               "happy org case, merge with main config",
-			org:                "foo",
-			mainConfig:         []Approve{{Repos: []string{"other/repo", "test/repo2"}}},
-			supplementalConfig: []Approve{{Repos: []string{"foo"}}},
-			expected: []Approve{
-				{Repos: []string{"other/repo", "test/repo2"}},
-				{Repos: []string{"foo"}},
-			},
+			name:                "LGTM config gets merged",
+			in:                  Configuration{Lgtm: []Lgtm{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Lgtm: []Lgtm{{Repos: []string{"foo/baz"}}}}},
+
+			expected: Configuration{Lgtm: []Lgtm{
+				{Repos: []string{"foo/bar"}},
+				{Repos: []string{"foo/baz"}},
+			}},
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			config := &Configuration{Approve: tc.mainConfig}
-
-			config.mergeApproveFrom(tc.supplementalConfig)
-			if diff := cmp.Diff(tc.expected, config.Approve); diff != "" {
-				t.Errorf("expected config differs from actual: %s", diff)
+		for idx, supplementalConfig := range tc.supplementalConfigs {
+			if err := tc.in.mergeFrom(&supplementalConfig); err != nil {
+				t.Fatalf("failed to merge supplemental config %d: %v", idx, err)
 			}
-		})
+		}
+
+		if diff := cmp.Diff(tc.expected, tc.in); diff != "" {
+			t.Errorf("expected config differs from expected: %s", diff)
+		}
 	}
 }
