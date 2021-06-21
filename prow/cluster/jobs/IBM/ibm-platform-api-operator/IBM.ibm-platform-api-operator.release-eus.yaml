@@ -2,7 +2,7 @@ presubmits:
   IBM/ibm-platform-api-operator:
   - name: build_ibm-platform-api-operator
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -22,7 +22,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: check_ibm-platform-api-operator
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -39,7 +39,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - name: test_ibm-platform-api-operator
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -60,7 +60,7 @@ postsubmits:
   IBM/ibm-platform-api-operator:
   - name: check_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
@@ -74,7 +74,7 @@ postsubmits:
           privileged: true
   - name: test_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
@@ -89,7 +89,7 @@ postsubmits:
           privileged: true
   - name: build_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -106,7 +106,7 @@ postsubmits:
           privileged: true
   - name: images_ibm-platform-api-operator_postsubmit
     branches:
-    - ^release-3.8$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
