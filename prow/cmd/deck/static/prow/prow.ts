@@ -828,18 +828,9 @@ function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
     }
     for (let i = 0; i < pulls.length; i++) {
         if (i !== 0) {
-            c.appendChild(document.createTextNode(", "));
+            c.appendChild(document.createElement("br"));
         }
-        const {link, number: prNumber} = pulls[i];
-        const l = document.createElement("a");
-        if (link) {
-            l.href = link;
-        } else {
-            l.href = `/github-link?dest=${org}/${repo}/pull/${prNumber}`;
-        }
-        l.text = prNumber.toString();
-        c.appendChild(document.createTextNode("#"));
-        c.appendChild(l);
+        cell.addPRRevision(c, `${org}/${repo}`, pulls[i]);
     }
     return c;
 }
