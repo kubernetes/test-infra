@@ -452,6 +452,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cluster-api-provider-gcp:
+          required_status_checks:
+            contexts:
+            - lint
         kube-batch:
           required_status_checks:
             contexts:
