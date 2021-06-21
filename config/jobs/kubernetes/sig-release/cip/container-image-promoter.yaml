@@ -133,6 +133,41 @@ presubmits:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
+  - name: pull-cip-image-cip
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    # TODO(releng): Run unconditionally once the job runs successfully
+    always_run: false
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF
+            - .
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: cip-image-cip
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
