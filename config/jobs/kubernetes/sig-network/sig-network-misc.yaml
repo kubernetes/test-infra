@@ -10,6 +10,9 @@ presubmits:
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 360m
+      grace_period: 15m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
