@@ -1771,7 +1771,7 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Plugins: other.Plugins, Bugzilla: other.Bugzilla}); diff != "" {
+	if diff := cmp.Diff(other, &Configuration{Plugins: other.Plugins, Bugzilla: other.Bugzilla, Approve: other.Approve}); diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1786,7 +1786,13 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 		errs = append(errs, fmt.Errorf("failed to merge .bugzilla from supplemental config: %w", err))
 	}
 
+	c.mergeApproveFrom(other.Approve)
+
 	return utilerrors.NewAggregate(errs)
+}
+
+func (c *Configuration) mergeApproveFrom(other []Approve) {
+	c.Approve = append(c.Approve, other...)
 }
 
 func (p *Plugins) mergeFrom(other *Plugins) error {
@@ -1856,7 +1862,7 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla}) || c.Bugzilla.Default != nil {
+	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla, Approve: c.Approve}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1875,6 +1881,16 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 		}
 		for repo := range orgConfig.Repos {
 			repos.Insert(org + "/" + repo)
+		}
+	}
+
+	for _, approveConfig := range c.Approve {
+		for _, orgOrRepo := range approveConfig.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
 		}
 	}
 

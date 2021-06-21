@@ -1995,6 +1995,7 @@ func TestHasConfigFor(t *testing.T) {
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.Plugins = nil
 				fuzzedConfig.Bugzilla = Bugzilla{}
+				fuzzedConfig.Approve = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
@@ -2003,6 +2004,7 @@ func TestHasConfigFor(t *testing.T) {
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				// exclude non-plugins configs to test plugins specifically
 				fuzzedConfig.Bugzilla = Bugzilla{}
+				fuzzedConfig.Approve = nil
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for orgOrRepo := range fuzzedConfig.Plugins {
 					if strings.Contains(orgOrRepo, "/") {
@@ -2019,6 +2021,7 @@ func TestHasConfigFor(t *testing.T) {
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				// exclude non-plugins configs to test bugzilla specifically
 				fuzzedConfig.Plugins = nil
+				fuzzedConfig.Approve = nil
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for org, orgConfig := range fuzzedConfig.Bugzilla.Orgs {
 					if orgConfig.Default != nil {
@@ -2029,6 +2032,25 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Bugzilla: fuzzedConfig.Bugzilla}), expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with approve is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Approve: fuzzedConfig.Approve}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, approveConfig := range fuzzedConfig.Approve {
+					for _, orgOrRepo := range approveConfig.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Approve: fuzzedConfig.Approve}), expectOrgs, expectRepos
 			},
 		},
 	}
@@ -2060,6 +2082,65 @@ func TestHasConfigFor(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestApproveMergeFrom(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name               string
+		org                string
+		repo               string
+		supplementalConfig []Approve
+		mainConfig         []Approve
+		expected           []Approve
+	}{
+		{
+			name:               "happy org/repo case",
+			org:                "foo",
+			repo:               "bar",
+			supplementalConfig: []Approve{{Repos: []string{"foo/bar"}}},
+			expected:           []Approve{{Repos: []string{"foo/bar"}}},
+		},
+		{
+			name:               "happy org case",
+			org:                "foo",
+			supplementalConfig: []Approve{{Repos: []string{"foo"}}},
+			expected:           []Approve{{Repos: []string{"foo"}}},
+		},
+		{
+			name:               "happy org/repo case, merge with main config",
+			org:                "foo",
+			repo:               "bar",
+			mainConfig:         []Approve{{Repos: []string{"other/repo", "test/repo2"}}},
+			supplementalConfig: []Approve{{Repos: []string{"foo/bar"}}},
+			expected: []Approve{
+				{Repos: []string{"other/repo", "test/repo2"}},
+				{Repos: []string{"foo/bar"}},
+			},
+		},
+		{
+			name:               "happy org case, merge with main config",
+			org:                "foo",
+			mainConfig:         []Approve{{Repos: []string{"other/repo", "test/repo2"}}},
+			supplementalConfig: []Approve{{Repos: []string{"foo"}}},
+			expected: []Approve{
+				{Repos: []string{"other/repo", "test/repo2"}},
+				{Repos: []string{"foo"}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			config := &Configuration{Approve: tc.mainConfig}
+
+			config.mergeApproveFrom(tc.supplementalConfig)
+			if diff := cmp.Diff(tc.expected, config.Approve); diff != "" {
+				t.Errorf("expected config differs from actual: %s", diff)
+			}
 		})
 	}
 }
