@@ -506,6 +506,15 @@ def go_repositories():
         version = "v3.1.0",
     )
     go_repository(
+        name = "com_github_bradfitz_gomemcache",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/bradfitz/gomemcache",
+        sum = "h1:L/QXpzIa3pOvUGt1D1lA5KjYhPBAN/3iWdP7xeFS9F0=",
+        version = "v0.0.0-20190913173617-a41fca850d0b",
+    )
+
+    go_repository(
         name = "com_github_bshuster_repo_logrus_logstash_hook",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
@@ -1891,16 +1900,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gomodule/redigo",
-        sum = "h1:ZKld1VOtsGhAe37E7wMxEDgAlGM5dvFY+DiOhSkhP9Y=",
-        version = "v1.7.0",
+        sum = "h1:nRAxCa+SVsyjSBrtZmG/cqb6VbTmuRzpg/PoTFlpumc=",
+        version = "v1.8.5",
     )
     go_repository(
         name = "com_github_google_btree",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/google/btree",
-        sum = "h1:0udJVsspx3VBr5FwtLhQQtuAsVc79tTq0ocGIPAU6qo=",
-        version = "v1.0.0",
+        sum = "h1:gK4Kx5IaGY9CD5sPJ36FHiBJ6ZXl0kilRiiCj+jdYp4=",
+        version = "v1.0.1",
     )
     go_repository(
         name = "com_github_google_go_cmp",
@@ -2269,8 +2278,9 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gregjones/httpcache",
-        sum = "h1:f8eY6cV/x1x+HLjOp4r72s/31/V2aTUtg5oKRRPf8/Q=",
-        version = "v0.0.0-20190212212710-3befbb6ad0cc",
+        replace = "github.com/alvaroaleman/httpcache",
+        sum = "h1:ML+zGuJv9er8cg0N8D8edCNOwqI/Kb3WoV6VsIV93SU=",
+        version = "v0.0.0-20210618195546-ab9a1a3f8a38",
     )
     go_repository(
         name = "com_github_grpc_ecosystem_go_grpc_middleware",
@@ -3977,8 +3987,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/sirupsen/logrus",
-        sum = "h1:ShrD1U9pZB12TX0cVy0DtePoCH97K8EtX+mg7ZARUtM=",
-        version = "v1.7.0",
+        sum = "h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=",
+        version = "v1.8.1",
     )
 
     go_repository(
@@ -4156,6 +4166,14 @@ def go_repositories():
         importpath = "github.com/syndtr/gocapability",
         sum = "h1:zLV6q4e8Jv9EHjNg/iHfzwDkCve6Ua5jCygptrtXHvI=",
         version = "v0.0.0-20170704070218-db04d3cc01c8",
+    )
+    go_repository(
+        name = "com_github_syndtr_goleveldb",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/syndtr/goleveldb",
+        sum = "h1:fBdIW9lB4Iz0n9khmH8w27SJ3QEJ7+IgjPEwGSZiFdE=",
+        version = "v1.0.0",
     )
 
     go_repository(
