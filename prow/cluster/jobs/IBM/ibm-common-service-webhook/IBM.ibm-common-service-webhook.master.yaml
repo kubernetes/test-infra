@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -26,7 +26,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -48,7 +48,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -70,7 +70,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -92,7 +92,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -114,7 +114,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -136,7 +136,7 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -159,7 +159,7 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -183,7 +183,7 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -202,7 +202,7 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -221,7 +221,7 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -240,7 +240,7 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -261,7 +261,7 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -282,7 +282,7 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -303,7 +303,7 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
