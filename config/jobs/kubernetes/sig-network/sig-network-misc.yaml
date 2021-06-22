@@ -195,13 +195,8 @@ presubmits:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --scenario=execute
         - --
-        - bash
-        - -c
-        - |
-          make build
-          make test
-          make all-containers
-          bash test/e2e/sidecar/e2e.sh
+        - make
+        - test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
