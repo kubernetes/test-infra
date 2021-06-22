@@ -29,7 +29,7 @@ presubmits:
     max_concurrency: 8
     decorate: true
     branches:
-    - master
+    - main
     - release/1.5
     decoration_config:
       timeout: 100m
