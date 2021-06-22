@@ -3,7 +3,7 @@ presubmits:
   - name: build_ibm-platform-api-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     labels:
       preset-service-account: "true"
@@ -25,7 +25,7 @@ presubmits:
   - name: check_ibm-platform-api-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     decorate: true
     always_run: true
@@ -44,7 +44,7 @@ presubmits:
   - name: test_ibm-platform-api-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     decorate: true
     always_run: true
@@ -67,7 +67,7 @@ postsubmits:
   - name: check_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -83,7 +83,7 @@ postsubmits:
   - name: test_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -100,7 +100,7 @@ postsubmits:
   - name: build_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     labels:
       preset-service-account: "true"
@@ -119,7 +119,7 @@ postsubmits:
   - name: images_ibm-platform-api-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
