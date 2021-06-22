@@ -111,6 +111,8 @@ presubmits:
     # Because we run e2e tests, we cannot run more than 1 instance at a time
     # (the e2e test resources are not isolated across test runs).
     max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
     branches:
     - ^master$
     spec:
@@ -125,6 +127,9 @@ presubmits:
         - name: k8s-gcr-audit-test-prod-service-account-creds
           mountPath: /etc/k8s-gcr-audit-test-prod-service-account
           readOnly: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
       volumes:
       - name: k8s-gcr-audit-test-prod-service-account-creds
         secret:
