@@ -1040,6 +1040,30 @@ def generate_presubmits_e2e():
             skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints', # pylint: disable=line-too-long
             feature_flags=['GoogleCloudBucketACL'],
         ),
+        # A special test for AWS Cloud-Controller-Manager
+        presubmit_test(
+            name="pull-kops-e2e-aws-cloud-controller-manager",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="latest",
+            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            tab_name='e2e-ccm',
+        ),
+
+        # A special test for AWS Cloud-Controller-Manager and irsa
+        presubmit_test(
+            name="pull-kops-e2e-aws-cloud-controller-manager-irsa",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="latest",
+            feature_flags=["UseServiceAccountIAM"], # pylint: disable=line-too-long
+            extra_flags=[
+                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+            tab_name='e2e-ccm-irsa',
+        ),
+
     ]
     for branch in ['1.21']:
         name_suffix = branch.replace('.', '-')
