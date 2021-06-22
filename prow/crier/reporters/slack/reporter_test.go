@@ -29,13 +29,13 @@ import (
 func TestShouldReport(t *testing.T) {
 	testCases := []struct {
 		name     string
-		config   config.SlackReporter
+		config   *config.SlackReporter
 		pj       *v1.ProwJob
 		expected bool
 	}{
 		{
 			name: "Presubmit Job should report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{v1.PresubmitJob},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -51,7 +51,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "Presubmit Job should not report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{v1.PostsubmitJob},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -67,7 +67,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "Successful Job should report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{v1.PostsubmitJob},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -83,7 +83,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "Successful Job should not report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{v1.PostsubmitJob},
 				JobStatesToReport: []v1.ProwJobState{v1.PendingState},
 			},
@@ -99,7 +99,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "Job with channel config should ignore the JobTypesToReport config",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -118,7 +118,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "JobStatesToReport in Job config should override the one in Prow config",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -139,8 +139,27 @@ func TestShouldReport(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:   "JobStatesToReport in Job config works independent of Prow config",
+			config: nil,
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{
+							Channel:           "whatever-channel",
+							JobStatesToReport: []v1.ProwJobState{v1.FailureState, v1.PendingState},
+						},
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.FailureState,
+				},
+			},
+			expected: true,
+		},
+		{
 			name: "Job with channel config but does not have matched state in Prow config should not report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -159,7 +178,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "Job with channel and state config where the state does not match, should not report",
-			config: config.SlackReporter{
+			config: &config.SlackReporter{
 				JobTypesToReport:  []v1.ProwJobType{},
 				JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
 			},
@@ -181,7 +200,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name:   "Empty config should not report",
-			config: config.SlackReporter{},
+			config: &config.SlackReporter{},
 			pj: &v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type: v1.PostsubmitJob,
@@ -196,7 +215,7 @@ func TestShouldReport(t *testing.T) {
 
 	for _, tc := range testCases {
 		cfgGetter := func(*v1.Refs) *config.SlackReporter {
-			return &tc.config
+			return tc.config
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			reporter := &slackReporter{

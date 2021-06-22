@@ -130,6 +130,9 @@ func (sr *slackReporter) GetName() string {
 	return reporterName
 }
 
+// ShouldReport return true if:
+// - job state matches defined job types to be reported
+// - job type matches global config or slack channel defined in job config
 func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, pj *v1.ProwJob) bool {
 	jobCfg := jobConfig(pj)
 	prowCfg := sr.getConfig(pj)
@@ -158,16 +161,17 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	// Note the JobStatesToReport configured in the Prow job can overwrite the
 	// Prow config.
 	var stateShouldReport bool
+	var jobStatesToReport []v1.ProwJobState
 	if prowCfg != nil {
-		jobStatesToReport := prowCfg.JobStatesToReport
-		if jobCfg != nil && len(jobCfg.JobStatesToReport) != 0 {
-			jobStatesToReport = jobCfg.JobStatesToReport
-		}
-		for _, stateToReport := range jobStatesToReport {
-			if pj.Status.State == stateToReport {
-				stateShouldReport = true
-				break
-			}
+		jobStatesToReport = prowCfg.JobStatesToReport
+	}
+	if jobCfg != nil && len(jobCfg.JobStatesToReport) != 0 {
+		jobStatesToReport = jobCfg.JobStatesToReport
+	}
+	for _, stateToReport := range jobStatesToReport {
+		if pj.Status.State == stateToReport {
+			stateShouldReport = true
+			break
 		}
 	}
 
