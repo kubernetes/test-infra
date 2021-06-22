@@ -690,7 +690,7 @@ def generate_misc():
                    k8s_version="latest",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=24,
+                   runs_per_day=8,
                    extra_flags=['--ipv6',
                                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
