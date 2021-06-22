@@ -3,7 +3,7 @@ presubmits:
   - name: pull-containerd-build
     always_run: true
     branches:
-    - master
+    - main
     - release/1.5
     decorate: true
     annotations:
