@@ -188,15 +188,23 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         args:
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --root=/go/src
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --scenario=execute
         - --
-        - "true"
-
+        - bash
+        - -c
+        - |
+          make build
+          make test
+          make all-containers
+          bash test/e2e/sidecar/e2e.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gce-alpha-api
