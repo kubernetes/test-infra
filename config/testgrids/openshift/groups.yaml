@@ -39,4 +39,5 @@ dashboard_groups:
   - redhat-openshift-presubmit-master-gcp
   - redhat-osd
   - redhat-single-node
+  - redhat-openshift-serverless
   name: redhat
