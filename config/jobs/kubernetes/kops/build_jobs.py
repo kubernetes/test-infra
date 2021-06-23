@@ -855,9 +855,9 @@ def generate_distros():
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
                        runs_per_day=3,
+                       skip_override='',
                        )
         )
-    # pprint.pprint(results)
     return results
 
 #######################################
@@ -878,6 +878,7 @@ def generate_network_plugins():
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
+                skip_override='',
             )
         )
     return results
