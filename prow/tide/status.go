@@ -607,7 +607,7 @@ func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, b
 }
 
 func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
+	return "is:pr state:open sort:updated-asc archived:false " + orgRepoQueryString(orgs, repos, orgExceptions)
 }
 
 const indexNamePassingJobs = "tide-passing-jobs"
