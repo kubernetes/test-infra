@@ -1771,7 +1771,7 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
+	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1788,6 +1788,27 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	c.Approve = append(c.Approve, other.Approve...)
 	c.Lgtm = append(c.Lgtm, other.Lgtm...)
+
+	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func (c *Configuration) mergeExternalPluginsFrom(other map[string][]ExternalPlugin) error {
+	if c.ExternalPlugins == nil && other != nil {
+		c.ExternalPlugins = make(map[string][]ExternalPlugin)
+	}
+
+	var errs []error
+	for orgOrRepo, config := range other {
+		if _, ok := c.ExternalPlugins[orgOrRepo]; ok {
+			errs = append(errs, fmt.Errorf("found duplicate config for external-plugins.%s", orgOrRepo))
+			continue
+		}
+		c.ExternalPlugins[orgOrRepo] = config
+	}
 
 	return utilerrors.NewAggregate(errs)
 }
@@ -1859,7 +1880,7 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
+	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1898,6 +1919,14 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			} else {
 				orgs.Insert(orgOrRepo)
 			}
+		}
+	}
+
+	for orgOrRepo := range c.ExternalPlugins {
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
 		}
 	}
 
