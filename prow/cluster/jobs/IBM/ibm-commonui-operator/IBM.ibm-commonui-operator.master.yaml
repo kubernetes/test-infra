@@ -3,7 +3,7 @@ presubmits:
   - name: build_ibm-commonui-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -24,7 +24,7 @@ presubmits:
   - name: check_ibm-commonui-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -44,7 +44,7 @@ presubmits:
   - name: test_ibm-commonui-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -68,7 +68,7 @@ postsubmits:
   - name: check_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -85,7 +85,7 @@ postsubmits:
   - name: test_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -103,7 +103,7 @@ postsubmits:
   - name: coverage_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -126,7 +126,7 @@ postsubmits:
   - name: build_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
@@ -144,7 +144,7 @@ postsubmits:
   - name: images_ibm-commonui-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-efix$
     - ^release-eus$
     decorate: true
