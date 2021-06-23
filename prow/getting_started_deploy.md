@@ -278,7 +278,7 @@ ProwJob configuration:
 * ensure that `clone_uri` and `path_alias` are always set:
   * `clone_uri`: `https://<<github-hostname>>/<<org>>/<<repo>>.git`
   * `path_alias`: `<<github-hostname>>/<<org>>/<<repo>>`
-* it might be necessary to configure `plank.default_decoration_configs[].ssh_host_fingerprints`
+* it might be necessary to configure `plank.default_decoration_config_entries[].ssh_host_fingerprints`
 
 ## Next Steps
 
@@ -306,11 +306,11 @@ In order to configure the bucket, follow the following steps:
 - Either use a Kubernetes service account bound to the GCP service account (recommended on GKE):
     1. Create a Kubernetes service account in the namespace where jobs will run.
     1. [Bind](/workload-identity#overview) the Kubernetes service account to the GCP service account.
-    1. edit the `plank` configuration for `default_decoration_configs[].config.default_service_account_name` to point to the Kubernetes service account.
+    1. edit the `plank` configuration for `default_decoration_config_entries[].config.default_service_account_name` to point to the Kubernetes service account.
 - OR use a GCP service account key file:
     1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
     1. upload the key to a `Secret` under the `service-account.json` key
-    1. edit the `plank` configuration for `default_decoration_configs[].config.gcs_credentials_secret` to point to the `Secret` above
+    1. edit the `plank` configuration for `default_decoration_config_entries[].config.gcs_credentials_secret` to point to the `Secret` above
 
 After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
 the following collection of commands will execute the above steps for you:
@@ -327,19 +327,19 @@ $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service
 
 #### Configure the version of plank's utility images
 
-Before we can update plank's `default_decoration_configs[]` we'll need to retrieve the version of plank. Check the deployment file or use the following:
+Before we can update plank's `default_decoration_config_entries[]` we'll need to retrieve the version of plank. Check the deployment file or use the following:
 
 ```sh
 $ kubectl get pod -n prow -l app=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
 v20191108-08fbf64ac
 ```
-Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_configs[]` in `config.yaml`:
+Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_config_entries[]` in `config.yaml`:
 
 For more information on how the pod utility images for prow are versioned see [autobump](/prow/cmd/autobump/README.md)
 
 ```yaml
 plank:
-  default_decoration_configs:
+  default_decoration_config_entries:
   - config:
       utility_images: # using the tag we identified above
         clonerefs: "gcr.io/k8s-prow/clonerefs:v20191108-08fbf64ac"
