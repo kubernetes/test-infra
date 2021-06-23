@@ -185,17 +185,15 @@ presubmits:
     - master
     always_run: false
     optional: true
+    decorate: true
     labels:
       preset-service-account: "true"
+    path_alias: k8s.io/dns
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
-        args:
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+        command:
+        - "runner.sh"
         - ./presubmits.sh
         # docker-in-docker needs privileged mode
         securityContext:
