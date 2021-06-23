@@ -103,6 +103,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -199,6 +200,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         label:lifecycle/stale
         -label:lifecycle/rotten
@@ -242,6 +244,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
