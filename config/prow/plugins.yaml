@@ -146,8 +146,8 @@ lgtm:
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
-  - kubernetes/website
   - kubernetes/kubernetes
+  - kubernetes/website
   store_tree_hash: true
 
 blockades:
