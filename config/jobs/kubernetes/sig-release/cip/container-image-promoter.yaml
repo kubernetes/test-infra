@@ -119,6 +119,8 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         command:
+        - runner.sh
+        args:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
         - name: CIP_E2E_KEY_FILE
