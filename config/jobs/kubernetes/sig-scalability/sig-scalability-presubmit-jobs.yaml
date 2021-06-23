@@ -500,7 +500,9 @@ presubmits:
         - --tear-down-previous
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_HUGE_SERVICES=true
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+        - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
