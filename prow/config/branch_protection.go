@@ -53,6 +53,9 @@ type Policy struct {
 	// Exclude specifies a set of regular expressions which identify branches
 	// that should be excluded from the protection policy
 	Exclude []string `json:"exclude,omitempty"`
+	// Include specifies a set of regular expressions which identify branches
+	// that should be included from the protection policy
+	Include []string `json:"include,omitempty"`
 }
 
 func (p Policy) defined() bool {
@@ -174,6 +177,7 @@ func (p Policy) Apply(child Policy) Policy {
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
 		Exclude:                    unionStrings(p.Exclude, child.Exclude),
+		Include:                    unionStrings(p.Include, child.Include),
 	}
 }
 

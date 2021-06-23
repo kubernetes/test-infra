@@ -321,6 +321,14 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		return nil
 	}
 
+	var branchInclusions *regexp.Regexp
+	if len(repo.Policy.Include) > 0 {
+		branchInclusions, err = regexp.Compile(strings.Join(repo.Policy.Include, `|`))
+		if err != nil {
+			return err
+		}
+	}
+
 	var branchExclusions *regexp.Regexp
 	if len(repo.Policy.Exclude) > 0 {
 		branchExclusions, err = regexp.Compile(strings.Join(repo.Policy.Exclude, `|`))
@@ -337,7 +345,12 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 		for _, b := range bs {
 			_, ok := repo.Branches[b.Name]
-			if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
+			if !ok && branchInclusions != nil && branchInclusions.MatchString(b.Name) {
+				branches[b.Name] = b
+			} else if !ok && branchInclusions != nil && !branchInclusions.MatchString(b.Name) {
+				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
+				continue
+			} else if !ok && branchInclusions == nil && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
 				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
 				continue
 			}
