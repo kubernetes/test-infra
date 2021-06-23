@@ -195,7 +195,7 @@ presubmits:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --scenario=execute
         - --
-        - "true"
+        - presubmits.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
