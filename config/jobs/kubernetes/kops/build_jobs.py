@@ -681,7 +681,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         # A special test for IPv6
         build_test(name_override="kops-grid-scenario-ipv6",
@@ -698,7 +699,8 @@ def generate_misc():
                                 '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
                                 '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable',
                                 ],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-service-account-iam",
@@ -710,7 +712,8 @@ def generate_misc():
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
                                 ],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
@@ -719,7 +722,8 @@ def generate_misc():
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--override=cluster.spec.warmPool.minSize=1'
                                 ],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         # A special test for AWS Cloud-Controller-Manager
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
@@ -728,7 +732,8 @@ def generate_misc():
                    k8s_version="latest",
                    runs_per_day=3,
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
+                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'],
+                   skip_override=''),
 
         # A special test for AWS Cloud-Controller-Manager and irsa
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager-irsa",
@@ -740,12 +745,14 @@ def generate_misc():
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
+                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc'],
+                   skip_override=''),
 
         build_test(name_override="kops-grid-scenario-terraform",
                    k8s_version="1.20",
                    terraform_version="0.14.6",
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         build_test(name_override="kops-aws-misc-ha-euwest1",
                    k8s_version="stable",
@@ -753,7 +760,8 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=8,
                    extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   skip_override=''),
 
         build_test(name_override="kops-aws-misc-arm64-release",
                    k8s_version="latest",
@@ -764,7 +772,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   skip_override=''),
 
         build_test(name_override="kops-aws-misc-arm64-ci",
                    k8s_version="ci",
@@ -775,7 +784,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   skip_override=''),
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
                    k8s_version="ci",
@@ -824,7 +834,8 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
 
         build_test(name_override="kops-grid-scenario-cilium10-amd64",
                    cloud="aws",
@@ -834,7 +845,8 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc'],
+                   skip_override=''),
     ]
     return results
 
