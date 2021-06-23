@@ -5,9 +5,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test check-ibm-management-ingress-operator
@@ -26,9 +26,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator
@@ -48,9 +48,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator-ppc64le
@@ -70,9 +70,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator-s390x
@@ -92,9 +92,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator
@@ -114,9 +114,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator-ppc64le
@@ -136,9 +136,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator-s390x
@@ -159,9 +159,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -183,9 +183,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -202,9 +202,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -221,9 +221,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -240,9 +240,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -261,9 +261,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -282,9 +282,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -303,9 +303,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"

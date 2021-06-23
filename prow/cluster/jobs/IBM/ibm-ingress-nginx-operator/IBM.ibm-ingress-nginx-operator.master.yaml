@@ -26,9 +26,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test test-ibm-ingress-nginx-operator
@@ -48,9 +48,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-amd64
@@ -70,9 +70,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-ppc64le
@@ -92,9 +92,9 @@ presubmits:
     always_run: true
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-s390x
@@ -115,9 +115,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -136,9 +136,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -157,9 +157,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -178,9 +178,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
-    - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-future$
     decorate: true
     labels:
       preset-service-account: "true"
