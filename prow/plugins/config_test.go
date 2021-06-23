@@ -1997,6 +1997,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Bugzilla = Bugzilla{}
 				fuzzedConfig.Approve = nil
 				fuzzedConfig.Lgtm = nil
+				fuzzedConfig.ExternalPlugins = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
@@ -2071,6 +2072,22 @@ func TestHasConfigFor(t *testing.T) {
 				return fuzzedConfig, false, expectOrgs, expectRepos
 			},
 		},
+		{
+			name: "Any config with external-plugins is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{ExternalPlugins: fuzzedConfig.ExternalPlugins}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for orgOrRepo := range fuzzedConfig.ExternalPlugins {
+					if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
 	}
 
 	seed := time.Now().UnixNano()
@@ -2099,7 +2116,6 @@ func TestHasConfigFor(t *testing.T) {
 					t.Errorf("expected repos differ from actual: %s", diff)
 				}
 			}
-
 		})
 	}
 }
@@ -2110,14 +2126,13 @@ func TestMergeFrom(t *testing.T) {
 		name                string
 		in                  Configuration
 		supplementalConfigs []Configuration
-
-		expected Configuration
+		expected            Configuration
+		errorExpected       bool
 	}{
 		{
 			name:                "Approve config gets merged",
 			in:                  Configuration{Approve: []Approve{{Repos: []string{"foo/bar"}}}},
 			supplementalConfigs: []Configuration{{Approve: []Approve{{Repos: []string{"foo/baz"}}}}},
-
 			expected: Configuration{Approve: []Approve{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
@@ -2127,22 +2142,59 @@ func TestMergeFrom(t *testing.T) {
 			name:                "LGTM config gets merged",
 			in:                  Configuration{Lgtm: []Lgtm{{Repos: []string{"foo/bar"}}}},
 			supplementalConfigs: []Configuration{{Lgtm: []Lgtm{{Repos: []string{"foo/baz"}}}}},
-
 			expected: Configuration{Lgtm: []Lgtm{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			}},
 		},
+		{
+			name: "ExternalPlugins get merged",
+			in: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/baz": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			expected: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+					"foo/baz": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+		},
+		{
+			name:                "main config has no ExternalPlugins config, supplemental config has, it gets merged",
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			expected: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+		},
+		{
+			name: "ExternalPlugins cant't merge duplicated configs",
+			in: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			errorExpected:       true,
+		},
 	}
 
 	for _, tc := range testCases {
 		for idx, supplementalConfig := range tc.supplementalConfigs {
-			if err := tc.in.mergeFrom(&supplementalConfig); err != nil {
+			err := tc.in.mergeFrom(&supplementalConfig)
+			if err != nil && !tc.errorExpected {
 				t.Fatalf("failed to merge supplemental config %d: %v", idx, err)
+			}
+			if err == nil && tc.errorExpected {
+				t.Fatal("expected error but got nothing")
 			}
 		}
 
-		if diff := cmp.Diff(tc.expected, tc.in); diff != "" {
+		if diff := cmp.Diff(tc.expected, tc.in); !tc.errorExpected && diff != "" {
 			t.Errorf("expected config differs from expected: %s", diff)
 		}
 	}
