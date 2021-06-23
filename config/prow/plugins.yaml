@@ -147,6 +147,7 @@ lgtm:
   review_acts_as_lgtm: true
 - repos:
   - kubernetes/website
+  - kubernetes/kubernetes
   store_tree_hash: true
 
 blockades:
