@@ -184,6 +184,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: true
     labels:
       preset-service-account: "true"
     spec:
