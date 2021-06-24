@@ -665,6 +665,7 @@ def generate_misc():
                                 '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
                                 '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable',
                                 ],
+                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=['kops-misc']),
 
         # A special test for JWKS
