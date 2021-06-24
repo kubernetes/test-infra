@@ -484,7 +484,7 @@ periodics:
   spec:
     containers:
       - args:
-          - --timeout=70
+          - --timeout=100
           - --bare
           - --scenario=kubernetes_e2e
           - --
@@ -506,7 +506,7 @@ periodics:
           - --ginkgo-parallel=30
           - --provider=gce
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-          - --timeout=50m
+          - --timeout=80m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
         resources:
           limits:
