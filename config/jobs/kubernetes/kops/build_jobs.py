@@ -909,6 +909,7 @@ def generate_versions():
             runs_per_day=8,
             # This version marker is only used by the k/k presubmit job
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
+            skip_override='',
         )
     ]
     for version in ['1.21', '1.20', '1.19', '1.18', '1.17']:
@@ -922,6 +923,7 @@ def generate_versions():
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=8,
+                skip_override='',
             )
         )
     return results
