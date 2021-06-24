@@ -188,6 +188,7 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     path_alias: k8s.io/dns
     spec:
       containers:
