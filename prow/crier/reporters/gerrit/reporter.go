@@ -291,7 +291,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		logger.WithError(err).Infof("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
 		if reportLabel == "" {
 			return nil, nil, err
