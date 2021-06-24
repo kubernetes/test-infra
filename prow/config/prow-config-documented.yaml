@@ -21,6 +21,11 @@ branch-protection:
     exclude:
       - ""
 
+    # Include specifies a set of regular expressions which identify branches
+    # that should be included from the protection policy
+    include:
+      - ""
+
     # Orgs holds branch protection options for orgs by name
     orgs:
         "":
@@ -36,6 +41,11 @@ branch-protection:
             # Exclude specifies a set of regular expressions which identify branches
             # that should be excluded from the protection policy
             exclude:
+              - ""
+
+            # Include specifies a set of regular expressions which identify branches
+            # that should be included from the protection policy
+            include:
               - ""
 
             # Protect overrides whether branch protection is enabled if set.
@@ -61,6 +71,11 @@ branch-protection:
                             # Exclude specifies a set of regular expressions which identify branches
                             # that should be excluded from the protection policy
                             exclude:
+                              - ""
+
+                            # Include specifies a set of regular expressions which identify branches
+                            # that should be included from the protection policy
+                            include:
                               - ""
 
                             # Protect overrides whether branch protection is enabled if set.
@@ -114,6 +129,11 @@ branch-protection:
                     # Exclude specifies a set of regular expressions which identify branches
                     # that should be excluded from the protection policy
                     exclude:
+                      - ""
+
+                    # Include specifies a set of regular expressions which identify branches
+                    # that should be included from the protection policy
+                    include:
                       - ""
 
                     # Protect overrides whether branch protection is enabled if set.
