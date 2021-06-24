@@ -39,8 +39,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -103,8 +102,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -167,8 +165,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -231,8 +228,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -295,8 +291,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -359,8 +354,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -423,8 +417,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -487,8 +480,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -551,8 +543,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -616,8 +607,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable.txt \
-          --parallel=25 \
-          --skip-regex=""
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private

@@ -40,9 +40,9 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]"
+          --skip-regex="\[Slow\]|\[Serial\]" \
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -106,9 +106,9 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.21.txt \
-          --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]"
+          --skip-regex="\[Slow\]|\[Serial\]" \
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -172,9 +172,9 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.20.txt \
-          --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]"
+          --skip-regex="\[Slow\]|\[Serial\]" \
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -238,9 +238,9 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.19.txt \
-          --parallel=25 \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]"
+          --skip-regex="\[Slow\]|\[Serial\]" \
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private

@@ -75,11 +75,13 @@ periodic_template = """
           --test-package-dir={{test_package_dir}} \\
           {%- endif %}
           --test-package-marker={{marker}} \\
-          --parallel={{test_parallelism}} \\
           {%- if focus_regex %}
           --focus-regex="{{focus_regex}}" \\
           {%- endif %}
-          --skip-regex="{{skip_regex}}"
+          {%- if skip_regex %}
+          --skip-regex="{{skip_regex}}" \\
+          {%- endif %}
+          --parallel={{test_parallelism}}
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
