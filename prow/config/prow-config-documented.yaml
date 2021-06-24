@@ -947,13 +947,11 @@ sinker:
     terminated_pod_ttl: 0s
 slack_reporter_configs:
     "":
-        channel: ' '
-        host: ' '
-        job_states_to_report:
-          - ""
-        job_types_to_report:
-          - ""
-        report_template: ' '
+        channel: ""
+        host: ""
+        job_states_to_report: null
+        job_types_to_report: null
+        report_template: ""
 
 
 # StatusErrorLink is the url that will be used for jenkins prowJobs that can't be

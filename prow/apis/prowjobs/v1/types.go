@@ -286,10 +286,39 @@ type ReporterConfig struct {
 }
 
 type SlackReporterConfig struct {
-	Host              string         `json:"host,omitempty"`
-	Channel           string         `json:"channel,omitempty"`
-	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
-	ReportTemplate    string         `json:"report_template,omitempty"`
+	Host              *string         `json:"host,omitempty"`
+	Channel           *string         `json:"channel,omitempty"`
+	JobStatesToReport *[]ProwJobState `json:"job_states_to_report,omitempty"`
+	ReportTemplate    *string         `json:"report_template,omitempty"`
+}
+
+func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged SlackReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Channel == nil {
+		merged.Channel = def.Channel
+	}
+	if merged.Host == nil {
+		merged.Host = def.Host
+	}
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
+	}
+	if merged.ReportTemplate == nil {
+		merged.ReportTemplate = def.ReportTemplate
+	}
+	return &merged
 }
 
 // Duration is a wrapper around time.Duration that parses times in either

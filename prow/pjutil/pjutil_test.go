@@ -1087,7 +1087,7 @@ func TestSpecFromJobBase(t *testing.T) {
 			jobBase: config.JobBase{
 				ReporterConfig: &prowapi.ReporterConfig{
 					Slack: &prowapi.SlackReporterConfig{
-						Channel: "my-channel",
+						Channel: pStr("my-channel"),
 					},
 				},
 			},
@@ -1098,9 +1098,9 @@ func TestSpecFromJobBase(t *testing.T) {
 				if pj.ReporterConfig.Slack == nil {
 					return errors.New("Expected ReporterConfig.Slack to be non-nil")
 				}
-				if pj.ReporterConfig.Slack.Channel != "my-channel" {
+				if *pj.ReporterConfig.Slack.Channel != "my-channel" {
 					return fmt.Errorf("Expected pj.ReporterConfig.Slack.Channel to be \"my-channel\", was %q",
-						pj.ReporterConfig.Slack.Channel)
+						*pj.ReporterConfig.Slack.Channel)
 				}
 				return nil
 			},
@@ -1173,4 +1173,8 @@ func TestPeriodicSpec(t *testing.T) {
 			t.Error(err)
 		}
 	}
+}
+
+func pStr(str string) *string {
+	return &str
 }

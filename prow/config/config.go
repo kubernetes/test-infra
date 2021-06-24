@@ -1042,11 +1042,8 @@ type ManagedWebhooks struct {
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
-	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
-	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
-	Host              string                 `json:"host,omitempty"`
-	Channel           string                 `json:"channel"`
-	ReportTemplate    string                 `json:"report_template"`
+	JobTypesToReport *[]prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	prowapi.SlackReporterConfig
 }
 
 // SlackReporterConfigs represents the config for the Slack reporter(s).
@@ -1071,16 +1068,17 @@ func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReport
 
 func (cfg *SlackReporter) DefaultAndValidate() error {
 	// Default ReportTemplate
-	if cfg.ReportTemplate == "" {
-		cfg.ReportTemplate = `Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>`
+	if cfg.ReportTemplate == nil {
+		defaultTemplate := `Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>`
+		cfg.ReportTemplate = &defaultTemplate
 	}
 
-	if cfg.Channel == "" {
+	if cfg.Channel == nil || *cfg.Channel == "" {
 		return errors.New("channel must be set")
 	}
 
 	// Validate ReportTemplate
-	tmpl, err := template.New("").Parse(cfg.ReportTemplate)
+	tmpl, err := template.New("").Parse(*cfg.ReportTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %v", err)
 	}
