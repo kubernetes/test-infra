@@ -3,7 +3,7 @@ presubmits:
   - name: build_ibm-monitoring-grafana-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -29,7 +29,7 @@ presubmits:
   - name: check_ibm-monitoring-grafana-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -54,7 +54,7 @@ presubmits:
   - name: test_ibm-monitoring-grafana-operator
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -82,7 +82,7 @@ postsubmits:
   - name: check_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -104,7 +104,7 @@ postsubmits:
   - name: test_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -127,7 +127,7 @@ postsubmits:
   - name: coverage_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -155,7 +155,7 @@ postsubmits:
   - name: build_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
@@ -178,7 +178,7 @@ postsubmits:
   - name: images_ibm-monitoring-grafana-operator_postsubmit
     branches:
     - ^master$
-    - ^release-cd$
+    - ^release-future$
     - ^release-eus$
     - ^release-efix$
     decorate: true
