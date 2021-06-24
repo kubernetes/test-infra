@@ -6,6 +6,7 @@ dashboard_groups:
   - kops-network-plugins
   - kops-versions
   - kops-misc
+  - kops-ipv6
   - kops-kubetest2
   - kops-gce
   - kops-grid
@@ -39,6 +40,7 @@ dashboards:
 - name: kops-network-plugins
 - name: kops-versions
 - name: kops-misc
+- name: kops-ipv6
 - name: kops-kubetest2
 - name: kops-gce
 - name: kops-grid
