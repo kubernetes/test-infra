@@ -1477,6 +1477,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1963,6 +2017,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2106,6 +2214,114 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-upi-serial
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-s390x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3042,6 +3258,10 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-fips-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-ppc64le
+  name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-s390x
+  name: periodic-ci-openshift-release-master-nightly-4.9-e2e-compact-remote-libvirt-s390x
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp
@@ -3084,6 +3304,10 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-remote-libvirt-s390x
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-remote-libvirt-s390x
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-ppc64le
+  name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-s390x
+  name: periodic-ci-openshift-release-master-nightly-4.9-e2e-serial-remote-libvirt-s390x
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere
 - days_of_results: 50
@@ -3098,6 +3322,14 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-upi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-upi-serial
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-upi-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-ppc64le
+  name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-s390x
+  name: periodic-ci-openshift-release-master-nightly-4.9-image-ecosystem-remote-libvirt-s390x
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-ppc64le
+  name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-s390x
+  name: periodic-ci-openshift-release-master-nightly-4.9-jenkins-e2e-remote-libvirt-s390x
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-openshift-ipi-azure-arcconformance
   name: periodic-ci-openshift-release-master-nightly-4.9-openshift-ipi-azure-arcconformance
 - days_of_results: 60
