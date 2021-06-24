@@ -650,8 +650,8 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for IPv6
-        build_test(name_override="kops-grid-scenario-ipv6",
+        # A special test for IPv6 Conformance
+        build_test(name_override="kops-grid-scenario-ipv6-conformance",
                    cloud="aws",
                    distro="u2004",
                    k8s_version="latest",
@@ -666,7 +666,38 @@ def generate_misc():
                                 '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable',
                                 ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+        # A special test for IPv6 using Calico CNI
+        build_test(name_override="kops-grid-scenario-ipv6-calico",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="latest",
+                   networking="calico",
+                   feature_flags=["AWSIPv6"],
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                '--override=cluster.spec.networking.calico.awsSrcDstCheck=Disable',
+                                ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+        # A special test for IPv6 using Cilium CNI
+        build_test(name_override="kops-grid-scenario-ipv6-cilium",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="latest",
+                   networking="cilium",
+                   feature_flags=["AWSIPv6"],
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
 
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-service-account-iam",
