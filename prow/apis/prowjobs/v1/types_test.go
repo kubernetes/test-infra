@@ -301,6 +301,36 @@ func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
 	}
 }
 
+func TestSlackConfigApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
+	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			def := &SlackReporterConfig{}
+			fuzzer.Fuzz(def)
+
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &SlackReporterConfig{
+				Host:              "",
+				Channel:           "",
+				JobStatesToReport: nil,
+				ReportTemplate:    "",
+			}
+			defaulted := toDefault.ApplyDefault(def)
+
+			if diff := cmp.Diff(def, defaulted); diff != "" {
+				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
+			}
+		})
+	}
+}
+
 func TestRefsToString(t *testing.T) {
 	var tests = []struct {
 		name     string

@@ -3330,8 +3330,8 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowapi.SlackReporterConfig{
-							Channel: pStr("my-channel"),
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
 						},
 					},
 				}
@@ -3348,8 +3348,8 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"istio/proxy": {
-						SlackReporterConfig: prowapi.SlackReporterConfig{
-							Channel: pStr("my-channel"),
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
 						},
 					},
 				}
@@ -3366,8 +3366,8 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"proxy": {
-						SlackReporterConfig: prowapi.SlackReporterConfig{
-							Channel: pStr("my-channel"),
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
 						},
 					},
 				}
@@ -3384,7 +3384,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						JobTypesToReport: &[]prowapi.ProwJobType{"presubmit"},
+						JobTypesToReport: []prowapi.ProwJobType{"presubmit"},
 					},
 				}
 				return Config{
@@ -3412,9 +3412,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowapi.SlackReporterConfig{
-							Channel:        pStr("my-channel"),
-							ReportTemplate: pStr("{{ if .Spec.Name}}"),
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ if .Spec.Name}}",
 						},
 					},
 				}
@@ -3431,9 +3431,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowapi.SlackReporterConfig{
-							Channel:        pStr("my-channel"),
-							ReportTemplate: pStr("{{ .Undef}}"),
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ .Undef}}",
 						},
 					},
 				}
@@ -3455,10 +3455,10 @@ func TestSlackReporterValidation(t *testing.T) {
 			}
 			if tc.successExpected {
 				for _, config := range cfg.SlackReporterConfigs {
-					if *config.ReportTemplate == "" {
+					if config.ReportTemplate == "" {
 						t.Errorf("expected default ReportTemplate to be set")
 					}
-					if *config.Channel == "" {
+					if config.Channel == "" {
 						t.Errorf("expected Channel to be required")
 					}
 				}

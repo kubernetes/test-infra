@@ -48,14 +48,9 @@ type slackReporter struct {
 }
 
 func hostAndChannel(cfg *v1.SlackReporterConfig) (string, string) {
-	var host, channel string
-	if cfg.Host == nil {
+	host, channel := cfg.Host, cfg.Channel
+	if host == "" {
 		host = DefaultHostName
-	} else {
-		host = *cfg.Host
-	}
-	if cfg.Channel != nil {
-		channel = *cfg.Channel
 	}
 	return host, channel
 }
@@ -92,7 +87,7 @@ func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 		return fmt.Errorf("host '%s' not supported", host)
 	}
 	b := &bytes.Buffer{}
-	tmpl, err := template.New("").Parse(*jobSlackConfig.ReportTemplate)
+	tmpl, err := template.New("").Parse(jobSlackConfig.ReportTemplate)
 	if err != nil {
 		log.WithError(err).Error("failed to parse template")
 		return fmt.Errorf("failed to parse template: %v", err)
@@ -121,7 +116,7 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 
 	var typeShouldReport bool
 	if globalSlackConfig.JobTypesToReport != nil {
-		for _, tp := range *globalSlackConfig.JobTypesToReport {
+		for _, tp := range globalSlackConfig.JobTypesToReport {
 			if tp == pj.Spec.Type {
 				typeShouldReport = true
 				break
@@ -132,7 +127,7 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	// If a user specifically put a channel on their job, they want
 	// it to be reported regardless of the job types setting.
 	var jobShouldReport bool
-	if jobSlackConfig != nil && jobSlackConfig.Channel != nil && *jobSlackConfig.Channel != "" {
+	if jobSlackConfig != nil && jobSlackConfig.Channel != "" {
 		jobShouldReport = true
 	}
 
@@ -140,18 +135,13 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	// JobStatesToReport config.
 	// Note the JobStatesToReport configured in the Prow job can overwrite the
 	// Prow config.
-	var allowedJobStates []v1.ProwJobState
-	if globalSlackConfig != nil && globalSlackConfig.JobStatesToReport != nil {
-		allowedJobStates = *globalSlackConfig.JobStatesToReport
-	}
-	if jobSlackConfig != nil && jobSlackConfig.JobStatesToReport != nil {
-		allowedJobStates = *jobSlackConfig.JobStatesToReport
-	}
-	stateShouldReport := false
-	for _, stateToReport := range allowedJobStates {
-		if pj.Status.State == stateToReport {
-			stateShouldReport = true
-			break
+	var stateShouldReport bool
+	if merged := jobSlackConfig.ApplyDefault(&globalSlackConfig.SlackReporterConfig); merged != nil && merged.JobStatesToReport != nil {
+		for _, stateToReport := range merged.JobStatesToReport {
+			if pj.Status.State == stateToReport {
+				stateShouldReport = true
+				break
+			}
 		}
 	}
 

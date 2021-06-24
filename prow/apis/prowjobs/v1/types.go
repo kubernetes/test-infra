@@ -286,10 +286,10 @@ type ReporterConfig struct {
 }
 
 type SlackReporterConfig struct {
-	Host              *string         `json:"host,omitempty"`
-	Channel           *string         `json:"channel,omitempty"`
-	JobStatesToReport *[]ProwJobState `json:"job_states_to_report,omitempty"`
-	ReportTemplate    *string         `json:"report_template,omitempty"`
+	Host              string         `json:"host,omitempty"`
+	Channel           string         `json:"channel,omitempty"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
+	ReportTemplate    string         `json:"report_template,omitempty"`
 }
 
 func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
@@ -306,16 +306,16 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 		return &merged
 	}
 
-	if merged.Channel == nil {
+	if merged.Channel == "" {
 		merged.Channel = def.Channel
 	}
-	if merged.Host == nil {
+	if merged.Host == "" {
 		merged.Host = def.Host
 	}
 	if merged.JobStatesToReport == nil {
 		merged.JobStatesToReport = def.JobStatesToReport
 	}
-	if merged.ReportTemplate == nil {
+	if merged.ReportTemplate == "" {
 		merged.ReportTemplate = def.ReportTemplate
 	}
 	return &merged
