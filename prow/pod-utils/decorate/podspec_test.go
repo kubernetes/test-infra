@@ -328,7 +328,7 @@ func TestCloneRefs(t *testing.T) {
 					ExtraRefs: []prowapi.Refs{{}},
 					DecorationConfig: &prowapi.DecorationConfig{
 						UtilityImages:    &prowapi.UtilityImages{},
-						CookiefileSecret: "oatmeal",
+						CookiefileSecret: pStr("oatmeal"),
 					},
 				},
 			},
@@ -347,6 +347,31 @@ func TestCloneRefs(t *testing.T) {
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount, cookieMountOnly("oatmeal")},
 			},
 			volumes: []coreapi.Volume{tmpVolume, cookieVolumeOnly("oatmeal")},
+		},
+		{
+			name: "intentional empty string cookiefile secrets is valid",
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages:    &prowapi.UtilityImages{},
+						CookiefileSecret: pStr(""),
+					},
+				},
+			},
+			expected: &coreapi.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:      []prowapi.Refs{{}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
+			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "include oauth token secret when set",
@@ -499,7 +524,7 @@ func TestProwJobToPod(t *testing.T) {
 						MediaTypes:   map[string]string{"log": "text/plain"},
 					},
 					GCSCredentialsSecret: pStr("secret-name"),
-					CookiefileSecret:     "yummy/.gitcookies",
+					CookiefileSecret:     pStr("yummy/.gitcookies"),
 				},
 				Agent: prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{
@@ -553,7 +578,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: pStr("secret-name"),
-					CookiefileSecret:     "yummy",
+					CookiefileSecret:     pStr("yummy"),
 				},
 				Agent: prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{
@@ -819,7 +844,7 @@ func TestProwJobToPod(t *testing.T) {
 					},
 					GCSCredentialsSecret: pStr("secret-name"),
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
-					CookiefileSecret:     "yummy",
+					CookiefileSecret:     pStr("yummy"),
 				},
 				Agent: prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{
@@ -890,7 +915,7 @@ func TestProwJobToPod(t *testing.T) {
 					},
 					// Specify K8s SA rather than cloud storage secret key.
 					DefaultServiceAccountName: pStr("default-SA"),
-					CookiefileSecret:          "yummy/.gitcookies",
+					CookiefileSecret:          pStr("yummy/.gitcookies"),
 				},
 				Agent: prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{

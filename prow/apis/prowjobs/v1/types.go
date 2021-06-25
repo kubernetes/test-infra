@@ -367,7 +367,7 @@ type DecorationConfig struct {
 	SkipCloning *bool `json:"skip_cloning,omitempty"`
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
-	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	CookiefileSecret *string `json:"cookiefile_secret,omitempty"`
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
@@ -532,7 +532,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.SkipCloning == nil {
 		merged.SkipCloning = def.SkipCloning
 	}
-	if merged.CookiefileSecret == "" {
+	if merged.CookiefileSecret == nil {
 		merged.CookiefileSecret = def.CookiefileSecret
 	}
 	if merged.OauthTokenSecret == nil {

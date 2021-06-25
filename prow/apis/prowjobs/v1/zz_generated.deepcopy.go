@@ -122,6 +122,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CookiefileSecret != nil {
+		in, out := &in.CookiefileSecret, &out.CookiefileSecret
+		*out = new(string)
+		**out = **in
+	}
 	if in.OauthTokenSecret != nil {
 		in, out := &in.OauthTokenSecret, &out.OauthTokenSecret
 		*out = new(OauthTokenSecret)
