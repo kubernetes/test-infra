@@ -426,8 +426,8 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	var cloneArgs []string
 	var cookiefilePath string
 
-	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
-		v, vm, vp := cookiefileVolume(cp)
+	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != nil && *cp != "" {
+		v, vm, vp := cookiefileVolume(*cp)
 		cloneMounts = append(cloneMounts, vm)
 		cloneVolumes = append(cloneVolumes, v)
 		cookiefilePath = vp
