@@ -85,7 +85,7 @@ Prow is used by the following organizations and projects:
 - [Knative](https://prow.knative.dev/)
 - [Jetstack](https://prow.build-infra.jetstack.net/)
 - [Kyma](https://status.build.kyma-project.io/)
-- [Metal³](https://prow.apps.ci.metal3.io/)
+- [Metal³](https://prow.apps.test.metal3.io/)
 - [Prometheus](http://prombench.prometheus.io/)
 - [Caicloud](https://github.com/caicloud)
 - [Kubeflow](https://github.com/kubeflow)
