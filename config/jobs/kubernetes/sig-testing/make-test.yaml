@@ -14,6 +14,10 @@ presubmits:
     always_run: true
     path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
           command:
@@ -42,7 +46,7 @@ presubmits:
     always_run: false
     path_alias: k8s.io/kubernetes
     spec:
-      # let's see if we can run unit tests as a non-root user
+      # unit tests have no business requiring root or doing privileged operations
       securityContext:
         runAsUser: 2000
         allowPrivilegeEscalation: false
@@ -78,6 +82,10 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
           command:
@@ -104,6 +112,10 @@ periodics:
     labels:
       preset-service-account: "true"
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
           command:
@@ -130,6 +142,10 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
           command:
@@ -157,6 +173,10 @@ periodics:
     labels:
       preset-service-account: "true"
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
           command:
