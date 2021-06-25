@@ -499,10 +499,10 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		return nil
 	}
 	log.Info("Starting job...")
-	// TODO(fejta): default grace and timeout to the job's decoration_config
-	if opts.timeout > 0 {
+	timeout := getTimeout(pj, opts)
+	if timeout > 0 {
 		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, opts.timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 	cmd, err := start(args)
@@ -523,11 +523,7 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		// cancelled
 	}
 
-	grace := opts.grace
-	if grace < time.Second {
-		log.WithField("grace", grace).Info("Increasing grace period to the 1s minimum")
-		grace = time.Second
-	}
+	grace := getGracePeriod(pj, opts, log)
 	log = log.WithFields(logrus.Fields{
 		"grace":     grace,
 		"interrupt": ctx.Err(),
@@ -549,4 +545,25 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		return fmt.Errorf("kill: %v", err)
 	}
 	return fmt.Errorf("grace period expired, aborted: %v", ctx.Err())
+}
+
+func getTimeout(pj prowapi.ProwJob, opts *options) time.Duration {
+	if pj.Spec.DecorationConfig.Timeout.Duration > 0 {
+		return pj.Spec.DecorationConfig.Timeout.Duration
+	}
+	if opts.timeout > 0 {
+		return opts.timeout
+	}
+	return time.Duration(0)
+}
+
+func getGracePeriod(pj prowapi.ProwJob, opts *options, log *logrus.Entry) time.Duration {
+	if pj.Spec.DecorationConfig.GracePeriod.Duration >= time.Second {
+		return pj.Spec.DecorationConfig.GracePeriod.Duration
+	}
+	if opts.grace >= time.Second {
+		return opts.grace
+	}
+	log.WithField("grace", opts.grace).Info("Increasing grace period to the 1s minimum")
+	return time.Second
 }
