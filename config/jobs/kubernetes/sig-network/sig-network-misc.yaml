@@ -183,8 +183,7 @@ presubmits:
   - name: pull-kubernetes-dns-test
     branches:
     - master
-    always_run: false
-    optional: true
+    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
