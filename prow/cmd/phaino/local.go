@@ -523,7 +523,7 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		// cancelled
 	}
 
-	grace := getGracePeriod(pj, opts, log)
+	grace := getMinimumGracePeriod(time.Second, pj, opts, log)
 	log = log.WithFields(logrus.Fields{
 		"grace":     grace,
 		"interrupt": ctx.Err(),
@@ -557,13 +557,13 @@ func getTimeout(pj prowapi.ProwJob, opts *options) time.Duration {
 	return time.Duration(0)
 }
 
-func getGracePeriod(pj prowapi.ProwJob, opts *options, log *logrus.Entry) time.Duration {
-	if pj.Spec.DecorationConfig.GracePeriod.Duration >= time.Second {
+func getMinimumGracePeriod(minimum time.Duration, pj prowapi.ProwJob, opts *options, log *logrus.Entry) time.Duration {
+	if pj.Spec.DecorationConfig.GracePeriod.Duration >= minimum {
 		return pj.Spec.DecorationConfig.GracePeriod.Duration
 	}
-	if opts.grace >= time.Second {
+	if opts.grace >= minimum {
 		return opts.grace
 	}
-	log.WithField("grace", opts.grace).Info("Increasing grace period to the 1s minimum")
-	return time.Second
+	log.WithField("grace", opts.grace).Info("Increasing grace period to the %v minimum", minimum)
+	return minimum
 }
