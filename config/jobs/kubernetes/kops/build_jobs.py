@@ -314,6 +314,7 @@ distro_images = {
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*'), # pylint: disable=line-too-long
     'u2010': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-*'), # pylint: disable=line-too-long
+    'u2104': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-*'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
@@ -329,6 +330,7 @@ distros_ssh_user = {
     'u2004': 'ubuntu',
     'u2004arm64': 'ubuntu',
     'u2010': 'ubuntu',
+    'u2104': 'ubuntu',
 }
 
 ##############
@@ -653,7 +655,7 @@ def generate_misc():
         # A special test for IPv6 Conformance
         build_test(name_override="kops-grid-scenario-ipv6-conformance",
                    cloud="aws",
-                   distro="u2004",
+                   distro="u2104",
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
@@ -1061,6 +1063,25 @@ def generate_presubmits_e2e():
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
             tab_name='e2e-ccm-irsa',
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-ipv6-conformance",
+            cloud="aws",
+            distro="u2104",
+            k8s_version="ci",
+            networking="calico",
+            feature_flags=["AWSIPv6"],
+            extra_flags=['--ipv6',
+                         '--override=cluster.spec.api.loadBalancer.type=Public',
+                         '--override=cluster.spec.api.loadBalancer.class=Network',
+                         '--override=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                         '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                         '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                         '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                         '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
+                         ],
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+            tab_name='ipv6-conformance',
         ),
 
     ]
