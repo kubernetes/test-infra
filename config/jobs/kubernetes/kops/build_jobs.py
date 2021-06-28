@@ -659,8 +659,8 @@ def generate_misc():
                    feature_flags=["AWSIPv6"],
                    runs_per_day=24,
                    extra_flags=['--ipv6',
-                                '--override=cluster.spec.api.loadBalancer.type=Public',
-                                '--override=cluster.spec.api.loadBalancer.class=Network',
+                                '--api-loadbalancer-type=public',
+                                '--api-loadbalancer-class=network',
                                 '--override=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
@@ -1055,8 +1055,8 @@ def generate_presubmits_e2e():
             networking="calico",
             feature_flags=["AWSIPv6"],
             extra_flags=['--ipv6',
-                         '--override=cluster.spec.api.loadBalancer.type=Public',
-                         '--override=cluster.spec.api.loadBalancer.class=Network',
+                         '--api-loadbalancer-type=public',
+                         '--api-loadbalancer-class=network',
                          '--override=cluster.spec.api.loadBalancer.useForInternalApi=true',
                          '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                          '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
