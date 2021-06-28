@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -113,7 +113,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -179,7 +179,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -245,7 +245,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -311,7 +311,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -376,7 +376,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -440,7 +440,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -505,7 +505,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -571,7 +571,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -634,7 +634,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -698,7 +698,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -764,7 +764,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -832,7 +832,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -900,7 +900,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -966,7 +966,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1030,7 +1030,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1094,7 +1094,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       imagePullPolicy: Always
       resources:
         limits:
