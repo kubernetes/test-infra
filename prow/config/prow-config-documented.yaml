@@ -22,7 +22,7 @@ branch-protection:
       - ""
 
     # Include specifies a set of regular expressions which identify branches
-    # that should be included from the protection policy
+    # that should be included from the protection policy, mutually exclusive with Exclude
     include:
       - ""
 
@@ -44,7 +44,7 @@ branch-protection:
               - ""
 
             # Include specifies a set of regular expressions which identify branches
-            # that should be included from the protection policy
+            # that should be included from the protection policy, mutually exclusive with Exclude
             include:
               - ""
 
@@ -74,7 +74,7 @@ branch-protection:
                               - ""
 
                             # Include specifies a set of regular expressions which identify branches
-                            # that should be included from the protection policy
+                            # that should be included from the protection policy, mutually exclusive with Exclude
                             include:
                               - ""
 
@@ -132,7 +132,7 @@ branch-protection:
                       - ""
 
                     # Include specifies a set of regular expressions which identify branches
-                    # that should be included from the protection policy
+                    # that should be included from the protection policy, mutually exclusive with Exclude
                     include:
                       - ""
 
