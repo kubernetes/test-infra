@@ -158,7 +158,7 @@ export namespace cell {
 }
 
 export namespace tooltip {
-  export function forElem(elemID: string, tipElem: Node): Node {
+  export function forElem(elemID: string, tipElem: Node): HTMLElement {
     const tip = document.createElement("div");
     tip.appendChild(tipElem);
     tip.setAttribute("data-mdl-for", elemID);
