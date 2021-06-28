@@ -80,7 +80,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         args:
@@ -117,7 +117,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         args:
@@ -149,7 +149,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
           command:
             - /run.sh
           args:
@@ -185,7 +185,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - "make"
         args:
