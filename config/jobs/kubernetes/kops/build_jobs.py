@@ -159,11 +159,13 @@ presubmit_template = """
             --test-package-dir={{test_package_dir}} \\
             {%- endif %}
             --test-package-marker={{marker}} \\
-            --parallel={{test_parallelism}} \\
             {%- if focus_regex %}
             --focus-regex="{{focus_regex}}" \\
             {%- endif %}
-            --skip-regex="{{skip_regex}}"
+            {%- if skip_regex %}
+            --skip-regex="{{skip_regex}}" \\
+            {%- endif %}
+            --parallel={{test_parallelism}}
         securityContext:
           privileged: true
         env:
@@ -485,7 +487,7 @@ def presubmit_test(branch='master',
                    extra_dashboards=None,
                    test_parallelism=25,
                    test_timeout_minutes=60,
-                   skip_override=None,
+                   skip_regex='',
                    focus_regex=None,
                    run_if_changed=None,
                    skip_report=False,
@@ -495,10 +497,6 @@ def presubmit_test(branch='master',
         kops_image = distro_images[distro]
         kops_ssh_user = distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
-        # TODO(rifelpet): Remove once k8s tags has been created that include
-        #  https://github.com/kubernetes/kubernetes/pull/101443
-        if k8s_version in ('stable', '1.21'):
-            skip_override += r'|Invalid.AWS.KMS.key'
 
     elif cloud == 'gce':
         kops_image = None
@@ -521,7 +519,7 @@ def presubmit_test(branch='master',
         job_timeout=str(test_timeout_minutes + 30) + 'm',
         test_timeout=str(test_timeout_minutes) + 'm',
         marker=marker,
-        skip_regex=skip_override,
+        skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
         test_package_bucket=test_package_bucket,
         test_package_dir=test_package_dir,
@@ -953,21 +951,10 @@ def generate_presubmits_network_plugins():
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
     }
     results = []
-    skip_base = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
-        skip_regex = skip_base
-        if plugin in ('cilium', 'cilium-etcd'):
-            skip_regex += r'|should.set.TCP.CLOSE_WAIT'
-        else:
-            skip_regex += r'|Services.*functioning.*NodePort'
-        if plugin in ['calico', 'canal', 'weave', 'cilium', 'cilium-etcd']:
-            skip_regex += r'|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols' # pylint: disable=line-too-long
         if plugin == 'kuberouter':
-            skip_regex += r'|load-balancer|hairpin|affinity\stimeout|service\.kubernetes\.io|CLOSE_WAIT' # pylint: disable=line-too-long
             networking_arg = 'kube-router'
-        if plugin in ['canal', 'flannel']:
-            skip_regex += r'|up\sand\sdown|headless|service-proxy-name'
         results.append(
             presubmit_test(
                 k8s_version='stable',
@@ -977,7 +964,6 @@ def generate_presubmits_network_plugins():
                 networking=networking_arg,
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
-                skip_override=skip_regex,
                 run_if_changed=run_if_changed,
                 skip_report=False,
                 always_run=False,
@@ -998,7 +984,6 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-docker',
             tab_name='e2e-docker',
             always_run=False,
-            skip_override=skip_regex,
         ),
         presubmit_test(
             k8s_version='1.21',
@@ -1007,7 +992,6 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-containerd',
             always_run=True,
-            skip_override=skip_regex,
         ),
         presubmit_test(
             k8s_version='1.21',
@@ -1017,7 +1001,7 @@ def generate_presubmits_e2e():
             extra_flags=["--master-count=3", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
             tab_name='e2e-containerd-ha',
             always_run=False,
-            skip_override=skip_regex+'|Multi-AZ',
+            skip_regex=skip_regex+'|Multi-AZ|Invalid.AWS.KMS.key',
         ),
         presubmit_test(
             distro="u2010",
@@ -1028,7 +1012,6 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-crio',
             tab_name='e2e-crio',
             always_run=False,
-            skip_override=skip_regex,
         ),
         presubmit_test(
             cloud='gce',
@@ -1038,7 +1021,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             tab_name='e2e-gce',
             always_run=False,
-            skip_override=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints', # pylint: disable=line-too-long
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints', # pylint: disable=line-too-long
             feature_flags=['GoogleCloudBucketACL'],
         ),
         # A special test for AWS Cloud-Controller-Manager
@@ -1096,7 +1079,7 @@ def generate_presubmits_e2e():
                 networking='calico',
                 tab_name='e2e-' + name_suffix,
                 always_run=True,
-                skip_override=skip_regex,
+                skip_regex=skip_regex+'|Invalid.AWS.KMS.key',
             )
         )
     return jobs
