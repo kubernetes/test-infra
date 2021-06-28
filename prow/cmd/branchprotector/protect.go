@@ -350,7 +350,7 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 			} else if !ok && branchInclusions != nil && !branchInclusions.MatchString(b.Name) {
 				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
 				continue
-			} else if !ok && branchInclusions == nil && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
+			} else if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
 				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
 				continue
 			}
