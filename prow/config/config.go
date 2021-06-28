@@ -2056,6 +2056,11 @@ func parseProwConfig(c *Config) error {
 		c.DefaultJobTimeout = &metav1.Duration{Duration: DefaultJobTimeout}
 	}
 
+	// Ensure Policy.Include and Policy.Exclude are mutually exclusive
+	if len(c.BranchProtection.Include) > 0 && len(c.BranchProtection.Exclude) > 0 {
+		return fmt.Errorf("Forbidden to set both Policy.Include and Policy.Exclude, Please use either Include or Exclude!")
+	}
+
 	return nil
 }
 

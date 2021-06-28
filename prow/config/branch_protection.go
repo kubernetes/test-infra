@@ -54,7 +54,7 @@ type Policy struct {
 	// that should be excluded from the protection policy
 	Exclude []string `json:"exclude,omitempty"`
 	// Include specifies a set of regular expressions which identify branches
-	// that should be included from the protection policy
+	// that should be included from the protection policy, mutually exclusive with Exclude
 	Include []string `json:"include,omitempty"`
 }
 
