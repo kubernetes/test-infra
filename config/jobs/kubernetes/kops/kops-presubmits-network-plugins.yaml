@@ -311,8 +311,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
-            --parallel=25 \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|external.IP.is.not.assigned.to.a.node|hostPort.but.different.hostIP|same.port.number.but.different.protocols|Invalid.AWS.KMS.key"
+            --parallel=25
         securityContext:
           privileged: true
         env:
